@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="tr">
 <head>
   <meta charset="utf-8"/>
@@ -1250,9 +1250,6 @@
 
     <!-- Right: Utility Controls (Volume, Queue, Lyrics, Download) -->
     <div class="flex items-center justify-end gap-1 md:gap-space-sm w-1/4 min-w-[160px] md:min-w-[220px]">
-      <button type="button" aria-label="Canlı Video Klip" id="btn-player-video-mode" class="w-8 h-8 rounded-full flex items-center justify-center text-on-surface-variant hover:bg-surface-container hover:text-primary transition-colors" onclick="quickToggleVideoMode()" title="Canlı Video / Klip İzle">
-        <span class="material-symbols-outlined text-[20px]" aria-hidden="true">smart_display</span>
-      </button>
       <button type="button" aria-label="Şarkı Sözleri" class="w-8 h-8 rounded-full flex items-center justify-center text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors" onclick="switchTab('calma-listeleri')" title="Şarkı Sözleri">
         <span class="material-symbols-outlined text-[20px]" aria-hidden="true">lyrics</span>
       </button>
@@ -2116,6 +2113,24 @@
         <span class="material-symbols-outlined text-[24px]">add_circle</span>
       </button>
     </div>
+  </div>
+
+  <!-- Persistent Floating Background Download Indicator Pill (Mobile & Desktop) -->
+  <div id="active-download-pill" class="fixed right-3 bottom-32 md:bottom-24 z-40 hidden items-center gap-2.5 px-3.5 py-2 rounded-full bg-surface-container-highest/95 backdrop-blur-md border border-primary/30 shadow-2xl cursor-pointer hover:scale-105 active:scale-95 transition-all text-xs font-semibold text-on-surface" onclick="openDownloaderModal()" title="İndirme durumunu görüntüle">
+    <div class="relative w-6 h-6 flex items-center justify-center text-primary flex-shrink-0">
+      <span class="material-symbols-outlined text-[20px] animate-spin" id="download-pill-spinner">progress_activity</span>
+      <span class="material-symbols-outlined text-[20px] hidden text-green-500" id="download-pill-check">check_circle</span>
+    </div>
+    <div class="flex flex-col min-w-0 pr-1">
+      <div class="flex items-center gap-1.5">
+        <span id="download-pill-label" class="font-bold text-primary truncate max-w-[120px] sm:max-w-[180px]">MP3 İndiriliyor</span>
+        <span id="download-pill-percent" class="text-[10px] font-extrabold px-1.5 py-0.5 rounded-full bg-primary/20 text-primary">0%</span>
+      </div>
+      <span id="download-pill-title" class="text-[10px] text-on-surface-variant truncate max-w-[140px] sm:max-w-[200px]">Arka planda hazırlanıyor...</span>
+    </div>
+    <button type="button" aria-label="Kapat" class="w-5 h-5 rounded-full flex items-center justify-center hover:bg-surface-container text-on-surface-variant ml-0.5" onclick="dismissDownloadPill(event)">
+      <span class="material-symbols-outlined text-[14px]">close</span>
+    </button>
   </div>
 
   <!-- Toast Notification Element (Modern Dynamic Island Floating Pill) -->

@@ -4419,6 +4419,55 @@ async function pasteModalUrl() {
   }
 }
 
+function updateDownloadPill(status, percent, title, label) {
+  const pill = document.getElementById('active-download-pill');
+  if (!pill) return;
+  const pillSpinner = document.getElementById('download-pill-spinner');
+  const pillCheck = document.getElementById('download-pill-check');
+  const pillLabel = document.getElementById('download-pill-label');
+  const pillPercent = document.getElementById('download-pill-percent');
+  const pillTitle = document.getElementById('download-pill-title');
+
+  if (status === 'hide') {
+    pill.classList.add('hidden');
+    pill.classList.remove('flex');
+    return;
+  }
+
+  pill.classList.remove('hidden');
+  pill.classList.add('flex');
+
+  if (status === 'active') {
+    if (pillSpinner) { pillSpinner.classList.remove('hidden'); pillSpinner.classList.add('animate-spin'); }
+    if (pillCheck) pillCheck.classList.add('hidden');
+    if (pillLabel) pillLabel.textContent = label || 'Indiriliyor';
+    if (pillPercent) pillPercent.textContent = `${percent}%`;
+    if (pillTitle) pillTitle.textContent = title || 'Arka planda hazirlaniyor...';
+  } else if (status === 'done') {
+    if (pillSpinner) pillSpinner.classList.add('hidden');
+    if (pillCheck) pillCheck.classList.remove('hidden');
+    if (pillLabel) pillLabel.textContent = label || 'Indirildi';
+    if (pillPercent) pillPercent.textContent = '100%';
+    if (pillTitle) pillTitle.textContent = title || 'Tamamlandi';
+    setTimeout(() => {
+      pill.classList.add('hidden');
+      pill.classList.remove('flex');
+    }, 4000);
+  } else if (status === 'error') {
+    if (pillSpinner) pillSpinner.classList.add('hidden');
+    if (pillLabel) pillLabel.textContent = 'Hata Olustu';
+    setTimeout(() => {
+      pill.classList.add('hidden');
+      pill.classList.remove('flex');
+    }, 4000);
+  }
+}
+
+function dismissDownloadPill(e) {
+  if (e) e.stopPropagation();
+  updateDownloadPill('hide');
+}
+
 async function startDirectDownload(videoId, format, trackMeta) {
   const isMp4 = format === '720' || format === 'mp4' || format === '1080';
   const formatCode = isMp4 ? '720' : 'mp3';
@@ -4441,6 +4490,7 @@ async function startDirectDownload(videoId, format, trackMeta) {
   if (btnMp3) btnMp3.disabled = true;
   if (btnMp4) btnMp4.disabled = true;
 
+  updateDownloadPill('active', 5, trackMeta?.title || videoId, `${label} Indiriliyor`);
   showToast(`${label} hazirlaniyor: ${trackMeta?.title || videoId}`);
 
   const primaryApi = `https://p.savenow.to/api/v2/download?button=1&format=${formatCode}&url=https%3A%2F%2Fwww.youtube.com%2Fwatch%3Fv%3D${videoId}`;
@@ -4494,6 +4544,7 @@ async function startDirectDownload(videoId, format, trackMeta) {
         if (percentText) percentText.textContent = `${currentProg}%`;
         if (progressBar) progressBar.style.width = `${currentProg}%`;
         if (statusText) statusText.textContent = `${label} donusturuluyor (%${currentProg})...`;
+        updateDownloadPill('active', currentProg, trackMeta?.title || videoId, `${label} Indiriliyor`);
 
         if (pData.success === 1 && pData.download_url) {
           downloadUrl = pData.download_url;
@@ -4535,6 +4586,7 @@ async function startDirectDownload(videoId, format, trackMeta) {
       }
     }
 
+    updateDownloadPill('done', 100, safeTitle, `${label} Indirildi`);
     showToast(`Indirme baslatildi: ${safeTitle} (${label})`);
     setTimeout(() => {
       closeDownloaderModal();
@@ -4542,6 +4594,7 @@ async function startDirectDownload(videoId, format, trackMeta) {
 
   } catch (err) {
     console.error("Download error:", err);
+    updateDownloadPill('error');
     if (statusText) statusText.textContent = "Alternatif indirme baglantisi deneniyor...";
     try {
       const invidiousStream = `https://invidious.f5.si/latest_version?id=${videoId}&itag=18`;
@@ -7106,7 +7159,7 @@ async function openDocumentPipPlayer() {
         <div class="pip-header">
           <div style="display:flex;align-items:center;gap:6px;">
             <span class="material-symbols-outlined" style="font-size:16px;color:#22d3ee;">tune</span>
-            <span style="font-weight:600;letter-spacing:-0.2px;">kurfanova.kurfa.workers.dev</span>
+            <span style="font-weight:600;letter-spacing:-0.2px;">\${window.location.hostname || 'Kurfanova'}</span>
           </div>
           <button id="pip-ext-close" class="pip-btn" style="color:#71717a;" title="Kapat">
             <span class="material-symbols-outlined" style="font-size:18px;">close</span>

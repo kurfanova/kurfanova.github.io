@@ -20,16 +20,14 @@
 }
 
 html {
-  overflow-y: scroll !important;
-  overflow-x: hidden !important;
+  overflow-x: hidden;
   scroll-behavior: smooth;
-  height: 100%;
 }
 
 body {
-  overflow-y: auto !important;
-  overflow-x: hidden !important;
-  min-height: 100%;
+  overflow-x: hidden;
+  min-height: 100vh;
+  min-height: 100dvh;
   margin: 0;
   padding: 0;
   font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
@@ -37,12 +35,33 @@ body {
   color: #0f172a;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  -webkit-overflow-scrolling: touch;
 }
 
 /* Ensure smooth touch scrolling across all devices */
 * {
   -webkit-tap-highlight-color: transparent;
   box-sizing: border-box;
+}
+
+/* Natural mobile touch scrolling for all list rows and containers */
+#home-tracklist-table,
+#playlist-tracks-table,
+#favorites-table,
+.view-tab,
+main,
+section {
+  touch-action: pan-y !important;
+  -webkit-overflow-scrolling: touch !important;
+}
+
+#home-tracklist-table > div,
+#playlist-tracks-table > div,
+#favorites-table > div,
+.track-row {
+  touch-action: pan-y !important;
+  -webkit-user-select: none;
+  user-select: none;
 }
 
 .overflow-x-auto {
