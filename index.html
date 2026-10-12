@@ -119,8 +119,8 @@
       pointer-events: none !important;
     }
   </style>
-  <link rel="stylesheet" href="./tailwind.min.css?v=20261012_v2">
-  <link rel="stylesheet" href="./style.css?v=20261012_v2">
+  <link rel="stylesheet" href="./tailwind.min.css?v=20261012_v3">
+  <link rel="stylesheet" href="./style.css?v=20261012_v3">
 </head>
 <body class="bg-background font-sans text-on-surface antialiased min-h-screen">
   <script>
@@ -296,6 +296,26 @@
         </div>
       </div>
     </header>
+
+    <!-- Mobile Top Floating Download Notification Island (Mobile Only) -->
+    <div id="mobile-download-banner" class="md:hidden fixed top-20 left-3 right-3 z-50 hidden items-center gap-2.5 p-3 rounded-2xl bg-surface-container-lowest/95 backdrop-blur-xl border border-primary/35 shadow-[0_10px_35px_rgba(0,0,0,0.45)] transition-all transform duration-300 cursor-pointer" onclick="openDownloaderModal()" title="İndirme durumunu görüntüle">
+      <div class="relative w-9 h-9 rounded-xl bg-primary/15 flex items-center justify-center flex-shrink-0 text-primary">
+        <span class="material-symbols-outlined text-[20px] animate-spin" id="mob-dl-spinner">progress_activity</span>
+        <span class="material-symbols-outlined text-[20px] text-green-500 hidden" id="mob-dl-check">check_circle</span>
+      </div>
+      <div class="flex flex-col min-w-0 flex-1">
+        <div class="flex items-center justify-between gap-1.5 leading-tight">
+          <span id="mob-dl-title" class="text-xs font-bold text-on-surface truncate">Şarkı İndiriliyor...</span>
+          <span id="mob-dl-percent" class="text-[10px] font-black font-mono px-2 py-0.5 rounded-full bg-primary/20 text-primary flex-shrink-0">0%</span>
+        </div>
+        <div class="w-full h-1.5 bg-surface-container rounded-full overflow-hidden mt-1.5">
+          <div id="mob-dl-bar" class="h-full bg-gradient-to-r from-primary via-pink-500 to-cyan-400 rounded-full transition-all duration-300" style="width: 0%;"></div>
+        </div>
+      </div>
+      <button type="button" aria-label="Kapat" class="w-6 h-6 rounded-full flex items-center justify-center text-on-surface-variant hover:text-on-surface ml-0.5 flex-shrink-0" onclick="dismissMobileDownloadBanner(event)">
+        <span class="material-symbols-outlined text-[16px]">close</span>
+      </button>
+    </div>
 
     <!-- =================================================================== -->
     <!-- 3️⃣ TAB CONTENT AREAS                                               -->
@@ -1264,6 +1284,19 @@
 
     <!-- Right: Utility Controls (Volume, Queue, Lyrics, Download) -->
     <div class="flex items-center justify-end gap-1 md:gap-space-sm w-1/4 min-w-[160px] md:min-w-[220px]">
+      <!-- Inline Download Progress Pill in Player Deck (Desktop / PC - Photo Ref) -->
+      <div id="player-inline-download-status" class="hidden items-center gap-2 px-2.5 py-1 rounded-full bg-surface-container-high/90 border border-primary/30 shadow-sm cursor-pointer hover:bg-surface-container-highest transition-all max-w-[170px] lg:max-w-[210px] flex-shrink-0" onclick="openDownloaderModal()" title="İndirme durumunu görüntüle">
+        <span class="material-symbols-outlined text-[16px] text-primary animate-spin" id="player-inline-dl-icon">progress_activity</span>
+        <div class="flex flex-col min-w-0 flex-1">
+          <div class="flex items-center justify-between gap-1 leading-none">
+            <span id="player-inline-dl-format" class="text-[10px] font-bold text-primary truncate">MP3 İndiriliyor</span>
+            <span id="player-inline-dl-percent" class="font-mono font-extrabold text-[9px] text-primary">0%</span>
+          </div>
+          <div class="w-full h-1 bg-surface-container-low rounded-full overflow-hidden mt-0.5">
+            <div id="player-inline-dl-bar" class="h-full bg-gradient-to-r from-primary to-cyan-400 rounded-full transition-all duration-300" style="width: 0%;"></div>
+          </div>
+        </div>
+      </div>
       <button type="button" aria-label="Şarkı Sözleri" class="w-8 h-8 rounded-full flex items-center justify-center text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors" onclick="switchTab('calma-listeleri')" title="Şarkı Sözleri">
         <span class="material-symbols-outlined text-[20px]" aria-hidden="true">lyrics</span>
       </button>
@@ -1394,6 +1427,18 @@
         <button type="button" aria-label="Panodan Yapıştır" class="absolute right-2.5 top-2.5 text-on-surface-variant hover:text-primary transition-colors" onclick="pasteModalUrl()" title="Panodan Yapıştır">
           <span class="material-symbols-outlined text-[20px]" aria-hidden="true">content_paste</span>
         </button>
+      </div>
+
+      <!-- Ongoing Download Alert & Queue Notification Box -->
+      <div id="modal-ongoing-download-box" class="hidden p-3 rounded-xl bg-primary/10 border border-primary/25 items-center justify-between gap-2.5">
+        <div class="flex items-center gap-2.5 min-w-0">
+          <span class="material-symbols-outlined text-primary text-[20px] animate-spin flex-shrink-0" id="modal-ongoing-dl-spinner">progress_activity</span>
+          <div class="flex flex-col min-w-0">
+            <span class="text-[11px] font-bold text-primary truncate" id="modal-ongoing-dl-title">Şarkı İndiriliyor...</span>
+            <span class="text-[10px] text-on-surface-variant truncate">Arka planda devam ediyor. İsterseniz bu şarkıyı da doğrudan indirebilirsiniz.</span>
+          </div>
+        </div>
+        <span class="text-[10px] font-black font-mono text-primary px-2 py-0.5 rounded-full bg-primary/20 flex-shrink-0" id="modal-ongoing-dl-percent">0%</span>
       </div>
 
       <!-- Active Track Preview -->
@@ -2161,6 +2206,6 @@
 
   <!-- Scripts -->
   <script src="https://www.youtube.com/iframe_api"></script>
-  <script src="./app.js?v=20261012_v2"></script>
+  <script src="./app.js?v=20261012_v3"></script>
 </body>
 </html>

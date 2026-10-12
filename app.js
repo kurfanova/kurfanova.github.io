@@ -4398,6 +4398,22 @@ function openDownloaderModal(track) {
     if (previewBox) previewBox.classList.add('hidden');
     if (DOM.modalUrlInput) DOM.modalUrlInput.focus();
   }
+
+  // Check if there is an active ongoing download in background
+  const ongoingBox = document.getElementById('modal-ongoing-download-box');
+  if (ongoingBox) {
+    if (state.activeDownload && state.activeDownload.status === 'active') {
+      ongoingBox.classList.remove('hidden');
+      ongoingBox.classList.add('flex');
+      const titleEl = document.getElementById('modal-ongoing-dl-title');
+      const pctEl = document.getElementById('modal-ongoing-dl-percent');
+      if (titleEl) titleEl.textContent = `${state.activeDownload.label || 'Indiriliyor'}: ${state.activeDownload.title || 'Sarki'}`;
+      if (pctEl) pctEl.textContent = `${state.activeDownload.percent || 0}%`;
+    } else {
+      ongoingBox.classList.add('hidden');
+      ongoingBox.classList.remove('flex');
+    }
+  }
 }
 
 function closeDownloaderModal() {
@@ -4464,9 +4480,133 @@ function updateDownloadPill(status, percent, title, label) {
   }
 }
 
+function updateAllDownloadIndicators(status, percent, title, label) {
+  state.activeDownload = {
+    status,
+    percent,
+    title,
+    label
+  };
+
+  // 1. Bottom-Right Floating Pill
+  updateDownloadPill(status, percent, title, label);
+
+  // 2. PC Player Deck Inline Widget (Photo Ref: in player bar right before utility buttons)
+  const inlineDeck = document.getElementById('player-inline-download-status');
+  if (inlineDeck) {
+    const inlineIcon = document.getElementById('player-inline-dl-icon');
+    const inlineFmt = document.getElementById('player-inline-dl-format');
+    const inlinePct = document.getElementById('player-inline-dl-percent');
+    const inlineBar = document.getElementById('player-inline-dl-bar');
+
+    if (status === 'hide') {
+      inlineDeck.classList.add('hidden');
+      inlineDeck.classList.remove('flex');
+    } else if (status === 'active') {
+      inlineDeck.classList.remove('hidden');
+      inlineDeck.classList.add('flex');
+      if (inlineIcon) {
+        inlineIcon.textContent = 'progress_activity';
+        inlineIcon.classList.add('animate-spin', 'text-primary');
+        inlineIcon.classList.remove('text-green-500');
+      }
+      if (inlineFmt) inlineFmt.textContent = label || 'Indiriliyor';
+      if (inlinePct) inlinePct.textContent = `${percent}%`;
+      if (inlineBar) inlineBar.style.width = `${percent}%`;
+    } else if (status === 'done') {
+      inlineDeck.classList.remove('hidden');
+      inlineDeck.classList.add('flex');
+      if (inlineIcon) {
+        inlineIcon.textContent = 'check_circle';
+        inlineIcon.classList.remove('animate-spin', 'text-primary');
+        inlineIcon.classList.add('text-green-500');
+      }
+      if (inlineFmt) inlineFmt.textContent = 'Indirildi';
+      if (inlinePct) inlinePct.textContent = '100%';
+      if (inlineBar) inlineBar.style.width = '100%';
+      setTimeout(() => {
+        inlineDeck.classList.add('hidden');
+        inlineDeck.classList.remove('flex');
+      }, 4000);
+    } else if (status === 'error') {
+      if (inlineFmt) inlineFmt.textContent = 'Hata';
+      setTimeout(() => {
+        inlineDeck.classList.add('hidden');
+        inlineDeck.classList.remove('flex');
+      }, 4000);
+    }
+  }
+
+  // 3. Mobile Top Floating Island Banner
+  const mobBanner = document.getElementById('mobile-download-banner');
+  if (mobBanner) {
+    const mobSpinner = document.getElementById('mob-dl-spinner');
+    const mobCheck = document.getElementById('mob-dl-check');
+    const mobTitle = document.getElementById('mob-dl-title');
+    const mobPct = document.getElementById('mob-dl-percent');
+    const mobBar = document.getElementById('mob-dl-bar');
+
+    if (status === 'hide') {
+      mobBanner.classList.add('hidden');
+      mobBanner.classList.remove('flex');
+    } else if (status === 'active') {
+      mobBanner.classList.remove('hidden');
+      mobBanner.classList.add('flex');
+      if (mobSpinner) { mobSpinner.classList.remove('hidden'); mobSpinner.classList.add('animate-spin'); }
+      if (mobCheck) mobCheck.classList.add('hidden');
+      if (mobTitle) mobTitle.textContent = `${label || 'Indiriliyor'}: ${title || 'Hazirlaniyor...'}`;
+      if (mobPct) mobPct.textContent = `${percent}%`;
+      if (mobBar) mobBar.style.width = `${percent}%`;
+    } else if (status === 'done') {
+      mobBanner.classList.remove('hidden');
+      mobBanner.classList.add('flex');
+      if (mobSpinner) mobSpinner.classList.add('hidden');
+      if (mobCheck) mobCheck.classList.remove('hidden');
+      if (mobTitle) mobTitle.textContent = `Indirildi: ${title || 'Tamamlandi'}`;
+      if (mobPct) mobPct.textContent = '100%';
+      if (mobBar) mobBar.style.width = '100%';
+      setTimeout(() => {
+        mobBanner.classList.add('hidden');
+        mobBanner.classList.remove('flex');
+      }, 4000);
+    } else if (status === 'error') {
+      if (mobTitle) mobTitle.textContent = 'Indirme hatasi olustu';
+      setTimeout(() => {
+        mobBanner.classList.add('hidden');
+        mobBanner.classList.remove('flex');
+      }, 4000);
+    }
+  }
+
+  // 4. Modal Ongoing Notice Box
+  const ongoingBox = document.getElementById('modal-ongoing-download-box');
+  if (ongoingBox) {
+    if (status === 'active') {
+      ongoingBox.classList.remove('hidden');
+      ongoingBox.classList.add('flex');
+      const titleEl = document.getElementById('modal-ongoing-dl-title');
+      const pctEl = document.getElementById('modal-ongoing-dl-percent');
+      if (titleEl) titleEl.textContent = `${label || 'Indiriliyor'}: ${title || 'Sarki'}`;
+      if (pctEl) pctEl.textContent = `${percent}%`;
+    } else {
+      ongoingBox.classList.add('hidden');
+      ongoingBox.classList.remove('flex');
+    }
+  }
+}
+
+function dismissMobileDownloadBanner(e) {
+  if (e) e.stopPropagation();
+  const banner = document.getElementById('mobile-download-banner');
+  if (banner) {
+    banner.classList.add('hidden');
+    banner.classList.remove('flex');
+  }
+}
+
 function dismissDownloadPill(e) {
   if (e) e.stopPropagation();
-  updateDownloadPill('hide');
+  updateAllDownloadIndicators('hide');
 }
 
 async function startDirectDownload(videoId, format, trackMeta) {
@@ -4491,7 +4631,7 @@ async function startDirectDownload(videoId, format, trackMeta) {
   if (btnMp3) btnMp3.disabled = true;
   if (btnMp4) btnMp4.disabled = true;
 
-  updateDownloadPill('active', 5, trackMeta?.title || videoId, `${label} Indiriliyor`);
+  updateAllDownloadIndicators('active', 5, trackMeta?.title || videoId, `${label} Indiriliyor`);
   showToast(`${label} hazirlaniyor: ${trackMeta?.title || videoId}`);
 
   const primaryApi = `https://p.savenow.to/api/v2/download?button=1&format=${formatCode}&url=https%3A%2F%2Fwww.youtube.com%2Fwatch%3Fv%3D${videoId}`;
@@ -4545,7 +4685,7 @@ async function startDirectDownload(videoId, format, trackMeta) {
         if (percentText) percentText.textContent = `${currentProg}%`;
         if (progressBar) progressBar.style.width = `${currentProg}%`;
         if (statusText) statusText.textContent = `${label} donusturuluyor (%${currentProg})...`;
-        updateDownloadPill('active', currentProg, trackMeta?.title || videoId, `${label} Indiriliyor`);
+        updateAllDownloadIndicators('active', currentProg, trackMeta?.title || videoId, `${label} Indiriliyor`);
 
         if (pData.success === 1 && pData.download_url) {
           downloadUrl = pData.download_url;
@@ -4587,7 +4727,7 @@ async function startDirectDownload(videoId, format, trackMeta) {
       }
     }
 
-    updateDownloadPill('done', 100, safeTitle, `${label} Indirildi`);
+    updateAllDownloadIndicators('done', 100, safeTitle, `${label} Indirildi`);
     showToast(`Indirme baslatildi: ${safeTitle} (${label})`);
     setTimeout(() => {
       closeDownloaderModal();
@@ -4595,7 +4735,7 @@ async function startDirectDownload(videoId, format, trackMeta) {
 
   } catch (err) {
     console.error("Download error:", err);
-    updateDownloadPill('error');
+    updateAllDownloadIndicators('error');
     if (statusText) statusText.textContent = "Alternatif indirme baglantisi deneniyor...";
     try {
       const invidiousStream = `https://invidious.f5.si/latest_version?id=${videoId}&itag=18`;
