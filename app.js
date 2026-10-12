@@ -4455,14 +4455,14 @@ function updateDownloadPill(status, percent, title, label) {
   pill.classList.add('flex');
 
   if (status === 'active') {
-    if (pillSpinner) { pillSpinner.classList.remove('hidden'); pillSpinner.classList.add('animate-spin'); }
-    if (pillCheck) pillCheck.classList.add('hidden');
+    if (pillSpinner) { pillSpinner.style.display = 'inline-block'; pillSpinner.classList.remove('hidden'); pillSpinner.classList.add('animate-spin'); }
+    if (pillCheck) { pillCheck.style.display = 'none'; pillCheck.classList.add('hidden'); }
     if (pillLabel) pillLabel.textContent = label || 'Indiriliyor';
     if (pillPercent) pillPercent.textContent = `${percent}%`;
     if (pillTitle) pillTitle.textContent = title || 'Arka planda hazirlaniyor...';
   } else if (status === 'done') {
-    if (pillSpinner) pillSpinner.classList.add('hidden');
-    if (pillCheck) pillCheck.classList.remove('hidden');
+    if (pillSpinner) { pillSpinner.style.display = 'none'; pillSpinner.classList.add('hidden'); }
+    if (pillCheck) { pillCheck.style.display = 'inline-block'; pillCheck.classList.remove('hidden'); }
     if (pillLabel) pillLabel.textContent = label || 'Indirildi';
     if (pillPercent) pillPercent.textContent = '100%';
     if (pillTitle) pillTitle.textContent = title || 'Tamamlandi';
@@ -4471,7 +4471,7 @@ function updateDownloadPill(status, percent, title, label) {
       pill.classList.remove('flex');
     }, 4000);
   } else if (status === 'error') {
-    if (pillSpinner) pillSpinner.classList.add('hidden');
+    if (pillSpinner) { pillSpinner.style.display = 'none'; pillSpinner.classList.add('hidden'); }
     if (pillLabel) pillLabel.textContent = 'Hata Olustu';
     setTimeout(() => {
       pill.classList.add('hidden');
@@ -4540,8 +4540,8 @@ function updateAllDownloadIndicators(status, percent, title, label) {
   // 3. Mobile Top Floating Island Banner
   const mobBanner = document.getElementById('mobile-download-banner');
   if (mobBanner) {
-    const mobSpinner = document.getElementById('mob-dl-spinner');
-    const mobCheck = document.getElementById('mob-dl-check');
+    const mobIconBox = document.getElementById('mob-dl-icon-box');
+    const mobIcon = document.getElementById('mob-dl-icon');
     const mobTitle = document.getElementById('mob-dl-title');
     const mobPct = document.getElementById('mob-dl-percent');
     const mobBar = document.getElementById('mob-dl-bar');
@@ -4552,25 +4552,58 @@ function updateAllDownloadIndicators(status, percent, title, label) {
     } else if (status === 'active') {
       mobBanner.classList.remove('hidden');
       mobBanner.classList.add('flex');
-      if (mobSpinner) { mobSpinner.classList.remove('hidden'); mobSpinner.classList.add('animate-spin'); }
-      if (mobCheck) mobCheck.classList.add('hidden');
-      if (mobTitle) mobTitle.textContent = `${label || 'Indiriliyor'}: ${title || 'Hazirlaniyor...'}`;
-      if (mobPct) mobPct.textContent = `${percent}%`;
-      if (mobBar) mobBar.style.width = `${percent}%`;
+      if (mobIconBox) {
+        mobIconBox.className = 'w-8 h-8 rounded-xl bg-primary/15 flex items-center justify-center flex-shrink-0 text-primary transition-all';
+      }
+      if (mobIcon) {
+        mobIcon.textContent = 'progress_activity';
+        mobIcon.className = 'material-symbols-outlined text-[18px] animate-spin text-primary';
+      }
+      if (mobTitle) mobTitle.textContent = title || 'Sarki Indiriliyor...';
+      if (mobPct) {
+        mobPct.textContent = `${percent}%`;
+        mobPct.className = 'text-[11px] font-bold font-mono text-primary flex-shrink-0';
+      }
+      if (mobBar) {
+        mobBar.style.width = `${percent}%`;
+        mobBar.className = 'h-full bg-gradient-to-r from-primary to-pink-500 rounded-full transition-all duration-300';
+      }
     } else if (status === 'done') {
       mobBanner.classList.remove('hidden');
       mobBanner.classList.add('flex');
-      if (mobSpinner) mobSpinner.classList.add('hidden');
-      if (mobCheck) mobCheck.classList.remove('hidden');
-      if (mobTitle) mobTitle.textContent = `Indirildi: ${title || 'Tamamlandi'}`;
-      if (mobPct) mobPct.textContent = '100%';
-      if (mobBar) mobBar.style.width = '100%';
+      if (mobIconBox) {
+        mobIconBox.className = 'w-8 h-8 rounded-xl bg-emerald-500/15 flex items-center justify-center flex-shrink-0 text-emerald-400 transition-all';
+      }
+      if (mobIcon) {
+        mobIcon.textContent = 'check_circle';
+        mobIcon.className = 'material-symbols-outlined text-[18px] text-emerald-400';
+      }
+      if (mobTitle) mobTitle.textContent = title ? `${title} (Indirildi)` : 'Indirme Tamamlandi';
+      if (mobPct) {
+        mobPct.textContent = '100%';
+        mobPct.className = 'text-[11px] font-bold font-mono text-emerald-400 flex-shrink-0';
+      }
+      if (mobBar) {
+        mobBar.style.width = '100%';
+        mobBar.className = 'h-full bg-emerald-500 rounded-full transition-all duration-300';
+      }
       setTimeout(() => {
         mobBanner.classList.add('hidden');
         mobBanner.classList.remove('flex');
       }, 4000);
     } else if (status === 'error') {
+      if (mobIconBox) {
+        mobIconBox.className = 'w-8 h-8 rounded-xl bg-rose-500/15 flex items-center justify-center flex-shrink-0 text-rose-400 transition-all';
+      }
+      if (mobIcon) {
+        mobIcon.textContent = 'error';
+        mobIcon.className = 'material-symbols-outlined text-[18px] text-rose-400';
+      }
       if (mobTitle) mobTitle.textContent = 'Indirme hatasi olustu';
+      if (mobPct) {
+        mobPct.textContent = '!';
+        mobPct.className = 'text-[11px] font-bold font-mono text-rose-400 flex-shrink-0';
+      }
       setTimeout(() => {
         mobBanner.classList.add('hidden');
         mobBanner.classList.remove('flex');
