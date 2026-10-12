@@ -20,16 +20,19 @@
 }
 
 html {
-  overflow-x: hidden;
+  width: 100%;
+  margin: 0;
+  padding: 0;
   scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
 }
 
 body {
-  overflow-x: hidden;
-  min-height: 100vh;
-  min-height: 100dvh;
+  width: 100%;
   margin: 0;
   padding: 0;
+  min-height: 100vh;
+  min-height: 100dvh;
   font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
   background-color: var(--kurfa-bg-light);
   color: #0f172a;
@@ -44,24 +47,26 @@ body {
   box-sizing: border-box;
 }
 
-/* Natural mobile touch scrolling for all list rows and containers */
+/* Universal fluid vertical touch scrolling for entire screen on smartphones */
+html,
+body,
+main,
+.view-tab,
+section,
 #home-tracklist-table,
 #playlist-tracks-table,
 #favorites-table,
-.view-tab,
-main,
-section {
-  touch-action: pan-y !important;
-  -webkit-overflow-scrolling: touch !important;
+#search-results-list {
+  touch-action: pan-y pinch-zoom;
+  -webkit-overflow-scrolling: touch;
 }
 
 #home-tracklist-table > div,
 #playlist-tracks-table > div,
 #favorites-table > div,
+#search-results-list > div,
 .track-row {
-  touch-action: pan-y !important;
-  -webkit-user-select: none;
-  user-select: none;
+  touch-action: pan-y pinch-zoom !important;
 }
 
 .overflow-x-auto {
@@ -876,10 +881,8 @@ body.tahta-mode h3 {
    Smooth 60 FPS transitions, balanced typography, comfortable tap targets
    ========================================================================== */
 @media (max-width: 640px) {
-  /* Prevent pull-to-refresh rubber-banding during scrolling */
   body {
     -webkit-overflow-scrolling: touch;
-    overscroll-behavior-y: contain;
   }
 
   /* Hardware layer promotion for mobile floating mini-player */
@@ -919,7 +922,7 @@ body.tahta-mode h3 {
   #search-results-list > div,
   #fav-tracklist-table > div,
   #playlist-tracks-table > div {
-    touch-action: manipulation;
+    touch-action: pan-y pinch-zoom !important;
     padding-top: 0.65rem;
     padding-bottom: 0.65rem;
   }

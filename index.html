@@ -105,8 +105,22 @@
   <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
 
   <!-- Precompiled Static Tailwind CSS & Stylesheets -->
-  <link rel="stylesheet" href="./tailwind.min.css?v=20261012_v1">
-  <link rel="stylesheet" href="./style.css?v=20261012_v1">
+  <style>
+    .sr-only, .seo-rich-content {
+      position: absolute !important;
+      width: 1px !important;
+      height: 1px !important;
+      padding: 0 !important;
+      margin: -1px !important;
+      overflow: hidden !important;
+      clip: rect(0, 0, 0, 0) !important;
+      white-space: nowrap !important;
+      border: 0 !important;
+      pointer-events: none !important;
+    }
+  </style>
+  <link rel="stylesheet" href="./tailwind.min.css?v=20261012_v2">
+  <link rel="stylesheet" href="./style.css?v=20261012_v2">
 </head>
 <body class="bg-background font-sans text-on-surface antialiased min-h-screen">
   <script>
@@ -119,7 +133,7 @@
   <!-- ===================================================================== -->
   <!-- GOOGLEBOT SEMANTIC RICH CONTENT (SERP & CRAWLER ACCESSIBILITY)       -->
   <!-- ===================================================================== -->
-  <section class="seo-rich-content sr-only" aria-label="Kurfanova Müzik Hakkında Bilgiler">
+  <section class="seo-rich-content sr-only" aria-label="Kurfanova Müzik Hakkında Bilgiler" style="position: absolute !important; width: 1px !important; height: 1px !important; padding: 0 !important; margin: -1px !important; overflow: hidden !important; clip: rect(0, 0, 0, 0) !important; white-space: nowrap !important; border: 0 !important; pointer-events: none !important;">
     <h1>Kurfanova — Hızlı, Reklamsız Müzik ve Medya Oynatıcı</h1>
     <p>Kurfanova (Kurfamüzik), YouTube üzerindeki milyonlarca şarkı ve video içeriğini yüksek kaliteli ses akışıyla reklamsız, kesintisiz ve hızlı bir şekilde sunan modern bir medya çalar platformudur.</p>
     <p>Ozan Sarsılmaz (KURFA) tarafından geliştirilen Kurfanova; çevrimdışı MP3 ve MP4 indirme, Spotify çalma listesi aktarımı, arka planda dinleme, dinamik senkronize şarkı sözleri (karaoke modu) ve 10-bant gelişmiş ekolayzır özelliklerine sahiptir.</p>
@@ -2147,6 +2161,6 @@
 
   <!-- Scripts -->
   <script src="https://www.youtube.com/iframe_api"></script>
-  <script src="./app.js?v=20261011_v1"></script>
+  <script src="./app.js?v=20261012_v2"></script>
 </body>
 </html>

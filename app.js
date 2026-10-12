@@ -3915,6 +3915,7 @@ function initDragToScroll(el) {
   let activePointerId = null;
 
   el.addEventListener('pointerdown', (e) => {
+    if (e.pointerType === 'touch' || e.pointerType === 'pen') return;
     if (e.isPrimary === false || (e.button !== undefined && e.button !== 0)) return;
     isPointerDown = true;
     hasDragged = false;
