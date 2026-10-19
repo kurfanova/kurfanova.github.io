@@ -148,9 +148,38 @@ function getEventClientX(e) {
   return typeof e.clientX === 'number' ? e.clientX : 0;
 }
 
+function cleanDeduplicateQueueArray(arr) {
+  if (!Array.isArray(arr) || arr.length === 0) return [];
+  const seenIds = new Set();
+  const seenTitles = new Set();
+  const result = [];
+  for (const item of arr) {
+    if (!item) continue;
+    const id = item.id || item.ytId;
+    const title = (item.title || '').trim().toLowerCase();
+    const artist = (item.artist || '').trim().toLowerCase();
+    const metaKey = (title && artist) ? `${title}|${artist}` : null;
+
+    let isDup = false;
+    if (id && seenIds.has(id)) isDup = true;
+    if (metaKey && seenTitles.has(metaKey)) isDup = true;
+
+    if (!isDup) {
+      if (id) seenIds.add(id);
+      if (metaKey) seenTitles.add(metaKey);
+      result.push(item);
+    }
+  }
+  return result;
+}
+
 function saveQueueState() {
   try {
-    localStorage.setItem('kurfa_queue', JSON.stringify(state.queue || []));
+    state.queue = cleanDeduplicateQueueArray(state.queue || []);
+    if (state.queueIndex >= state.queue.length) {
+      state.queueIndex = Math.max(0, state.queue.length - 1);
+    }
+    localStorage.setItem('kurfa_queue', JSON.stringify(state.queue));
   } catch(e) {}
 }
 
@@ -162,7 +191,7 @@ const state = {
   _switchingDeckMode: false,
   _switchingDeckTimer: null,
   _guardianResumeTimer: null,
-  queue: safeGetJSON('kurfa_queue', []),
+  queue: cleanDeduplicateQueueArray(safeGetJSON('kurfa_queue', [])),
   originalQueue: [],
   queueIndex: 0,
   volume: safeGetFloat('kurfa_vol', 0.8),
@@ -724,25 +753,26 @@ function onPlayerStateChange(event) {
 }
 
 function onPlayerError(err) {
-  console.warn("YouTube IFrame playback error:", err);
   clearTimeout(state._guardianResumeTimer);
   state._playerInError = true;
 
   const playId = state.currentTrack?.ytId || state.currentTrack?.id;
+  if (state._lastErrorVideoId === playId) {
+    return;
+  }
   state._lastErrorVideoId = playId;
+  console.warn("YouTube IFrame playback error:", err);
+
+  if (state.ytPlayer && typeof state.ytPlayer.stopVideo === 'function') {
+    try { state.ytPlayer.stopVideo(); } catch(e) {}
+  }
 
   // Errors 101/150/100/2 mean embedding is forbidden by owner or unavailable
   if (err && (err.data === 150 || err.data === 101 || err.data === 100 || err.data === 2)) {
-    if (playId && /^[\w-]{11}$/.test(playId)) {
-      if (state._attemptedFallbackForVideo === playId) {
-        return;
-      }
-      state._attemptedFallbackForVideo = playId;
-      fallbackStreamPlayback(playId, currentPlaybackToken, 0, true);
-    } else {
-      showToast("Bu sarki telif nedeniyle yerlestirme kisitlidir, siradakine geciliyor");
-      setTimeout(playNextTrack, 800);
-    }
+    showToast("Bu sarki telif nedeniyle yerlestirmeye kapali, siradakine geciliyor");
+    setTimeout(() => {
+      playNextTrack();
+    }, 700);
   }
 }
 
@@ -1172,21 +1202,35 @@ function playTrackById(videoId, arg2, arg3, arg4, arg5) {
     }));
   } catch(e) {}
   
-  if (state.queue[state.queueIndex] && state.queue[state.queueIndex].id === videoId) {
-    // Current pointer already aligns with target videoId
+  const targetId = (target?.id || videoId);
+  const targetYtId = target?.ytId || (/^[\w-]{11}$/.test(videoId) ? videoId : null);
+  const targetTitle = (target?.title || '').trim().toLowerCase();
+  const targetArtist = (target?.artist || '').trim().toLowerCase();
+
+  const existingIdx = state.queue.findIndex(t => {
+    if (!t) return false;
+    if (videoId && (t.id === videoId || t.ytId === videoId)) return true;
+    if (targetId && (t.id === targetId || t.ytId === targetId)) return true;
+    if (targetYtId && (t.id === targetYtId || t.ytId === targetYtId)) return true;
+    if (targetTitle && targetArtist && t.title && t.artist) {
+      return t.title.trim().toLowerCase() === targetTitle && t.artist.trim().toLowerCase() === targetArtist;
+    }
+    return false;
+  });
+
+  if (existingIdx !== -1) {
+    state.queueIndex = existingIdx;
+    if (target && state.queue[existingIdx]) {
+      state.queue[existingIdx] = { ...state.queue[existingIdx], ...target };
+    }
   } else {
-    const existingIdx = state.queue.findIndex(t => t.id === videoId);
-    if (existingIdx !== -1) {
-      state.queueIndex = existingIdx;
+    if (state.queue.length === 0) {
+      state.queue = [target];
+      state.queueIndex = 0;
     } else {
-      if (state.queue.length === 0) {
-        state.queue = [target];
-        state.queueIndex = 0;
-      } else {
-        const insertAt = Math.min(state.queue.length, state.queueIndex + 1);
-        state.queue.splice(insertAt, 0, target);
-        state.queueIndex = insertAt;
-      }
+      const insertAt = Math.min(state.queue.length, state.queueIndex + 1);
+      state.queue.splice(insertAt, 0, target);
+      state.queueIndex = insertAt;
     }
   }
   saveQueueState();
@@ -1250,6 +1294,24 @@ function addToQueueTrack(videoIdOrTrack, title, artist, thumb, dur) {
       thumbnail: thumb || `https://i.ytimg.com/vi/${videoIdOrTrack}/hqdefault.jpg`,
       duration: dur || "3:30"
     };
+  }
+
+  const trackId = track.id || track.ytId;
+  const cleanTitle = (track.title || '').trim().toLowerCase();
+  const cleanArtist = (track.artist || '').trim().toLowerCase();
+
+  const isDuplicate = state.queue.some(t => {
+    if (!t) return false;
+    if (trackId && (t.id === trackId || t.ytId === trackId)) return true;
+    if (cleanTitle && cleanArtist && t.title && t.artist) {
+      return t.title.trim().toLowerCase() === cleanTitle && t.artist.trim().toLowerCase() === cleanArtist;
+    }
+    return false;
+  });
+
+  if (isDuplicate) {
+    showToast(`Bu parça zaten çalma sırasında: ${track.title}`);
+    return;
   }
 
   state.queue.push(track);
@@ -3752,6 +3814,10 @@ function moveQueueTrackToPosition(fromIndex, toIndex) {
 
 function renderQueueDrawerList() {
   if (!DOM.queueDrawerList) return;
+  state.queue = cleanDeduplicateQueueArray(state.queue || []);
+  if (state.queueIndex >= state.queue.length) {
+    state.queueIndex = Math.max(0, state.queue.length - 1);
+  }
   DOM.queueDrawerList.innerHTML = '';
 
   const queueCount = state.queue.length;
@@ -6359,6 +6425,22 @@ async function triggerSmartRadioContinue() {
     return;
   }
 
+  // If queue already has 15 or more songs, do not endlessly inflate it
+  if (state.queue && state.queue.length >= 15) {
+    if (state.repeatMode === 1) {
+      state.queueIndex = 0;
+      const firstTrack = state.queue[0];
+      if (firstTrack) {
+        playTrackById(firstTrack.id, firstTrack);
+      }
+    } else {
+      state.isPlaying = false;
+      updatePlayPauseUI(false);
+      showToast("Calma listesinin sonuna gelindi");
+    }
+    return;
+  }
+
   isFetchingSmartRadio = true;
 
   // Clean artist and title for accurate search
@@ -6378,8 +6460,21 @@ async function triggerSmartRadioContinue() {
   }
 
   try {
-    const existingIds = new Set((state.queue || []).map(t => t.id));
-    if (state.currentTrack.id) existingIds.add(state.currentTrack.id);
+    const existingIds = new Set();
+    const existingTitles = new Set();
+    (state.queue || []).forEach(t => {
+      if (!t) return;
+      if (t.id) existingIds.add(t.id);
+      if (t.ytId) existingIds.add(t.ytId);
+      if (t.title && t.artist) existingTitles.add(`${t.title.trim().toLowerCase()}|${t.artist.trim().toLowerCase()}`);
+    });
+    if (state.currentTrack) {
+      if (state.currentTrack.id) existingIds.add(state.currentTrack.id);
+      if (state.currentTrack.ytId) existingIds.add(state.currentTrack.ytId);
+      if (state.currentTrack.title && state.currentTrack.artist) {
+        existingTitles.add(`${state.currentTrack.title.trim().toLowerCase()}|${state.currentTrack.artist.trim().toLowerCase()}`);
+      }
+    }
 
     const queries = [
       `${cleanArtist} radyo hit şarkılar`,
@@ -6394,7 +6489,14 @@ async function triggerSmartRadioContinue() {
         const res = await fetch(`${API_BASE}/api/search?q=${encodeURIComponent(q)}`);
         const data = await res.json();
         if (data.success && Array.isArray(data.results)) {
-          const fresh = data.results.filter(t => t && t.id && !existingIds.has(t.id));
+          const fresh = data.results.filter(t => {
+            if (!t || !t.id) return false;
+            if (existingIds.has(t.id)) return false;
+            if (t.ytId && existingIds.has(t.ytId)) return false;
+            const titleKey = `${(t.title || '').trim().toLowerCase()}|${(t.artist || '').trim().toLowerCase()}`;
+            if (existingTitles.has(titleKey)) return false;
+            return true;
+          });
           if (fresh.length > 0) {
             foundTracks = fresh;
             break;
@@ -6408,8 +6510,8 @@ async function triggerSmartRadioContinue() {
     if (foundTracks.length > 0) {
       const toAdd = foundTracks.slice(0, 5);
       const nextIndex = state.queue.length;
-      state.queue = [...state.queue, ...toAdd];
-      state.queueIndex = nextIndex;
+      state.queue = cleanDeduplicateQueueArray([...state.queue, ...toAdd]);
+      state.queueIndex = Math.min(nextIndex, state.queue.length - 1);
       state.playingContextSub = 'AKILLI RADYO DEVAMI';
       state.playingContextTitle = `${cleanArtist} Radyosu`;
 
@@ -6417,8 +6519,10 @@ async function triggerSmartRadioContinue() {
       renderQueueDrawerList();
 
       const nextTrack = state.queue[state.queueIndex];
-      playTrackById(nextTrack.id, nextTrack);
-      showToast(`Akıllı Radyo: ${nextTrack.title}`);
+      if (nextTrack) {
+        playTrackById(nextTrack.id, nextTrack);
+        showToast(`Akilli Radyo: ${nextTrack.title}`);
+      }
       isFetchingSmartRadio = false;
       return;
     }
@@ -7803,6 +7907,9 @@ function setupEventListeners() {
     });
     DOM.audioEngine.addEventListener('error', (e) => {
       console.warn("DOM.audioEngine media error:", e);
+      if (state._playerInError || state._lastErrorVideoId) {
+        return;
+      }
       // Only recover to YouTube if audio engine was the active source and failed, and not in transition
       const playId = (state.currentTrack?.ytId && /^[\w-]{11}$/.test(state.currentTrack.ytId)) ? state.currentTrack.ytId : state.currentTrack?.id;
       if (!state._switchingDeckMode && playId && /^[\w-]{11}$/.test(playId) && DOM.audioEngine.src && state.isPlaying && state.ytReady && state.ytPlayer && typeof state.ytPlayer.loadVideoById === 'function') {
