@@ -696,17 +696,24 @@ function onPlayerStateChange(event) {
       return;
     }
 
+    // Do NOT auto-recover if player is in an error state (e.g. Error 150/101 embed restriction)
+    if (state._playerInError || state._lastErrorVideoId) {
+      state.isPlaying = false;
+      updatePlayPauseUI(false);
+      return;
+    }
+
     // Kurfa Player Guardian:
     // If pause was involuntary and HTML5 audio isn't active, auto-recover playback
     if (!state.userPaused && state.currentTrack && (!DOM.audioEngine || DOM.audioEngine.paused)) {
       clearTimeout(state._guardianResumeTimer);
       state._guardianResumeTimer = setTimeout(() => {
-        if (!state.userPaused && !state._switchingDeckMode && state.ytPlayer && typeof state.ytPlayer.playVideo === 'function') {
+        if (!state.userPaused && !state._playerInError && !state._switchingDeckMode && state.ytPlayer && typeof state.ytPlayer.playVideo === 'function') {
           try {
             state.ytPlayer.playVideo();
           } catch(e) {}
         }
-      }, 50);
+      }, 100);
       return;
     }
     state.isPlaying = false;
@@ -718,18 +725,28 @@ function onPlayerStateChange(event) {
 
 function onPlayerError(err) {
   console.warn("YouTube IFrame playback error:", err);
-  // Errors 101/150/100 mean embedding is forbidden by owner
+  clearTimeout(state._guardianResumeTimer);
+  state._playerInError = true;
+
+  const playId = state.currentTrack?.ytId || state.currentTrack?.id;
+  state._lastErrorVideoId = playId;
+
+  // Errors 101/150/100/2 mean embedding is forbidden by owner or unavailable
   if (err && (err.data === 150 || err.data === 101 || err.data === 100 || err.data === 2)) {
-    const playId = state.currentTrack?.ytId || state.currentTrack?.id;
     if (playId && /^[\w-]{11}$/.test(playId)) {
-      fallbackStreamPlayback(playId, currentPlaybackToken);
+      if (state._attemptedFallbackForVideo === playId) {
+        return;
+      }
+      state._attemptedFallbackForVideo = playId;
+      fallbackStreamPlayback(playId, currentPlaybackToken, 0, true);
     } else {
+      showToast("Bu sarki telif nedeniyle yerlestirme kisitlidir, siradakine geciliyor");
       setTimeout(playNextTrack, 800);
     }
   }
 }
 
-async function fallbackStreamPlayback(videoId, token, startTime) {
+async function fallbackStreamPlayback(videoId, token, startTime, isFromYtError = false) {
   if (token && token !== currentPlaybackToken) return;
   if (!videoId || !/^[\w-]{11}$/.test(videoId)) {
     console.warn("Invalid videoId passed to fallbackStreamPlayback:", videoId);
@@ -737,7 +754,17 @@ async function fallbackStreamPlayback(videoId, token, startTime) {
   }
 
   try {
-    const res = await fetch(`${API_BASE}/api/stream?id=${videoId}`);
+    let controller = null;
+    let signal = undefined;
+    if (typeof AbortController !== 'undefined') {
+      controller = new AbortController();
+      signal = controller.signal;
+      setTimeout(() => {
+        try { controller.abort(); } catch(e) {}
+      }, 3000);
+    }
+
+    const res = await fetch(`${API_BASE}/api/stream?id=${videoId}`, { signal });
     const data = await res.json();
     
     // Check if user changed songs while waiting
@@ -790,12 +817,15 @@ async function fallbackStreamPlayback(videoId, token, startTime) {
           // Play was intentionally aborted by user pause or track change
           return;
         }
-        console.warn("Audio element play error, falling back to YouTube:", e);
-        if (state.ytReady && state.ytPlayer && typeof state.ytPlayer.loadVideoById === 'function') {
+        console.warn("Audio element play error:", e);
+        if (!isFromYtError && state.ytReady && state.ytPlayer && typeof state.ytPlayer.loadVideoById === 'function') {
           state.ytPlayer.loadVideoById(videoId, targetStartTime || 0);
           state.ytPlayer.playVideo();
           state.isPlaying = true;
           updatePlayPauseUI(true);
+        } else {
+          showToast("Bu parca telif kisitlamasi nedeniyle oynatilamiyor, siradakine geciliyor");
+          setTimeout(playNextTrack, 800);
         }
       });
 
@@ -804,10 +834,18 @@ async function fallbackStreamPlayback(videoId, token, startTime) {
       return;
     }
   } catch (e) {
-    console.error("Stream fallback error:", e);
+    console.warn("Stream fallback error / timeout:", e.message || e);
   }
 
-  // If stream resolver failed or URL unsupported, fall back to YouTube Player
+  // If stream resolver failed or timed out:
+  // If we arrived here due to a YouTube Player embed error (e.g. 150), DO NOT loop back to YouTube Player!
+  if (isFromYtError) {
+    showToast("Bu sarki telif kisitlamasi nedeniyle oynatilamiyor, siradakine geciliyor");
+    setTimeout(playNextTrack, 800);
+    return;
+  }
+
+  // Otherwise, fall back to YouTube Player
   if (state.ytReady && state.ytPlayer && typeof state.ytPlayer.loadVideoById === 'function') {
     state.ytPlayer.loadVideoById(videoId, startTime || 0);
     state.ytPlayer.playVideo();
@@ -1161,15 +1199,20 @@ function playTrackById(videoId, arg2, arg3, arg4, arg5) {
   renderFavoritesTable();
   renderDownloadsTable();
 
-  // Primary playback engine:
-  // If user explicitly selected Video Klip Mode, play directly via YouTube player with synchronous video visual!
-  if (state.deckVisualMode === 'video' && state.ytReady && state.ytPlayer && typeof state.ytPlayer.loadVideoById === 'function') {
-    if (DOM.audioEngine) {
-      try {
-        DOM.audioEngine.pause();
-        DOM.audioEngine.removeAttribute('src');
-      } catch(e) {}
-    }
+  // Reset error tracking flags for fresh track start
+  state._playerInError = false;
+  state._lastErrorVideoId = null;
+  state._attemptedFallbackForVideo = null;
+
+  // Primary playback engine: Instant start (<300ms) for both Vinyl and Video modes
+  if (DOM.audioEngine) {
+    try {
+      DOM.audioEngine.pause();
+      DOM.audioEngine.removeAttribute('src');
+    } catch(e) {}
+  }
+
+  if (state.ytReady && state.ytPlayer && typeof state.ytPlayer.loadVideoById === 'function') {
     try {
       state.ytPlayer.loadVideoById({
         videoId: videoId,
@@ -1182,8 +1225,8 @@ function playTrackById(videoId, arg2, arg3, arg4, arg5) {
       console.warn("YouTube player loadVideoById error:", err);
     }
   } else {
-    // DEFAULT AUDIO ENGINE: 100% Ad-Free Raw Audio Stream via Invidious/Piped /api/stream
-    fallbackStreamPlayback(videoId, token, startTime);
+    state.pendingTrackToPlay = target;
+    initYouTubeEngine();
   }
 
   showToast(`Çalınıyor: ${target.title} - ${target.artist}`);
@@ -1228,33 +1271,16 @@ function resumePlayback() {
   clearTimeout(state._guardianResumeTimer);
   const curTime = state.currentPlayheadTime || 0;
 
-  // 1. If Video mode, resume via YouTube player
-  if (state.deckVisualMode === 'video' && state.ytReady && state.ytPlayer && typeof state.ytPlayer.playVideo === 'function' && state.currentTrack) {
-    try {
-      state.ytPlayer.playVideo();
-      state.isPlaying = true;
-      updatePlayPauseUI(true);
-      if (typeof startSeekbarTicker === 'function') startSeekbarTicker();
-      return;
-    } catch(e) {
-      if (state.currentTrack && state.currentTrack.id) {
-        playTrackById(state.currentTrack.id, state.currentTrack, curTime);
-        return;
-      }
-    }
-  }
-
-  // 2. If HTML5 Audio engine has a loaded source, resume it
-  if (DOM.audioEngine && DOM.audioEngine.src && state.currentTrack) {
+  // 1. If HTML5 Audio engine has a loaded source, resume it
+  if (DOM.audioEngine && DOM.audioEngine.src && !DOM.audioEngine.ended && state.currentTrack) {
     DOM.audioEngine.play().then(() => {
       state.isPlaying = true;
       updatePlayPauseUI(true);
       if (typeof startSeekbarTicker === 'function') startSeekbarTicker();
     }).catch(e => {
       if (e.name === 'AbortError') return;
-      console.warn("DOM.audioEngine resume error, recovering playback:", e);
-      if (state.currentTrack && state.currentTrack.id) {
-        playTrackById(state.currentTrack.id, state.currentTrack, curTime);
+      if (state.ytReady && state.ytPlayer && typeof state.ytPlayer.playVideo === 'function') {
+        state.ytPlayer.playVideo();
       }
     });
     state.isPlaying = true;
@@ -1263,7 +1289,7 @@ function resumePlayback() {
     return;
   }
 
-  // 3. If YouTube player is ready and was playing in background
+  // 2. YouTube player (primary engine for both Video and Vinyl modes)
   if (state.ytReady && state.ytPlayer && typeof state.ytPlayer.playVideo === 'function' && state.currentTrack) {
     try {
       state.ytPlayer.playVideo();
@@ -1274,7 +1300,7 @@ function resumePlayback() {
     } catch(e) {}
   }
 
-  // 4. Fallback: reload current track preserving currentPlayheadTime
+  // 3. Fallback: reload current track preserving currentPlayheadTime
   if (state.currentTrack && state.currentTrack.id) {
     playTrackById(state.currentTrack.id, state.currentTrack, curTime);
   } else {
