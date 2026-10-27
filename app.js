@@ -205,7 +205,7 @@ const state = {
   downloads: safeGetJSON('kurfa_downloads', []),
   downloadQueue: [],
   isDownloading: false,
-  deckVisualMode: localStorage.getItem('kurfa_deck_mode') || 'vinyl',
+  deckVisualMode: 'vinyl',
   isTahtaMode: localStorage.getItem('kurfa_tahta_mode') === 'true',
   activeEqPreset: localStorage.getItem('kurfa_eq_preset') || 'standart',
   lyricsOffset: 0,
@@ -1242,6 +1242,7 @@ function playTrackById(videoId, arg2, arg3, arg4, arg5) {
   renderPlaylistTracksTable();
   renderFavoritesTable();
   renderDownloadsTable();
+  syncPersistentPlayerPosition();
 
   // Reset error tracking flags for fresh track start
   state._playerInError = false;
@@ -5534,19 +5535,41 @@ function handleUrlParameters() {
 // 13.6 SPOTIFY-STYLE MOBILE FULLSCREEN NOW PLAYING CONTROLS (PHOTO 2)
 // =============================================================================
 
-let mobileCanvasMode = localStorage.getItem('kurfa_canvas_mode') !== 'false';
+let mobileCanvasMode = false;
 
 function toggleMobileCanvasMode() {
   mobileCanvasMode = !mobileCanvasMode;
   try { localStorage.setItem('kurfa_canvas_mode', mobileCanvasMode ? 'true' : 'false'); } catch(e) {}
   updateMobileCanvasUI();
-  showToast(mobileCanvasMode ? "Canvas Video Modu: Açık" : "Kapak Resmi Modu: Açık");
+  showToast(mobileCanvasMode ? "Canlı Video Klip Modu Açıldı" : "Plak / Kapak Modu Aktif (Reklamsız)");
 }
 
 function updateMobileCanvasUI() {
+  const modal = document.getElementById('mobile-now-playing-modal');
+  const bgArt = document.getElementById('mnp-bg-art');
   const coverContainer = document.getElementById('mnp-cover-container');
   const canvasBtn = document.getElementById('mnp-btn-canvas');
   const canvasLabel = document.getElementById('mnp-canvas-label');
+
+  if (modal) {
+    if (mobileCanvasMode) {
+      modal.classList.remove('bg-[#0c0e17]');
+      modal.classList.add('bg-black/40');
+    } else {
+      modal.classList.add('bg-[#0c0e17]');
+      modal.classList.remove('bg-black/40');
+    }
+  }
+
+  if (bgArt) {
+    if (mobileCanvasMode) {
+      bgArt.classList.add('opacity-0');
+      bgArt.classList.remove('opacity-30');
+    } else {
+      bgArt.classList.remove('opacity-0');
+      bgArt.classList.add('opacity-30');
+    }
+  }
 
   if (coverContainer) {
     if (mobileCanvasMode) {
@@ -5558,9 +5581,10 @@ function updateMobileCanvasUI() {
 
   if (canvasBtn) {
     canvasBtn.classList.toggle('text-primary', mobileCanvasMode);
+    canvasBtn.classList.toggle('text-white/60', !mobileCanvasMode);
   }
   if (canvasLabel) {
-    canvasLabel.textContent = mobileCanvasMode ? "Canvas Video" : "Kapak Modu";
+    canvasLabel.textContent = mobileCanvasMode ? "Klip Açık" : "Klip Modu";
   }
 
   syncPersistentPlayerPosition();
@@ -6945,7 +6969,7 @@ function syncPersistentPlayerPosition() {
   if (!pDeck) return;
 
   // 1. Mobile Fullscreen Now Playing Spotify Canvas Video Mode
-  if (state.mobileNowPlayingOpen) {
+  if (state.mobileNowPlayingOpen && mobileCanvasMode) {
     const modal = document.getElementById('mobile-now-playing-modal');
     if (modal && !modal.classList.contains('pointer-events-none')) {
       pDeck.style.position = 'fixed';
@@ -7969,7 +7993,7 @@ function initApp() {
   setPlayerVolume(state.volume);
   updateLyricsDisplay();
   setEqualizerPreset(state.activeEqPreset || 'standart', true);
-  setDeckVisualMode(state.deckVisualMode || 'vinyl', true);
+  setDeckVisualMode('vinyl', true);
   initMobileNowPlayingSeekbar();
   initFirebaseSync();
 
