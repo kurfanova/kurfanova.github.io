@@ -210,6 +210,7 @@ const state = {
   activeEqPreset: localStorage.getItem('kurfa_eq_preset') || 'standart',
   lyricsOffset: 0,
   mobileNowPlayingOpen: false,
+  _isAdMuted: false,
   currentAudioSinkId: localStorage.getItem('kurfa_audio_sink') || null,
   profile: (function() {
     const saved = safeGetJSON('kurfa_profile', null);
@@ -660,7 +661,9 @@ function initYouTubeEngine() {
         modestbranding: 1,
         playsinline: 1,
         rel: 0,
-        origin: window.location.origin
+        iv_load_policy: 3,
+        origin: window.location.origin,
+        widget_referrer: window.location.href
       },
       events: {
         onReady: onPlayerReady,
@@ -691,6 +694,95 @@ function onPlayerReady(event) {
   }
 }
 
+
+// =============================================================================
+// 15. AD SENTINEL ENGINE (Zero-Ad Audio & Video Playback Guardian)
+// =============================================================================
+
+let lastAdCheckTime = 0;
+
+function checkAndHandleAdPlayback() {
+  if (!state.ytPlayer || !state.isPlaying || !state.ytReady) return;
+  if (!state.currentTrack) return;
+
+  try {
+    const p = state.ytPlayer;
+    let isAd = false;
+    let adDuration = 0;
+
+    // Check 1: Official getAdState method
+    if (typeof p.getAdState === 'function') {
+      const adSt = p.getAdState();
+      if (adSt === 1 || adSt === true) {
+        isAd = true;
+      }
+    }
+
+    // Check 2: Video metadata check
+    if (!isAd && typeof p.getVideoData === 'function') {
+      const vData = p.getVideoData();
+      if (vData) {
+        const expectedId = state.currentTrack.ytId || state.currentTrack.id;
+        if (vData.video_id && expectedId && /^[\w-]{11}$/.test(expectedId)) {
+          if (vData.video_id !== expectedId) {
+            isAd = true;
+          }
+        }
+      }
+    }
+
+    // Check 3: Duration discrepancy check (e.g. 5s to 35s commercial ad)
+    const curDur = (typeof p.getDuration === 'function') ? (p.getDuration() || 0) : 0;
+    if (!isAd && curDur > 0 && curDur <= 35) {
+      const expectedParts = (state.currentTrack.duration || '').split(':').map(x => parseInt(x, 10));
+      if (expectedParts.length === 2 && !isNaN(expectedParts[0]) && !isNaN(expectedParts[1])) {
+        const expDur = expectedParts[0] * 60 + expectedParts[1];
+        if (expDur > 45 && Math.abs(curDur - expDur) > 15) {
+          isAd = true;
+          adDuration = curDur;
+        }
+      }
+    }
+
+    if (isAd) {
+      // Commercial Ad Detected: Silence completely so user never hears ads!
+      if (!state._isAdMuted) {
+        state._isAdMuted = true;
+        if (typeof p.mute === 'function') {
+          p.mute();
+        }
+        showToast("Reklam sessize alındı ve atlanıyor...");
+      }
+
+      // Accelerate playback speed of the ad
+      if (typeof p.setPlaybackRate === 'function') {
+        try { p.setPlaybackRate(2); } catch(e) {}
+      }
+
+      // Fast-forward ad to the end if seekable
+      if (adDuration > 0 && typeof p.seekTo === 'function') {
+        try {
+          const curTime = p.getCurrentTime() || 0;
+          if (curTime < adDuration - 0.5) {
+            p.seekTo(adDuration, true);
+          }
+        } catch(e) {}
+      }
+    } else if (state._isAdMuted) {
+      // Ad Ended: Restore user's pristine sound and normal speed
+      state._isAdMuted = false;
+      if (typeof p.setPlaybackRate === 'function') {
+        try { p.setPlaybackRate(1); } catch(e) {}
+      }
+      if (typeof p.unMute === 'function') {
+        try { p.unMute(); } catch(e) {}
+      }
+      setPlayerVolume(state.volume);
+    }
+  } catch(e) {}
+}
+window.checkAndHandleAdPlayback = checkAndHandleAdPlayback;
+
 function onPlayerStateChange(event) {
   if (event.data === YT.PlayerState.PLAYING) {
     // If HTML5 audio engine is already playing an active stream, keep it and silence YouTube
@@ -716,6 +808,9 @@ function onPlayerStateChange(event) {
     state.userPaused = false;
     updatePlayPauseUI(true);
     startSeekbarTicker();
+    checkAndHandleAdPlayback();
+  } else if (event.data === 3) {
+    checkAndHandleAdPlayback();
   } else if (event.data === YT.PlayerState.PAUSED) {
     // If currently switching deck mode, ignore pause event
     if (state._switchingDeckMode) return;
@@ -1261,7 +1356,7 @@ function playTrackById(videoId, arg2, arg3, arg4, arg5) {
     try {
       state.ytPlayer.loadVideoById({
         videoId: videoId,
-        startSeconds: startTime || 0
+        startSeconds: (typeof startTime === "number" && startTime > 0) ? startTime : 0.01
       });
       state.ytPlayer.playVideo();
       state.isPlaying = true;
@@ -1785,6 +1880,10 @@ function startSeekbarTicker() {
       const throttleInterval = state.isTahtaMode ? 250 : 80; // 80ms is silky smooth for seekbars and saves 80% CPU
       if (now - lastSeekbarTickTime >= throttleInterval) {
         lastSeekbarTickTime = now;
+        if (now - lastAdCheckTime >= 280) {
+          lastAdCheckTime = now;
+          checkAndHandleAdPlayback();
+        }
         const cur = getActiveMediaCurrentTime();
         const dur = getActiveMediaDuration();
 
