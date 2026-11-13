@@ -2,19 +2,38 @@
 <html lang="tr">
   <head>
     <meta charset="utf-8">
+    <meta name="robots" content="noindex, nofollow">
     <title>Kurfanova</title>
     <script type="text/javascript">
-      var pathSegmentsToKeep = 0;
-      var l = window.location;
-      l.replace(
-        l.protocol + '//' + l.hostname + (l.port ? ':' + l.port : '') +
-        l.pathname.split('/').slice(0, 1 + pathSegmentsToKeep).join('/') + '/?/' +
-        l.pathname.slice(1).split('/').slice(pathSegmentsToKeep).join('/').replace(/&/g, '~and~') +
-        (l.search ? '&' + l.search.slice(1).replace(/&/g, '~and~') : '') +
-        l.hash
-      );
+      (function () {
+        var pathSegmentsToKeep = 0;
+        var l = window.location;
+        if (l.protocol !== 'https:' && l.protocol !== 'http:') return;
+        if (l.search && l.search.indexOf('?/') === 0) return;
+
+        var origin = l.protocol + '//' + l.hostname + (l.port ? ':' + l.port : '');
+        var normalizedPath = '/' + l.pathname.replace(/\\/g, '/').replace(/^\/+/, '');
+        var baseSegments = normalizedPath.split('/').slice(0, 1 + pathSegmentsToKeep).join('/');
+        var routePath = normalizedPath.slice(1).split('/').slice(pathSegmentsToKeep).join('/').replace(/&/g, '~and~');
+        var queryPart = l.search ? '&' + l.search.slice(1).replace(/&/g, '~and~') : '';
+        var hashPart = l.hash || '';
+        var candidate = origin + baseSegments + '/?/' + routePath + queryPart + hashPart;
+
+        try {
+          var target = new URL(candidate, origin);
+          if (target.origin === origin && (target.protocol === 'https:' || target.protocol === 'http:')) {
+            l.replace(target.toString());
+            return;
+          }
+        } catch (_) {}
+
+        l.replace(origin + '/');
+      })();
     </script>
   </head>
   <body>
+    <noscript>
+      <p><a href="./">Kurfanova Ana Sayfaya Don</a></p>
+    </noscript>
   </body>
 </html>

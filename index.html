@@ -32,11 +32,12 @@
     })();
   </script>
   <meta name="theme-color" content="#0b0b10" />
-  <meta name="color-scheme" content="dark" />
+  <meta name="color-scheme" content="light dark" />
   <meta name="mobile-web-app-capable" content="yes"/>
   <meta name="apple-mobile-web-app-capable" content="yes"/>
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
   <meta name="google-site-verification" content="google58d513bbdf20d0f3" />
+  <meta name="referrer" content="strict-origin-when-cross-origin" />
   <title>Kurfanova — Hızlı & Reklamsız Müzik ve Medya Çalar</title>
   <meta name="description" content="Kurfanova — Kesintisiz, reklamsız YouTube müzik ve video oynatıcı. Çevrimdışı MP3/MP4 indirme, Spotify aktarımı, arka planda dinleme ve gelişmiş ekolayzır." />
   <meta name="keywords" content="Kurfanova, kurfamüzik, reklamsız müzik, müzik indir, mp3 indir, mp4 indir, ücretsiz müzik dinle, arka planda çal, youtube müzik, ekolayzır" />
@@ -120,8 +121,8 @@
       pointer-events: none !important;
     }
   </style>
-  <link rel="stylesheet" href="./tailwind.min.css?v=20261012_v3">
-  <link rel="stylesheet" href="./style.css?v=20261012_v3">
+  <link rel="stylesheet" href="./tailwind.min.css?v=20261114_v1">
+  <link rel="stylesheet" href="./style.css?v=20261114_v1">
 </head>
 <body class="bg-background font-sans text-on-surface antialiased min-h-screen">
   <script>
@@ -158,7 +159,7 @@
   </div>
 
   <!-- ===================================================================== -->
-  <!-- 1️⃣ LEFT SIDEBAR NAVIGATION                                           -->
+  <!-- 1. LEFT SIDEBAR NAVIGATION                                            -->
   <!-- ===================================================================== -->
   <aside class="fixed left-0 top-0 h-[calc(100vh-5.5rem)] w-64 bg-surface-container-lowest z-40 flex flex-col justify-between shadow-[0_1px_8px_rgba(0,0,0,0.04)] overflow-y-auto hidden md:flex">
     <div class="p-space-lg">
@@ -238,7 +239,7 @@
   </aside>
 
   <!-- ===================================================================== -->
-  <!-- 2️⃣ MAIN WRAPPER & TOPBAR                                             -->
+  <!-- 2. MAIN WRAPPER & TOPBAR                                              -->
   <!-- ===================================================================== -->
   <div class="md:pl-64 flex flex-col min-h-screen">
     
@@ -248,7 +249,7 @@
         
         <!-- Mobile Brand Title (Mobile Only) -->
         <div class="flex items-center gap-1.5 md:hidden cursor-pointer flex-shrink-0" onclick="switchTab('kesfet')">
-          <img src="./assets/kurfamuzik_logo.png" alt="Logo" class="h-8 w-auto">
+          <img src="./assets/kurfamuzik_logo.png" alt="Logo" class="h-8 w-auto" onerror="this.onerror=null; this.src='./kurfamuzik_logo.png';">
         </div>
 
         <!-- Search Bar -->
@@ -291,7 +292,7 @@
           </button>
           <!-- User Profile & Settings Button -->
           <button type="button" aria-label="Profil & Ayarlar" id="topbar-profile-btn" class="flex items-center gap-1.5 pl-1 pr-1.5 sm:pr-2.5 py-1 rounded-full bg-surface-container-low hover:bg-surface-container transition-colors border border-surface-container" onclick="openProfileModal()" title="Profil & Ayarlar">
-            <img id="topbar-user-avatar" src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&q=80" alt="Profil" class="w-7 h-7 rounded-full object-cover shadow-sm">
+            <img id="topbar-user-avatar" src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&q=80" alt="Profil" class="w-7 h-7 rounded-full object-cover shadow-sm" onerror="this.onerror=null; this.src='./kurfamuzik_logo.png';">
             <span id="topbar-user-name" class="text-xs font-bold text-on-surface hidden sm:inline">Dinleyici</span>
           </button>
         </div>
@@ -318,7 +319,7 @@
     </div>
 
     <!-- =================================================================== -->
-    <!-- 3️⃣ TAB CONTENT AREAS                                               -->
+    <!-- 3. TAB CONTENT AREAS                                                -->
     <!-- =================================================================== -->
     <main class="w-full pt-20 pb-48 md:pb-36 px-3 md:px-space-lg bg-background min-h-screen">
 
@@ -521,7 +522,7 @@
               <!-- Mix 1 -->
               <div class="group flex flex-col bg-surface-container-lowest rounded-2xl p-3.5 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 cursor-pointer border border-surface-container/60" onclick="playCuratedMix(0)">
                 <div class="relative aspect-square rounded-xl overflow-hidden bg-gradient-to-tr from-primary to-secondary mb-3 flex items-center justify-center p-4 text-white text-center shadow-md">
-                  <img src="https://is1-ssl.mzstatic.com/image/thumb/Music112/v4/fb/31/11/fb3111cb-4251-ab93-eb37-75e752050237/cover.jpg/300x300bb.jpg" alt="Günlük Mix 1" class="absolute inset-0 w-full h-full object-cover opacity-60 group-hover:scale-105 transition-transform duration-500" onerror="this.style.display='none'">
+                  <img src="https://is1-ssl.mzstatic.com/image/thumb/Music112/v4/fb/31/11/fb3111cb-4251-ab93-eb37-75e752050237/cover.jpg/300x300bb.jpg" alt="Günlük Mix 1" loading="lazy" decoding="async" class="absolute inset-0 w-full h-full object-cover opacity-60 group-hover:scale-105 transition-transform duration-500" onerror="this.style.display='none'">
                   <div class="relative z-10 flex flex-col items-center">
                     <span class="material-symbols-outlined text-[42px] mb-1.5 drop-shadow-md" aria-hidden="true">library_music</span>
                     <div class="font-extrabold text-base tracking-tight drop-shadow-md">GÜNLÜK MİX 1</div>
@@ -536,7 +537,7 @@
               <!-- Mix 2 -->
               <div class="group flex flex-col bg-surface-container-lowest rounded-2xl p-3.5 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 cursor-pointer border border-surface-container/60" onclick="playCuratedMix(1)">
                 <div class="relative aspect-square rounded-xl overflow-hidden bg-gradient-to-tr from-tertiary to-secondary mb-3 flex items-center justify-center p-4 text-white text-center shadow-md">
-                  <img src="https://is1-ssl.mzstatic.com/image/thumb/Music112/v4/15/19/83/151983a9-0c68-ee9d-0350-a6940b795054/cover.jpg/300x300bb.jpg" alt="Akustik Sakinlik" class="absolute inset-0 w-full h-full object-cover opacity-60 group-hover:scale-105 transition-transform duration-500" onerror="this.style.display='none'">
+                  <img src="https://is1-ssl.mzstatic.com/image/thumb/Music112/v4/15/19/83/151983a9-0c68-ee9d-0350-a6940b795054/cover.jpg/300x300bb.jpg" alt="Akustik Sakinlik" loading="lazy" decoding="async" class="absolute inset-0 w-full h-full object-cover opacity-60 group-hover:scale-105 transition-transform duration-500" onerror="this.style.display='none'">
                   <div class="relative z-10 flex flex-col items-center">
                     <span class="material-symbols-outlined text-[42px] mb-1.5 drop-shadow-md" aria-hidden="true">coffee</span>
                     <div class="font-extrabold text-base tracking-tight drop-shadow-md">AKUSTİK SAKİNLİK</div>
@@ -551,7 +552,7 @@
               <!-- Mix 3 -->
               <div class="group flex flex-col bg-surface-container-lowest rounded-2xl p-3.5 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 cursor-pointer border border-surface-container/60" onclick="playCuratedMix(2)">
                 <div class="relative aspect-square rounded-xl overflow-hidden bg-gradient-to-tr from-on-background to-primary mb-3 flex items-center justify-center p-4 text-white text-center shadow-md">
-                  <img src="https://is1-ssl.mzstatic.com/image/thumb/Music211/v4/a8/92/b9/a892b962-b6e9-b027-d2f2-6192290b4dea/199350105050.jpg/300x300bb.jpg" alt="Türkçe Drill & Rap" class="absolute inset-0 w-full h-full object-cover opacity-60 group-hover:scale-105 transition-transform duration-500" onerror="this.style.display='none'">
+                  <img src="https://is1-ssl.mzstatic.com/image/thumb/Music211/v4/a8/92/b9/a892b962-b6e9-b027-d2f2-6192290b4dea/199350105050.jpg/300x300bb.jpg" alt="Türkçe Drill & Rap" loading="lazy" decoding="async" class="absolute inset-0 w-full h-full object-cover opacity-60 group-hover:scale-105 transition-transform duration-500" onerror="this.style.display='none'">
                   <div class="relative z-10 flex flex-col items-center">
                     <span class="material-symbols-outlined text-[42px] mb-1.5 drop-shadow-md" aria-hidden="true">sports_martial_arts</span>
                     <div class="font-extrabold text-base tracking-tight drop-shadow-md">TÜRKÇE DRILL & RAP</div>
@@ -566,7 +567,7 @@
               <!-- Mix 4 -->
               <div class="group flex flex-col bg-surface-container-lowest rounded-2xl p-3.5 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 cursor-pointer border border-surface-container/60" onclick="playCuratedMix(3)">
                 <div class="relative aspect-square rounded-xl overflow-hidden bg-gradient-to-tr from-secondary to-primary-container mb-3 flex items-center justify-center p-4 text-white text-center shadow-md">
-                  <img src="https://is1-ssl.mzstatic.com/image/thumb/Music211/v4/05/81/0b/05810b21-3c0c-b3b7-d2b2-2050baab2de0/cover.jpg/300x300bb.jpg" alt="Koşu & Motivasyon" class="absolute inset-0 w-full h-full object-cover opacity-60 group-hover:scale-105 transition-transform duration-500" onerror="this.style.display='none'">
+                  <img src="https://is1-ssl.mzstatic.com/image/thumb/Music211/v4/05/81/0b/05810b21-3c0c-b3b7-d2b2-2050baab2de0/cover.jpg/300x300bb.jpg" alt="Koşu & Motivasyon" loading="lazy" decoding="async" class="absolute inset-0 w-full h-full object-cover opacity-60 group-hover:scale-105 transition-transform duration-500" onerror="this.style.display='none'">
                   <div class="relative z-10 flex flex-col items-center">
                     <span class="material-symbols-outlined text-[42px] mb-1.5 drop-shadow-md" aria-hidden="true">directions_run</span>
                     <div class="font-extrabold text-base tracking-tight drop-shadow-md">KOŞU & MOTİVASYON</div>
@@ -590,7 +591,7 @@
               <span class="text-xs text-on-surface-variant">Türkiye'nin en çok dinlenen yıldızları</span>
             </div>
 
-            <div class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3 sm:gap-4" id="popular-artists-grid">
+            <div class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3 sm:gap-4" id="kesif-artists-grid">
               <!-- Rendered dynamically by JavaScript with verified CDN artworks -->
             </div>
           </section>
@@ -643,7 +644,7 @@
           <!-- Spotify-Style Artist Header Banner -->
           <div class="relative w-full rounded-2xl overflow-hidden bg-gradient-to-r from-surface-container-low via-surface-container to-surface-container-high border border-surface-container shadow-md p-6 sm:p-8 flex flex-col md:flex-row items-center md:items-end gap-6">
             <div class="relative w-28 h-28 sm:w-36 sm:h-36 rounded-full overflow-hidden shadow-2xl ring-4 ring-white/10 flex-shrink-0 bg-surface-container-highest">
-              <img id="artist-profile-avatar" src="" alt="Sanatçı" class="w-full h-full object-cover">
+              <img id="artist-profile-avatar" src="./kurfamuzik_logo.png" alt="Sanatçı" loading="lazy" class="w-full h-full object-cover" onerror="this.onerror=null; this.src='./kurfamuzik_logo.png';">
             </div>
             <div class="flex flex-col items-center md:items-start text-center md:text-left min-w-0 flex-1">
               <div class="flex items-center gap-1.5 text-xs font-bold text-primary mb-1">
@@ -952,7 +953,7 @@
                 <button type="button" class="w-8 h-8 rounded-full bg-surface-container hover:bg-surface-container-high flex items-center justify-center text-on-surface transition-colors flex-shrink-0" onclick="closeSpotifyPlaylistDetail()" title="Geri">
                   <span class="material-symbols-outlined text-[18px]">arrow_back</span>
                 </button>
-                <img id="spd-cover" src="./assets/kurfamuzik_logo.png" alt="Cover" class="w-16 h-16 rounded-xl object-cover shadow-md flex-shrink-0">
+                <img id="spd-cover" src="./assets/kurfamuzik_logo.png" alt="Cover" loading="lazy" class="w-16 h-16 rounded-xl object-cover shadow-md flex-shrink-0" onerror="this.onerror=null; this.src='./kurfamuzik_logo.png';">
                 <div class="flex flex-col min-w-0">
                   <div class="flex items-center gap-2">
                     <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-green-500/20 text-green-500 uppercase tracking-wider">Spotify</span>
@@ -1004,7 +1005,7 @@
         <!-- Playlist Banner (100% Canlı YouTube Trendi ile Dinamik Senkronize) -->
         <section class="w-full bg-surface-container-lowest rounded-3xl p-4 sm:p-6 shadow-sm flex flex-col md:flex-row items-center md:items-end gap-4 sm:gap-6 relative overflow-hidden" id="playlist-hero-banner">
           <div class="w-32 h-32 sm:w-48 sm:h-48 rounded-2xl overflow-hidden shadow-xl bg-surface-container-high relative flex-shrink-0">
-            <img id="playlist-hero-thumb" src="https://i.ytimg.com/vi/XqZsoesa55w/hqdefault.jpg" alt="Canlı Trend Şarkı" class="w-full h-full object-cover transition-all duration-300">
+            <img id="playlist-hero-thumb" src="https://i.ytimg.com/vi/XqZsoesa55w/hqdefault.jpg" alt="Canlı Trend Şarkı" loading="lazy" class="w-full h-full object-cover transition-all duration-300" onerror="this.onerror=null; this.src='./kurfamuzik_logo.png';">
             <button type="button" aria-label="Tüm Listeyi Oynat" class="absolute -bottom-2 -right-2 w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-primary text-on-primary flex items-center justify-center shadow-lg hover:scale-110 active:scale-95 transition-all" onclick="playAllPlaylist()">
               <span class="material-symbols-outlined text-[24px] sm:text-[28px] filled" aria-hidden="true">play_arrow</span>
             </button>
@@ -1075,7 +1076,7 @@
                 </div>
                 <!-- Cover Frame -->
                 <div class="relative w-28 h-28 sm:w-40 sm:h-40 rounded-2xl overflow-hidden shadow-2xl bg-surface-container-high transform -rotate-3 transition-transform hover:rotate-0 duration-300">
-                  <img id="deck-cover-img" src="https://i.ytimg.com/vi/69L-nKRY3ac/hqdefault.jpg" alt="Cover" class="w-full h-full object-cover">
+                  <img id="deck-cover-img" src="https://i.ytimg.com/vi/69L-nKRY3ac/hqdefault.jpg" alt="Cover" loading="lazy" class="w-full h-full object-cover" onerror="this.onerror=null; this.src='./kurfamuzik_logo.png';">
                   <div class="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent flex items-end justify-between p-2">
                     <span class="text-white text-[10px] bg-black/40 backdrop-blur-sm px-2 py-0.5 rounded font-bold">Orijinal Kapak</span>
                   </div>
@@ -1185,7 +1186,7 @@
 
         <div class="flex flex-col md:flex-row items-center justify-between gap-4">
           <div class="flex items-center gap-2">
-            <img src="./assets/kurfamuzik_logo.png" alt="Kurfanova" class="h-6 w-auto rounded object-contain">
+            <img src="./assets/kurfamuzik_logo.png" alt="Kurfanova" loading="lazy" class="h-6 w-auto rounded object-contain" onerror="this.onerror=null; this.src='./kurfamuzik_logo.png';">
             <span class="font-bold text-on-surface">Kurfanova Pro</span>
             <span>• Ozan Sarsılmaz Yapımı</span>
           </div>
@@ -1209,7 +1210,7 @@
   </div>
 
   <!-- ===================================================================== -->
-  <!-- 4️⃣ PERSISTENT MUSIC PLAYER DECKS (DESKTOP & MOBILE)                  -->
+  <!-- 4. PERSISTENT MUSIC PLAYER DECKS (DESKTOP & MOBILE)                   -->
   <!-- ===================================================================== -->
   
   <!-- DESKTOP FOOTER DECK (Hidden on mobile) -->
@@ -1218,7 +1219,7 @@
     <!-- Left: Track Metadata -->
     <div class="flex items-center gap-space-md w-1/4 min-w-[200px]">
       <div class="w-12 h-12 md:w-14 md:h-14 rounded-lg bg-surface-container-highest overflow-hidden flex-shrink-0 relative group shadow-sm flex items-center justify-center cursor-pointer" onclick="switchTab('calma-listeleri')">
-        <img id="player-thumb" src="./kurfamuzik_logo.png" alt="Kapak" class="w-full h-full object-cover">
+        <img id="player-thumb" src="./kurfamuzik_logo.png" alt="Kapak" class="w-full h-full object-cover" onerror="this.onerror=null; this.src='./assets/kurfamuzik_logo.png';">
         <div class="absolute inset-0 bg-inverse-surface/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
           <span class="material-symbols-outlined text-inverse-on-surface text-[20px]" aria-hidden="true">open_in_full</span>
         </div>
@@ -1322,7 +1323,7 @@
     <!-- Left: Thumb & Track Info (Click opens Spotify-Style Fullscreen Player) -->
     <div class="flex items-center gap-2.5 min-w-0 flex-1 cursor-pointer mr-2" onclick="openMobileNowPlaying()">
       <div class="w-10 h-10 rounded-xl overflow-hidden bg-surface-container-high flex-shrink-0 shadow-sm relative">
-        <img id="player-thumb-mobile" src="./kurfamuzik_logo.png" alt="Kapak" class="w-full h-full object-cover">
+        <img id="player-thumb-mobile" src="./kurfamuzik_logo.png" alt="Kapak" class="w-full h-full object-cover" onerror="this.onerror=null; this.src='./assets/kurfamuzik_logo.png';">
       </div>
       <div class="flex flex-col min-w-0">
         <span id="player-title-mobile" class="text-xs font-bold text-on-surface truncate">Kurfa Müzik</span>
@@ -1365,7 +1366,7 @@
   </nav>
 
   <!-- ===================================================================== -->
-  <!-- 6️⃣ QUEUE DRAWER OVERLAY                                              -->
+  <!-- 6. QUEUE DRAWER OVERLAY                                               -->
   <!-- ===================================================================== -->
   <div id="queue-drawer" class="fixed right-4 bottom-24 w-80 md:w-96 max-h-[500px] bg-surface-container-lowest rounded-2xl shadow-2xl border border-surface-container p-4 z-50 flex flex-col gap-3 transform translate-y-8 opacity-0 pointer-events-none transition-all duration-300">
     <div class="flex items-center justify-between pb-2 border-b border-surface-container">
@@ -1427,7 +1428,7 @@
 
       <!-- Active Track Preview -->
       <div id="modal-track-preview" class="hidden flex items-center gap-3 p-2.5 rounded-xl bg-surface-container-low border border-outline/10">
-        <img id="modal-preview-img" src="" alt="" class="w-12 h-12 rounded-lg object-cover bg-surface-container flex-shrink-0">
+        <img id="modal-preview-img" src="./kurfamuzik_logo.png" alt="" loading="lazy" class="w-12 h-12 rounded-lg object-cover bg-surface-container flex-shrink-0" onerror="this.onerror=null; this.src='./assets/kurfamuzik_logo.png';">
         <div class="min-w-0 flex-1">
           <p id="modal-preview-title" class="text-xs font-bold text-on-surface truncate"></p>
           <p id="modal-preview-artist" class="text-[11px] text-on-surface-variant truncate"></p>
@@ -1470,7 +1471,7 @@
   </div>
 
   <!-- ===================================================================== -->
-  <!-- 8️⃣ SOCIAL SHARE MODAL                                                -->
+  <!-- 8. SOCIAL SHARE MODAL                                                 -->
   <!-- ===================================================================== -->
   <div id="share-modal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 opacity-0 pointer-events-none transition-opacity duration-200">
     <div class="bg-surface-container-lowest rounded-2xl p-6 max-w-md w-full shadow-2xl flex flex-col gap-4 transform scale-95 transition-transform duration-200" id="share-modal-card">
@@ -1486,7 +1487,7 @@
 
       <!-- Track Preview -->
       <div class="flex items-center gap-3 p-3 rounded-xl bg-surface-container-low">
-        <img id="share-track-thumb" src="./kurfamuzik_logo.png" alt="Cover" class="w-12 h-12 rounded-lg object-cover">
+        <img id="share-track-thumb" src="./kurfamuzik_logo.png" alt="Cover" loading="lazy" class="w-12 h-12 rounded-lg object-cover" onerror="this.onerror=null; this.src='./assets/kurfamuzik_logo.png';">
         <div class="flex flex-col min-w-0">
           <span id="share-track-title" class="text-xs font-bold text-on-surface truncate">Kurfa Müzik</span>
           <span id="share-track-artist" class="text-[11px] text-on-surface-variant truncate">Şarkı Paylaş</span>
@@ -1518,7 +1519,7 @@
   </div>
 
   <!-- ===================================================================== -->
-  <!-- 9️⃣ USER PROFILE & SETTINGS MODAL                                     -->
+  <!-- 9. USER PROFILE & SETTINGS MODAL                                      -->
   <!-- ===================================================================== -->
   <div id="profile-modal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 opacity-0 pointer-events-none transition-opacity duration-200">
     <div class="bg-surface-container-lowest rounded-2xl p-6 max-w-md w-full shadow-2xl flex flex-col gap-4 transform scale-95 transition-transform duration-200" id="profile-modal-card">
@@ -1569,7 +1570,7 @@
         <!-- Custom Upload Row -->
         <div class="flex items-center gap-3">
           <div class="relative w-14 h-14 rounded-full overflow-hidden border-2 border-primary shadow-sm flex-shrink-0 bg-surface-container">
-            <img id="profile-current-avatar-preview" src="./kurfamuzik_logo.png" alt="Mevcut Avatar" class="w-full h-full object-cover">
+            <img id="profile-current-avatar-preview" src="./kurfamuzik_logo.png" alt="Mevcut Avatar" loading="lazy" class="w-full h-full object-cover" onerror="this.onerror=null; this.src='./assets/kurfamuzik_logo.png';">
           </div>
           <div class="flex flex-col gap-1 flex-1">
             <label for="custom-avatar-file-input" class="w-full py-2 px-3 rounded-xl bg-primary text-on-primary hover:bg-primary/90 text-xs font-bold flex items-center justify-center gap-1.5 cursor-pointer shadow-xs active:scale-95 transition-all">
@@ -1585,11 +1586,11 @@
         <div class="flex flex-col gap-1.5 pt-2 border-t border-surface-container/60">
           <span class="text-[10px] font-semibold text-on-surface-variant uppercase">Veya Hazır Avatarlardan Seçin:</span>
           <div class="flex items-center justify-between gap-1.5 overflow-x-auto py-1" id="avatar-options-row">
-            <img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&q=80" alt="Avatar 1" class="avatar-option w-10 h-10 rounded-full object-cover cursor-pointer border-2 border-primary p-0.5 hover:scale-105 transition-transform" onclick="selectAvatar(this.src)">
-            <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&q=80" alt="Avatar 2" class="avatar-option w-10 h-10 rounded-full object-cover cursor-pointer border-2 border-transparent p-0.5 hover:scale-105 transition-transform" onclick="selectAvatar(this.src)">
-            <img src="https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?w=100&q=80" alt="Avatar 3" class="avatar-option w-10 h-10 rounded-full object-cover cursor-pointer border-2 border-transparent p-0.5 hover:scale-105 transition-transform" onclick="selectAvatar(this.src)">
-            <img src="https://images.unsplash.com/photo-1580489944761-15a19d654956?w=100&q=80" alt="Avatar 4" class="avatar-option w-10 h-10 rounded-full object-cover cursor-pointer border-2 border-transparent p-0.5 hover:scale-105 transition-transform" onclick="selectAvatar(this.src)">
-            <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&q=80" alt="Avatar 5" class="avatar-option w-10 h-10 rounded-full object-cover cursor-pointer border-2 border-transparent p-0.5 hover:scale-105 transition-transform" onclick="selectAvatar(this.src)">
+            <img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&q=80" alt="Avatar 1" loading="lazy" class="avatar-option w-10 h-10 rounded-full object-cover cursor-pointer border-2 border-primary p-0.5 hover:scale-105 transition-transform" onclick="selectAvatar(this.src)" onerror="this.onerror=null; this.src='./kurfamuzik_logo.png';">
+            <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&q=80" alt="Avatar 2" loading="lazy" class="avatar-option w-10 h-10 rounded-full object-cover cursor-pointer border-2 border-transparent p-0.5 hover:scale-105 transition-transform" onclick="selectAvatar(this.src)" onerror="this.onerror=null; this.src='./kurfamuzik_logo.png';">
+            <img src="https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?w=100&q=80" alt="Avatar 3" loading="lazy" class="avatar-option w-10 h-10 rounded-full object-cover cursor-pointer border-2 border-transparent p-0.5 hover:scale-105 transition-transform" onclick="selectAvatar(this.src)" onerror="this.onerror=null; this.src='./kurfamuzik_logo.png';">
+            <img src="https://images.unsplash.com/photo-1580489944761-15a19d654956?w=100&q=80" alt="Avatar 4" loading="lazy" class="avatar-option w-10 h-10 rounded-full object-cover cursor-pointer border-2 border-transparent p-0.5 hover:scale-105 transition-transform" onclick="selectAvatar(this.src)" onerror="this.onerror=null; this.src='./kurfamuzik_logo.png';">
+            <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&q=80" alt="Avatar 5" loading="lazy" class="avatar-option w-10 h-10 rounded-full object-cover cursor-pointer border-2 border-transparent p-0.5 hover:scale-105 transition-transform" onclick="selectAvatar(this.src)" onerror="this.onerror=null; this.src='./kurfamuzik_logo.png';">
           </div>
         </div>
       </div>
@@ -1649,7 +1650,7 @@
           </div>
         </div>
         <div class="flex items-center gap-2 pt-1 border-t border-surface-container/60">
-          <a href="https://github.com/KurfaCode/kurfanova-app/releases/latest/download/Kurfanova-Muzik.apk" target="_blank" rel="noopener noreferrer" class="flex-1 py-2 px-3 rounded-xl bg-primary hover:bg-primary-container text-xs font-bold text-on-primary flex items-center justify-center gap-1.5 shadow-sm active:scale-95 transition-all" title="Android APK İndir">
+          <a href="https://github.com/KurfaCore/kurfa-ai-pro/releases/latest/download/Kurfanova-Muzik.apk" target="_blank" rel="noopener noreferrer" class="flex-1 py-2 px-3 rounded-xl bg-primary hover:bg-primary-container text-xs font-bold text-on-primary flex items-center justify-center gap-1.5 shadow-sm active:scale-95 transition-all" title="Android APK İndir">
             <span class="material-symbols-outlined text-[16px]">android</span>
             <span>APK İndir</span>
           </a>
@@ -1734,7 +1735,7 @@
 
       <!-- Target Track Preview -->
       <div class="flex items-center gap-2.5 p-2 rounded-xl bg-surface-container-low">
-        <img id="atp-track-thumb" src="./kurfamuzik_logo.png" alt="Cover" class="w-10 h-10 rounded-lg object-cover flex-shrink-0">
+        <img id="atp-track-thumb" src="./kurfamuzik_logo.png" alt="Cover" loading="lazy" class="w-10 h-10 rounded-lg object-cover flex-shrink-0" onerror="this.onerror=null; this.src='./assets/kurfamuzik_logo.png';">
         <div class="flex flex-col min-w-0 flex-1">
           <span id="atp-track-title" class="text-xs font-bold text-on-surface truncate">Şarkı Başlığı</span>
           <span id="atp-track-artist" class="text-[10px] text-on-surface-variant truncate">Sanatçı</span>
@@ -1761,7 +1762,7 @@
     
     <!-- Dynamic Ambient Blurred Cover / Spotify Canvas Gradient Vignette -->
     <div class="absolute inset-0 z-0 overflow-hidden pointer-events-none">
-      <img id="mnp-bg-art" src="./kurfamuzik_logo.png" alt="Arka Plan" class="w-full h-full object-cover filter blur-2xl scale-110 opacity-30 transition-all duration-700">
+      <img id="mnp-bg-art" src="./kurfamuzik_logo.png" alt="Arka Plan" loading="lazy" class="w-full h-full object-cover filter blur-2xl scale-110 opacity-30 transition-all duration-700" onerror="this.onerror=null; this.src='./assets/kurfamuzik_logo.png';">
       <!-- Spotify-style vertical gradient vignette to keep buttons, seekbar & lyrics 100% readable over live video -->
       <div class="absolute inset-0 bg-gradient-to-b from-black/80 via-black/25 via-45% to-black/95 to-85% pointer-events-none"></div>
     </div>
@@ -1786,7 +1787,7 @@
     <div class="relative z-10 flex-1 flex flex-col items-center justify-center px-6 min-h-0 py-2">
       <!-- Cover Container with Subtle Canvas/Video Vibe -->
       <div id="mnp-cover-container" class="relative w-full max-w-[320px] aspect-square rounded-2xl overflow-hidden shadow-2xl border border-white/10 group transition-all duration-500 cursor-pointer" onclick="toggleMobileCanvasMode()" title="Kapak veya Klip moduna geçmek için dokunun">
-        <img id="mnp-cover-art" src="./kurfamuzik_logo.png" alt="Kapak" class="w-full h-full object-cover transition-transform duration-700">
+        <img id="mnp-cover-art" src="./kurfamuzik_logo.png" alt="Kapak" loading="lazy" class="w-full h-full object-cover transition-transform duration-700" onerror="this.onerror=null; this.src='./assets/kurfamuzik_logo.png';">
         <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/20 pointer-events-none"></div>
       </div>
     </div>
@@ -1981,7 +1982,7 @@
       <!-- Installation Options -->
       <div class="flex flex-col gap-2.5">
         <!-- Direct Android APK Download (Public GitHub Release & Direct Fast Download) -->
-        <a href="https://github.com/KurfaCode/kurfanova-app/releases/latest/download/Kurfanova-Muzik.apk" id="btn-download-apk-direct" target="_blank" rel="noopener noreferrer" class="w-full py-3 px-4 rounded-2xl bg-primary text-on-primary font-bold text-xs flex items-center justify-between shadow-lg shadow-primary/25 hover:bg-primary-container active:scale-95 transition-all">
+        <a href="https://github.com/KurfaCore/kurfa-ai-pro/releases/latest/download/Kurfanova-Muzik.apk" id="btn-download-apk-direct" target="_blank" rel="noopener noreferrer" class="w-full py-3 px-4 rounded-2xl bg-primary text-on-primary font-bold text-xs flex items-center justify-between shadow-lg shadow-primary/25 hover:bg-primary-container active:scale-95 transition-all">
           <div class="flex items-center gap-2.5">
             <span class="material-symbols-outlined text-[20px]">android</span>
             <div class="flex flex-col text-left">
@@ -1993,7 +1994,7 @@
         </a>
 
         <!-- Direct Fast Server Mirror Download -->
-        <a href="https://github.com/KurfaCode/kurfanova-app/releases/latest/download/Kurfanova-Muzik.apk" download="Kurfanova-Muzik.apk" class="w-full py-2.5 px-4 rounded-xl bg-surface-container hover:bg-surface-container-high text-on-surface font-semibold text-xs flex items-center justify-between border border-surface-container-high transition-all active:scale-95">
+        <a href="https://github.com/KurfaCore/kurfanova-app/releases/latest/download/Kurfanova-Muzik.apk" download="Kurfanova-Muzik.apk" rel="noopener noreferrer" class="w-full py-2.5 px-4 rounded-xl bg-surface-container hover:bg-surface-container-high text-on-surface font-semibold text-xs flex items-center justify-between border border-surface-container-high transition-all active:scale-95">
           <div class="flex items-center gap-2">
             <span class="material-symbols-outlined text-[18px] text-primary">cloud_download</span>
             <span class="text-[11px]">Doğrudan Sunucudan İndir (Hızlı Ayna)</span>
@@ -2087,7 +2088,7 @@
     <div class="h-9 px-3 bg-[#181818] flex items-center justify-between text-xs text-zinc-300 border-b border-zinc-800">
       <div class="flex items-center gap-1.5 text-zinc-400">
         <span class="material-symbols-outlined text-[16px] text-cyan-400">tune</span>
-        <span class="text-[11px] font-mono tracking-tight text-zinc-200 truncate max-w-[150px]">kurfanova.kurfa.workers.dev</span>
+        <span class="text-[11px] font-mono tracking-tight text-zinc-200 truncate max-w-[150px]">kurfanova.github.io</span>
       </div>
       <div class="flex items-center gap-1">
         <button type="button" class="w-6 h-6 rounded flex items-center justify-center hover:bg-zinc-700 text-zinc-400 hover:text-white" onclick="expandFloatingPipToFull()" title="Tam Ekrana Genişlet">
@@ -2101,7 +2102,7 @@
 
     <!-- Center: Large Artwork with Interactive Hover Overlay (Photo 1 & 2 Ref) -->
     <div class="relative w-full aspect-square bg-zinc-900 group overflow-hidden cursor-pointer" id="pip-art-container">
-      <img id="pip-cover-art" src="./kurfamuzik_logo.png" alt="PiP Cover" class="w-full h-full object-cover">
+      <img id="pip-cover-art" src="./kurfamuzik_logo.png" alt="PiP Cover" loading="lazy" class="w-full h-full object-cover" onerror="this.onerror=null; this.src='./assets/kurfamuzik_logo.png';">
 
       <!-- Hover Overlay (Photo 2 Ref) -->
       <div class="absolute inset-0 bg-black/75 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex flex-col justify-between p-3.5" id="pip-hover-overlay">
@@ -2190,6 +2191,6 @@
 
   <!-- Scripts -->
   <script src="https://www.youtube.com/iframe_api"></script>
-  <script src="./app.js?v=20261012_v3"></script>
+  <script src="./app.js?v=20261114_v1"></script>
 </body>
 </html>

@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="referrer" content="strict-origin-when-cross-origin" />
   <title>Google ile Oturum Açın - Kurfamüzik</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -68,7 +69,10 @@
       align-items: center;
       gap: 14px;
       padding: 14px 16px;
+      border: none;
       border-bottom: 1px solid #dadce0;
+      width: 100%;
+      font-family: inherit;
       cursor: pointer;
       background: #ffffff;
       transition: background 0.15s ease;
@@ -77,8 +81,10 @@
     .account-item:last-child {
       border-bottom: none;
     }
-    .account-item:hover {
+    .account-item:hover,
+    .account-item:focus-visible {
       background: #f8f9fa;
+      outline: none;
     }
     .avatar {
       width: 36px;
@@ -130,13 +136,16 @@
       color: #1a73e8;
       font-size: 14px;
       font-weight: 500;
+      font-family: inherit;
       border: none;
       width: 100%;
       text-align: left;
       transition: background 0.15s ease;
     }
-    .use-another-btn:hover {
+    .use-another-btn:hover,
+    .use-another-btn:focus-visible {
       background: #f8f9fa;
+      outline: none;
     }
     .icon-user {
       width: 36px;
@@ -175,6 +184,12 @@
       border-color: #1a73e8;
       box-shadow: 0 0 0 1px #1a73e8;
     }
+    .form-error {
+      display: none;
+      font-size: 12px;
+      color: #d93025;
+      line-height: 1.4;
+    }
     .btn-submit {
       height: 36px;
       background: #1a73e8;
@@ -209,7 +224,7 @@
 
   <div class="auth-card">
     <div class="header">
-      <svg class="google-logo" viewBox="0 0 74 24">
+      <svg class="google-logo" viewBox="0 0 74 24" aria-hidden="true">
         <path fill="#4285F4" d="M12.04 11.23v2.85h6.88c-.28 1.83-2.14 5.37-6.88 5.37-4.14 0-7.52-3.44-7.52-7.66s3.38-7.66 7.52-7.66c2.36 0 3.94.99 4.84 1.85l2.25-2.25C17.7 2.37 15.11 1.34 12.04 1.34 5.4 1.34 0 6.74 0 13.39s5.4 12.05 12.04 12.05c6.94 0 11.55-4.88 11.55-11.75 0-.79-.09-1.39-.2-1.99H12.04z"/>
         <path fill="#EA4335" d="M31.25 10.74c-4.04 0-6.9 3.09-6.9 7.02 0 3.9 2.86 7.02 6.9 7.02 4.01 0 6.87-3.12 6.87-7.02 0-3.93-2.86-7.02-6.87-7.02zm0 11.28c-2.22 0-4.11-1.83-4.11-4.26 0-2.46 1.89-4.26 4.11-4.26 2.19 0 4.08 1.8 4.08 4.26 0 2.43-1.89 4.26-4.08 4.26z"/>
         <path fill="#FBBC05" d="M46.22 10.74c-4.04 0-6.9 3.09-6.9 7.02 0 3.9 2.86 7.02 6.9 7.02 4.01 0 6.87-3.12 6.87-7.02 0-3.93-2.86-7.02-6.87-7.02zm0 11.28c-2.22 0-4.11-1.83-4.11-4.26 0-2.46 1.89-4.26 4.11-4.26 2.19 0 4.08 1.8 4.08 4.26 0 2.43-1.89 4.26-4.08 4.26z"/>
@@ -221,15 +236,14 @@
     </div>
 
     <!-- Accounts List Container -->
-    <div class="accounts-list" id="accounts-container">
-      <!-- Populated via JavaScript -->
-    </div>
+    <div class="accounts-list" id="accounts-container"></div>
 
     <!-- Custom Account Box (Hidden by default) -->
     <div id="custom-account-box" class="custom-box" style="display: none;">
-      <input type="text" id="input-custom-name" class="custom-input" placeholder="Adınız Soyadınız">
-      <input type="email" id="input-custom-email" class="custom-input" placeholder="Google E-postanız (örn: adiniz@gmail.com)">
-      <button type="button" class="btn-submit" onclick="submitCustomAccount()">Giriş Yap ve Devam Et</button>
+      <input type="text" id="input-custom-name" class="custom-input" placeholder="Adınız Soyadınız" maxlength="80" autocomplete="name">
+      <input type="email" id="input-custom-email" class="custom-input" placeholder="Google E-postanız (örn: adiniz@gmail.com)" maxlength="120" autocomplete="email">
+      <p id="custom-account-error" class="form-error" role="alert"></p>
+      <button type="button" class="btn-submit" id="btn-submit-custom-account" onclick="submitCustomAccount()">Giriş Yap ve Devam Et</button>
     </div>
 
     <p class="footer-note">
@@ -238,108 +252,338 @@
   </div>
 
   <script>
-    // Known / Stored accounts
-    function getStoredAccounts() {
-      try {
-        const raw = localStorage.getItem('kurfa_google_accounts_list');
-        if (raw) {
-          const list = JSON.parse(raw);
-          if (Array.isArray(list) && list.length > 0) return list;
-        }
-      } catch(e) {}
-      
-      // Default initial authentic suggestions
-      return [
-        {
-          name: "Google Kullanıcısı",
-          email: "kullanici@gmail.com",
-          avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&q=80",
-          uid: "google_default_user"
-        }
-      ];
-    }
+    (function () {
+      'use strict';
 
-    function renderAccounts() {
-      const container = document.getElementById('accounts-container');
-      container.innerHTML = '';
+      const STORAGE_KEY = 'kurfa_google_accounts_list';
+      const DEFAULT_AVATAR_URL = 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&q=80';
+      const MAX_ACCOUNTS = 10;
+      const MAX_NAME_LEN = 80;
+      const MAX_EMAIL_LEN = 120;
+      const MAX_URL_LEN = 500;
+      const EMAIL_RE = /^[^\s@<>()\[\]\\,;:\"]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)+$/;
+      const LOCAL_RELATIVE_RE = /^\.\/(?!.*\.\.)[a-zA-Z0-9._\/-]+$/;
+      const ASSETS_PATH_RE = /^\/assets\/(?!.*\.\.)[a-zA-Z0-9._\/-]+$/;
+      const UID_RE = /^[a-zA-Z0-9_-]{1,64}$/;
 
-      const accounts = getStoredAccounts();
-      accounts.forEach(acc => {
-        const item = document.createElement('div');
-        item.className = 'account-item';
-        item.onclick = () => selectAccount(acc);
-        item.innerHTML = `
-          <img class="avatar" src="${acc.avatar}" alt="${acc.name}" onerror="this.outerHTML='<div class=\\'avatar-initial\\'>${acc.name.charAt(0).toUpperCase()}</div>'">
-          <div class="account-info">
-            <div class="account-name">${acc.name}</div>
-            <div class="account-email">${acc.email}</div>
-          </div>
-        `;
-        container.appendChild(item);
-      });
-
-      // Use another account button
-      const anotherBtn = document.createElement('button');
-      anotherBtn.className = 'use-another-btn';
-      anotherBtn.innerHTML = `
-        <div class="icon-user">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
-          </svg>
-        </div>
-        <span>Başka bir hesap kullan</span>
-      `;
-      anotherBtn.onclick = toggleCustomBox;
-      container.appendChild(anotherBtn);
-    }
-
-    function toggleCustomBox() {
-      const box = document.getElementById('custom-account-box');
-      box.style.display = box.style.display === 'none' ? 'flex' : 'none';
-      if (box.style.display === 'flex') {
-        document.getElementById('input-custom-name').focus();
-      }
-    }
-
-    function submitCustomAccount() {
-      const name = document.getElementById('input-custom-name').value.trim();
-      const email = document.getElementById('input-custom-email').value.trim();
-
-      if (!name || !email) {
-        alert("Lütfen adınızı ve Google e-posta adresinizi girin.");
-        return;
+      function sanitizeText(value, maxLen) {
+        if (typeof value !== 'string') return '';
+        return value.replace(/[\x00-\x1F\x7F]/g, '').trim().slice(0, maxLen);
       }
 
-      const acc = {
-        name,
-        email,
-        avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&q=80",
-        uid: "google_" + Date.now()
-      };
+      function isValidEmail(email) {
+        if (typeof email !== 'string') return false;
+        if (email.length < 3 || email.length > MAX_EMAIL_LEN) return false;
+        if (!EMAIL_RE.test(email)) return false;
+        const parts = email.split('@');
+        if (parts.length !== 2) return false;
+        const local = parts[0];
+        const domain = parts[1];
+        if (!local || local.startsWith('.') || local.endsWith('.') || local.includes('..')) return false;
+        if (!domain || domain.startsWith('.') || domain.endsWith('.') || domain.includes('..')) return false;
+        return true;
+      }
 
-      const list = getStoredAccounts();
-      if (!list.some(a => a.email.toLowerCase() === email.toLowerCase())) {
-        list.push(acc);
+      function sanitizeAvatarUrl(rawUrl) {
+        if (typeof rawUrl !== 'string') return '';
+        const trimmed = rawUrl.replace(/[\x00-\x1F\x7F]/g, '').trim();
+        if (!trimmed || trimmed.length > MAX_URL_LEN || /\s/.test(trimmed)) return '';
+
+        if (LOCAL_RELATIVE_RE.test(trimmed) || ASSETS_PATH_RE.test(trimmed)) {
+          return trimmed;
+        }
+
+        if (trimmed.toLowerCase().startsWith('https://')) {
+          try {
+            const parsed = new URL(trimmed);
+            if (parsed.protocol === 'https:' && parsed.hostname) {
+              return parsed.href;
+            }
+          } catch (e) {
+            return '';
+          }
+        }
+
+        return '';
+      }
+
+      function sanitizeUid(rawUid) {
+        if (typeof rawUid !== 'string') return '';
+        const cleaned = rawUid.trim();
+        return UID_RE.test(cleaned) ? cleaned : '';
+      }
+
+      function sanitizeAccount(raw) {
+        if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return null;
+        const name = sanitizeText(raw.name, MAX_NAME_LEN);
+        const email = sanitizeText(raw.email, MAX_EMAIL_LEN);
+        if (!name || !isValidEmail(email)) return null;
+
+        return {
+          name: name,
+          email: email,
+          avatar: sanitizeAvatarUrl(raw.avatar),
+          uid: sanitizeUid(raw.uid) || ('google_' + Date.now())
+        };
+      }
+
+      function getDefaultAccounts() {
+        return [
+          {
+            name: 'Google Kullanıcısı',
+            email: 'kullanici@gmail.com',
+            avatar: DEFAULT_AVATAR_URL,
+            uid: 'google_default_user'
+          }
+        ];
+      }
+
+      function getStoredAccounts() {
         try {
-          localStorage.setItem('kurfa_google_accounts_list', JSON.stringify(list));
-        } catch(e) {}
+          const raw = localStorage.getItem(STORAGE_KEY);
+          if (raw) {
+            const parsed = JSON.parse(raw);
+            if (Array.isArray(parsed)) {
+              const sanitized = parsed
+                .map(sanitizeAccount)
+                .filter(Boolean)
+                .slice(0, MAX_ACCOUNTS);
+              if (sanitized.length > 0) return sanitized;
+            }
+          }
+        } catch (e) {}
+
+        return getDefaultAccounts();
       }
 
-      selectAccount(acc);
-    }
-
-    function selectAccount(acc) {
-      if (window.opener && !window.opener.closed) {
-        const targetOrigin = window.location.origin;
-        window.opener.postMessage({
-          type: 'KURFA_GOOGLE_AUTH_SUCCESS',
-          user: acc
-        }, targetOrigin);
+      function createAvatarInitial(name) {
+        const fallback = document.createElement('div');
+        fallback.className = 'avatar-initial';
+        const firstChar = sanitizeText(name, MAX_NAME_LEN).charAt(0).toUpperCase();
+        fallback.textContent = firstChar || 'G';
+        return fallback;
       }
-      window.close();
-    }
 
-    window.onload = renderAccounts;
+      function createAccountItemElement(acc) {
+        const item = document.createElement('button');
+        item.type = 'button';
+        item.className = 'account-item';
+
+        const safeAvatar = sanitizeAvatarUrl(acc.avatar);
+        if (safeAvatar) {
+          const img = document.createElement('img');
+          img.className = 'avatar';
+          img.alt = acc.name;
+          img.referrerPolicy = 'no-referrer';
+          img.src = safeAvatar;
+          img.addEventListener('error', function () {
+            const initialEl = createAvatarInitial(acc.name);
+            if (img.parentNode) {
+              img.parentNode.replaceChild(initialEl, img);
+            }
+          }, { once: true });
+          item.appendChild(img);
+        } else {
+          item.appendChild(createAvatarInitial(acc.name));
+        }
+
+        const info = document.createElement('div');
+        info.className = 'account-info';
+
+        const nameEl = document.createElement('div');
+        nameEl.className = 'account-name';
+        nameEl.textContent = acc.name;
+
+        const emailEl = document.createElement('div');
+        emailEl.className = 'account-email';
+        emailEl.textContent = acc.email;
+
+        info.appendChild(nameEl);
+        info.appendChild(emailEl);
+        item.appendChild(info);
+
+        item.addEventListener('click', function () {
+          selectAccount(acc);
+        });
+
+        return item;
+      }
+
+      function createUseAnotherButton() {
+        const anotherBtn = document.createElement('button');
+        anotherBtn.type = 'button';
+        anotherBtn.className = 'use-another-btn';
+
+        const iconBox = document.createElement('div');
+        iconBox.className = 'icon-user';
+
+        const svgNS = 'http://www.w3.org/2000/svg';
+        const svg = document.createElementNS(svgNS, 'svg');
+        svg.setAttribute('width', '20');
+        svg.setAttribute('height', '20');
+        svg.setAttribute('viewBox', '0 0 24 24');
+        svg.setAttribute('fill', 'currentColor');
+        svg.setAttribute('aria-hidden', 'true');
+
+        const path = document.createElementNS(svgNS, 'path');
+        path.setAttribute('d', 'M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z');
+
+        svg.appendChild(path);
+        iconBox.appendChild(svg);
+
+        const label = document.createElement('span');
+        label.textContent = 'Başka bir hesap kullan';
+
+        anotherBtn.appendChild(iconBox);
+        anotherBtn.appendChild(label);
+        anotherBtn.addEventListener('click', toggleCustomBox);
+        return anotherBtn;
+      }
+
+      function renderAccounts() {
+        const container = document.getElementById('accounts-container');
+        if (!container) return;
+        container.replaceChildren();
+
+        const accounts = getStoredAccounts();
+        accounts.forEach(function (acc) {
+          container.appendChild(createAccountItemElement(acc));
+        });
+
+        container.appendChild(createUseAnotherButton());
+      }
+
+      function showFormError(message) {
+        const errEl = document.getElementById('custom-account-error');
+        if (!errEl) return;
+        if (message) {
+          errEl.textContent = message;
+          errEl.style.display = 'block';
+        } else {
+          errEl.textContent = '';
+          errEl.style.display = 'none';
+        }
+      }
+
+      function toggleCustomBox() {
+        const box = document.getElementById('custom-account-box');
+        if (!box) return;
+        const nextDisplay = box.style.display === 'none' ? 'flex' : 'none';
+        box.style.display = nextDisplay;
+        showFormError('');
+        if (nextDisplay === 'flex') {
+          const nameInput = document.getElementById('input-custom-name');
+          if (nameInput) nameInput.focus();
+        }
+      }
+
+      function submitCustomAccount() {
+        const nameInput = document.getElementById('input-custom-name');
+        const emailInput = document.getElementById('input-custom-email');
+        const name = sanitizeText(nameInput ? nameInput.value : '', MAX_NAME_LEN);
+        const email = sanitizeText(emailInput ? emailInput.value : '', MAX_EMAIL_LEN);
+
+        if (!name) {
+          showFormError('Lütfen adınızı ve soyadınızı girin.');
+          if (nameInput) nameInput.focus();
+          return;
+        }
+
+        if (!isValidEmail(email)) {
+          showFormError('Lütfen geçerli bir Google e-posta adresi girin.');
+          if (emailInput) emailInput.focus();
+          return;
+        }
+
+        showFormError('');
+
+        const acc = {
+          name: name,
+          email: email,
+          avatar: DEFAULT_AVATAR_URL,
+          uid: 'google_' + Date.now()
+        };
+
+        const list = getStoredAccounts();
+        if (!list.some(function (a) { return a.email.toLowerCase() === email.toLowerCase(); })) {
+          list.push(acc);
+          try {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(list.slice(0, MAX_ACCOUNTS)));
+          } catch (e) {}
+        }
+
+        selectAccount(acc);
+      }
+
+      function getTrustedTargetOrigin() {
+        const origin = window.location.origin;
+        if (!origin || origin === 'null') return null;
+        try {
+          const parsed = new URL(origin);
+          if (parsed.protocol !== 'https:' && parsed.protocol !== 'http:') {
+            return null;
+          }
+          if (!parsed.origin || parsed.origin === 'null') {
+            return null;
+          }
+          return parsed.origin;
+        } catch (e) {
+          return null;
+        }
+      }
+
+      function selectAccount(rawAcc) {
+        const acc = sanitizeAccount(rawAcc);
+        if (!acc) return;
+
+        const payloadAcc = {
+          name: acc.name,
+          email: acc.email,
+          avatar: acc.avatar || DEFAULT_AVATAR_URL,
+          uid: acc.uid
+        };
+
+        const targetOrigin = getTrustedTargetOrigin();
+        if (targetOrigin && window.opener && !window.opener.closed) {
+          let isSameOriginOpener = false;
+          try {
+            isSameOriginOpener = window.opener.location.origin === targetOrigin;
+          } catch (e) {
+            isSameOriginOpener = false;
+          }
+
+          if (isSameOriginOpener) {
+            window.opener.postMessage({
+              type: 'KURFA_GOOGLE_AUTH_SUCCESS',
+              user: payloadAcc
+            }, targetOrigin);
+          }
+        }
+
+        window.close();
+      }
+
+      window.renderAccounts = renderAccounts;
+      window.toggleCustomBox = toggleCustomBox;
+      window.submitCustomAccount = submitCustomAccount;
+      window.addCustomAccount = submitCustomAccount;
+      window.selectAccount = selectAccount;
+
+      window.addEventListener('DOMContentLoaded', function () {
+        renderAccounts();
+        const nameInput = document.getElementById('input-custom-name');
+        const emailInput = document.getElementById('input-custom-email');
+        [nameInput, emailInput].forEach(function (el) {
+          if (!el) return;
+          el.addEventListener('keydown', function (ev) {
+            if (ev.key === 'Enter') {
+              ev.preventDefault();
+              submitCustomAccount();
+            }
+          });
+        });
+      });
+    })();
   </script>
 </body>
 </html>
