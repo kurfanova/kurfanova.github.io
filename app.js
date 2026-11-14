@@ -152,6 +152,10 @@ function updateLocalEngineStatusUI() {
   }
 
   const detectedStore = detectBrowserExtensionStore();
+  const storeBtn = document.getElementById('btn-install-store-adblock');
+  if (storeBtn && storeBtn.tagName === 'A') {
+    storeBtn.href = detectedStore.url;
+  }
   const storeBtnLabel = document.getElementById('btn-install-store-adblock-label');
   if (storeBtnLabel) {
     if (adBlockerActive) {
@@ -176,7 +180,11 @@ function updateLocalEngineStatusUI() {
 
   const activePillKey = detectedStore.id.startsWith('safari') ? 'safari' : detectedStore.id;
   document.querySelectorAll('[data-store-browser]').forEach((btn) => {
-    const isMatch = btn.getAttribute('data-store-browser') === activePillKey;
+    const key = btn.getAttribute('data-store-browser');
+    if (btn.tagName === 'A' && key) {
+      btn.href = detectBrowserExtensionStore(key).url;
+    }
+    const isMatch = key === activePillKey;
     btn.classList.toggle('border-primary', isMatch);
     btn.classList.toggle('text-primary', isMatch);
   });
@@ -311,18 +319,80 @@ function startAdBlockerBackgroundWatcher() {
   }, 2500);
 }
 
-function startAutoExtensionInstall(explicitBrowserKey) {
+function onStoreLinkClicked(explicitBrowserKey) {
   const store = detectBrowserExtensionStore(explicitBrowserKey);
-  try {
-    window.open(store.url, '_blank', 'noopener,noreferrer');
-  } catch (e) {}
   startAdBlockerBackgroundWatcher();
   if (typeof showToast === 'function') {
     showToast(`${store.storeName} açıldı. Ekle'ye basınca otomatik algılanacak.`);
   }
 }
+window.onStoreLinkClicked = onStoreLinkClicked;
+
+function startAutoExtensionInstall(explicitBrowserKey) {
+  const store = detectBrowserExtensionStore(explicitBrowserKey);
+  try {
+    window.open(store.url, '_blank', 'noopener,noreferrer');
+  } catch (e) {}
+  onStoreLinkClicked(explicitBrowserKey);
+}
 window.startAutoExtensionInstall = startAutoExtensionInstall;
 window.kurfaDetectAdBlocker = kurfaDetectAdBlocker;
+
+// =============================================================================
+// 0.6 OTOMATİK GÜNCELLEME (PWA SERVICE WORKER + MASAÜSTÜ/APK OTA KÖPRÜSÜ)
+// =============================================================================
+let __kurfaSwRegistration = null;
+function initWebAutoUpdater() {
+  if (typeof navigator === 'undefined' || !('serviceWorker' in navigator)) return;
+  if (window.location.protocol !== 'https:' && window.location.hostname !== 'localhost') return;
+  try {
+    navigator.serviceWorker.register('./sw.js?v=4.3.4').then((reg) => {
+      __kurfaSwRegistration = reg;
+      reg.addEventListener('updatefound', () => {
+        const nextWorker = reg.installing;
+        if (!nextWorker) return;
+        nextWorker.addEventListener('statechange', () => {
+          if (nextWorker.state === 'installed' && navigator.serviceWorker.controller) {
+            if (typeof showToast === 'function') {
+              showToast('Yeni web güncellemesi hazır, arka planda etkinleştiriliyor.');
+            }
+          }
+        });
+      });
+    }).catch(() => {});
+
+    let __swReloading = false;
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+      if (__swReloading) return;
+      if (typeof state !== 'undefined' && state.isPlaying) return;
+      __swReloading = true;
+      window.location.reload();
+    });
+  } catch (_) {}
+}
+
+window.__kurfaOnNativeUpdateReady = function (info) {
+  const ver = String(info?.version || '');
+  if (typeof showToast === 'function' && ver) {
+    showToast(`Kurfamüzik v${ver} indirildi ve doğrulandı — kapanışta otomatik güncellenecek.`);
+  }
+};
+
+window.requestNativeAppUpdateCheck = function () {
+  if (isAndroidNativeEngine() && typeof window.KurfaAndroidBridge?.checkForUpdates === 'function') {
+    window.KurfaAndroidBridge.checkForUpdates();
+    return true;
+  }
+  if (getBrowserExtensionMode().startsWith('desktop')) {
+    callExtensionBridge('CHECK_UPDATE', {}, 8000);
+    return true;
+  }
+  if (__kurfaSwRegistration && typeof __kurfaSwRegistration.update === 'function') {
+    __kurfaSwRegistration.update().catch(() => {});
+    return true;
+  }
+  return false;
+};
 
 function detectUserDevicePlatform() {
   try {
@@ -363,6 +433,9 @@ if (typeof window !== 'undefined') {
   });
   const onReturnAdCheck = async () => {
     if (typeof document !== 'undefined' && document.visibilityState === 'hidden') return;
+    if (__kurfaSwRegistration && typeof __kurfaSwRegistration.update === 'function') {
+      __kurfaSwRegistration.update().catch(() => {});
+    }
     const wasWatching = __kurfaAdBlockerWatching;
     const wasActive = isBrowserAdBlockerActive();
     const ok = await kurfaDetectAdBlocker({ force: true });
@@ -374,6 +447,7 @@ if (typeof window !== 'undefined') {
   if (typeof document !== 'undefined') {
     document.addEventListener('visibilitychange', onReturnAdCheck);
     document.addEventListener('DOMContentLoaded', () => {
+      initWebAutoUpdater();
       setTimeout(() => { kurfaDetectAdBlocker(); }, 350);
     });
   }

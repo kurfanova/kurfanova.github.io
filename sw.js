@@ -1,5 +1,5 @@
 // Kurfanova PWA Service Worker
-const CACHE_NAME = 'kurfanova-shell-v4.3.3';
+const CACHE_NAME = 'kurfanova-shell-v4.3.4';
 
 const SHELL_ASSETS = [
   './',
@@ -26,7 +26,9 @@ const BYPASS_HOSTS = [
   'audius.co',
   'savenow.to',
   'lbserver.xyz',
-  'googleapis.com'
+  'googleapis.com',
+  'github.com',
+  'githubusercontent.com'
 ];
 
 function shouldBypassHost(hostname) {
