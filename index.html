@@ -1997,6 +1997,18 @@
           <span class="material-symbols-outlined text-[20px]">download</span>
         </a>
 
+        <!-- Windows Desktop App Download (.exe • %0 Reklam) -->
+        <a href="https://github.com/KurfaCore/kurfanova-app/releases/latest/download/Kurfanova-Muzik-Windows.exe" id="btn-download-win-direct" target="_blank" rel="noopener noreferrer" download="Kurfanova-Muzik-Windows.exe" class="w-full py-2.5 px-4 rounded-2xl bg-surface-container hover:bg-surface-container-high text-on-surface font-bold text-xs flex items-center justify-between border border-surface-container-high transition-all active:scale-95">
+          <div class="flex items-center gap-2.5">
+            <span class="material-symbols-outlined text-[20px] text-primary">desktop_windows</span>
+            <div class="flex flex-col text-left">
+              <span class="leading-tight">Windows Masaüstü İndir (.exe • %0 Reklam)</span>
+              <span class="text-[10px] text-on-surface-variant font-normal">Masaüstü cihaz motoru ile kesintisiz & reklamsız müzik</span>
+            </div>
+          </div>
+          <span class="material-symbols-outlined text-[18px] text-on-surface-variant">download</span>
+        </a>
+
         <!-- Desktop Browser Extension & Userscript (%0 Ads, %0 Server Load on Web) -->
         <div class="p-3 rounded-2xl bg-surface-container-low border border-surface-container flex flex-col gap-2">
           <div class="flex items-center justify-between gap-2">
@@ -2047,6 +2059,68 @@
       <div class="p-3 rounded-xl bg-surface-container-lowest border border-surface-container text-[11px] text-on-surface-variant flex items-start gap-2">
         <span class="material-symbols-outlined text-secondary text-[16px] flex-shrink-0 mt-0.5">verified</span>
         <span>APK bir kez kurulduktan sonra sitedeki tüm yeni şarkılar ve güncellemeler otomatik olarak uygulamaya yansır. Tekrar yüklemeniz gerekmez.</span>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ===================================================================== -->
+  <!-- 14.1 CİHAZA ÖZEL REKLAM UYARISI MODALI (Pre-Play Gate)                -->
+  <!-- ===================================================================== -->
+  <div id="ad-warning-modal" class="fixed inset-0 bg-black/65 backdrop-blur-md z-50 flex items-center justify-center p-4 opacity-0 pointer-events-none transition-opacity duration-200">
+    <div id="ad-warning-modal-card" class="max-w-md w-full rounded-3xl p-6 bg-surface-container-lowest/90 border border-surface-container shadow-2xl flex flex-col gap-4 transform scale-95 transition-transform duration-200" style="backdrop-filter: blur(24px) saturate(180%); -webkit-backdrop-filter: blur(24px) saturate(180%); box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.16), 0 24px 48px -12px rgba(0, 0, 0, 0.45);">
+
+      <!-- Header -->
+      <div class="flex items-center justify-between pb-3 border-b border-surface-container">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-2xl bg-amber-500/10 text-amber-500 border border-amber-500/20 flex items-center justify-center flex-shrink-0">
+            <span class="material-symbols-outlined text-[22px]">gpp_maybe</span>
+          </div>
+          <div>
+            <h3 class="font-bold text-base text-on-surface leading-tight">Reklam Uyarısı</h3>
+            <p class="text-[11px] text-on-surface-variant">%0 Reklamlı Cihaz Motoru Önerisi</p>
+          </div>
+        </div>
+        <button type="button" aria-label="Kapat" class="w-8 h-8 rounded-full flex items-center justify-center hover:bg-surface-container text-on-surface-variant transition-colors" onclick="dismissAdWarningModal(false)">
+          <span class="material-symbols-outlined text-[20px]">close</span>
+        </button>
+      </div>
+
+      <!-- Pending Track Mini-Preview Pill + Concise Explanation -->
+      <div class="flex flex-col gap-2.5">
+        <div class="flex items-center gap-3 p-2.5 rounded-2xl bg-surface-container-low border border-surface-container">
+          <img id="ad-warn-track-thumb" src="./kurfamuzik_logo.png" alt="" class="w-11 h-11 rounded-xl object-cover flex-shrink-0 bg-surface-container" />
+          <div class="min-w-0 flex-1">
+            <p id="ad-warn-track-title" class="text-xs font-bold text-on-surface truncate">Parça Yükleniyor</p>
+            <p id="ad-warn-track-artist" class="text-[11px] text-on-surface-variant truncate">Sanatçı</p>
+          </div>
+          <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/10 text-amber-500 border border-amber-500/20 flex-shrink-0">Tarayıcı</span>
+        </div>
+        <p class="text-xs text-on-surface-variant leading-relaxed">
+          Web tarayıcısında bu parçada YouTube reklamı çıkabilir. Cihazına uygun uygulamayı indirirsen tüm şarkılar %0 reklamlı çalar.
+        </p>
+      </div>
+
+      <!-- Device-Aware Recommended Download Box -->
+      <div id="ad-warn-device-box" class="p-3 rounded-2xl bg-surface-container-low border border-surface-container flex items-center justify-between gap-2">
+        <div class="flex items-center gap-2 min-w-0">
+          <span class="material-symbols-outlined text-[18px] text-primary flex-shrink-0">devices</span>
+          <span id="ad-warn-device-badge" class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-primary/10 text-primary border border-primary/20 truncate">Cihaz Algılandı</span>
+        </div>
+        <a id="ad-warn-secondary-cta" href="./kurfa-reklamsiz-eklenti.zip" download="kurfa-reklamsiz-eklenti.zip" class="text-[11px] font-semibold text-primary hover:underline truncate flex-shrink-0">
+          <span data-cta-label>Chrome/Edge Eklenti İndir</span>
+        </a>
+      </div>
+
+      <!-- Clear Bottom Action Row -->
+      <div class="flex flex-col gap-2 pt-1">
+        <a id="ad-warn-primary-cta" href="https://github.com/KurfaCore/kurfanova-app/releases/latest/download/Kurfanova-Muzik-Windows.exe" target="_blank" rel="noopener noreferrer" download="Kurfanova-Muzik-Windows.exe" class="w-full py-3 px-4 rounded-2xl bg-primary text-on-primary font-bold text-xs flex items-center justify-center gap-2 shadow-lg shadow-primary/25 hover:bg-primary-container active:scale-95 transition-all">
+          <span class="material-symbols-outlined text-[18px]">download</span>
+          <span data-cta-label>Windows Uygulamasını İndir (.exe • %0 Reklam)</span>
+        </a>
+        <button type="button" id="ad-warn-continue-btn" onclick="continueFromAdWarningModal()" class="w-full py-2.5 px-4 rounded-2xl bg-surface-container hover:bg-surface-container-high text-on-surface font-semibold text-xs border border-surface-container-high transition-all active:scale-95">
+          Yine de Tarayıcıda Çal
+        </button>
       </div>
 
     </div>

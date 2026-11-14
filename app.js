@@ -40,16 +40,43 @@ function getBrowserExtensionMode() {
 function updateLocalEngineStatusUI() {
   const badge = typeof document !== 'undefined' ? document.getElementById('kurfa-local-engine-status') : null;
   if (!badge) return;
+  const extMode = getBrowserExtensionMode();
   if (isAndroidNativeEngine()) {
     badge.textContent = 'APK Cihaz Motoru Aktif (%0 Reklam)';
     badge.className = 'px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/15 text-emerald-500';
-  } else if (getBrowserExtensionMode()) {
+  } else if (extMode && extMode.startsWith('desktop')) {
+    badge.textContent = 'Masaüstü Uygulaması Aktif (%0 Reklam)';
+    badge.className = 'px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/15 text-emerald-500';
+  } else if (extMode) {
     badge.textContent = 'Eklenti Motoru Aktif (%0 Reklam)';
     badge.className = 'px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/15 text-emerald-500';
   } else {
     badge.textContent = 'Tarayıcı Modu';
     badge.className = 'px-2 py-0.5 rounded-full text-[10px] font-bold bg-surface-container text-on-surface-variant';
   }
+}
+
+function hasAdFreeLocalEngine() {
+  return Boolean(isAndroidNativeEngine() || getBrowserExtensionMode());
+}
+
+function detectUserDevicePlatform() {
+  try {
+    const uadPlatform = String(navigator.userAgentData?.platform || '').toLowerCase();
+    const ua = String(navigator.userAgent || '').toLowerCase();
+    if (uadPlatform.includes('android') || ua.includes('android')) return 'android';
+    if (
+      uadPlatform.includes('ios') ||
+      /iphone|ipad|ipod/.test(ua) ||
+      (ua.includes('macintosh') && (navigator.maxTouchPoints || 0) > 1)
+    ) {
+      return 'ios';
+    }
+    if (uadPlatform.includes('win') || ua.includes('windows')) return 'windows';
+    if (uadPlatform.includes('mac') || ua.includes('macintosh') || ua.includes('mac os')) return 'macos';
+    if (uadPlatform.includes('linux') || ua.includes('x11') || ua.includes('cros')) return 'linux';
+  } catch (e) {}
+  return 'windows';
 }
 
 function settleBridgeRequest(requestId, payload) {
@@ -152,6 +179,144 @@ async function kurfaSearchAudius(query, signal) {
       source: 'audius'
     }));
   return { success: mapped.length > 0, source: 'audius', results: mapped };
+}
+
+function kurfaCleanTrackQuery(title, artist) {
+  const stripNoise = (str) => String(str || '')
+    .replace(/\[[^\]]*\]/g, ' ')
+    .replace(/\([^)]*\)/g, ' ')
+    .replace(/\b(netd\s*m[uü]zik|poll\s*production|official\s*music\s*video|official\s*video|official\s*audio|lyric\s*video|lyrics|video\s*klip|klip|feat\.?|ft\.?|featuring)\b/gi, ' ')
+    .replace(/[|•·–—/_]+/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+
+  const cleanTitle = stripNoise(title);
+  const cleanArtistRaw = stripNoise(artist);
+  const cleanArtist = /^(bilinmeyen\s*sanat[cç][ıi]|sanat[cç][ıi]|artist|unknown|various\s*artists)$/i.test(cleanArtistRaw)
+    ? ''
+    : cleanArtistRaw;
+
+  return `${cleanArtist} ${cleanTitle}`.replace(/\s+/g, ' ').trim();
+}
+
+function kurfaNormalizeMatchTokens(str) {
+  return String(str || '')
+    .toLowerCase()
+    .replace(/ı/g, 'i')
+    .replace(/ğ/g, 'g')
+    .replace(/ü/g, 'u')
+    .replace(/ş/g, 's')
+    .replace(/ö/g, 'o')
+    .replace(/ç/g, 'c')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9\s]/g, ' ')
+    .split(/\s+/)
+    .filter(Boolean);
+}
+
+async function kurfaTryQuickAudiusMatch(target, timeoutMs = 650) {
+  try {
+    const rawTitle = String(target?.title || '').trim();
+    if (rawTitle.length < 2) return { success: false };
+
+    const cleanQuery = kurfaCleanTrackQuery(rawTitle, target?.artist || '');
+    if (cleanQuery.length < 2) return { success: false };
+
+    const controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
+    const timer = controller ? setTimeout(() => controller.abort(), timeoutMs) : null;
+
+    let list = [];
+    try {
+      const res = await fetch(
+        `https://api.audius.co/v1/tracks/search?query=${encodeURIComponent(cleanQuery)}&limit=6`,
+        controller ? { signal: controller.signal } : undefined
+      );
+      if (!res.ok) return { success: false };
+      const json = await res.json();
+      list = Array.isArray(json?.data) ? json.data : [];
+    } finally {
+      if (timer) clearTimeout(timer);
+    }
+
+    if (list.length === 0) return { success: false };
+
+    const labelNoise = new Set(['netd', 'muzik', 'music', 'poll', 'production', 'official', 'records', 'record', 'tv', 'kanal', 'topic', 'vevo', 'sanatci', 'bilinmeyen', 'unknown']);
+    const variantNoise = new Set(['remix', 'cover', 'karaoke', 'instrumental', 'nightcore', 'slowed', 'sped', 'reverb', '8d']);
+
+    const cleanedTitleForTokens = kurfaCleanTrackQuery(rawTitle, '');
+    const titleWordsAll = kurfaNormalizeMatchTokens(cleanedTitleForTokens || rawTitle);
+    const sigTitleWords = titleWordsAll.filter(w => w.length >= 3);
+    const targetTitleWords = sigTitleWords.length > 0 ? sigTitleWords : titleWordsAll.filter(w => w.length >= 2);
+    if (targetTitleWords.length === 0) return { success: false };
+
+    const targetRawTitleTokens = new Set(kurfaNormalizeMatchTokens(rawTitle));
+    const cleanedArtistForTokens = kurfaCleanTrackQuery('', target?.artist || '');
+    const targetArtistWords = kurfaNormalizeMatchTokens(cleanedArtistForTokens || target?.artist || '')
+      .filter(w => w.length >= 2 && !labelNoise.has(w));
+
+    let bestItem = null;
+    let bestScore = -1;
+
+    for (const item of list) {
+      if (!item || !item.id || item.is_streamable === false) continue;
+      if ((Number(item.duration) || 0) <= 25) continue;
+
+      const candTitle = String(item.title || '');
+      const candArtist = String(item.user?.name || item.user?.handle || '');
+      const candTitleTokens = new Set(kurfaNormalizeMatchTokens(candTitle));
+      const candArtistTokens = new Set(kurfaNormalizeMatchTokens(candArtist));
+
+      let titleHits = 0;
+      for (const w of targetTitleWords) {
+        if (candTitleTokens.has(w)) titleHits++;
+      }
+      const titleRatio = titleHits / targetTitleWords.length;
+      if (titleRatio < 0.6) continue;
+
+      let artistHits = 0;
+      for (const w of targetArtistWords) {
+        if (candArtistTokens.has(w) || candTitleTokens.has(w)) artistHits++;
+      }
+
+      let hasUnwantedVariant = false;
+      for (const v of variantNoise) {
+        if (candTitleTokens.has(v) && !targetRawTitleTokens.has(v)) {
+          hasUnwantedVariant = true;
+          break;
+        }
+      }
+      if (hasUnwantedVariant && !(titleRatio === 1 && artistHits > 0)) continue;
+
+      if (targetArtistWords.length > 0 && artistHits === 0) {
+        if (!(titleRatio >= 0.85 && targetTitleWords.length >= 3)) continue;
+      }
+
+      const score = titleRatio * 10 + (targetArtistWords.length > 0 ? (artistHits / targetArtistWords.length) * 5 : 0);
+      if (score > bestScore) {
+        bestScore = score;
+        bestItem = item;
+      }
+    }
+
+    if (!bestItem) return { success: false };
+
+    const streamUrl = `https://api.audius.co/v1/tracks/${encodeURIComponent(String(bestItem.id))}/stream`;
+    const audiusTrack = {
+      id: `audius_${bestItem.id}`,
+      audiusId: String(bestItem.id),
+      audiusStreamUrl: streamUrl,
+      title: String(bestItem.title || rawTitle),
+      artist: String(bestItem.user?.name || bestItem.user?.handle || target?.artist || 'Audius Sanatçısı'),
+      duration: kurfaFormatSec(bestItem.duration),
+      thumbnail: safeUrl(bestItem.artwork?.['480x480'] || bestItem.artwork?.['150x150'], './kurfamuzik_logo.png'),
+      source: 'audius'
+    };
+
+    return { success: true, streamUrl, audiusTrack };
+  } catch (e) {
+    return { success: false };
+  }
 }
 
 const __kurfaSearchMemory = new Map();
@@ -468,6 +633,8 @@ const state = {
   _consecutiveErrorSkips: 0,
   _lastErrorVideoId: null,
   _playerInError: false,
+  _adRiskSessionAcknowledged: false,
+  _pendingAdWarnPlayback: null,
   queue: cleanDeduplicateQueueArray(safeGetJSON('kurfa_queue', [])),
   originalQueue: [],
   queueIndex: 0,
@@ -1394,7 +1561,7 @@ async function prefetchNextQueueTrack() {
   } catch(e) {}
 }
 
-async function resolveAndPlaySpotifyTrack(placeholderId, track) {
+async function resolveAndPlaySpotifyTrack(placeholderId, track, options = {}) {
   stopAllPlayback(true);
   const resolveToken = currentPlaybackToken;
   const title = track?.title || 'Şarkı';
@@ -1447,7 +1614,7 @@ async function resolveAndPlaySpotifyTrack(placeholderId, track) {
       // Preload next track
       prefetchNextQueueTrack();
 
-      playTrackById(realYtId, track || best);
+      playTrackById(realYtId, track || best, 0, undefined, undefined, options);
     } else {
       showToast(`YouTube üzerinde parça bulunamadı: ${title}`);
       clearTimeout(state._errorSkipTimer);
@@ -1468,6 +1635,8 @@ function playTrackById(videoId, arg2, arg3, arg4, arg5, options = {}) {
   if (!videoId) return;
   const rawId = String(videoId).trim();
   const isAutoErrorSkip = Boolean(options && options.isAutoErrorSkip);
+  const isAutoAdvance = Boolean(options && options.isAutoAdvance);
+  const bypassAdWarning = Boolean(options && options.bypassAdWarning);
 
   let target = null;
   let startTime = 0;
@@ -1503,24 +1672,33 @@ function playTrackById(videoId, arg2, arg3, arg4, arg5, options = {}) {
       playTrackById(fallbackYt, target, startTime, undefined, undefined, options);
       return;
     }
-    resolveAndPlaySpotifyTrack(rawId, target);
+    resolveAndPlaySpotifyTrack(rawId, target, options);
     return;
   }
 
   const normalizedStart = (typeof startTime === 'number' && !isNaN(startTime) && startTime > 0) ? startTime : 0;
   const preferDirectAudio = isAudiusTrack || (
     state.deckVisualMode !== 'video' &&
-    (isAndroidNativeEngine() || Boolean(getBrowserExtensionMode()))
+    hasAdFreeLocalEngine()
+  );
+  const shouldCheckPrePlayGate = Boolean(
+    !isAudiusTrack &&
+    !preferDirectAudio &&
+    cleanYtId &&
+    !hasAdFreeLocalEngine() &&
+    state.deckVisualMode !== 'video' &&
+    !bypassAdWarning
   );
 
   state.userPaused = false;
+  state._pendingAdWarnPlayback = null;
   clearTimeout(state._guardianResumeTimer);
   clearTimeout(state._errorSkipTimer);
   clearTimeout(state._stallWatchdogTimer);
 
   // Stop background timers/HTML5 audio; keep YT active only when YT loads immediately
   const ytCanDirectLoad = Boolean(state.ytReady && state.ytPlayer && typeof state.ytPlayer.loadVideoById === 'function');
-  stopAllPlayback(ytCanDirectLoad && !preferDirectAudio);
+  stopAllPlayback(ytCanDirectLoad && !preferDirectAudio && !shouldCheckPrePlayGate);
   const token = currentPlaybackToken;
 
   state._isAdMuted = false;
@@ -1644,6 +1822,63 @@ function playTrackById(videoId, arg2, arg3, arg4, arg5, options = {}) {
       loadYouTubePlayback(cleanYtId, target, normalizedStart, token, Boolean(state.ytReady && state.ytPlayer && typeof state.ytPlayer.loadVideoById === 'function'));
     });
     showToast(`Reklamsız Çalınıyor: ${target.title}`);
+    return;
+  }
+
+  if (shouldCheckPrePlayGate) {
+    const isAutoTransition = isAutoAdvance || isAutoErrorSkip;
+    const matchTimeout = isAutoTransition ? 550 : 650;
+    const proceedToYouTube = (showPlayToast) => {
+      if (token !== currentPlaybackToken || state.userPaused) return;
+      loadYouTubePlayback(
+        cleanYtId,
+        target,
+        normalizedStart,
+        token,
+        Boolean(state.ytReady && state.ytPlayer && typeof state.ytPlayer.loadVideoById === 'function')
+      );
+      if (showPlayToast) {
+        showToast(`Çalınıyor: ${target.title} - ${target.artist}`);
+      }
+    };
+
+    if (!isAutoTransition) {
+      state.isPlaying = false;
+      updatePlayPauseUI(false);
+    }
+
+    kurfaTryQuickAudiusMatch(target, matchTimeout).then((match) => {
+      if (token !== currentPlaybackToken || state.userPaused) return;
+      if (match && match.success && match.streamUrl && DOM.audioEngine) {
+        loadDirectAudioStream(match.streamUrl, normalizedStart, token, null);
+        showToast(`Reklamsız Açık Akış Eşleşti: ${target.title}`);
+        return;
+      }
+      if (!isAutoTransition && !isAdWarningAcknowledged()) {
+        state._pendingAdWarnPlayback = {
+          cleanYtId,
+          target,
+          normalizedStart,
+          ytCanDirectLoad: Boolean(state.ytReady && state.ytPlayer && typeof state.ytPlayer.loadVideoById === 'function')
+        };
+        openAdWarningModal(target);
+        return;
+      }
+      proceedToYouTube(!isAutoTransition);
+    }).catch(() => {
+      if (token !== currentPlaybackToken || state.userPaused) return;
+      if (!isAutoTransition && !isAdWarningAcknowledged()) {
+        state._pendingAdWarnPlayback = {
+          cleanYtId,
+          target,
+          normalizedStart,
+          ytCanDirectLoad: Boolean(state.ytReady && state.ytPlayer && typeof state.ytPlayer.loadVideoById === 'function')
+        };
+        openAdWarningModal(target);
+        return;
+      }
+      proceedToYouTube(!isAutoTransition);
+    });
     return;
   }
 
@@ -1881,6 +2116,7 @@ function pausePlayback() {
 
 function playNextTrack(opts = {}) {
   const isAutoErrorSkip = Boolean(opts && opts.isAutoErrorSkip);
+  const isAutoAdvance = Boolean(opts && opts.isAutoAdvance);
   if (!state.queue || state.queue.length === 0) {
     triggerSmartRadioContinue();
     return;
@@ -1901,7 +2137,7 @@ function playNextTrack(opts = {}) {
     state.queueIndex = nextIdx;
     const nextTrack = state.queue[state.queueIndex];
     const playId = safeYtId(nextTrack.ytId) || nextTrack.id;
-    playTrackById(playId, nextTrack, 0, undefined, undefined, { isAutoErrorSkip });
+    playTrackById(playId, nextTrack, 0, undefined, undefined, { isAutoErrorSkip, isAutoAdvance });
     prefetchNextQueueTrack();
   } else if (state.repeatMode === 1) {
     let wrapIdx = 0;
@@ -1918,7 +2154,7 @@ function playNextTrack(opts = {}) {
       state.queueIndex = wrapIdx;
       const nextTrack = state.queue[wrapIdx];
       const playId = safeYtId(nextTrack.ytId) || nextTrack.id;
-      playTrackById(playId, nextTrack, 0, undefined, undefined, { isAutoErrorSkip });
+      playTrackById(playId, nextTrack, 0, undefined, undefined, { isAutoErrorSkip, isAutoAdvance });
       prefetchNextQueueTrack();
     } else {
       state.isPlaying = false;
@@ -1946,9 +2182,9 @@ function handleTrackEnd() {
     if (state.ytPlayer && typeof state.ytPlayer.seekTo === 'function') state.ytPlayer.seekTo(0, true);
     resumePlayback();
   } else if (state.queueIndex < state.queue.length - 1) {
-    playNextTrack();
+    playNextTrack({ isAutoAdvance: true });
   } else if (state.repeatMode === 1) {
-    playNextTrack();
+    playNextTrack({ isAutoAdvance: true });
   } else {
     triggerSmartRadioContinue();
   }
@@ -7325,7 +7561,7 @@ async function triggerSmartRadioContinue() {
 
   // Strict safety check: Never fetch recommendations if existing queue has remaining tracks!
   if (state.queue && state.queue.length > 0 && state.queueIndex < state.queue.length - 1) {
-    playNextTrack();
+    playNextTrack({ isAutoAdvance: true });
     return;
   }
 
@@ -7335,7 +7571,7 @@ async function triggerSmartRadioContinue() {
       state.queueIndex = 0;
       const firstTrack = state.queue[0];
       if (firstTrack) {
-        playTrackById(firstTrack.id, firstTrack);
+        playTrackById(firstTrack.id, firstTrack, 0, undefined, undefined, { isAutoAdvance: true });
       }
     } else {
       state.isPlaying = false;
@@ -7436,7 +7672,7 @@ async function triggerSmartRadioContinue() {
 
       const nextTrack = state.queue[state.queueIndex];
       if (nextTrack) {
-        playTrackById(nextTrack.id, nextTrack);
+        playTrackById(nextTrack.id, nextTrack, 0, undefined, undefined, { isAutoAdvance: true });
         showToast(`Akilli Radyo: ${nextTrack.title}`);
         return;
       }
@@ -8768,6 +9004,7 @@ function setupEventListeners() {
   window.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') {
       const modalClosers = [
+        ['ad-warning-modal', () => dismissAdWarningModal(false)],
         ['app-install-modal', closeAppInstallModal],
         ['google-account-chooser-modal', closeGoogleAccountChooser],
         ['create-playlist-modal', closeCreatePlaylistModal],
@@ -8827,6 +9064,7 @@ function setupEventListeners() {
     [document.getElementById('create-playlist-modal'), closeCreatePlaylistModal],
     [document.getElementById('add-to-playlist-modal'), closeAddToPlaylistModal],
     [document.getElementById('app-install-modal'), closeAppInstallModal],
+    [document.getElementById('ad-warning-modal'), () => dismissAdWarningModal(false)],
     [document.getElementById('google-account-chooser-modal'), closeGoogleAccountChooser]
   ];
   backdropBindings.forEach(([modalEl, closeFn]) => {
@@ -9194,4 +9432,201 @@ async function triggerPwaInstall() {
   }
 }
 window.triggerPwaInstall = triggerPwaInstall;
+
+// =========================================================================
+// CİHAZA ÖZEL REKLAM UYARISI MODALI (Pre-Play Gate Controller)
+// =========================================================================
+function isAdWarningAcknowledged() {
+  if (state._adRiskSessionAcknowledged) return true;
+  try {
+    if (sessionStorage.getItem('kurfa_ad_warn_ack') === '1') {
+      state._adRiskSessionAcknowledged = true;
+      return true;
+    }
+  } catch (e) {}
+  return false;
+}
+
+function acknowledgeAdWarningSession() {
+  state._adRiskSessionAcknowledged = true;
+  try {
+    sessionStorage.setItem('kurfa_ad_warn_ack', '1');
+  } catch (e) {}
+}
+
+function hideAdWarningModalVisual() {
+  const modal = document.getElementById('ad-warning-modal');
+  const card = document.getElementById('ad-warning-modal-card');
+  if (modal) {
+    modal.classList.add('opacity-0', 'pointer-events-none');
+    modal.classList.remove('opacity-100', 'pointer-events-auto');
+  }
+  if (card) {
+    card.classList.remove('scale-100');
+    card.classList.add('scale-95');
+  }
+}
+
+function openAdWarningModal(target) {
+  const modal = document.getElementById('ad-warning-modal');
+  const card = document.getElementById('ad-warning-modal-card');
+  if (!modal) return;
+
+  const thumbEl = document.getElementById('ad-warn-track-thumb');
+  const titleEl = document.getElementById('ad-warn-track-title');
+  const artistEl = document.getElementById('ad-warn-track-artist');
+  if (thumbEl) thumbEl.src = safeUrl(getTrackThumbnail(target), './kurfamuzik_logo.png');
+  if (titleEl) titleEl.textContent = target?.title || 'Bilinmeyen Parça';
+  if (artistEl) artistEl.textContent = target?.artist || 'Bilinmeyen Sanatçı';
+
+  const platform = detectUserDevicePlatform();
+  const badgeEl = document.getElementById('ad-warn-device-badge');
+  const primaryEl = document.getElementById('ad-warn-primary-cta');
+  const secondaryEl = document.getElementById('ad-warn-secondary-cta');
+
+  const platformConfigs = {
+    windows: {
+      badge: 'Windows Algılandı',
+      primaryLabel: 'Windows Uygulamasını İndir (.exe • %0 Reklam)',
+      primaryHref: 'https://github.com/KurfaCore/kurfanova-app/releases/latest/download/Kurfanova-Muzik-Windows.exe',
+      primaryTarget: '_blank',
+      primaryDownload: 'Kurfanova-Muzik-Windows.exe',
+      secondaryLabel: 'Chrome/Edge Eklenti İndir',
+      secondaryHref: './kurfa-reklamsiz-eklenti.zip',
+      secondaryTarget: '_self',
+      secondaryDownload: 'kurfa-reklamsiz-eklenti.zip',
+      secondaryOnClick: null
+    },
+    android: {
+      badge: 'Android Algılandı',
+      primaryLabel: 'Android APK İndir (%0 Reklam)',
+      primaryHref: 'https://github.com/KurfaCore/kurfanova-app/releases/latest/download/Kurfanova-Muzik.apk',
+      primaryTarget: '_blank',
+      primaryDownload: 'Kurfanova-Muzik.apk',
+      secondaryLabel: 'Tarayıcı Kısayolu (WebAPK)',
+      secondaryHref: '#webapk',
+      secondaryTarget: '_self',
+      secondaryDownload: null,
+      secondaryOnClick: (e) => {
+        e.preventDefault();
+        dismissAdWarningModal(false);
+        triggerPwaInstall();
+      }
+    },
+    macos: {
+      badge: 'macOS Algılandı',
+      primaryLabel: 'Chrome Eklentisi İndir (%0 Reklam)',
+      primaryHref: './kurfa-reklamsiz-eklenti.zip',
+      primaryTarget: '_self',
+      primaryDownload: 'kurfa-reklamsiz-eklenti.zip',
+      secondaryLabel: 'Userscript Kur',
+      secondaryHref: './kurfa-motor.user.js',
+      secondaryTarget: '_blank',
+      secondaryDownload: null,
+      secondaryOnClick: null
+    },
+    linux: {
+      badge: 'Linux Algılandı',
+      primaryLabel: 'Chrome Eklentisi İndir (%0 Reklam)',
+      primaryHref: './kurfa-reklamsiz-eklenti.zip',
+      primaryTarget: '_self',
+      primaryDownload: 'kurfa-reklamsiz-eklenti.zip',
+      secondaryLabel: 'Userscript Kur',
+      secondaryHref: './kurfa-motor.user.js',
+      secondaryTarget: '_blank',
+      secondaryDownload: null,
+      secondaryOnClick: null
+    },
+    ios: {
+      badge: 'iOS Algılandı',
+      primaryLabel: 'Userscript Kur (%0 Reklam)',
+      primaryHref: './kurfa-motor.user.js',
+      primaryTarget: '_blank',
+      primaryDownload: null,
+      secondaryLabel: 'Reklamsız Açık Katalogda Ara',
+      secondaryHref: '#audius',
+      secondaryTarget: '_self',
+      secondaryDownload: null,
+      secondaryOnClick: (e) => {
+        e.preventDefault();
+        const q = kurfaCleanTrackQuery(target?.title, target?.artist) || (target?.title || '');
+        dismissAdWarningModal(false);
+        switchTab('arama');
+        if (q) {
+          if (DOM.engineSearchInput) DOM.engineSearchInput.value = q;
+          if (DOM.topSearchInput) DOM.topSearchInput.value = q;
+          state.baseSearchQuery = q;
+        }
+        const audiusChip = document.querySelector('#search-filter-chips .filter-chip[onclick*="audius"]');
+        applySearchFilter('audius', audiusChip);
+      }
+    }
+  };
+
+  const cfg = platformConfigs[platform] || platformConfigs.windows;
+  if (badgeEl) badgeEl.textContent = cfg.badge;
+
+  if (primaryEl) {
+    const labelSpan = primaryEl.querySelector('[data-cta-label]') || primaryEl;
+    labelSpan.textContent = cfg.primaryLabel;
+    primaryEl.href = cfg.primaryHref;
+    primaryEl.target = cfg.primaryTarget;
+    if (cfg.primaryDownload) {
+      primaryEl.setAttribute('download', cfg.primaryDownload);
+    } else {
+      primaryEl.removeAttribute('download');
+    }
+  }
+
+  if (secondaryEl) {
+    const secSpan = secondaryEl.querySelector('[data-cta-label]') || secondaryEl;
+    secSpan.textContent = cfg.secondaryLabel;
+    secondaryEl.href = cfg.secondaryHref;
+    secondaryEl.target = cfg.secondaryTarget;
+    if (cfg.secondaryDownload) {
+      secondaryEl.setAttribute('download', cfg.secondaryDownload);
+    } else {
+      secondaryEl.removeAttribute('download');
+    }
+    secondaryEl.onclick = cfg.secondaryOnClick || null;
+  }
+
+  modal.classList.remove('opacity-0', 'pointer-events-none');
+  modal.classList.add('opacity-100', 'pointer-events-auto');
+  if (card) {
+    card.classList.remove('scale-95');
+    card.classList.add('scale-100');
+  }
+}
+
+function dismissAdWarningModal(shouldResume = false) {
+  if (shouldResume) {
+    continueFromAdWarningModal();
+    return;
+  }
+  hideAdWarningModalVisual();
+  state._pendingAdWarnPlayback = null;
+  state.isPlaying = false;
+  updatePlayPauseUI(false);
+}
+window.dismissAdWarningModal = dismissAdWarningModal;
+
+function continueFromAdWarningModal() {
+  acknowledgeAdWarningSession();
+  const pending = state._pendingAdWarnPlayback;
+  state._pendingAdWarnPlayback = null;
+  hideAdWarningModalVisual();
+
+  if (pending && pending.cleanYtId) {
+    playTrackById(
+      pending.cleanYtId,
+      pending.target,
+      pending.normalizedStart || 0,
+      undefined,
+      undefined,
+      { bypassAdWarning: true }
+    );
+  }
+}
+window.continueFromAdWarningModal = continueFromAdWarningModal;
 
