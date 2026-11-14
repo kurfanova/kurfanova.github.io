@@ -38,22 +38,30 @@ function getBrowserExtensionMode() {
 }
 
 function updateLocalEngineStatusUI() {
-  const badge = typeof document !== 'undefined' ? document.getElementById('kurfa-local-engine-status') : null;
-  if (!badge) return;
+  if (typeof document === 'undefined') return;
+  const targets = [
+    document.getElementById('kurfa-local-engine-status'),
+    document.getElementById('settings-engine-status')
+  ].filter(Boolean);
+  if (targets.length === 0) return;
+
   const extMode = getBrowserExtensionMode();
+  let label = 'Tarayıcı Modu';
+  let cls = 'px-2 py-0.5 rounded-full text-[10px] font-bold bg-surface-container text-on-surface-variant';
   if (isAndroidNativeEngine()) {
-    badge.textContent = 'APK Cihaz Motoru Aktif (%0 Reklam)';
-    badge.className = 'px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/15 text-emerald-500';
+    label = 'APK Cihaz Motoru Aktif (%0 Reklam)';
+    cls = 'px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/15 text-emerald-500';
   } else if (extMode && extMode.startsWith('desktop')) {
-    badge.textContent = 'Masaüstü Uygulaması Aktif (%0 Reklam)';
-    badge.className = 'px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/15 text-emerald-500';
+    label = 'Masaüstü Uygulaması Aktif (%0 Reklam)';
+    cls = 'px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/15 text-emerald-500';
   } else if (extMode) {
-    badge.textContent = 'Eklenti Motoru Aktif (%0 Reklam)';
-    badge.className = 'px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/15 text-emerald-500';
-  } else {
-    badge.textContent = 'Tarayıcı Modu';
-    badge.className = 'px-2 py-0.5 rounded-full text-[10px] font-bold bg-surface-container text-on-surface-variant';
+    label = 'Eklenti Motoru Aktif (%0 Reklam)';
+    cls = 'px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/15 text-emerald-500';
   }
+  targets.forEach((el) => {
+    el.textContent = label;
+    el.className = cls;
+  });
 }
 
 function hasAdFreeLocalEngine() {
@@ -662,7 +670,7 @@ const state = {
     const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
     return {
       nickname: "Dinleyici",
-      avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&q=80",
+      avatar: "./kurfamuzik_logo.png",
       darkMode: prefersDark,
       listeningSeconds: 0,
       tracksPlayed: 0
@@ -6314,10 +6322,8 @@ function openProfileModal() {
   const dlEl = document.getElementById('stat-downloads-count');
   if (dlEl) dlEl.textContent = state.downloads.length.toString();
 
-  const currentAvatarPreview = document.getElementById('profile-current-avatar-preview');
-  if (currentAvatarPreview && state.profile.avatar) {
-    currentAvatarPreview.src = safeUrl(state.profile.avatar, './kurfamuzik_logo.png');
-  }
+  updateLocalEngineStatusUI();
+  updateAdWarningToggleUI();
 
   modal.classList.remove('opacity-0', 'pointer-events-none');
   modal.classList.add('opacity-100', 'pointer-events-auto');
@@ -6417,8 +6423,11 @@ function saveProfileData() {
 
 function updateProfileUI() {
   const avatarEl = document.getElementById('topbar-user-avatar');
-  if (avatarEl && state.profile.avatar) {
-    avatarEl.src = safeUrl(state.profile.avatar, './kurfamuzik_logo.png');
+  if (avatarEl) {
+    const rawAv = state.profile.avatar && !String(state.profile.avatar).includes('unsplash.com')
+      ? state.profile.avatar
+      : './kurfamuzik_logo.png';
+    avatarEl.src = safeUrl(rawAv, './kurfamuzik_logo.png');
   }
   const nameEl = document.getElementById('topbar-user-name');
   if (nameEl) {
@@ -6449,7 +6458,7 @@ function updateProfileUI() {
 
   const btnThemeToggle = document.getElementById('btn-theme-toggle');
   if (btnThemeToggle) {
-    btnThemeToggle.textContent = isDark ? 'Açık (Kapat)' : 'Kapalı (Aç)';
+    btnThemeToggle.textContent = isDark ? 'Açık' : 'Kapalı';
     if (isDark) {
       btnThemeToggle.classList.add('bg-primary', 'text-on-primary');
       btnThemeToggle.classList.remove('bg-surface-container', 'text-on-surface');
@@ -6458,6 +6467,7 @@ function updateProfileUI() {
       btnThemeToggle.classList.add('bg-surface-container', 'text-on-surface');
     }
   }
+  updateAdWarningToggleUI();
 }
 
 function toggleDarkMode() {
@@ -8044,7 +8054,7 @@ function submitCustomGoogleAccount() {
   const newAcc = {
     name,
     email,
-    avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=120&q=80",
+    avatar: "./kurfamuzik_logo.png",
     uid: "google_" + Date.now()
   };
 
@@ -9436,7 +9446,16 @@ window.triggerPwaInstall = triggerPwaInstall;
 // =========================================================================
 // CİHAZA ÖZEL REKLAM UYARISI MODALI (Pre-Play Gate Controller)
 // =========================================================================
+function isAdWarningDisabledByPref() {
+  try {
+    return localStorage.getItem('kurfa_ad_warn_disabled') === '1';
+  } catch (e) {
+    return false;
+  }
+}
+
 function isAdWarningAcknowledged() {
+  if (isAdWarningDisabledByPref()) return true;
   if (state._adRiskSessionAcknowledged) return true;
   try {
     if (sessionStorage.getItem('kurfa_ad_warn_ack') === '1') {
@@ -9446,6 +9465,38 @@ function isAdWarningAcknowledged() {
   } catch (e) {}
   return false;
 }
+
+function updateAdWarningToggleUI() {
+  const btn = typeof document !== 'undefined' ? document.getElementById('btn-ad-warn-toggle') : null;
+  if (!btn) return;
+  const enabled = !isAdWarningDisabledByPref();
+  btn.textContent = enabled ? 'Açık' : 'Kapalı';
+  if (enabled) {
+    btn.classList.add('bg-primary', 'text-on-primary');
+    btn.classList.remove('bg-surface-container', 'text-on-surface');
+  } else {
+    btn.classList.remove('bg-primary', 'text-on-primary');
+    btn.classList.add('bg-surface-container', 'text-on-surface');
+  }
+}
+
+function toggleAdWarningPreference() {
+  const currentlyDisabled = isAdWarningDisabledByPref();
+  const nextDisabled = !currentlyDisabled;
+  try {
+    if (nextDisabled) {
+      localStorage.setItem('kurfa_ad_warn_disabled', '1');
+      state._adRiskSessionAcknowledged = true;
+    } else {
+      localStorage.removeItem('kurfa_ad_warn_disabled');
+      state._adRiskSessionAcknowledged = false;
+      sessionStorage.removeItem('kurfa_ad_warn_ack');
+    }
+  } catch (e) {}
+  updateAdWarningToggleUI();
+  showToast(nextDisabled ? 'Reklam uyarısı kapatıldı' : 'Reklam uyarısı açıldı');
+}
+window.toggleAdWarningPreference = toggleAdWarningPreference;
 
 function acknowledgeAdWarningSession() {
   state._adRiskSessionAcknowledged = true;
