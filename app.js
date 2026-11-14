@@ -501,7 +501,7 @@ function initWebAutoUpdater() {
   if (typeof navigator === 'undefined' || !('serviceWorker' in navigator)) return;
   if (window.location.protocol !== 'https:' && window.location.hostname !== 'localhost') return;
   try {
-    navigator.serviceWorker.register('./sw.js?v=4.3.9').then((reg) => {
+    navigator.serviceWorker.register('./sw.js?v=4.3.10').then((reg) => {
       __kurfaSwRegistration = reg;
       __kurfaLastSwUpdateCheckAt = Date.now();
     }).catch(() => {});
@@ -10252,7 +10252,7 @@ async function refreshAppVersionAndUpdateStatus() {
   }
 
   let platformLabel = 'Web';
-  let installedVer = '4.3.9';
+  let installedVer = '4.3.10';
   let installedCode = 0;
 
   if (isDesktop) {
