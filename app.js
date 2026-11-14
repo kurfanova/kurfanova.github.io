@@ -37,36 +37,292 @@ function getBrowserExtensionMode() {
   }
 }
 
+const KURFA_ADGUARD_STORES = {
+  chrome: {
+    id: 'chrome',
+    name: 'Chrome',
+    storeName: 'Chrome Web Mağazası',
+    url: 'https://chromewebstore.google.com/detail/adguard-adblocker/bgnkhhnnamicmpeenaelnjfhikgbkllg'
+  },
+  edge: {
+    id: 'edge',
+    name: 'Microsoft Edge',
+    storeName: 'Edge Eklenti Mağazası',
+    url: 'https://microsoftedge.microsoft.com/addons/detail/pdffkfellgipmhklpdmokmckkkfcopbh'
+  },
+  firefox: {
+    id: 'firefox',
+    name: 'Firefox',
+    storeName: 'Firefox Add-ons',
+    url: 'https://addons.mozilla.org/firefox/addon/adguard-adblocker/'
+  },
+  opera: {
+    id: 'opera',
+    name: 'Opera',
+    storeName: 'Opera Add-ons',
+    url: 'https://addons.opera.com/en/extensions/details/adguard/'
+  },
+  'safari-mac': {
+    id: 'safari-mac',
+    name: 'Safari',
+    storeName: 'Mac App Store',
+    url: 'https://apps.apple.com/app/adguard-for-safari/id1440147259'
+  },
+  'safari-ios': {
+    id: 'safari-ios',
+    name: 'Safari',
+    storeName: 'App Store',
+    url: 'https://apps.apple.com/app/adguard/id1047223162'
+  }
+};
+
+let __kurfaAdBlockerDetected = false;
+let __kurfaAdBlockerCheckedAt = 0;
+let __kurfaAdBlockerInflight = null;
+let __kurfaAdBlockerWatcherTimer = null;
+let __kurfaAdBlockerWatching = false;
+
+function detectBrowserExtensionStore(explicitKey) {
+  if (explicitKey) {
+    if (explicitKey === 'safari') {
+      const plat = detectUserDevicePlatform();
+      return plat === 'ios' ? KURFA_ADGUARD_STORES['safari-ios'] : KURFA_ADGUARD_STORES['safari-mac'];
+    }
+    if (KURFA_ADGUARD_STORES[explicitKey]) return KURFA_ADGUARD_STORES[explicitKey];
+  }
+  try {
+    const ua = String(navigator.userAgent || '');
+    const plat = detectUserDevicePlatform();
+    if (/opr\/|opera/i.test(ua)) return KURFA_ADGUARD_STORES.opera;
+    if (/edg\/|edga\/|edgios\//i.test(ua)) return KURFA_ADGUARD_STORES.edge;
+    if (/firefox|fxios/i.test(ua)) return KURFA_ADGUARD_STORES.firefox;
+    if (plat === 'ios' && /safari/i.test(ua) && !/crios|fxios|edgios|opios/i.test(ua)) {
+      return KURFA_ADGUARD_STORES['safari-ios'];
+    }
+    if (plat === 'macos' && /safari/i.test(ua) && !/chrome|crios|chromium|edg|opr|firefox/i.test(ua)) {
+      return KURFA_ADGUARD_STORES['safari-mac'];
+    }
+  } catch (e) {}
+  return KURFA_ADGUARD_STORES.chrome;
+}
+
+function isBrowserAdBlockerActive() {
+  return Boolean(__kurfaAdBlockerDetected);
+}
+
 function updateLocalEngineStatusUI() {
   if (typeof document === 'undefined') return;
   const targets = [
     document.getElementById('kurfa-local-engine-status'),
     document.getElementById('settings-engine-status')
   ].filter(Boolean);
-  if (targets.length === 0) return;
 
   const extMode = getBrowserExtensionMode();
+  const adBlockerActive = isBrowserAdBlockerActive();
   let label = 'Tarayıcı Modu';
-  let cls = 'px-2 py-0.5 rounded-full text-[10px] font-bold bg-surface-container text-on-surface-variant';
+  let cls = 'px-2 py-0.5 rounded-full text-[10px] font-bold bg-surface-container text-on-surface-variant whitespace-nowrap flex-shrink-0';
   if (isAndroidNativeEngine()) {
     label = 'APK Cihaz Motoru Aktif (%0 Reklam)';
-    cls = 'px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/15 text-emerald-500';
+    cls = 'px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/15 text-emerald-500 whitespace-nowrap flex-shrink-0';
   } else if (extMode && extMode.startsWith('desktop')) {
     label = 'Masaüstü Uygulaması Aktif (%0 Reklam)';
-    cls = 'px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/15 text-emerald-500';
+    cls = 'px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/15 text-emerald-500 whitespace-nowrap flex-shrink-0';
   } else if (extMode) {
     label = 'Eklenti Motoru Aktif (%0 Reklam)';
-    cls = 'px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/15 text-emerald-500';
+    cls = 'px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/15 text-emerald-500 whitespace-nowrap flex-shrink-0';
+  } else if (adBlockerActive) {
+    label = 'AdGuard / Engelleyici Aktif (%0 Reklam)';
+    cls = 'px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/15 text-emerald-500 whitespace-nowrap flex-shrink-0';
+  } else if (__kurfaAdBlockerWatching) {
+    label = 'Kurulum Algılanıyor...';
+    cls = 'px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/10 text-amber-500 whitespace-nowrap flex-shrink-0';
   }
   targets.forEach((el) => {
     el.textContent = label;
     el.className = cls;
+  });
+
+  const isAdFreeEnv = hasAdFreePlaybackEnvironment();
+  const sidebarPill = document.getElementById('sidebar-adfree-pill');
+  if (sidebarPill) {
+    sidebarPill.textContent = isAdFreeEnv ? 'Aktif' : '%0 Reklam';
+    sidebarPill.className = isAdFreeEnv
+      ? 'px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-emerald-500/15 text-emerald-500 whitespace-nowrap flex-shrink-0 leading-none'
+      : 'px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-primary/15 text-primary whitespace-nowrap flex-shrink-0 leading-none';
+  }
+
+  const detectedStore = detectBrowserExtensionStore();
+  const storeBtnLabel = document.getElementById('btn-install-store-adblock-label');
+  if (storeBtnLabel) {
+    if (adBlockerActive) {
+      storeBtnLabel.textContent = `AdGuard / Engelleyici Aktif (${detectedStore.name})`;
+    } else if (__kurfaAdBlockerWatching) {
+      storeBtnLabel.textContent = `${detectedStore.storeName} Açıldı — Ekle'ye Basın`;
+    } else {
+      storeBtnLabel.textContent = `${detectedStore.name} İçin AdGuard Ekle (${detectedStore.storeName})`;
+    }
+  }
+
+  const hintEl = document.getElementById('kurfa-store-install-hint');
+  if (hintEl) {
+    if (adBlockerActive) {
+      hintEl.textContent = 'Tarayıcınızda reklam engelleyici algılandı. Şarkılar uyarı ekranı olmadan doğrudan oynatılıyor.';
+    } else if (__kurfaAdBlockerWatching) {
+      hintEl.textContent = 'Açılan mağaza sekmesinde "Ekle" butonuna basın; Kurfamüzik arka planda otomatik algılayacak.';
+    } else {
+      hintEl.textContent = 'Tarayıcınız için resmi AdGuard mağaza sayfasını açar; eklediğiniz anda sistem arka planda otomatik algılar.';
+    }
+  }
+
+  const activePillKey = detectedStore.id.startsWith('safari') ? 'safari' : detectedStore.id;
+  document.querySelectorAll('[data-store-browser]').forEach((btn) => {
+    const isMatch = btn.getAttribute('data-store-browser') === activePillKey;
+    btn.classList.toggle('border-primary', isMatch);
+    btn.classList.toggle('text-primary', isMatch);
   });
 }
 
 function hasAdFreeLocalEngine() {
   return Boolean(isAndroidNativeEngine() || getBrowserExtensionMode());
 }
+
+function hasAdFreePlaybackEnvironment() {
+  return Boolean(hasAdFreeLocalEngine() || isBrowserAdBlockerActive());
+}
+
+async function kurfaDetectAdBlocker(options = {}) {
+  const force = Boolean(options && options.force);
+  if (typeof window === 'undefined' || typeof document === 'undefined') return false;
+  if (hasAdFreeLocalEngine()) return true;
+  if (typeof navigator !== 'undefined' && navigator.onLine === false) return false;
+  if (!force && __kurfaAdBlockerCheckedAt && (Date.now() - __kurfaAdBlockerCheckedAt) < 4000) {
+    return __kurfaAdBlockerDetected;
+  }
+  if (__kurfaAdBlockerInflight && !force) return __kurfaAdBlockerInflight;
+
+  __kurfaAdBlockerInflight = (async () => {
+    let blockedByNetwork = false;
+    let blockedByCosmetic = false;
+
+    const controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
+    const timer = controller ? setTimeout(() => controller.abort(), 1400) : null;
+    try {
+      await fetch('https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js', {
+        method: 'HEAD',
+        mode: 'no-cors',
+        cache: 'no-store',
+        signal: controller ? controller.signal : undefined
+      });
+    } catch (err) {
+      if (err && err.name !== 'AbortError') {
+        try {
+          const selfCheck = await fetch('./explore-seed.json', { method: 'HEAD', cache: 'no-store' });
+          if (selfCheck && selfCheck.ok) {
+            blockedByNetwork = true;
+          }
+        } catch (_) {}
+      }
+    } finally {
+      if (timer) clearTimeout(timer);
+    }
+
+    if (document.body) {
+      const bait = document.createElement('div');
+      bait.className = 'adsbox ad-banner banner-ad pub_300x250';
+      bait.setAttribute('aria-hidden', 'true');
+      bait.style.cssText = 'position:fixed;top:-9999px;left:-9999px;width:16px;height:16px;display:block;visibility:visible;pointer-events:none;';
+      bait.innerHTML = '&nbsp;';
+      try {
+        document.body.appendChild(bait);
+        await new Promise((r) => (typeof requestAnimationFrame === 'function' ? requestAnimationFrame(r) : setTimeout(r, 16)));
+        const cs = window.getComputedStyle ? window.getComputedStyle(bait) : null;
+        if (
+          (cs && (cs.display === 'none' || cs.visibility === 'hidden')) ||
+          bait.offsetHeight === 0 ||
+          bait.clientHeight === 0
+        ) {
+          blockedByCosmetic = true;
+        }
+      } catch (_) {
+      } finally {
+        bait.remove();
+      }
+    }
+
+    __kurfaAdBlockerDetected = Boolean(blockedByNetwork || blockedByCosmetic);
+    __kurfaAdBlockerCheckedAt = Date.now();
+    updateLocalEngineStatusUI();
+    return __kurfaAdBlockerDetected;
+  })();
+
+  try {
+    return await __kurfaAdBlockerInflight;
+  } finally {
+    __kurfaAdBlockerInflight = null;
+  }
+}
+
+function stopAdBlockerBackgroundWatcher() {
+  if (__kurfaAdBlockerWatcherTimer) {
+    clearInterval(__kurfaAdBlockerWatcherTimer);
+    __kurfaAdBlockerWatcherTimer = null;
+  }
+  __kurfaAdBlockerWatching = false;
+  const warnStatus = typeof document !== 'undefined' ? document.getElementById('ad-warn-watcher-status') : null;
+  if (warnStatus) {
+    warnStatus.classList.add('hidden');
+    warnStatus.textContent = '';
+  }
+  updateLocalEngineStatusUI();
+}
+
+function handleAdBlockerDetectedFlow() {
+  stopAdBlockerBackgroundWatcher();
+  if (typeof showToast === 'function') {
+    showToast('Reklam engelleyici algılandı! Artık reklamsız oynatılıyor.');
+  }
+  const warnModal = document.getElementById('ad-warning-modal');
+  const warnOpen = Boolean(warnModal && warnModal.classList.contains('opacity-100'));
+  if (warnOpen && typeof state !== 'undefined' && state._pendingAdWarnPlayback) {
+    continueFromAdWarningModal();
+  }
+}
+
+function startAdBlockerBackgroundWatcher() {
+  if (__kurfaAdBlockerWatcherTimer) clearInterval(__kurfaAdBlockerWatcherTimer);
+  __kurfaAdBlockerWatching = true;
+  const startedAt = Date.now();
+  const warnStatus = typeof document !== 'undefined' ? document.getElementById('ad-warn-watcher-status') : null;
+  if (warnStatus) {
+    warnStatus.textContent = 'Resmi mağaza açıldı. Ekle butonuna bastığınızda Kurfamüzik arka planda otomatik algılayıp şarkıyı başlatacak...';
+    warnStatus.classList.remove('hidden');
+  }
+  updateLocalEngineStatusUI();
+
+  __kurfaAdBlockerWatcherTimer = setInterval(async () => {
+    if (Date.now() - startedAt > 180000) {
+      stopAdBlockerBackgroundWatcher();
+      return;
+    }
+    const ok = await kurfaDetectAdBlocker({ force: true });
+    if (ok) {
+      handleAdBlockerDetectedFlow();
+    }
+  }, 2500);
+}
+
+function startAutoExtensionInstall(explicitBrowserKey) {
+  const store = detectBrowserExtensionStore(explicitBrowserKey);
+  try {
+    window.open(store.url, '_blank', 'noopener,noreferrer');
+  } catch (e) {}
+  startAdBlockerBackgroundWatcher();
+  if (typeof showToast === 'function') {
+    showToast(`${store.storeName} açıldı. Ekle'ye basınca otomatik algılanacak.`);
+  }
+}
+window.startAutoExtensionInstall = startAutoExtensionInstall;
+window.kurfaDetectAdBlocker = kurfaDetectAdBlocker;
 
 function detectUserDevicePlatform() {
   try {
@@ -105,6 +361,22 @@ if (typeof window !== 'undefined') {
   window.addEventListener('kurfa-ext-ready', () => {
     updateLocalEngineStatusUI();
   });
+  const onReturnAdCheck = async () => {
+    if (typeof document !== 'undefined' && document.visibilityState === 'hidden') return;
+    const wasWatching = __kurfaAdBlockerWatching;
+    const wasActive = isBrowserAdBlockerActive();
+    const ok = await kurfaDetectAdBlocker({ force: true });
+    if (ok && (wasWatching || !wasActive)) {
+      handleAdBlockerDetectedFlow();
+    }
+  };
+  window.addEventListener('focus', onReturnAdCheck);
+  if (typeof document !== 'undefined') {
+    document.addEventListener('visibilitychange', onReturnAdCheck);
+    document.addEventListener('DOMContentLoaded', () => {
+      setTimeout(() => { kurfaDetectAdBlocker(); }, 350);
+    });
+  }
 }
 
 function callExtensionBridge(action, payload, timeoutMs = 9000) {
@@ -1693,7 +1965,7 @@ function playTrackById(videoId, arg2, arg3, arg4, arg5, options = {}) {
     !isAudiusTrack &&
     !preferDirectAudio &&
     cleanYtId &&
-    !hasAdFreeLocalEngine() &&
+    !hasAdFreePlaybackEnvironment() &&
     state.deckVisualMode !== 'video' &&
     !bypassAdWarning
   );
@@ -1855,11 +2127,18 @@ function playTrackById(videoId, arg2, arg3, arg4, arg5, options = {}) {
       updatePlayPauseUI(false);
     }
 
-    kurfaTryQuickAudiusMatch(target, matchTimeout).then((match) => {
+    Promise.all([
+      kurfaTryQuickAudiusMatch(target, matchTimeout),
+      kurfaDetectAdBlocker()
+    ]).then(([match, blockerOk]) => {
       if (token !== currentPlaybackToken || state.userPaused) return;
       if (match && match.success && match.streamUrl && DOM.audioEngine) {
         loadDirectAudioStream(match.streamUrl, normalizedStart, token, null);
         showToast(`Reklamsız Açık Akış Eşleşti: ${target.title}`);
+        return;
+      }
+      if (blockerOk || hasAdFreePlaybackEnvironment()) {
+        proceedToYouTube(!isAutoTransition);
         return;
       }
       if (!isAutoTransition && !isAdWarningAcknowledged()) {
@@ -9508,6 +9787,11 @@ function acknowledgeAdWarningSession() {
 function hideAdWarningModalVisual() {
   const modal = document.getElementById('ad-warning-modal');
   const card = document.getElementById('ad-warning-modal-card');
+  const warnStatus = document.getElementById('ad-warn-watcher-status');
+  if (warnStatus) {
+    warnStatus.classList.add('hidden');
+    warnStatus.textContent = '';
+  }
   if (modal) {
     modal.classList.add('opacity-0', 'pointer-events-none');
     modal.classList.remove('opacity-100', 'pointer-events-auto');
@@ -9531,22 +9815,31 @@ function openAdWarningModal(target) {
   if (artistEl) artistEl.textContent = target?.artist || 'Bilinmeyen Sanatçı';
 
   const platform = detectUserDevicePlatform();
+  const browserStore = detectBrowserExtensionStore();
   const badgeEl = document.getElementById('ad-warn-device-badge');
   const primaryEl = document.getElementById('ad-warn-primary-cta');
   const secondaryEl = document.getElementById('ad-warn-secondary-cta');
 
+  const storeWatchClick = () => {
+    startAdBlockerBackgroundWatcher();
+    if (typeof showToast === 'function') {
+      showToast(`${browserStore.storeName} açıldı. Ekle'ye basınca otomatik algılanacak.`);
+    }
+  };
+
   const platformConfigs = {
     windows: {
-      badge: 'Windows Algılandı',
+      badge: `Windows • ${browserStore.name}`,
       primaryLabel: 'Windows Uygulamasını İndir (.exe • %0 Reklam)',
       primaryHref: 'https://github.com/KurfaCore/kurfanova-app/releases/latest/download/Kurfanova-Muzik-Windows.exe',
       primaryTarget: '_blank',
       primaryDownload: 'Kurfanova-Muzik-Windows.exe',
-      secondaryLabel: 'Chrome/Edge Eklenti İndir',
-      secondaryHref: './kurfa-reklamsiz-eklenti.zip',
-      secondaryTarget: '_self',
-      secondaryDownload: 'kurfa-reklamsiz-eklenti.zip',
-      secondaryOnClick: null
+      primaryOnClick: null,
+      secondaryLabel: `${browserStore.name} İçin AdGuard Ekle`,
+      secondaryHref: browserStore.url,
+      secondaryTarget: '_blank',
+      secondaryDownload: null,
+      secondaryOnClick: storeWatchClick
     },
     android: {
       badge: 'Android Algılandı',
@@ -9554,6 +9847,7 @@ function openAdWarningModal(target) {
       primaryHref: 'https://github.com/KurfaCore/kurfanova-app/releases/latest/download/Kurfanova-Muzik.apk',
       primaryTarget: '_blank',
       primaryDownload: 'Kurfanova-Muzik.apk',
+      primaryOnClick: null,
       secondaryLabel: 'Tarayıcı Kısayolu (WebAPK)',
       secondaryHref: '#webapk',
       secondaryTarget: '_self',
@@ -9565,35 +9859,46 @@ function openAdWarningModal(target) {
       }
     },
     macos: {
-      badge: 'macOS Algılandı',
-      primaryLabel: 'Chrome Eklentisi İndir (%0 Reklam)',
-      primaryHref: './kurfa-reklamsiz-eklenti.zip',
-      primaryTarget: '_self',
-      primaryDownload: 'kurfa-reklamsiz-eklenti.zip',
-      secondaryLabel: 'Userscript Kur',
-      secondaryHref: './kurfa-motor.user.js',
-      secondaryTarget: '_blank',
-      secondaryDownload: null,
-      secondaryOnClick: null
-    },
-    linux: {
-      badge: 'Linux Algılandı',
-      primaryLabel: 'Chrome Eklentisi İndir (%0 Reklam)',
-      primaryHref: './kurfa-reklamsiz-eklenti.zip',
-      primaryTarget: '_self',
-      primaryDownload: 'kurfa-reklamsiz-eklenti.zip',
-      secondaryLabel: 'Userscript Kur',
-      secondaryHref: './kurfa-motor.user.js',
-      secondaryTarget: '_blank',
-      secondaryDownload: null,
-      secondaryOnClick: null
-    },
-    ios: {
-      badge: 'iOS Algılandı',
-      primaryLabel: 'Userscript Kur (%0 Reklam)',
-      primaryHref: './kurfa-motor.user.js',
+      badge: `macOS • ${browserStore.name}`,
+      primaryLabel: `${browserStore.name} İçin AdGuard Ekle (Resmi Mağaza)`,
+      primaryHref: browserStore.url,
       primaryTarget: '_blank',
       primaryDownload: null,
+      primaryOnClick: storeWatchClick,
+      secondaryLabel: 'Tüm Kurulum Seçenekleri',
+      secondaryHref: '#install',
+      secondaryTarget: '_self',
+      secondaryDownload: null,
+      secondaryOnClick: (e) => {
+        e.preventDefault();
+        dismissAdWarningModal(false);
+        openAppInstallModal();
+      }
+    },
+    linux: {
+      badge: `Linux • ${browserStore.name}`,
+      primaryLabel: `${browserStore.name} İçin AdGuard Ekle (Resmi Mağaza)`,
+      primaryHref: browserStore.url,
+      primaryTarget: '_blank',
+      primaryDownload: null,
+      primaryOnClick: storeWatchClick,
+      secondaryLabel: 'Tüm Kurulum Seçenekleri',
+      secondaryHref: '#install',
+      secondaryTarget: '_self',
+      secondaryDownload: null,
+      secondaryOnClick: (e) => {
+        e.preventDefault();
+        dismissAdWarningModal(false);
+        openAppInstallModal();
+      }
+    },
+    ios: {
+      badge: 'iOS Safari Algılandı',
+      primaryLabel: 'Safari İçin AdGuard Kur (App Store)',
+      primaryHref: KURFA_ADGUARD_STORES['safari-ios'].url,
+      primaryTarget: '_blank',
+      primaryDownload: null,
+      primaryOnClick: storeWatchClick,
       secondaryLabel: 'Reklamsız Açık Katalogda Ara',
       secondaryHref: '#audius',
       secondaryTarget: '_self',
@@ -9627,6 +9932,7 @@ function openAdWarningModal(target) {
     } else {
       primaryEl.removeAttribute('download');
     }
+    primaryEl.onclick = cfg.primaryOnClick || null;
   }
 
   if (secondaryEl) {
