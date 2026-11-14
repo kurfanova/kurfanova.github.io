@@ -121,8 +121,8 @@
       pointer-events: none !important;
     }
   </style>
-  <link rel="stylesheet" href="./tailwind.min.css?v=20261114_v3">
-  <link rel="stylesheet" href="./style.css?v=20261114_v3">
+  <link rel="stylesheet" href="./tailwind.min.css?v=20261114_v4">
+  <link rel="stylesheet" href="./style.css?v=20261114_v4">
 </head>
 <body class="bg-background font-sans text-on-surface antialiased min-h-screen">
   <script>
@@ -1558,6 +1558,48 @@
         </button>
       </div>
 
+      <!-- Masaüstü Uygulama Köprüsü Ayarları (Yalnızca masaüstü modunda görünür) -->
+      <div id="desktop-app-settings-card" class="hidden p-3 rounded-2xl bg-surface-container-low border border-surface-container flex flex-col gap-2.5">
+        <div class="flex items-center justify-between gap-2">
+          <div class="flex items-center gap-2 min-w-0">
+            <span class="material-symbols-outlined text-[18px] text-primary flex-shrink-0">desktop_windows</span>
+            <span class="text-xs font-bold text-on-surface truncate">Masaüstü Entegrasyonu</span>
+          </div>
+          <span id="desktop-app-version" class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-primary/10 text-primary border border-primary/20 flex-shrink-0">Aktif</span>
+        </div>
+
+        <div class="text-[11px] text-on-surface-variant truncate">
+          <span class="font-medium text-on-surface">Konum: </span>
+          <span id="desktop-install-path" class="opacity-80">Masaüstü Uygulaması</span>
+        </div>
+
+        <div class="flex flex-col gap-1.5 pt-1 border-t border-surface-container/60">
+          <div class="flex items-center justify-between">
+            <span class="text-xs text-on-surface">Masaüstü Kısayolu</span>
+            <button type="button" id="btn-desktop-shortcut-toggle" onclick="toggleDesktopSetting('createDesktopShortcut')" class="px-2.5 py-1 rounded-xl text-[11px] font-bold bg-surface-container text-on-surface-variant transition-colors">Kapalı</button>
+          </div>
+          <div class="flex items-center justify-between">
+            <span class="text-xs text-on-surface">Başlat Menüsü</span>
+            <button type="button" id="btn-desktop-startmenu-toggle" onclick="toggleDesktopSetting('createStartMenuShortcut')" class="px-2.5 py-1 rounded-xl text-[11px] font-bold bg-surface-container text-on-surface-variant transition-colors">Kapalı</button>
+          </div>
+          <div class="flex items-center justify-between">
+            <span class="text-xs text-on-surface">Windows Açılışında Başlat</span>
+            <button type="button" id="btn-desktop-startup-toggle" onclick="toggleDesktopSetting('launchOnStartup')" class="px-2.5 py-1 rounded-xl text-[11px] font-bold bg-surface-container text-on-surface-variant transition-colors">Kapalı</button>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-2 pt-1 border-t border-surface-container/60">
+          <button type="button" onclick="openDesktopInstallFolder()" class="w-full py-1.5 px-2.5 rounded-xl bg-surface-container hover:bg-surface-container-high text-on-surface text-[11px] font-semibold border border-surface-container flex items-center justify-center gap-1.5 transition-colors active:scale-95">
+            <span class="material-symbols-outlined text-[16px]">folder_open</span>
+            <span>Klasörü Aç</span>
+          </button>
+          <button type="button" onclick="triggerDesktopUpdateCheck()" class="w-full py-1.5 px-2.5 rounded-xl bg-surface-container hover:bg-surface-container-high text-on-surface text-[11px] font-semibold border border-surface-container flex items-center justify-center gap-1.5 transition-colors active:scale-95">
+            <span class="material-symbols-outlined text-[16px]">sync</span>
+            <span>Güncelleme Denetle</span>
+          </button>
+        </div>
+      </div>
+
       <!-- Nickname & Stats Compact -->
       <div class="p-3 rounded-2xl bg-surface-container-low border border-surface-container flex flex-col gap-3">
         <div class="flex flex-col gap-1">
@@ -1995,7 +2037,7 @@
             <span class="material-symbols-outlined text-[20px] text-primary">desktop_windows</span>
             <div class="flex flex-col text-left">
               <span class="leading-tight">Windows Masaüstü İndir (.exe • %0 Reklam)</span>
-              <span class="text-[10px] text-on-surface-variant font-normal">Tek dosya kurulumsuz PC cihaz motoru (0 Sunucu Yükü)</span>
+              <span class="text-[10px] text-on-surface-variant font-normal">Resmi kurulum sihirbazı • Masaüstü kısayolu & oto güncelleme</span>
             </div>
           </div>
           <span class="material-symbols-outlined text-[18px] text-on-surface-variant">download</span>
@@ -2064,8 +2106,8 @@
             <span class="material-symbols-outlined text-[22px]">gpp_maybe</span>
           </div>
           <div>
-            <h3 class="font-bold text-base text-on-surface leading-tight">Reklam Uyarısı</h3>
-            <p class="text-[11px] text-on-surface-variant">%0 Reklamlı Cihaz Motoru Önerisi</p>
+            <h3 id="ad-warn-title" class="font-bold text-base text-on-surface leading-tight">Reklam Uyarısı</h3>
+            <p id="ad-warn-subtitle" class="text-[11px] text-on-surface-variant">%0 Reklamlı Cihaz Motoru Önerisi</p>
           </div>
         </div>
         <button type="button" aria-label="Kapat" class="w-8 h-8 rounded-full flex items-center justify-center hover:bg-surface-container text-on-surface-variant transition-colors" onclick="dismissAdWarningModal(false)">
@@ -2075,7 +2117,7 @@
 
       <!-- Pending Track Mini-Preview Pill + Concise Explanation -->
       <div class="flex flex-col gap-2.5">
-        <div class="flex items-center gap-3 p-2.5 rounded-2xl bg-surface-container-low border border-surface-container">
+        <div id="ad-warn-track-card" class="flex items-center gap-3 p-2.5 rounded-2xl bg-surface-container-low border border-surface-container">
           <img id="ad-warn-track-thumb" src="./kurfamuzik_logo.png" alt="" class="w-11 h-11 rounded-xl object-cover flex-shrink-0 bg-surface-container" />
           <div class="min-w-0 flex-1">
             <p id="ad-warn-track-title" class="text-xs font-bold text-on-surface truncate">Parça Yükleniyor</p>
@@ -2083,7 +2125,10 @@
           </div>
           <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/10 text-amber-500 border border-amber-500/20 flex-shrink-0">Tarayıcı</span>
         </div>
-        <p class="text-xs text-on-surface-variant leading-relaxed">
+        <div id="ad-warn-welcome-box" class="hidden p-3 rounded-2xl bg-primary/10 border border-primary/20 text-xs text-on-surface leading-relaxed">
+          Hoş geldin! Kurfamüzik ücretsiz ve reklamsız müzik deneyimi sunar. Tarayıcında reklam engelleyici algılanmadığı için YouTube parçalarında reklam çıkabilir; aşağıdan tek tıkla koruma kurabilirsin.
+        </div>
+        <p id="ad-warn-body-text" class="text-xs text-on-surface-variant leading-relaxed">
           Web tarayıcısında bu parçada YouTube reklamı çıkabilir. Cihazına uygun uygulamayı indirirsen tüm şarkılar %0 reklamlı çalar.
         </p>
       </div>
@@ -2110,6 +2155,9 @@
         </a>
         <button type="button" id="ad-warn-continue-btn" onclick="continueFromAdWarningModal()" class="w-full py-2.5 px-4 rounded-2xl bg-surface-container hover:bg-surface-container-high text-on-surface font-semibold text-xs border border-surface-container-high transition-all active:scale-95">
           Yine de Tarayıcıda Çal
+        </button>
+        <button type="button" id="ad-warn-never-btn" onclick="suppressAdWarningPermanently()" class="w-full py-1.5 px-3 rounded-xl text-[11px] font-medium text-on-surface-variant/70 hover:text-on-surface hover:bg-surface-container/50 transition-colors">
+          Bir daha hatırlatma
         </button>
       </div>
 
@@ -2283,6 +2331,6 @@
 
   <!-- Scripts -->
   <script src="https://www.youtube.com/iframe_api"></script>
-  <script src="./app.js?v=20261114_v3"></script>
+  <script src="./app.js?v=20261114_v4"></script>
 </body>
 </html>

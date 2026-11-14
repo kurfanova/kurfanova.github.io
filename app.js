@@ -77,6 +77,7 @@ const KURFA_ADGUARD_STORES = {
 };
 
 let __kurfaAdBlockerDetected = false;
+if (typeof window !== 'undefined') window.__kurfaAdBlockerDetected = false;
 let __kurfaAdBlockerCheckedAt = 0;
 let __kurfaAdBlockerInflight = null;
 let __kurfaAdBlockerWatcherTimer = null;
@@ -109,6 +110,7 @@ function detectBrowserExtensionStore(explicitKey) {
 function isBrowserAdBlockerActive() {
   return Boolean(__kurfaAdBlockerDetected);
 }
+window.isBrowserAdBlockerActive = isBrowserAdBlockerActive;
 
 function updateLocalEngineStatusUI() {
   if (typeof document === 'undefined') return;
@@ -210,54 +212,146 @@ async function kurfaDetectAdBlocker(options = {}) {
 
   __kurfaAdBlockerInflight = (async () => {
     let blockedByNetwork = false;
+    let blockedByScriptProbe = false;
     let blockedByCosmetic = false;
+
+    let _siteOnlinePromise = null;
+    const checkSiteOnline = async () => {
+      if (_siteOnlinePromise) return _siteOnlinePromise;
+      _siteOnlinePromise = (async () => {
+        try {
+          const res = await fetch('./explore-seed.json', { method: 'HEAD', cache: 'no-store' });
+          return Boolean(res && res.ok);
+        } catch (_) {
+          return false;
+        }
+      })();
+      return _siteOnlinePromise;
+    };
 
     const controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
     const timer = controller ? setTimeout(() => controller.abort(), 1400) : null;
     try {
-      await fetch('https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js', {
-        method: 'HEAD',
-        mode: 'no-cors',
-        cache: 'no-store',
-        signal: controller ? controller.signal : undefined
-      });
-    } catch (err) {
-      if (err && err.name !== 'AbortError') {
-        try {
-          const selfCheck = await fetch('./explore-seed.json', { method: 'HEAD', cache: 'no-store' });
-          if (selfCheck && selfCheck.ok) {
-            blockedByNetwork = true;
-          }
-        } catch (_) {}
+      let networkProbeFailed = false;
+      await Promise.all([
+        fetch('https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js', {
+          method: 'HEAD',
+          mode: 'no-cors',
+          cache: 'no-store',
+          signal: controller ? controller.signal : undefined
+        }).catch((err) => {
+          if (err && err.name !== 'AbortError') networkProbeFailed = true;
+        }),
+        fetch('https://static.doubleclick.net/instream/ad_status.js', {
+          method: 'GET',
+          mode: 'no-cors',
+          cache: 'no-store',
+          signal: controller ? controller.signal : undefined
+        }).catch((err) => {
+          if (err && err.name !== 'AbortError') networkProbeFailed = true;
+        })
+      ]);
+
+      if (networkProbeFailed && (await checkSiteOnline())) {
+        blockedByNetwork = true;
       }
+    } catch (_) {
     } finally {
       if (timer) clearTimeout(timer);
     }
 
-    if (document.body) {
-      const bait = document.createElement('div');
-      bait.className = 'adsbox ad-banner banner-ad pub_300x250';
-      bait.setAttribute('aria-hidden', 'true');
-      bait.style.cssText = 'position:fixed;top:-9999px;left:-9999px;width:16px;height:16px;display:block;visibility:visible;pointer-events:none;';
-      bait.innerHTML = '&nbsp;';
+    if (!blockedByNetwork && typeof document !== 'undefined' && document.head) {
+      const prevStatus = window.google_ad_status;
+      let scriptEl = null;
+      let scriptTimer = null;
       try {
-        document.body.appendChild(bait);
-        await new Promise((r) => (typeof requestAnimationFrame === 'function' ? requestAnimationFrame(r) : setTimeout(r, 16)));
-        const cs = window.getComputedStyle ? window.getComputedStyle(bait) : null;
-        if (
-          (cs && (cs.display === 'none' || cs.visibility === 'hidden')) ||
-          bait.offsetHeight === 0 ||
-          bait.clientHeight === 0
-        ) {
-          blockedByCosmetic = true;
+        try {
+          delete window.google_ad_status;
+        } catch (_) {
+          window.google_ad_status = undefined;
         }
+
+        await new Promise((resolve) => {
+          scriptEl = document.createElement('script');
+          scriptEl.async = true;
+          scriptEl.referrerPolicy = 'no-referrer';
+          scriptEl.src = 'https://static.doubleclick.net/instream/ad_status.js';
+
+          const finishScriptProbe = async (isError, isLoad) => {
+            if (scriptTimer) {
+              clearTimeout(scriptTimer);
+              scriptTimer = null;
+            }
+            if (isError) {
+              if (await checkSiteOnline()) blockedByScriptProbe = true;
+            } else if (isLoad) {
+              if (window.google_ad_status !== 1 && (await checkSiteOnline())) {
+                blockedByScriptProbe = true;
+              }
+            }
+            resolve();
+          };
+
+          scriptTimer = setTimeout(() => finishScriptProbe(false, false), 1400);
+          scriptEl.onerror = () => finishScriptProbe(true, false);
+          scriptEl.onload = () => finishScriptProbe(false, true);
+          document.head.appendChild(scriptEl);
+        });
       } catch (_) {
       } finally {
-        bait.remove();
+        if (scriptTimer) clearTimeout(scriptTimer);
+        if (scriptEl && scriptEl.parentNode) scriptEl.remove();
+        if (typeof prevStatus !== 'undefined') {
+          window.google_ad_status = prevStatus;
+        } else {
+          try {
+            delete window.google_ad_status;
+          } catch (_) {
+            window.google_ad_status = undefined;
+          }
+        }
       }
     }
 
-    __kurfaAdBlockerDetected = Boolean(blockedByNetwork || blockedByCosmetic);
+    if (typeof document !== 'undefined' && document.body) {
+      const bait1 = document.createElement('div');
+      bait1.id = 'ad-unit-banner';
+      bait1.className = 'adsbox ad-banner banner-ad pub_300x250 text-ad';
+      bait1.setAttribute('aria-hidden', 'true');
+      bait1.style.cssText = 'position:fixed;bottom:0;right:0;width:16px;height:16px;display:block;visibility:visible;opacity:0.01;pointer-events:none;z-index:-1;';
+      bait1.innerHTML = '&nbsp;';
+
+      const bait2 = document.createElement('div');
+      bait2.className = 'ytd-display-ad-renderer ad-slot';
+      bait2.setAttribute('data-ad-status', 'filled');
+      bait2.setAttribute('aria-hidden', 'true');
+      bait2.style.cssText = 'position:fixed;bottom:0;right:0;width:16px;height:16px;display:block;visibility:visible;opacity:0.01;pointer-events:none;z-index:-1;';
+      bait2.innerHTML = '&nbsp;';
+
+      try {
+        document.body.appendChild(bait1);
+        document.body.appendChild(bait2);
+        await new Promise((r) => (typeof requestAnimationFrame === 'function' ? requestAnimationFrame(r) : setTimeout(r, 20)));
+        for (const b of [bait1, bait2]) {
+          const cs = window.getComputedStyle ? window.getComputedStyle(b) : null;
+          if (
+            (cs && (cs.display === 'none' || cs.visibility === 'hidden' || Number(cs.opacity) === 0)) ||
+            b.offsetHeight === 0 ||
+            b.clientHeight === 0
+          ) {
+            blockedByCosmetic = true;
+            break;
+          }
+        }
+      } catch (_) {
+      } finally {
+        if (bait1.parentNode) bait1.remove();
+        if (bait2.parentNode) bait2.remove();
+      }
+    }
+
+    __kurfaAdBlockerDetected = Boolean(blockedByNetwork || blockedByScriptProbe || blockedByCosmetic);
+    if (typeof window !== 'undefined') window.__kurfaAdBlockerDetected = __kurfaAdBlockerDetected;
     __kurfaAdBlockerCheckedAt = Date.now();
     updateLocalEngineStatusUI();
     return __kurfaAdBlockerDetected;
@@ -291,8 +385,12 @@ function handleAdBlockerDetectedFlow() {
   }
   const warnModal = document.getElementById('ad-warning-modal');
   const warnOpen = Boolean(warnModal && warnModal.classList.contains('opacity-100'));
-  if (warnOpen && typeof state !== 'undefined' && state._pendingAdWarnPlayback) {
-    continueFromAdWarningModal();
+  if (warnOpen) {
+    if (typeof state !== 'undefined' && state._pendingAdWarnPlayback) {
+      continueFromAdWarningModal();
+    } else {
+      hideAdWarningModalVisual();
+    }
   }
 }
 
@@ -338,6 +436,59 @@ function startAutoExtensionInstall(explicitBrowserKey) {
 window.startAutoExtensionInstall = startAutoExtensionInstall;
 window.kurfaDetectAdBlocker = kurfaDetectAdBlocker;
 
+const FIRST_VISIT_KEY = 'kurfa_first_visit_v1';
+
+async function kurfaHandleInitialVisit(detected) {
+  const hasVisitedBefore = (() => {
+    try {
+      return localStorage.getItem(FIRST_VISIT_KEY) === '1';
+    } catch (e) {
+      return true;
+    }
+  })();
+
+  const markVisited = () => {
+    try {
+      localStorage.setItem(FIRST_VISIT_KEY, '1');
+    } catch (e) {}
+  };
+
+  if (hasAdFreeLocalEngine()) {
+    markVisited();
+    return;
+  }
+
+  if (detected === true) {
+    markVisited();
+    updateLocalEngineStatusUI();
+    if (!hasVisitedBefore && typeof showToast === 'function') {
+      showToast('Reklam engelleyiciniz aktif — %0 reklamlı keyifli dinlemeler');
+    }
+    return;
+  }
+
+  if (detected === false && !hasVisitedBefore && !isAdWarningDisabledByPref()) {
+    markVisited();
+    await new Promise((r) => setTimeout(r, 850));
+    const isProtected = hasAdFreePlaybackEnvironment();
+    const isAnyModalOpen = Boolean(
+      document.querySelector(
+        '#app-install-modal.opacity-100, #ad-warning-modal.opacity-100, #profile-modal.opacity-100, #login-modal.opacity-100'
+      )
+    );
+    const hasStartedPlayback = Boolean(
+      typeof state !== 'undefined' && (state._pendingAdWarnPlayback || state.isPlaying)
+    );
+
+    if (!isProtected && !isAnyModalOpen && !hasStartedPlayback) {
+      openAdWarningModal(null, { mode: 'welcome' });
+    }
+  }
+}
+const kurfaRunFirstVisitOnboarding = kurfaHandleInitialVisit;
+window.kurfaRunFirstVisitOnboarding = kurfaRunFirstVisitOnboarding;
+window.kurfaHandleInitialVisit = kurfaHandleInitialVisit;
+
 // =============================================================================
 // 0.6 OTOMATİK GÜNCELLEME (PWA SERVICE WORKER + MASAÜSTÜ/APK OTA KÖPRÜSÜ)
 // =============================================================================
@@ -346,7 +497,7 @@ function initWebAutoUpdater() {
   if (typeof navigator === 'undefined' || !('serviceWorker' in navigator)) return;
   if (window.location.protocol !== 'https:' && window.location.hostname !== 'localhost') return;
   try {
-    navigator.serviceWorker.register('./sw.js?v=4.3.4').then((reg) => {
+    navigator.serviceWorker.register('./sw.js?v=4.3.5').then((reg) => {
       __kurfaSwRegistration = reg;
       reg.addEventListener('updatefound', () => {
         const nextWorker = reg.installing;
@@ -393,6 +544,7 @@ window.requestNativeAppUpdateCheck = function () {
   }
   return false;
 };
+window.kurfaCheckAppUpdate = window.requestNativeAppUpdateCheck;
 
 function detectUserDevicePlatform() {
   try {
@@ -430,6 +582,7 @@ if (typeof window !== 'undefined') {
   });
   window.addEventListener('kurfa-ext-ready', () => {
     updateLocalEngineStatusUI();
+    refreshDesktopBridgeSettings();
   });
   const onReturnAdCheck = async () => {
     if (typeof document !== 'undefined' && document.visibilityState === 'hidden') return;
@@ -446,10 +599,18 @@ if (typeof window !== 'undefined') {
   window.addEventListener('focus', onReturnAdCheck);
   if (typeof document !== 'undefined') {
     document.addEventListener('visibilitychange', onReturnAdCheck);
-    document.addEventListener('DOMContentLoaded', () => {
+    const runOnboardingSetup = () => {
       initWebAutoUpdater();
-      setTimeout(() => { kurfaDetectAdBlocker(); }, 350);
-    });
+      setTimeout(async () => {
+        const detected = await kurfaDetectAdBlocker({ force: true });
+        await kurfaHandleInitialVisit(detected);
+      }, 450);
+    };
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', runOnboardingSetup);
+    } else {
+      runOnboardingSetup();
+    }
   }
 }
 
@@ -6677,6 +6838,7 @@ function openProfileModal() {
 
   updateLocalEngineStatusUI();
   updateAdWarningToggleUI();
+  refreshDesktopBridgeSettings();
 
   modal.classList.remove('opacity-0', 'pointer-events-none');
   modal.classList.add('opacity-100', 'pointer-events-auto');
@@ -9876,17 +10038,178 @@ function hideAdWarningModalVisual() {
   }
 }
 
-function openAdWarningModal(target) {
+function suppressAdWarningPermanently() {
+  try {
+    localStorage.setItem('kurfa_ad_warn_disabled', '1');
+  } catch (e) {}
+  state._adRiskSessionAcknowledged = true;
+  updateAdWarningToggleUI();
+  continueFromAdWarningModal();
+  if (typeof showToast === 'function') {
+    showToast('Reklam uyarısı bir daha gösterilmeyecek');
+  }
+}
+window.suppressAdWarningPermanently = suppressAdWarningPermanently;
+
+let __desktopSettingsState = {
+  createDesktopShortcut: false,
+  createStartMenuShortcut: false,
+  launchOnStartup: false,
+  installPath: '',
+  version: ''
+};
+
+function updateDesktopTogglePill(btnEl, active) {
+  if (!btnEl) return;
+  btnEl.dataset.active = active ? 'true' : 'false';
+  btnEl.textContent = active ? 'Açık' : 'Kapalı';
+  if (active) {
+    btnEl.classList.add('bg-primary', 'text-on-primary');
+    btnEl.classList.remove('bg-surface-container', 'text-on-surface-variant');
+  } else {
+    btnEl.classList.remove('bg-primary', 'text-on-primary');
+    btnEl.classList.add('bg-surface-container', 'text-on-surface-variant');
+  }
+}
+
+async function refreshDesktopBridgeSettings() {
+  const card = document.getElementById('desktop-app-settings-card');
+  if (!card) return;
+  const extMode = getBrowserExtensionMode();
+  if (!extMode || !extMode.startsWith('desktop')) {
+    card.classList.add('hidden');
+    return;
+  }
+
+  try {
+    const res = await callExtensionBridge('GET_DESKTOP_SETTINGS', {}, 4000);
+    if (res && res.success) {
+      card.classList.remove('hidden');
+      __desktopSettingsState = {
+        createDesktopShortcut: Boolean(res.desktopShortcut ?? res.createDesktopShortcut),
+        createStartMenuShortcut: Boolean(res.startMenuShortcut ?? res.createStartMenuShortcut),
+        launchOnStartup: Boolean(res.runOnStartup ?? res.launchOnStartup ?? res.startup),
+        installPath: res.installDir || res.installPath || res.path || '',
+        version: res.version || ''
+      };
+
+      const pathEl = document.getElementById('desktop-install-path');
+      if (pathEl) pathEl.textContent = __desktopSettingsState.installPath || 'Masaüstü Uygulaması';
+      const verEl = document.getElementById('desktop-app-version');
+      if (verEl) verEl.textContent = __desktopSettingsState.version ? `v${__desktopSettingsState.version}` : 'Aktif';
+
+      updateDesktopTogglePill(document.getElementById('btn-desktop-shortcut-toggle'), __desktopSettingsState.createDesktopShortcut);
+      updateDesktopTogglePill(document.getElementById('btn-desktop-startmenu-toggle'), __desktopSettingsState.createStartMenuShortcut);
+      updateDesktopTogglePill(document.getElementById('btn-desktop-startup-toggle'), __desktopSettingsState.launchOnStartup);
+    } else {
+      card.classList.add('hidden');
+    }
+  } catch (e) {
+    card.classList.add('hidden');
+  }
+}
+window.refreshDesktopBridgeSettings = refreshDesktopBridgeSettings;
+
+async function toggleDesktopSetting(key) {
+  const current = Boolean(__desktopSettingsState[key]);
+  const next = !current;
+  const bridgeKeyMap = {
+    createDesktopShortcut: 'desktopShortcut',
+    createStartMenuShortcut: 'startMenuShortcut',
+    launchOnStartup: 'runOnStartup'
+  };
+  const bridgeKey = bridgeKeyMap[key] || key;
+  try {
+    const res = await callExtensionBridge('SET_DESKTOP_SETTINGS', { [bridgeKey]: next, key: bridgeKey, value: next }, 4000);
+    if (res && res.success) {
+      __desktopSettingsState[key] = next;
+      const keyMap = {
+        createDesktopShortcut: 'btn-desktop-shortcut-toggle',
+        createStartMenuShortcut: 'btn-desktop-startmenu-toggle',
+        launchOnStartup: 'btn-desktop-startup-toggle'
+      };
+      updateDesktopTogglePill(document.getElementById(keyMap[key]), next);
+      const labelMap = {
+        createDesktopShortcut: 'Masaüstü kısayolu',
+        createStartMenuShortcut: 'Başlat menüsü kısayolu',
+        launchOnStartup: 'Windows ile başlatma'
+      };
+      if (typeof showToast === 'function') {
+        showToast(`${labelMap[key] || key} ${next ? 'açıldı' : 'kapatıldı'}`);
+      }
+    } else {
+      if (typeof showToast === 'function') {
+        showToast('Ayar değiştirilemedi');
+      }
+    }
+  } catch (e) {
+    if (typeof showToast === 'function') {
+      showToast('Ayar değiştirilemedi');
+    }
+  }
+}
+window.toggleDesktopSetting = toggleDesktopSetting;
+
+function openDesktopInstallFolder() {
+  callExtensionBridge('OPEN_INSTALL_FOLDER', {}, 4000);
+  if (typeof showToast === 'function') {
+    showToast('Uygulama klasörü açılıyor...');
+  }
+}
+window.openDesktopInstallFolder = openDesktopInstallFolder;
+
+function triggerDesktopUpdateCheck() {
+  if (typeof window.kurfaCheckAppUpdate === 'function') {
+    window.kurfaCheckAppUpdate();
+  }
+  if (typeof showToast === 'function') {
+    showToast('Güncelleme denetleniyor...');
+  }
+}
+window.triggerDesktopUpdateCheck = triggerDesktopUpdateCheck;
+
+function openAdWarningModal(target, options = {}) {
   const modal = document.getElementById('ad-warning-modal');
   const card = document.getElementById('ad-warning-modal-card');
   if (!modal) return;
 
+  const mode = (options && options.mode) || (target ? 'track' : 'welcome');
+  modal.dataset.warnMode = mode;
+
+  const trackCard = document.getElementById('ad-warn-track-card');
+  const welcomeBox = document.getElementById('ad-warn-welcome-box');
+  const titleElHeader = document.getElementById('ad-warn-title');
+  const subtitleEl = document.getElementById('ad-warn-subtitle');
+  const bodyTextEl = document.getElementById('ad-warn-body-text');
+  const continueBtn = document.getElementById('ad-warn-continue-btn');
+
   const thumbEl = document.getElementById('ad-warn-track-thumb');
   const titleEl = document.getElementById('ad-warn-track-title');
   const artistEl = document.getElementById('ad-warn-track-artist');
-  if (thumbEl) thumbEl.src = safeUrl(getTrackThumbnail(target), './kurfamuzik_logo.png');
-  if (titleEl) titleEl.textContent = target?.title || 'Bilinmeyen Parça';
-  if (artistEl) artistEl.textContent = target?.artist || 'Bilinmeyen Sanatçı';
+
+  if (mode === 'welcome') {
+    if (trackCard) trackCard.classList.add('hidden');
+    if (welcomeBox) welcomeBox.classList.remove('hidden');
+    if (titleElHeader) titleElHeader.textContent = 'Hoş Geldin! Reklamsız Koruma';
+    if (subtitleEl) subtitleEl.textContent = 'İlk Ziyaret • Cihazına Özel Öneri';
+    if (bodyTextEl) bodyTextEl.classList.add('hidden');
+    if (continueBtn) continueBtn.textContent = 'Şimdilik Tarayıcıda Devam Et';
+  } else {
+    if (trackCard) trackCard.classList.remove('hidden');
+    if (welcomeBox) welcomeBox.classList.add('hidden');
+    if (titleElHeader) titleElHeader.textContent = 'Reklam Uyarısı';
+    if (subtitleEl) subtitleEl.textContent = '%0 Reklamlı Cihaz Motoru Önerisi';
+    if (bodyTextEl) {
+      bodyTextEl.classList.remove('hidden');
+      bodyTextEl.textContent =
+        'Web tarayıcısında bu parçada YouTube reklamı çıkabilir. Cihazına uygun uygulamayı indirirsen tüm şarkılar %0 reklamlı çalar.';
+    }
+    if (continueBtn) continueBtn.textContent = 'Yine de Tarayıcıda Çal';
+
+    if (thumbEl) thumbEl.src = safeUrl(getTrackThumbnail(target), './kurfamuzik_logo.png');
+    if (titleEl) titleEl.textContent = target?.title || 'Bilinmeyen Parça';
+    if (artistEl) artistEl.textContent = target?.artist || 'Bilinmeyen Sanatçı';
+  }
 
   const platform = detectUserDevicePlatform();
   const browserStore = detectBrowserExtensionStore();
@@ -9979,7 +10302,7 @@ function openAdWarningModal(target) {
       secondaryDownload: null,
       secondaryOnClick: (e) => {
         e.preventDefault();
-        const q = kurfaCleanTrackQuery(target?.title, target?.artist) || (target?.title || '');
+        const q = target ? (kurfaCleanTrackQuery(target?.title, target?.artist) || (target?.title || '')) : '';
         dismissAdWarningModal(false);
         switchTab('arama');
         if (q) {
@@ -10031,15 +10354,24 @@ function openAdWarningModal(target) {
 }
 
 function dismissAdWarningModal(shouldResume = false) {
+  const modal = document.getElementById('ad-warning-modal');
+  const isWelcome = modal?.dataset?.warnMode === 'welcome';
   if (shouldResume) {
     continueFromAdWarningModal();
     return;
   }
+  if (isWelcome) {
+    acknowledgeAdWarningSession();
+  }
   hideAdWarningModalVisual();
   state._pendingAdWarnPlayback = null;
-  state.isPlaying = false;
-  updatePlayPauseUI(false);
+  if (!isWelcome) {
+    state.isPlaying = false;
+    updatePlayPauseUI(false);
+  }
 }
+window.openAdWarningModal = openAdWarningModal;
+window.hideAdWarningModalVisual = hideAdWarningModalVisual;
 window.dismissAdWarningModal = dismissAdWarningModal;
 
 function continueFromAdWarningModal() {
@@ -10060,4 +10392,33 @@ function continueFromAdWarningModal() {
   }
 }
 window.continueFromAdWarningModal = continueFromAdWarningModal;
+
+if (typeof document !== 'undefined') {
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      const warnModal = document.getElementById('ad-warning-modal');
+      if (warnModal && warnModal.classList.contains('opacity-100')) {
+        dismissAdWarningModal(false);
+      }
+    }
+  });
+
+  const setupAdWarnDismissBackdrop = () => {
+    const warnModal = document.getElementById('ad-warning-modal');
+    if (warnModal && !warnModal.__backdropBound) {
+      warnModal.__backdropBound = true;
+      warnModal.addEventListener('click', (e) => {
+        if (e.target === warnModal) {
+          dismissAdWarningModal(false);
+        }
+      });
+    }
+  };
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', setupAdWarnDismissBackdrop);
+  } else {
+    setupAdWarnDismissBackdrop();
+  }
+}
 
