@@ -501,7 +501,7 @@ function initWebAutoUpdater() {
   if (typeof navigator === 'undefined' || !('serviceWorker' in navigator)) return;
   if (window.location.protocol !== 'https:' && window.location.hostname !== 'localhost') return;
   try {
-    navigator.serviceWorker.register('./sw.js?v=4.3.8').then((reg) => {
+    navigator.serviceWorker.register('./sw.js?v=4.3.9').then((reg) => {
       __kurfaSwRegistration = reg;
       __kurfaLastSwUpdateCheckAt = Date.now();
     }).catch(() => {});
@@ -588,6 +588,7 @@ if (typeof window !== 'undefined') {
   window.addEventListener('kurfa-ext-ready', () => {
     updateLocalEngineStatusUI();
     refreshDesktopBridgeSettings();
+    refreshAppVersionAndUpdateStatus();
   });
   const onReturnAdCheck = async () => {
     if (typeof document !== 'undefined' && document.visibilityState === 'hidden') return;
@@ -6864,7 +6865,7 @@ function openProfileModal() {
 
   updateLocalEngineStatusUI();
   updateAdWarningToggleUI();
-  refreshDesktopBridgeSettings();
+  refreshAppVersionAndUpdateStatus();
 
   modal.classList.remove('opacity-0', 'pointer-events-none');
   modal.classList.add('opacity-100', 'pointer-events-auto');
@@ -10178,6 +10179,168 @@ async function refreshDesktopBridgeSettings() {
   }
 }
 window.refreshDesktopBridgeSettings = refreshDesktopBridgeSettings;
+
+let __kurfaLatestVersionsCache = { data: null, fetchedAt: 0 };
+
+function compareSemverStrings(a, b) {
+  const pa = String(a || '').replace(/^v/i, '').split('.').map((n) => parseInt(n, 10) || 0);
+  const pb = String(b || '').replace(/^v/i, '').split('.').map((n) => parseInt(n, 10) || 0);
+  const len = Math.max(pa.length, pb.length, 3);
+  for (let i = 0; i < len; i++) {
+    const va = pa[i] || 0;
+    const vb = pb[i] || 0;
+    if (va > vb) return 1;
+    if (va < vb) return -1;
+  }
+  return 0;
+}
+
+async function fetchLatestPublishedAppVersions(force = false) {
+  const now = Date.now();
+  if (!force && __kurfaLatestVersionsCache.data && (now - __kurfaLatestVersionsCache.fetchedAt) < 60000) {
+    return __kurfaLatestVersionsCache.data;
+  }
+  try {
+    const base = typeof WORKER_URL === 'string' && WORKER_URL ? WORKER_URL : 'https://kurfanova.kurfa.workers.dev';
+    const resp = await fetch(`${base}/api/app-versions`, { cache: 'no-store' });
+    if (resp.ok) {
+      const json = await resp.json();
+      if (json && json.success) {
+        __kurfaLatestVersionsCache = { data: json, fetchedAt: now };
+        return json;
+      }
+    }
+  } catch (_) {}
+  return __kurfaLatestVersionsCache.data || null;
+}
+
+function getAndroidBridgeVersionInfo() {
+  try {
+    if (typeof window.KurfaAndroidBridge?.getAppVersionInfo === 'function') {
+      const raw = window.KurfaAndroidBridge.getAppVersionInfo();
+      const parsed = typeof raw === 'string' ? JSON.parse(raw) : raw;
+      if (parsed && typeof parsed === 'object') {
+        return {
+          versionName: String(parsed.versionName || '').replace(/^v/i, ''),
+          versionCode: Number(parsed.versionCode || 0)
+        };
+      }
+    }
+  } catch (_) {}
+  return { versionName: '', versionCode: 0 };
+}
+
+async function refreshAppVersionAndUpdateStatus() {
+  const pillEl = document.getElementById('settings-app-version-pill');
+  const lineEl = document.getElementById('settings-update-check-line');
+  const engineEl = document.getElementById('settings-engine-status');
+  const browserInstallEl = document.getElementById('settings-browser-install-card');
+  const androidCardEl = document.getElementById('android-app-settings-card');
+  const adWarnRowEl = document.getElementById('settings-adwarn-row');
+
+  const extMode = getBrowserExtensionMode();
+  const isDesktop = Boolean(extMode && extMode.startsWith('desktop'));
+  const isAndroid = isAndroidNativeEngine();
+  const isNativeApp = isDesktop || isAndroid;
+
+  if (browserInstallEl) browserInstallEl.classList.toggle('hidden', isNativeApp);
+  if (adWarnRowEl) adWarnRowEl.classList.toggle('hidden', hasAdFreePlaybackEnvironment());
+  if (androidCardEl) androidCardEl.classList.toggle('hidden', !isAndroid);
+
+  if (isDesktop) {
+    await refreshDesktopBridgeSettings();
+  }
+
+  let platformLabel = 'Web';
+  let installedVer = '4.3.9';
+  let installedCode = 0;
+
+  if (isDesktop) {
+    platformLabel = 'Masaüstü';
+    installedVer = String(__desktopSettingsState.version || '').replace(/^v/i, '');
+  } else if (isAndroid) {
+    platformLabel = 'Android';
+    const aInfo = getAndroidBridgeVersionInfo();
+    installedVer = aInfo.versionName;
+    installedCode = aInfo.versionCode;
+  } else if (extMode) {
+    platformLabel = 'Eklenti';
+  }
+
+  if (pillEl) {
+    pillEl.textContent = installedVer ? `${platformLabel} v${installedVer}` : platformLabel;
+  }
+
+  if (engineEl) {
+    if (isNativeApp || extMode || isBrowserAdBlockerActive()) {
+      engineEl.textContent = '%0 Reklam';
+      engineEl.className = 'px-2.5 py-1 rounded-full text-[11px] font-bold bg-emerald-500/15 text-emerald-500 flex-shrink-0';
+    } else {
+      engineEl.textContent = 'Tarayıcı';
+      engineEl.className = 'px-2.5 py-1 rounded-full text-[11px] font-bold bg-surface-container text-on-surface-variant flex-shrink-0';
+    }
+  }
+
+  if (!lineEl) return;
+  if (!isNativeApp) {
+    lineEl.textContent = 'Web sürümü otomatik güncel • Sürüm kontrol ediliyor...';
+    lineEl.className = 'text-xs text-on-surface-variant mt-0.5';
+    const latest = await fetchLatestPublishedAppVersions();
+    if (latest) {
+      const parts = [];
+      if (latest.desktop?.version) parts.push(`Windows v${latest.desktop.version}`);
+      if (latest.android?.versionName) parts.push(`Android v${latest.android.versionName}`);
+      lineEl.textContent = parts.length
+        ? `Web otomatik güncel • Güncel paketler: ${parts.join(' / ')}`
+        : 'Web sürümü otomatik güncellenir';
+    } else {
+      lineEl.textContent = 'Web sürümü sayfa açılışında otomatik güncellenir';
+    }
+    return;
+  }
+
+  lineEl.textContent = 'Son sürüm sunucudan kontrol ediliyor...';
+  lineEl.className = 'text-xs text-on-surface-variant mt-0.5';
+
+  const latest = await fetchLatestPublishedAppVersions();
+  if (!latest) {
+    lineEl.textContent = installedVer
+      ? `Yüklü sürüm: v${installedVer}`
+      : 'Sürüm bilgisi doğrulandı';
+    return;
+  }
+
+  if (isDesktop) {
+    const remoteVer = String(latest.desktop?.version || '').replace(/^v/i, '');
+    if (remoteVer && installedVer) {
+      const cmp = compareSemverStrings(remoteVer, installedVer);
+      if (cmp > 0) {
+        lineEl.textContent = `Yeni sürüm var: v${remoteVer} (Yüklü: v${installedVer})`;
+        lineEl.className = 'text-xs font-semibold text-amber-500 mt-0.5';
+      } else {
+        lineEl.textContent = `Güncel sürümdesiniz (Son sürüm: v${remoteVer})`;
+        lineEl.className = 'text-xs font-semibold text-emerald-500 mt-0.5';
+      }
+    } else if (remoteVer) {
+      lineEl.textContent = `Son yayınlanan sürüm: v${remoteVer}`;
+    }
+  } else if (isAndroid) {
+    const remoteName = String(latest.android?.versionName || '').replace(/^v/i, '');
+    const remoteCode = Number(latest.android?.versionCode || 0);
+    const hasNewByCode = remoteCode > 0 && installedCode > 0 && remoteCode > installedCode;
+    const hasNewByName = remoteName && installedVer && compareSemverStrings(remoteName, installedVer) > 0;
+    if (hasNewByCode || (!installedCode && hasNewByName)) {
+      lineEl.textContent = `Yeni sürüm var: v${remoteName || remoteCode} (Yüklü: v${installedVer || installedCode})`;
+      lineEl.className = 'text-xs font-semibold text-amber-500 mt-0.5';
+    } else if (installedVer && remoteName) {
+      lineEl.textContent = `Güncel sürümdesiniz (Son sürüm: v${remoteName})`;
+      lineEl.className = 'text-xs font-semibold text-emerald-500 mt-0.5';
+    } else if (remoteName) {
+      lineEl.textContent = `Son yayınlanan sürüm: v${remoteName}`;
+    }
+  }
+}
+window.refreshAppVersionAndUpdateStatus = refreshAppVersionAndUpdateStatus;
 
 async function toggleDesktopSetting(key) {
   const current = Boolean(__desktopSettingsState[key]);
