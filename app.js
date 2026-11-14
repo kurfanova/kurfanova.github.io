@@ -493,12 +493,17 @@ window.kurfaHandleInitialVisit = kurfaHandleInitialVisit;
 // 0.6 OTOMATİK GÜNCELLEME (PWA SERVICE WORKER + MASAÜSTÜ/APK OTA KÖPRÜSÜ)
 // =============================================================================
 let __kurfaSwRegistration = null;
+let __kurfaLastSwUpdateCheckAt = 0;
+let __kurfaLastFocusAdCheckAt = 0;
+let __kurfaLastManualUpdateCheckAt = 0;
+
 function initWebAutoUpdater() {
   if (typeof navigator === 'undefined' || !('serviceWorker' in navigator)) return;
   if (window.location.protocol !== 'https:' && window.location.hostname !== 'localhost') return;
   try {
-    navigator.serviceWorker.register('./sw.js?v=4.3.5').then((reg) => {
+    navigator.serviceWorker.register('./sw.js?v=4.3.6').then((reg) => {
       __kurfaSwRegistration = reg;
+      __kurfaLastSwUpdateCheckAt = Date.now();
       reg.addEventListener('updatefound', () => {
         const nextWorker = reg.installing;
         if (!nextWorker) return;
@@ -544,7 +549,21 @@ window.requestNativeAppUpdateCheck = function () {
   }
   return false;
 };
-window.kurfaCheckAppUpdate = window.requestNativeAppUpdateCheck;
+
+window.kurfaCheckAppUpdate = function () {
+  const now = Date.now();
+  if (now - __kurfaLastManualUpdateCheckAt < 20000) {
+    if (typeof showToast === 'function') {
+      showToast('Güncelleme az önce denetlendi, lütfen bekleyin.');
+    }
+    return false;
+  }
+  __kurfaLastManualUpdateCheckAt = now;
+  if (typeof window.requestNativeAppUpdateCheck === 'function') {
+    return window.requestNativeAppUpdateCheck();
+  }
+  return false;
+};
 
 function detectUserDevicePlatform() {
   try {
@@ -587,12 +606,21 @@ if (typeof window !== 'undefined') {
   const onReturnAdCheck = async () => {
     if (typeof document !== 'undefined' && document.visibilityState === 'hidden') return;
     if (__kurfaSwRegistration && typeof __kurfaSwRegistration.update === 'function') {
-      __kurfaSwRegistration.update().catch(() => {});
+      if (Date.now() - __kurfaLastSwUpdateCheckAt > 30 * 60 * 1000) {
+        __kurfaLastSwUpdateCheckAt = Date.now();
+        __kurfaSwRegistration.update().catch(() => {});
+      }
     }
-    const wasWatching = __kurfaAdBlockerWatching;
-    const wasActive = isBrowserAdBlockerActive();
+    if (isBrowserAdBlockerActive() || hasAdFreeLocalEngine()) {
+      return;
+    }
+    const isWatching = Boolean(__kurfaAdBlockerWatching);
+    if (!isWatching && (Date.now() - __kurfaLastFocusAdCheckAt) < 180000) {
+      return;
+    }
+    __kurfaLastFocusAdCheckAt = Date.now();
     const ok = await kurfaDetectAdBlocker({ force: true });
-    if (ok && (wasWatching || !wasActive)) {
+    if (ok) {
       handleAdBlockerDetectedFlow();
     }
   };
@@ -10159,10 +10187,8 @@ function openDesktopInstallFolder() {
 window.openDesktopInstallFolder = openDesktopInstallFolder;
 
 function triggerDesktopUpdateCheck() {
-  if (typeof window.kurfaCheckAppUpdate === 'function') {
-    window.kurfaCheckAppUpdate();
-  }
-  if (typeof showToast === 'function') {
+  const triggered = typeof window.kurfaCheckAppUpdate === 'function' ? window.kurfaCheckAppUpdate() : false;
+  if (triggered !== false && typeof showToast === 'function') {
     showToast('Güncelleme denetleniyor...');
   }
 }
