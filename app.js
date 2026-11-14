@@ -2353,16 +2353,28 @@ function playTrackById(videoId, arg2, arg3, arg4, arg5, options = {}) {
     if (state.ytPlayer && typeof state.ytPlayer.pauseVideo === 'function') {
       try { state.ytPlayer.pauseVideo(); } catch(e) {}
     }
+    const fallbackFromDirectAudio = async () => {
+      if (token !== currentPlaybackToken || state.userPaused || state.deckVisualMode === 'video') return;
+      try {
+        const aud = await kurfaTryQuickAudiusMatch(target, 1600);
+        if (token !== currentPlaybackToken || state.userPaused || state.deckVisualMode === 'video') return;
+        if (aud && aud.success && aud.streamUrl) {
+          loadDirectAudioStream(aud.streamUrl, normalizedStart, token, null);
+          return;
+        }
+      } catch(e) {}
+      if (token !== currentPlaybackToken || state.userPaused) return;
+      loadYouTubePlayback(cleanYtId, target, normalizedStart, token, Boolean(state.ytReady && state.ytPlayer && typeof state.ytPlayer.loadVideoById === 'function'));
+    };
     kurfaResolveDirectAudio(cleanYtId).then((res) => {
       if (token !== currentPlaybackToken || state.userPaused || state.deckVisualMode === 'video') return;
       if (res && res.success && res.streamUrl) {
         loadDirectAudioStream(res.streamUrl, normalizedStart, token, cleanYtId);
       } else {
-        loadYouTubePlayback(cleanYtId, target, normalizedStart, token, Boolean(state.ytReady && state.ytPlayer && typeof state.ytPlayer.loadVideoById === 'function'));
+        fallbackFromDirectAudio();
       }
     }).catch(() => {
-      if (token !== currentPlaybackToken || state.userPaused) return;
-      loadYouTubePlayback(cleanYtId, target, normalizedStart, token, Boolean(state.ytReady && state.ytPlayer && typeof state.ytPlayer.loadVideoById === 'function'));
+      fallbackFromDirectAudio();
     });
     showToast(`Reklamsız Çalınıyor: ${target.title}`);
     return;
@@ -9673,6 +9685,50 @@ function setupEventListeners() {
       }
       const isAudius = String(state.currentTrack?.id || '').startsWith('audius_');
       const playId = isAudius ? null : safeYtId(state.currentTrack?.ytId || state.currentTrack?.id);
+      const cur = Math.max(0, Math.floor(DOM.audioEngine.currentTime || state.currentPlayheadTime || 0));
+      const errToken = currentPlaybackToken;
+      if (
+        !state._switchingDeckMode &&
+        playId &&
+        state.isPlaying &&
+        !state.userPaused &&
+        hasAdFreeLocalEngine() &&
+        state.deckVisualMode !== 'video' &&
+        state._audioEngineRetryToken !== errToken
+      ) {
+        state._audioEngineRetryToken = errToken;
+        const retryUrl = `${DOM.audioEngine.getAttribute('src') || ''}`;
+        (async () => {
+          try {
+            const fresh = await kurfaResolveDirectAudio(playId);
+            if (errToken !== currentPlaybackToken || state.userPaused) return;
+            if (fresh && fresh.success && fresh.streamUrl && fresh.streamUrl !== retryUrl) {
+              loadDirectAudioStream(fresh.streamUrl, cur, errToken, playId);
+              return;
+            }
+          } catch(_) {}
+          try {
+            const aud = await kurfaTryQuickAudiusMatch(state.currentTrack, 1600);
+            if (errToken !== currentPlaybackToken || state.userPaused) return;
+            if (aud && aud.success && aud.streamUrl) {
+              loadDirectAudioStream(aud.streamUrl, cur, errToken, null);
+              return;
+            }
+          } catch(_) {}
+          if (
+            errToken === currentPlaybackToken &&
+            !state.userPaused &&
+            state.ytReady &&
+            state.ytPlayer &&
+            typeof state.ytPlayer.loadVideoById === 'function'
+          ) {
+            state.ytPlayer.loadVideoById({ videoId: playId, startSeconds: cur });
+            state.isPlaying = true;
+            updatePlayPauseUI(true);
+          }
+        })();
+        return;
+      }
       if (
         !state._switchingDeckMode &&
         playId &&
@@ -9681,7 +9737,6 @@ function setupEventListeners() {
         state.ytPlayer &&
         typeof state.ytPlayer.loadVideoById === 'function'
       ) {
-        const cur = Math.max(0, Math.floor(DOM.audioEngine.currentTime || state.currentPlayheadTime || 0));
         state.ytPlayer.loadVideoById({ videoId: playId, startSeconds: cur });
         state.isPlaying = true;
         updatePlayPauseUI(true);
