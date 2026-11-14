@@ -156,24 +156,27 @@ section,
   animation-play-state: paused !important;
 }
 
-/* Waveform pulse animation */
-@keyframes wave-bounce {
-  0%, 100% {
-    height: 4px;
-  }
-  50% {
-    height: 20px;
+body.kurfa-bg-idle .animate-spin-slow,
+body.tahta-mode .animate-spin-slow {
+  animation-play-state: paused !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-spin-slow,
+  .animate-pulse,
+  .animate-ping {
+    animation: none !important;
   }
 }
-.wave-bar {
-  animation: wave-bounce 0.9s ease-in-out infinite;
-  border-radius: 9999px;
+
+/* Offscreen list-row layout/paint skipping for low-end PCs */
+#home-tracklist-table > div,
+#search-results-list > div,
+#playlist-tracks-table > div,
+#favorites-list-table > div {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 64px;
 }
-.wave-bar:nth-child(2) { animation-delay: 0.15s; }
-.wave-bar:nth-child(3) { animation-delay: 0.3s; }
-.wave-bar:nth-child(4) { animation-delay: 0.45s; }
-.wave-bar:nth-child(5) { animation-delay: 0.6s; }
-.wave-bar:nth-child(6) { animation-delay: 0.75s; }
 
 /* Interactive Seekbar Dragging States */
 .seek-track {

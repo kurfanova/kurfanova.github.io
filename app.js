@@ -501,7 +501,7 @@ function initWebAutoUpdater() {
   if (typeof navigator === 'undefined' || !('serviceWorker' in navigator)) return;
   if (window.location.protocol !== 'https:' && window.location.hostname !== 'localhost') return;
   try {
-    navigator.serviceWorker.register('./sw.js?v=4.3.10').then((reg) => {
+    navigator.serviceWorker.register('./sw.js?v=4.3.11').then((reg) => {
       __kurfaSwRegistration = reg;
       __kurfaLastSwUpdateCheckAt = Date.now();
     }).catch(() => {});
@@ -3046,13 +3046,15 @@ function updateSeekbarUI(cur, dur) {
     if (mnpDur) mnpDur.textContent = timeDurStr;
   }
 
-  // Floating PiP window seekbar
-  const pipSeekFill = document.getElementById('pip-seek-fill');
-  const pipCur = document.getElementById('pip-time-cur');
-  const pipDur = document.getElementById('pip-time-dur');
-  if (pipSeekFill) pipSeekFill.style.width = `${pct}%`;
-  if (pipCur) pipCur.textContent = timeCurStr;
-  if (pipDur) pipDur.textContent = timeDurStr;
+  // Floating PiP window seekbar (only query DOM when open)
+  if (typeof pipModalOpen !== 'undefined' && pipModalOpen) {
+    const pipSeekFill = document.getElementById('pip-seek-fill');
+    const pipCur = document.getElementById('pip-time-cur');
+    const pipDur = document.getElementById('pip-time-dur');
+    if (pipSeekFill) pipSeekFill.style.width = `${pct}%`;
+    if (pipCur) pipCur.textContent = timeCurStr;
+    if (pipDur) pipDur.textContent = timeDurStr;
+  }
 
   // Document PiP window seekbar (only if active)
   if (pipWindowInstance && pipWindowInstance.document) {
@@ -3078,20 +3080,21 @@ function startSeekbarTicker() {
     cancelAnimationFrame(seekbarRaf);
     seekbarRaf = null;
   }
-  if (!state.isPlaying) return;
+  if (!state.isPlaying || (typeof document !== 'undefined' && document.hidden)) return;
 
   function tick(timestamp) {
-    if (!state.isPlaying) {
+    if (!state.isPlaying || (typeof document !== 'undefined' && document.hidden)) {
       seekbarRaf = null;
       return;
     }
 
     if (!state.isSeeking) {
       const now = timestamp || performance.now();
-      const throttleInterval = state.isTahtaMode ? 250 : 80; // 80ms is silky smooth for seekbars and saves 80% CPU
+      const throttleInterval = state.isTahtaMode ? 250 : 80;
+      const adCheckInterval = state.isTahtaMode ? 900 : 650;
       if (now - lastSeekbarTickTime >= throttleInterval) {
         lastSeekbarTickTime = now;
-        if (now - lastAdCheckTime >= 280) {
+        if (now - lastAdCheckTime >= adCheckInterval) {
           lastAdCheckTime = now;
           checkAndHandleAdPlayback();
         }
@@ -3784,7 +3787,8 @@ function renderLyricsEmpty(track) {
 }
 
 function syncLyricsWithTime(currentTime) {
-  // Exit immediately if lyrics are not visible on screen (0 ms CPU when dormant)
+  // Exit immediately if tab is hidden or lyrics are not visible on screen (0 ms CPU when dormant)
+  if (typeof document !== 'undefined' && document.hidden) return;
   const isLyricsVisible = (state.currentTab === 'calma-listeleri') || (state.mobileNowPlayingOpen === true);
   if (!isLyricsVisible) return;
 
@@ -4008,10 +4012,11 @@ function renderSearchResults(results, query) {
 
   if (!DOM.searchResultsList) return;
   DOM.searchResultsList.innerHTML = '';
+  const searchFrag = document.createDocumentFragment();
 
   results.forEach((track) => {
     const card = document.createElement('div');
-    card.className = "flex items-center justify-between p-3 rounded-xl bg-surface-container-lowest hover:bg-surface-container-low transition-all shadow-sm group border border-transparent hover:border-surface-container";
+    card.className = "flex items-center justify-between p-3 rounded-xl bg-surface-container-lowest hover:bg-surface-container-low transition-colors shadow-sm group border border-transparent hover:border-surface-container";
 
     const safeTitle = escapeHtml(track.title || "Şarkı");
     const safeArtist = escapeHtml(track.artist || "Sanatçı");
@@ -4021,7 +4026,7 @@ function renderSearchResults(results, query) {
     card.innerHTML = `
       <div class="flex items-center gap-3 min-w-0 flex-1 cursor-pointer track-info-click">
         <div class="relative w-12 h-12 rounded-lg overflow-hidden bg-surface-container-high flex-shrink-0">
-          <img src="${safeThumb}" alt="${safeTitle}" class="w-full h-full object-cover" onerror="this.onerror=null; this.src='./kurfamuzik_logo.png'">
+          <img src="${safeThumb}" alt="${safeTitle}" loading="lazy" decoding="async" class="w-full h-full object-cover" onerror="this.onerror=null; this.src='./kurfamuzik_logo.png'">
           <div class="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
             <span class="material-symbols-outlined text-white text-[24px]">play_arrow</span>
           </div>
@@ -4103,8 +4108,9 @@ function renderSearchResults(results, query) {
       };
     }
 
-    DOM.searchResultsList.appendChild(card);
+    searchFrag.appendChild(card);
   });
+  DOM.searchResultsList.appendChild(searchFrag);
 }
 
 function renderSpotlightCard(track) {
@@ -4474,6 +4480,7 @@ function renderHomeTracklistTable() {
   DOM.homeTracklistTable.innerHTML = '';
 
   const tracks = getCuratedTracks();
+  const trackFrag = document.createDocumentFragment();
   tracks.forEach((track, index) => {
     const isPlayingCurrent = state.currentTrack && state.currentTrack.id === track.id && state.isPlaying;
     const isFav = state.favorites.some(f => f.id === track.id);
@@ -4490,7 +4497,7 @@ function renderHomeTracklistTable() {
         <button type="button" class="btn-play-row w-4 text-center hidden group-hover:flex items-center justify-center text-primary" title="Çal">
           <span class="material-symbols-outlined text-[18px]">${isPlayingCurrent ? 'pause' : 'play_arrow'}</span>
         </button>
-        <img src="${safeThumb}" alt="${safeTitle}" class="w-10 h-10 rounded-lg object-cover flex-shrink-0" onerror="this.onerror=null; this.src='./kurfamuzik_logo.png';">
+        <img src="${safeThumb}" alt="${safeTitle}" loading="lazy" decoding="async" class="w-10 h-10 rounded-lg object-cover flex-shrink-0" onerror="this.onerror=null; this.src='./kurfamuzik_logo.png';">
         <div class="flex flex-col min-w-0">
           <span class="text-xs md:text-sm font-bold text-on-surface truncate ${state.currentTrack && state.currentTrack.id === track.id ? 'text-primary' : ''}">${safeTitle}</span>
           <span class="text-[11px] text-on-surface-variant truncate">${safeArtist}</span>
@@ -4564,8 +4571,9 @@ function renderHomeTracklistTable() {
       };
     }
 
-    DOM.homeTracklistTable.appendChild(row);
+    trackFrag.appendChild(row);
   });
+  DOM.homeTracklistTable.appendChild(trackFrag);
 }
 
 let trendsShowAll = false;
@@ -5670,7 +5678,10 @@ function applyTahtaMode(enable) {
   }
 
   if (enable && state.ytReady && state.ytPlayer && typeof state.ytPlayer.setPlaybackQuality === 'function') {
-    try { state.ytPlayer.setPlaybackQuality('medium'); } catch(e) {}
+    try { state.ytPlayer.setPlaybackQuality('tiny'); } catch(e) {}
+  }
+  if (DOM.vinylDisc) {
+    DOM.vinylDisc.classList.toggle('paused-animation', enable || !state.isPlaying);
   }
 }
 
@@ -8647,6 +8658,16 @@ async function handleGoogleSignIn() {
   }
 }
 
+let __syncDeckRafPending = false;
+function scheduleSyncPersistentPlayerPosition() {
+  if (__syncDeckRafPending) return;
+  __syncDeckRafPending = true;
+  requestAnimationFrame(() => {
+    __syncDeckRafPending = false;
+    syncPersistentPlayerPosition();
+  });
+}
+
 function syncPersistentPlayerPosition() {
   const pDeck = document.getElementById('persistent-player-deck');
   if (!pDeck) return;
@@ -8655,6 +8676,7 @@ function syncPersistentPlayerPosition() {
   if (state.mobileNowPlayingOpen && mobileCanvasMode) {
     const modal = document.getElementById('mobile-now-playing-modal');
     if (modal && !modal.classList.contains('pointer-events-none')) {
+      pDeck.dataset.deckPosMode = 'mobile-canvas';
       pDeck.style.position = 'fixed';
       pDeck.style.left = '50%';
       pDeck.style.top = '50%';
@@ -8679,6 +8701,7 @@ function syncPersistentPlayerPosition() {
   if (state.currentTab === 'calma-listeleri' && state.deckVisualMode === 'video' && slot) {
     const rect = slot.getBoundingClientRect();
     if (rect.width > 20 && rect.height > 20) {
+      pDeck.dataset.deckPosMode = 'desktop-video';
       pDeck.style.position = 'fixed';
       pDeck.style.left = Math.round(rect.left) + 'px';
       pDeck.style.top = Math.round(rect.top) + 'px';
@@ -8697,8 +8720,9 @@ function syncPersistentPlayerPosition() {
     }
   }
 
-  // 3. In-Viewport Silent Deck (Keeps browser IntersectionObserver 100% active, NEVER offscreen, NEVER throttled or paused)
-  // Safely tucked behind the fixed bottom player bar (z-index 5 vs bottom bar z-50)
+  // 3. In-Viewport Silent Deck (skip redundant style writes during scroll)
+  if (pDeck.dataset.deckPosMode === 'silent') return;
+  pDeck.dataset.deckPosMode = 'silent';
   pDeck.style.position = 'fixed';
   pDeck.style.left = '0px';
   pDeck.style.bottom = '0px';
@@ -9629,8 +9653,19 @@ function setupEventListeners() {
     }
   });
 
-  // Seamless Background Tab & Alt-Tab Audio Continuity (Both Vinyl & Video YT modes)
+  // Seamless Background Tab & Alt-Tab Audio Continuity + Zero-Waste Idle Mode (for Gaming/Low-End PCs)
   document.addEventListener('visibilitychange', () => {
+    const isHidden = Boolean(document.hidden);
+    if (document.body) {
+      document.body.classList.toggle('kurfa-bg-idle', isHidden);
+    }
+    if (isHidden) {
+      if (seekbarRaf) {
+        cancelAnimationFrame(seekbarRaf);
+        seekbarRaf = null;
+      }
+    }
+
     if (!state.userPaused && state.currentTrack && state.isPlaying) {
       if (DOM.audioEngine && DOM.audioEngine.getAttribute('src') && DOM.audioEngine.paused) {
         try {
@@ -9828,8 +9863,8 @@ function initApp() {
 
   initYouTubeEngine();
   syncPersistentPlayerPosition();
-  window.addEventListener('resize', syncPersistentPlayerPosition);
-  window.addEventListener('scroll', syncPersistentPlayerPosition, { passive: true });
+  window.addEventListener('resize', scheduleSyncPersistentPlayerPosition, { passive: true });
+  window.addEventListener('scroll', scheduleSyncPersistentPlayerPosition, { passive: true });
 
   console.log("Kurfamüzik Client v5 Initialized");
 }
@@ -10252,7 +10287,7 @@ async function refreshAppVersionAndUpdateStatus() {
   }
 
   let platformLabel = 'Web';
-  let installedVer = '4.3.10';
+  let installedVer = '4.3.11';
   let installedCode = 0;
 
   if (isDesktop) {
@@ -10622,33 +10657,4 @@ function continueFromAdWarningModal() {
   }
 }
 window.continueFromAdWarningModal = continueFromAdWarningModal;
-
-if (typeof document !== 'undefined') {
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') {
-      const warnModal = document.getElementById('ad-warning-modal');
-      if (warnModal && warnModal.classList.contains('opacity-100')) {
-        dismissAdWarningModal(false);
-      }
-    }
-  });
-
-  const setupAdWarnDismissBackdrop = () => {
-    const warnModal = document.getElementById('ad-warning-modal');
-    if (warnModal && !warnModal.__backdropBound) {
-      warnModal.__backdropBound = true;
-      warnModal.addEventListener('click', (e) => {
-        if (e.target === warnModal) {
-          dismissAdWarningModal(false);
-        }
-      });
-    }
-  };
-
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', setupAdWarnDismissBackdrop);
-  } else {
-    setupAdWarnDismissBackdrop();
-  }
-}
 
