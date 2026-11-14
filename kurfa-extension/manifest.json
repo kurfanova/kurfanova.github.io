@@ -1,0 +1,39 @@
+{
+  "manifest_version": 3,
+  "name": "Kurfanova Reklamsiz Muzik Motoru",
+  "version": "1.0.0",
+  "description": "Kurfanova Muzik icin tamamen kullanici cihazindan calisan reklamsiz dogrudan ses ve arama motoru.",
+  "permissions": [
+    "declarativeNetRequest"
+  ],
+  "host_permissions": [
+    "https://www.youtube.com/*",
+    "https://music.youtube.com/*",
+    "https://*.googlevideo.com/*"
+  ],
+  "declarative_net_request": {
+    "rule_resources": [
+      {
+        "id": "kurfa_adblock_rules",
+        "enabled": true,
+        "path": "rules.json"
+      }
+    ]
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://kurfanova.github.io/*",
+        "http://localhost:*/*",
+        "http://127.0.0.1:*/*"
+      ],
+      "js": [
+        "content_script.js"
+      ],
+      "run_at": "document_start"
+    }
+  ]
+}

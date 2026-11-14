@@ -749,6 +749,10 @@
                   <span class="material-symbols-outlined text-[15px]" aria-hidden="true">graphic_eq</span>
                   <span>Akustik & Enstrümantal</span>
                 </button>
+                <button type="button" class="filter-chip shrink-0 flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-surface-container-low hover:bg-surface-container text-emerald-500 text-xs font-semibold transition-all" onclick="applySearchFilter('audius', this)" title="YouTube dışı, doğrudan tarayıcıdan %0 reklamlı açık müzik kataloğu">
+                  <span class="material-symbols-outlined text-[15px]" aria-hidden="true">verified_user</span>
+                  <span>Reklamsız Açık Katalog</span>
+                </button>
               </div>
             </div>
           </div>
@@ -1986,12 +1990,36 @@
           <div class="flex items-center gap-2.5">
             <span class="material-symbols-outlined text-[20px]">android</span>
             <div class="flex flex-col text-left">
-              <span class="leading-tight">Android APK İndir (GitHub)</span>
-              <span class="text-[10px] opacity-80 font-normal">Genel erişime açık doğrudan paket (~6.5 MB)</span>
+              <span class="leading-tight">Android APK İndir (v1.2.0 • Cihaz Motoru)</span>
+              <span class="text-[10px] opacity-80 font-normal">Cihazdan doğrudan ses & arama (%0 Reklam, 0 Sunucu Yükü)</span>
             </div>
           </div>
           <span class="material-symbols-outlined text-[20px]">download</span>
         </a>
+
+        <!-- Desktop Browser Extension & Userscript (%0 Ads, %0 Server Load on Web) -->
+        <div class="p-3 rounded-2xl bg-surface-container-low border border-surface-container flex flex-col gap-2">
+          <div class="flex items-center justify-between gap-2">
+            <div class="flex items-center gap-2">
+              <span class="material-symbols-outlined text-[18px] text-primary">extension</span>
+              <span class="text-xs font-bold text-on-surface">Web Masaüstü Motoru (%0 Reklam)</span>
+            </div>
+            <span id="kurfa-local-engine-status" class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-surface-container text-on-surface-variant">Tarayıcı Modu</span>
+          </div>
+          <p class="text-[10px] text-on-surface-variant leading-relaxed">
+            Bilgisayar tarayıcısında (Chrome/Edge/Brave) aramayı ve sesi doğrudan kendi cihazınızdan geçirerek reklamı sıfırlar:
+          </p>
+          <div class="grid grid-cols-2 gap-2">
+            <a href="./kurfa-reklamsiz-eklenti.zip" download="kurfa-reklamsiz-eklenti.zip" class="py-2 px-3 rounded-xl bg-surface-container hover:bg-surface-container-high text-on-surface font-semibold text-[11px] flex items-center justify-center gap-1.5 border border-surface-container-high transition-all">
+              <span class="material-symbols-outlined text-[16px] text-primary">folder_zip</span>
+              <span>Chrome Eklenti</span>
+            </a>
+            <a href="./kurfa-motor.user.js" target="_blank" rel="noopener noreferrer" class="py-2 px-3 rounded-xl bg-surface-container hover:bg-surface-container-high text-on-surface font-semibold text-[11px] flex items-center justify-center gap-1.5 border border-surface-container-high transition-all">
+              <span class="material-symbols-outlined text-[16px] text-secondary">code</span>
+              <span>Userscript Kur</span>
+            </a>
+          </div>
+        </div>
 
         <!-- Direct Fast Server Mirror Download -->
         <a href="https://github.com/KurfaCore/kurfanova-app/releases/download/v1.0.0-apk/Kurfanova-Muzik.apk" download="Kurfanova-Muzik.apk" rel="noopener noreferrer" class="w-full py-2.5 px-4 rounded-xl bg-surface-container hover:bg-surface-container-high text-on-surface font-semibold text-xs flex items-center justify-between border border-surface-container-high transition-all active:scale-95">
@@ -2191,6 +2219,6 @@
 
   <!-- Scripts -->
   <script src="https://www.youtube.com/iframe_api"></script>
-  <script src="./app.js?v=20261114_v1"></script>
+  <script src="./app.js?v=20261114_v2"></script>
 </body>
 </html>

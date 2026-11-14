@@ -10,6 +10,233 @@ const API_BASE = (typeof window !== 'undefined' && (window.location.origin.inclu
   : '';
 
 // =============================================================================
+// 0.5 ZERO-SERVER CLIENT BRIDGE (ANDROID APK + WEB EXTENSION + AUDIUS)
+// =============================================================================
+
+const __kurfaPendingBridge = new Map();
+let __kurfaBridgeSeq = 0;
+
+function isAndroidNativeEngine() {
+  try {
+    return Boolean(
+      typeof window !== 'undefined' &&
+      window.KurfaAndroidBridge &&
+      typeof window.KurfaAndroidBridge.isNativeEngineReady === 'function' &&
+      window.KurfaAndroidBridge.isNativeEngineReady()
+    );
+  } catch (e) {
+    return false;
+  }
+}
+
+function getBrowserExtensionMode() {
+  try {
+    return (typeof document !== 'undefined' && document.documentElement && document.documentElement.dataset && document.documentElement.dataset.kurfaExt) || '';
+  } catch (e) {
+    return '';
+  }
+}
+
+function updateLocalEngineStatusUI() {
+  const badge = typeof document !== 'undefined' ? document.getElementById('kurfa-local-engine-status') : null;
+  if (!badge) return;
+  if (isAndroidNativeEngine()) {
+    badge.textContent = 'APK Cihaz Motoru Aktif (%0 Reklam)';
+    badge.className = 'px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/15 text-emerald-500';
+  } else if (getBrowserExtensionMode()) {
+    badge.textContent = 'Eklenti Motoru Aktif (%0 Reklam)';
+    badge.className = 'px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/15 text-emerald-500';
+  } else {
+    badge.textContent = 'Tarayıcı Modu';
+    badge.className = 'px-2 py-0.5 rounded-full text-[10px] font-bold bg-surface-container text-on-surface-variant';
+  }
+}
+
+function settleBridgeRequest(requestId, payload) {
+  const entry = __kurfaPendingBridge.get(requestId);
+  if (!entry) return;
+  clearTimeout(entry.timer);
+  __kurfaPendingBridge.delete(requestId);
+  entry.resolve(payload || { success: false });
+}
+
+if (typeof window !== 'undefined') {
+  window.__kurfaNativeStreamCallback = (requestId, payload) => settleBridgeRequest(requestId, payload);
+  window.__kurfaNativeSearchCallback = (requestId, payload) => settleBridgeRequest(requestId, payload);
+  window.addEventListener('message', (event) => {
+    if (event.source !== window || !event.data || event.data.__kurfaExt !== 'RES') return;
+    settleBridgeRequest(event.data.requestId, event.data.response);
+  });
+  window.addEventListener('kurfa-ext-ready', () => {
+    updateLocalEngineStatusUI();
+  });
+}
+
+function callExtensionBridge(action, payload, timeoutMs = 9000) {
+  return new Promise((resolve) => {
+    const reqId = `ext_${Date.now()}_${++__kurfaBridgeSeq}`;
+    const timer = setTimeout(() => {
+      __kurfaPendingBridge.delete(reqId);
+      resolve({ success: false, error: 'Extension timeout' });
+    }, timeoutMs);
+    __kurfaPendingBridge.set(reqId, { resolve, timer });
+    try {
+      window.postMessage({ __kurfaExt: 'REQ', requestId: reqId, action, payload }, window.location.origin);
+    } catch (e) {
+      clearTimeout(timer);
+      __kurfaPendingBridge.delete(reqId);
+      resolve({ success: false });
+    }
+  });
+}
+
+function callAndroidBridge(methodName, args, timeoutMs = 10000) {
+  return new Promise((resolve) => {
+    const reqId = `apk_${Date.now()}_${++__kurfaBridgeSeq}`;
+    const timer = setTimeout(() => {
+      __kurfaPendingBridge.delete(reqId);
+      resolve({ success: false, error: 'Native timeout' });
+    }, timeoutMs);
+    __kurfaPendingBridge.set(reqId, { resolve, timer });
+    try {
+      window.KurfaAndroidBridge[methodName](...args, reqId);
+    } catch (e) {
+      clearTimeout(timer);
+      __kurfaPendingBridge.delete(reqId);
+      resolve({ success: false });
+    }
+  });
+}
+
+async function kurfaResolveDirectAudio(videoId) {
+  const cleanVid = safeYtId(videoId);
+  if (!cleanVid) return { success: false };
+
+  if (isAndroidNativeEngine() && typeof window.KurfaAndroidBridge.resolveAudioStreamAsync === 'function') {
+    const res = await callAndroidBridge('resolveAudioStreamAsync', [cleanVid], 12000);
+    if (res && res.success && res.streamUrl) return res;
+  }
+
+  if (getBrowserExtensionMode()) {
+    const res = await callExtensionBridge('STREAM', { videoId: cleanVid }, 9000);
+    if (res && res.success && res.streamUrl) return res;
+  }
+
+  return { success: false };
+}
+
+function kurfaFormatSec(sec) {
+  const total = Math.max(0, Math.floor(Number(sec) || 0));
+  const m = Math.floor(total / 60);
+  const s = total % 60;
+  return `${m}:${String(s).padStart(2, '0')}`;
+}
+
+async function kurfaSearchAudius(query, signal) {
+  const cleanQ = String(query || '').trim();
+  if (!cleanQ) return { success: false, results: [] };
+  const res = await fetch(`https://api.audius.co/v1/tracks/search?query=${encodeURIComponent(cleanQ)}&limit=25`, { signal });
+  if (!res.ok) return { success: false, results: [] };
+  const json = await res.json();
+  const list = Array.isArray(json?.data) ? json.data : [];
+  const mapped = list
+    .filter(item => item && item.id && item.is_streamable !== false && (Number(item.duration) || 0) > 15)
+    .map(item => ({
+      id: `audius_${item.id}`,
+      audiusId: String(item.id),
+      audiusStreamUrl: `https://api.audius.co/v1/tracks/${encodeURIComponent(String(item.id))}/stream`,
+      title: String(item.title || 'Audius Parçası'),
+      artist: String(item.user?.name || item.user?.handle || 'Audius Sanatçısı'),
+      duration: kurfaFormatSec(item.duration),
+      thumbnail: safeUrl(item.artwork?.['480x480'] || item.artwork?.['150x150'], './kurfamuzik_logo.png'),
+      source: 'audius'
+    }));
+  return { success: mapped.length > 0, source: 'audius', results: mapped };
+}
+
+const __kurfaSearchMemory = new Map();
+function readSearchClientCache(cacheKey) {
+  const mem = __kurfaSearchMemory.get(cacheKey);
+  if (mem && mem.expiresAt > Date.now()) return mem.results;
+  try {
+    const raw = localStorage.getItem('kurfa_search_cache_v2');
+    if (!raw) return null;
+    const store = JSON.parse(raw);
+    const entry = store && store[cacheKey];
+    if (entry && entry.expiresAt > Date.now() && Array.isArray(entry.results) && entry.results.length > 0) {
+      __kurfaSearchMemory.set(cacheKey, entry);
+      return entry.results;
+    }
+  } catch (e) {}
+  return null;
+}
+
+function writeSearchClientCache(cacheKey, results) {
+  if (!Array.isArray(results) || results.length === 0) return;
+  const entry = { results, expiresAt: Date.now() + 6 * 3600 * 1000 };
+  if (__kurfaSearchMemory.size >= 40) __kurfaSearchMemory.clear();
+  __kurfaSearchMemory.set(cacheKey, entry);
+  try {
+    const store = JSON.parse(localStorage.getItem('kurfa_search_cache_v2') || '{}') || {};
+    const keys = Object.keys(store);
+    if (keys.length >= 30) {
+      delete store[keys[0]];
+    }
+    store[cacheKey] = entry;
+    localStorage.setItem('kurfa_search_cache_v2', JSON.stringify(store));
+  } catch (e) {}
+}
+
+async function kurfaSearchTracks(query, opts = {}) {
+  const cleanQ = String(query || '').trim();
+  if (!cleanQ) return { success: false, results: [] };
+  const filterSingles = Boolean(opts.filterSingles);
+  const source = opts.source || state.searchSource || 'auto';
+  const signal = opts.signal;
+  const cacheKey = `${source}|${filterSingles ? 1 : 0}|${cleanQ.toLowerCase()}`;
+
+  const cached = readSearchClientCache(cacheKey);
+  if (cached) {
+    return { success: true, source: 'client-cache', results: cached };
+  }
+
+  if (source === 'audius') {
+    const audRes = await kurfaSearchAudius(cleanQ, signal);
+    if (audRes.success) writeSearchClientCache(cacheKey, audRes.results);
+    return audRes;
+  }
+
+  if (isAndroidNativeEngine() && typeof window.KurfaAndroidBridge.searchTracksAsync === 'function') {
+    const apkRes = await callAndroidBridge('searchTracksAsync', [cleanQ, filterSingles], 11000);
+    if (signal && signal.aborted) throw new DOMException('Aborted', 'AbortError');
+    if (apkRes && apkRes.success && Array.isArray(apkRes.results) && apkRes.results.length > 0) {
+      writeSearchClientCache(cacheKey, apkRes.results);
+      return apkRes;
+    }
+  }
+
+  if (getBrowserExtensionMode()) {
+    const extRes = await callExtensionBridge('SEARCH', { query: cleanQ, filterSingles }, 9000);
+    if (signal && signal.aborted) throw new DOMException('Aborted', 'AbortError');
+    if (extRes && extRes.success && Array.isArray(extRes.results) && extRes.results.length > 0) {
+      writeSearchClientCache(cacheKey, extRes.results);
+      return extRes;
+    }
+  }
+
+  const res = await fetch(
+    `${API_BASE}/api/search?q=${encodeURIComponent(cleanQ)}${filterSingles ? '&single=1' : ''}`,
+    { signal }
+  );
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  const data = await res.json();
+  if (data && data.success && Array.isArray(data.results) && data.results.length > 0) {
+    writeSearchClientCache(cacheKey, data.results);
+  }
+  return data;
+}
+
+// =============================================================================
 // 1. DATA FIXTURES & INITIAL DATA
 // =============================================================================
 
@@ -689,6 +916,12 @@ function stopAllPlayback(skipYtStop = false) {
       state.ytPlayer.stopVideo();
     } catch(e) {}
   }
+
+  try {
+    if (window.KurfaAndroidBridge && typeof window.KurfaAndroidBridge.setNativePlaybackState === 'function') {
+      window.KurfaAndroidBridge.setNativePlaybackState(false);
+    }
+  } catch(e) {}
 }
 
 function initYouTubeEngine() {
@@ -1145,10 +1378,8 @@ async function prefetchNextQueueTrack() {
 
   try {
     const q = `${next.artist || ''} ${next.title || ''} audio`.trim();
-    const sRes = await fetch(`${API_BASE}/api/search?q=${encodeURIComponent(q)}&single=1`);
-    if (!sRes.ok) return;
-    const sData = await sRes.json();
-    if (sData.success && Array.isArray(sData.results) && sData.results.length > 0) {
+    const sData = await kurfaSearchTracks(q, { filterSingles: true });
+    if (sData && sData.success && Array.isArray(sData.results) && sData.results.length > 0) {
       const best = pickBestYouTubeMatch(next, sData.results);
       const validId = safeYtId(best?.id);
       if (validId) {
@@ -1172,23 +1403,19 @@ async function resolveAndPlaySpotifyTrack(placeholderId, track) {
 
   try {
     const q = `${artist} ${title} audio`.trim();
-    let sRes = await fetch(`${API_BASE}/api/search?q=${encodeURIComponent(q)}&single=1`);
-    if (resolveToken !== currentPlaybackToken) return;
-    let sData = sRes.ok ? await sRes.json() : {};
+    let sData = await kurfaSearchTracks(q, { filterSingles: true });
     if (resolveToken !== currentPlaybackToken) return;
     let best = null;
-    if (sData.success && Array.isArray(sData.results) && sData.results.length > 0) {
+    if (sData && sData.success && Array.isArray(sData.results) && sData.results.length > 0) {
       best = pickBestYouTubeMatch(track, sData.results);
     }
 
     // Fallback if not found
     if (!best || !safeYtId(best.id)) {
       const fallbackQ = `${title} ${artist}`.trim();
-      sRes = await fetch(`${API_BASE}/api/search?q=${encodeURIComponent(fallbackQ)}&single=1`);
+      sData = await kurfaSearchTracks(fallbackQ, { filterSingles: true });
       if (resolveToken !== currentPlaybackToken) return;
-      sData = sRes.ok ? await sRes.json() : {};
-      if (resolveToken !== currentPlaybackToken) return;
-      if (sData.success && Array.isArray(sData.results) && sData.results.length > 0) {
+      if (sData && sData.success && Array.isArray(sData.results) && sData.results.length > 0) {
         best = pickBestYouTubeMatch(track, sData.results);
       }
     }
@@ -1266,9 +1493,11 @@ function playTrackById(videoId, arg2, arg3, arg4, arg5, options = {}) {
              state.currentSearchResults.find(t => t.id === rawId);
   }
 
-  // AUTO RESOLVE SPOTIFY & NON-YOUTUBE TRACKS
-  const cleanYtId = safeYtId(rawId);
-  if (rawId.startsWith('sp-') || !cleanYtId) {
+  const isAudiusTrack = rawId.startsWith('audius_') || Boolean(target?.audiusStreamUrl);
+  const cleanYtId = isAudiusTrack ? null : safeYtId(rawId);
+
+  // AUTO RESOLVE SPOTIFY & NON-YOUTUBE TRACKS (except Audius direct-stream tracks)
+  if (!isAudiusTrack && (rawId.startsWith('sp-') || !cleanYtId)) {
     const fallbackYt = safeYtId(target?.ytId);
     if (fallbackYt) {
       playTrackById(fallbackYt, target, startTime, undefined, undefined, options);
@@ -1279,15 +1508,19 @@ function playTrackById(videoId, arg2, arg3, arg4, arg5, options = {}) {
   }
 
   const normalizedStart = (typeof startTime === 'number' && !isNaN(startTime) && startTime > 0) ? startTime : 0;
+  const preferDirectAudio = isAudiusTrack || (
+    state.deckVisualMode !== 'video' &&
+    (isAndroidNativeEngine() || Boolean(getBrowserExtensionMode()))
+  );
 
   state.userPaused = false;
   clearTimeout(state._guardianResumeTimer);
   clearTimeout(state._errorSkipTimer);
   clearTimeout(state._stallWatchdogTimer);
 
-  // Stop background timers/HTML5 audio; keep YT active if ready so loadVideoById transitions cleanly
+  // Stop background timers/HTML5 audio; keep YT active only when YT loads immediately
   const ytCanDirectLoad = Boolean(state.ytReady && state.ytPlayer && typeof state.ytPlayer.loadVideoById === 'function');
-  stopAllPlayback(ytCanDirectLoad);
+  stopAllPlayback(ytCanDirectLoad && !preferDirectAudio);
   const token = currentPlaybackToken;
 
   state._isAdMuted = false;
@@ -1297,7 +1530,7 @@ function playTrackById(videoId, arg2, arg3, arg4, arg5, options = {}) {
   state._playerInError = false;
   state._lastErrorVideoId = null;
   state._attemptedFallbackForVideo = null;
-  if (!isAutoErrorSkip) {
+  if (!isAutoErrorSkip && cleanYtId) {
     state._consecutiveErrorSkips = 0;
     failedVideoIds.delete(cleanYtId);
   }
@@ -1306,11 +1539,11 @@ function playTrackById(videoId, arg2, arg3, arg4, arg5, options = {}) {
 
   if (!target) {
     target = {
-      id: cleanYtId,
-      title: "YouTube Parçası",
+      id: cleanYtId || rawId,
+      title: isAudiusTrack ? "Audius Parçası" : "YouTube Parçası",
       artist: "Sanatçı",
       duration: "3:30",
-      thumbnail: `https://i.ytimg.com/vi/${cleanYtId}/hqdefault.jpg`
+      thumbnail: cleanYtId ? `https://i.ytimg.com/vi/${cleanYtId}/hqdefault.jpg` : './kurfamuzik_logo.png'
     };
   }
 
@@ -1386,6 +1619,83 @@ function playTrackById(videoId, arg2, arg3, arg4, arg5, options = {}) {
     } catch(e) {}
   }
 
+  if (isAudiusTrack && DOM.audioEngine) {
+    const streamUrl = target.audiusStreamUrl || `https://api.audius.co/v1/tracks/${encodeURIComponent(rawId.replace(/^audius_/, ''))}/stream`;
+    loadDirectAudioStream(streamUrl, normalizedStart, token, null);
+    showToast(`Reklamsız Açık Akış: ${target.title}`);
+    return;
+  }
+
+  if (preferDirectAudio && cleanYtId && DOM.audioEngine) {
+    state.isPlaying = true;
+    updatePlayPauseUI(true);
+    if (state.ytPlayer && typeof state.ytPlayer.pauseVideo === 'function') {
+      try { state.ytPlayer.pauseVideo(); } catch(e) {}
+    }
+    kurfaResolveDirectAudio(cleanYtId).then((res) => {
+      if (token !== currentPlaybackToken || state.userPaused || state.deckVisualMode === 'video') return;
+      if (res && res.success && res.streamUrl) {
+        loadDirectAudioStream(res.streamUrl, normalizedStart, token, cleanYtId);
+      } else {
+        loadYouTubePlayback(cleanYtId, target, normalizedStart, token, Boolean(state.ytReady && state.ytPlayer && typeof state.ytPlayer.loadVideoById === 'function'));
+      }
+    }).catch(() => {
+      if (token !== currentPlaybackToken || state.userPaused) return;
+      loadYouTubePlayback(cleanYtId, target, normalizedStart, token, Boolean(state.ytReady && state.ytPlayer && typeof state.ytPlayer.loadVideoById === 'function'));
+    });
+    showToast(`Reklamsız Çalınıyor: ${target.title}`);
+    return;
+  }
+
+  loadYouTubePlayback(cleanYtId, target, normalizedStart, token, ytCanDirectLoad);
+  showToast(`Çalınıyor: ${target.title} - ${target.artist}`);
+}
+
+function loadDirectAudioStream(streamUrl, startSeconds, token, ytFallbackId) {
+  if (!DOM.audioEngine || token !== currentPlaybackToken || state.userPaused) return;
+  try {
+    if (state.ytPlayer && typeof state.ytPlayer.pauseVideo === 'function') {
+      try { state.ytPlayer.pauseVideo(); } catch(e) {}
+    }
+    DOM.audioEngine.volume = state.isMuted ? 0 : (state.volume ?? 0.8);
+    if (startSeconds > 0) {
+      const seekOnce = () => {
+        if (token !== currentPlaybackToken) return;
+        try { DOM.audioEngine.currentTime = startSeconds; } catch(e) {}
+      };
+      DOM.audioEngine.addEventListener('loadedmetadata', seekOnce, { once: true });
+    }
+    DOM.audioEngine.src = streamUrl;
+    state.isPlaying = true;
+    updatePlayPauseUI(true);
+    const playPromise = DOM.audioEngine.play();
+    if (playPromise && typeof playPromise.then === 'function') {
+      playPromise.then(() => {
+        if (token !== currentPlaybackToken) return;
+        try {
+          if (window.KurfaAndroidBridge && typeof window.KurfaAndroidBridge.setNativePlaybackState === 'function') {
+            window.KurfaAndroidBridge.setNativePlaybackState(true);
+          }
+        } catch(e) {}
+      }).catch((err) => {
+        if (token !== currentPlaybackToken || (err && err.name === 'AbortError')) return;
+        if (ytFallbackId) {
+          loadYouTubePlayback(ytFallbackId, state.currentTrack, startSeconds, token, Boolean(state.ytReady && state.ytPlayer && typeof state.ytPlayer.loadVideoById === 'function'));
+        } else {
+          state.isPlaying = false;
+          updatePlayPauseUI(false);
+        }
+      });
+    }
+  } catch(err) {
+    if (ytFallbackId) {
+      loadYouTubePlayback(ytFallbackId, state.currentTrack, startSeconds, token, Boolean(state.ytReady && state.ytPlayer && typeof state.ytPlayer.loadVideoById === 'function'));
+    }
+  }
+}
+
+function loadYouTubePlayback(cleanYtId, target, normalizedStart, token, ytCanDirectLoad) {
+  if (token !== currentPlaybackToken) return;
   if (ytCanDirectLoad) {
     try {
       if (typeof state.ytPlayer.setPlaybackRate === 'function') {
@@ -1438,8 +1748,6 @@ function playTrackById(videoId, arg2, arg3, arg4, arg5, options = {}) {
     state.pendingTrackToPlay = target;
     initYouTubeEngine();
   }
-
-  showToast(`Çalınıyor: ${target.title} - ${target.artist}`);
 }
 
 function addToQueueTrack(videoIdOrTrack, title, artist, thumb, dur) {
@@ -1559,6 +1867,11 @@ function pausePlayback() {
   if (DOM.audioEngine) {
     try { DOM.audioEngine.pause(); } catch(e) {}
   }
+  try {
+    if (window.KurfaAndroidBridge && typeof window.KurfaAndroidBridge.setNativePlaybackState === 'function') {
+      window.KurfaAndroidBridge.setNativePlaybackState(false);
+    }
+  } catch(e) {}
   state.isPlaying = false;
   updatePlayPauseUI(false);
   if (typeof syncPipState === 'function') {
@@ -2333,36 +2646,39 @@ async function updateLyricsDisplay() {
 
   const { cleanT, cleanA, rawT } = cleanLyricsQuery(track.title, track.artist);
 
-  // 1. Fetch from our Cloudflare worker API
-  try {
-    const res = await fetch(`${API_BASE}/api/lyrics?track=${encodeURIComponent(cleanT)}&artist=${encodeURIComponent(cleanA)}`, { signal });
-    if (reqToken !== lyricsRequestToken) return;
-    if (res.ok) {
-      const data = await res.json();
-      if (reqToken !== lyricsRequestToken) return;
+  function saveLyricsToLocalStorage(entry) {
+    try {
+      const raw = localStorage.getItem('kurfa_lyrics_cache_v1');
+      const store = (raw ? JSON.parse(raw) : {}) || {};
+      const keys = Object.keys(store);
+      if (keys.length >= 40) delete store[keys[0]];
+      store[cacheKey] = { ...entry, expiresAt: Date.now() + 7 * 24 * 3600 * 1000 };
+      localStorage.setItem('kurfa_lyrics_cache_v1', JSON.stringify(store));
+    } catch (e) {}
+  }
 
-      if (data.success && data.syncedLyrics) {
-        const parsedLines = parseLyricsPayload(data, track);
-        lyricsMemoryCache.set(cacheKey, { synced: true, lines: parsedLines, source: "LRCLIB Canlı Sözler", duration: data.duration });
-        checkAndDisplayClipIntroHint(track, data.duration || 0);
-        renderLyricsList(parsedLines, "LRCLIB Canlı Sözler");
+  // 0. Instant localStorage persistent lyrics check (0 network requests)
+  try {
+    const raw = localStorage.getItem('kurfa_lyrics_cache_v1');
+    const store = raw ? JSON.parse(raw) : null;
+    const saved = store && store[cacheKey];
+    if (saved && saved.expiresAt > Date.now()) {
+      if (saved.synced && Array.isArray(saved.lines)) {
+        lyricsMemoryCache.set(cacheKey, saved);
+        checkAndDisplayClipIntroHint(track, saved.duration || 0);
+        renderLyricsList(saved.lines, saved.source || "LRCLIB Canlı Sözler");
         syncLyricsWithTime(getActiveMediaCurrentTime());
         return;
-      } else if (data.success && data.plainLyrics) {
-        lyricsMemoryCache.set(cacheKey, { synced: false, plain: data.plainLyrics, source: "LRCLIB Tam Metin" });
+      } else if (saved.plain) {
+        lyricsMemoryCache.set(cacheKey, saved);
         checkAndDisplayClipIntroHint(track, 0);
-        renderPlainLyrics(data.plainLyrics, "LRCLIB Tam Metin");
+        renderPlainLyrics(saved.plain, saved.source || "LRCLIB Tam Metin");
         return;
       }
     }
-  } catch (err) {
-    if (err && err.name === 'AbortError') return;
-    console.warn("Backend lyrics error, trying direct fetch:", err);
-  }
+  } catch (e) {}
 
-  if (reqToken !== lyricsRequestToken) return;
-
-  // 2. Direct client-side fetch from LRCLIB with multiple query permutations
+  // 1. Direct browser-to-LRCLIB fetch FIRST (0 Cloudflare Worker load, CORS enabled)
   const clientQueries = [
     `${cleanT} ${cleanA}`.trim(),
     `${cleanA} ${cleanT}`.trim(),
@@ -2428,13 +2744,17 @@ async function updateLyricsDisplay() {
           if (best && bestSc > 0) {
             if (best.syncedLyrics) {
               const parsedLines = parseLyricsPayload(best, track);
-              lyricsMemoryCache.set(cacheKey, { synced: true, lines: parsedLines, source: "LRCLIB Canlı Sözler", duration: best.duration });
+              const entry = { synced: true, lines: parsedLines, source: "LRCLIB Canlı Sözler", duration: best.duration };
+              lyricsMemoryCache.set(cacheKey, entry);
+              saveLyricsToLocalStorage(entry);
               checkAndDisplayClipIntroHint(track, best.duration || 0);
               renderLyricsList(parsedLines, "LRCLIB Canlı Sözler");
               syncLyricsWithTime(getActiveMediaCurrentTime());
               return;
             } else if (best.plainLyrics) {
-              lyricsMemoryCache.set(cacheKey, { synced: false, plain: best.plainLyrics, source: "LRCLIB Tam Metin" });
+              const entry = { synced: false, plain: best.plainLyrics, source: "LRCLIB Tam Metin" };
+              lyricsMemoryCache.set(cacheKey, entry);
+              saveLyricsToLocalStorage(entry);
               checkAndDisplayClipIntroHint(track, 0);
               renderPlainLyrics(best.plainLyrics, "LRCLIB Tam Metin");
               return;
@@ -2445,6 +2765,38 @@ async function updateLyricsDisplay() {
     } catch (e) {
       if (e && e.name === 'AbortError') return;
     }
+  }
+
+  if (reqToken !== lyricsRequestToken) return;
+
+  // 2. Fallback to Cloudflare worker lyrics resolver only when direct client query misses
+  try {
+    const res = await fetch(`${API_BASE}/api/lyrics?track=${encodeURIComponent(cleanT)}&artist=${encodeURIComponent(cleanA)}`, { signal });
+    if (reqToken !== lyricsRequestToken) return;
+    if (res.ok) {
+      const data = await res.json();
+      if (reqToken !== lyricsRequestToken) return;
+
+      if (data.success && data.syncedLyrics) {
+        const parsedLines = parseLyricsPayload(data, track);
+        const entry = { synced: true, lines: parsedLines, source: "LRCLIB Canlı Sözler", duration: data.duration };
+        lyricsMemoryCache.set(cacheKey, entry);
+        saveLyricsToLocalStorage(entry);
+        checkAndDisplayClipIntroHint(track, data.duration || 0);
+        renderLyricsList(parsedLines, "LRCLIB Canlı Sözler");
+        syncLyricsWithTime(getActiveMediaCurrentTime());
+        return;
+      } else if (data.success && data.plainLyrics) {
+        const entry = { synced: false, plain: data.plainLyrics, source: "LRCLIB Tam Metin" };
+        lyricsMemoryCache.set(cacheKey, entry);
+        saveLyricsToLocalStorage(entry);
+        checkAndDisplayClipIntroHint(track, 0);
+        renderPlainLyrics(data.plainLyrics, "LRCLIB Tam Metin");
+        return;
+      }
+    }
+  } catch (err) {
+    if (err && err.name === 'AbortError') return;
   }
 
   if (reqToken !== lyricsRequestToken) return;
@@ -2817,15 +3169,13 @@ async function executeSearchImmediate(query, autoSwitchTab = true, options = {})
   }
 
   try {
-    const res = await fetch(`${API_BASE}/api/search?q=${encodeURIComponent(cleanQ)}`, {
-      signal: searchAbortController ? searchAbortController.signal : undefined
+    const data = await kurfaSearchTracks(cleanQ, {
+      signal: searchAbortController ? searchAbortController.signal : undefined,
+      source: state.searchSource || 'auto'
     });
     if (seqToken !== searchSeqToken) return;
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const data = await res.json();
-    if (seqToken !== searchSeqToken) return;
 
-    if (data.success && data.results && data.results.length > 0) {
+    if (data && data.success && data.results && data.results.length > 0) {
       state.currentSearchResults = data.results;
       state._rawSearchResults = [...data.results];
       state.currentSearchQuery = cleanQ;
@@ -3101,9 +3451,14 @@ function applySearchFilter(filter, el) {
     state.baseSearchQuery = inputVal;
   }
   const baseQuery = state.baseSearchQuery || inputVal || "türkçe popüler";
-  if (filter === 'all') {
+  if (filter === 'audius') {
+    state.searchSource = 'audius';
+    executeSearchImmediate(baseQuery, true, { preserveBaseQuery: true });
+  } else if (filter === 'all') {
+    state.searchSource = 'auto';
     executeSearchImmediate(baseQuery, true, { preserveBaseQuery: true });
   } else {
+    state.searchSource = 'auto';
     executeSearchImmediate(`${baseQuery} ${filter}`, true, { preserveBaseQuery: true });
   }
 }
@@ -3226,13 +3581,9 @@ function quickSearchAndPlay(query) {
   const seq = ++quickSearchSeqToken;
 
   showToast(`Çalınıyor: ${query}`);
-  fetch(`${API_BASE}/api/search?q=${encodeURIComponent(query)}`, {
+  kurfaSearchTracks(query, {
     signal: quickSearchAbortController ? quickSearchAbortController.signal : undefined
   })
-    .then(r => {
-      if (!r.ok) throw new Error(`HTTP ${r.status}`);
-      return r.json();
-    })
     .then(data => {
       if (seq !== quickSearchSeqToken) return;
       if (data.success && data.results && data.results.length > 0) {
@@ -3711,13 +4062,9 @@ function openArtistDetail(artist) {
 
   window.scrollTo({ top: 0, behavior: 'smooth' });
 
-  fetch(`${API_BASE}/api/search?q=${encodeURIComponent(artist.name + ' şarkıları')}`, {
+  kurfaSearchTracks(`${artist.name} şarkıları`, {
     signal: artistAbortController ? artistAbortController.signal : undefined
   })
-    .then(r => {
-      if (!r.ok) throw new Error(`HTTP ${r.status}`);
-      return r.json();
-    })
     .then(data => {
       if (seq !== artistSeqToken) return;
       if (data.success && data.results && data.results.length > 0) {
@@ -4666,7 +5013,7 @@ async function fetchExploreData(force = false) {
     const cachedTime = parseInt(localStorage.getItem('kurfa_explore_cache_time') || '0', 10);
     const now = Date.now();
 
-    if (!force && (now - cachedTime < 30 * 60 * 1000) && exploreData && Array.isArray(exploreData.trends) && exploreData.trends.length > 0) {
+    if (!force && (now - cachedTime < 12 * 60 * 60 * 1000) && exploreData && Array.isArray(exploreData.trends) && exploreData.trends.length > 0) {
       console.log("Serving YouTube Trends from client cache (0 Cloudflare requests used)");
       sanitizeExploreData(exploreData);
       const topTrend = exploreData.hero || exploreData.trends[0];
@@ -4680,10 +5027,27 @@ async function fetchExploreData(force = false) {
       return;
     }
 
-    const endpoint = force ? `${API_BASE}/api/explore?admin=force` : `${API_BASE}/api/explore`;
-    const res = await fetch(endpoint);
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const data = await res.json();
+    let data = null;
+    if (!force) {
+      try {
+        const seedRes = await fetch('./explore-seed.json');
+        if (seedRes.ok) {
+          const seedJson = await seedRes.json();
+          if (seedJson && seedJson.success && Array.isArray(seedJson.trends) && seedJson.trends.length > 0) {
+            data = seedJson;
+            console.log("Dynamic Explore & Trends served from static CDN seed (0 Cloudflare requests used)");
+          }
+        }
+      } catch (seedErr) {}
+    }
+
+    if (!data) {
+      const endpoint = force ? `${API_BASE}/api/explore?admin=force` : `${API_BASE}/api/explore`;
+      const res = await fetch(endpoint);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      data = await res.json();
+    }
+
     if (data && data.success && Array.isArray(data.trends) && data.trends.length > 0) {
       sanitizeExploreData(data);
       exploreData = data;
@@ -6803,11 +7167,7 @@ function resolveVisibleSpotifyThumbnails(playlistId) {
 
     const trk = pending[idx++];
     const query = `${trk.artist} ${trk.title} audio`.trim();
-    fetch(`${API_BASE}/api/search?q=${encodeURIComponent(query)}&single=1`, { signal })
-      .then(r => {
-        if (!r.ok) return null;
-        return r.json();
-      })
+    kurfaSearchTracks(query, { filterSingles: true, signal })
       .then(d => {
         if (!d || myEpoch !== spotifyThumbEpoch || state.activeSpotifyPlaylistId !== playlistId) return;
         if (d.success && Array.isArray(d.results) && d.results.length > 0) {
@@ -7034,10 +7394,8 @@ async function triggerSmartRadioContinue() {
       const ctrl = new AbortController();
       const timeoutId = setTimeout(() => ctrl.abort(), 4000);
       try {
-        const res = await fetch(`${API_BASE}/api/search?q=${encodeURIComponent(q)}`, { signal: ctrl.signal });
-        if (!res.ok) continue;
-        const data = await res.json();
-        if (data.success && Array.isArray(data.results)) {
+        const data = await kurfaSearchTracks(q, { signal: ctrl.signal });
+        if (data && data.success && Array.isArray(data.results)) {
           const fresh = data.results.filter(t => {
             if (!t || !t.id) return false;
             const candVid = safeYtId(t.ytId || t.id);
@@ -7715,6 +8073,14 @@ function setDeckVisualMode(mode, silent = false) {
     if (state.currentTrack && state.currentTrack.id) {
       if (DOM.audioEngine && DOM.audioEngine.getAttribute('src') && !DOM.audioEngine.paused && DOM.audioEngine.currentTime > 0) {
         // HTML5 audio continues playing
+      } else if ((isAndroidNativeEngine() || Boolean(getBrowserExtensionMode())) && safeYtId(state.currentTrack.ytId || state.currentTrack.id)) {
+        const directVid = safeYtId(state.currentTrack.ytId || state.currentTrack.id);
+        const resumeAt = Math.max(0, Math.floor(curTime || 0));
+        kurfaResolveDirectAudio(directVid).then((res) => {
+          if (state.deckVisualMode === 'vinyl' && !state.userPaused && res && res.success && res.streamUrl && safeYtId(state.currentTrack?.ytId || state.currentTrack?.id) === directVid) {
+            loadDirectAudioStream(res.streamUrl, resumeAt, currentPlaybackToken, directVid);
+          }
+        }).catch(() => {});
       } else if (state.ytPlayer && typeof state.ytPlayer.getPlayerState === 'function' && state.ytPlayer.getPlayerState() === 1) {
         // YouTube continues playing cleanly in the background behind the spinning vinyl deck
       } else if (state.isPlaying && !state.userPaused) {
@@ -8514,7 +8880,8 @@ function setupEventListeners() {
       if (state._playerInError || state._lastErrorVideoId) {
         return;
       }
-      const playId = safeYtId(state.currentTrack?.ytId || state.currentTrack?.id);
+      const isAudius = String(state.currentTrack?.id || '').startsWith('audius_');
+      const playId = isAudius ? null : safeYtId(state.currentTrack?.ytId || state.currentTrack?.id);
       if (
         !state._switchingDeckMode &&
         playId &&
@@ -8527,18 +8894,30 @@ function setupEventListeners() {
         state.ytPlayer.loadVideoById({ videoId: playId, startSeconds: cur });
         state.isPlaying = true;
         updatePlayPauseUI(true);
+      } else if (isAudius && state.isPlaying && !state.userPaused) {
+        playNextTrack({ isAutoErrorSkip: true });
       }
     });
     DOM.audioEngine.addEventListener('play', () => {
       if (state.ytPlayer && typeof state.ytPlayer.pauseVideo === 'function') {
         try { state.ytPlayer.pauseVideo(); } catch (e) {}
       }
+      try {
+        if (window.KurfaAndroidBridge && typeof window.KurfaAndroidBridge.setNativePlaybackState === 'function') {
+          window.KurfaAndroidBridge.setNativePlaybackState(true);
+        }
+      } catch(e) {}
       state.isPlaying = true;
       updatePlayPauseUI(true);
       startSeekbarTicker();
     });
     DOM.audioEngine.addEventListener('pause', () => {
       if (DOM.audioEngine.getAttribute('src') && state.userPaused) {
+        try {
+          if (window.KurfaAndroidBridge && typeof window.KurfaAndroidBridge.setNativePlaybackState === 'function') {
+            window.KurfaAndroidBridge.setNativePlaybackState(false);
+          }
+        } catch(e) {}
         state.isPlaying = false;
         updatePlayPauseUI(false);
       }
@@ -8612,6 +8991,7 @@ function initApp() {
   fetchExploreData();
 
   KurfaDSP.init(DOM.audioEngine);
+  updateLocalEngineStatusUI();
 
   initYouTubeEngine();
   syncPersistentPlayerPosition();
@@ -8763,6 +9143,7 @@ window.addEventListener('beforeinstallprompt', (e) => {
 });
 
 function openAppInstallModal() {
+  updateLocalEngineStatusUI();
   const modal = document.getElementById('app-install-modal');
   const card = document.getElementById('app-install-modal-card');
   if (!modal) return;

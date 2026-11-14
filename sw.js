@@ -1,5 +1,5 @@
 // Kurfanova PWA Service Worker
-const CACHE_NAME = 'kurfanova-shell-v4.0.0';
+const CACHE_NAME = 'kurfanova-shell-v4.1.0';
 
 const SHELL_ASSETS = [
   './',
@@ -7,6 +7,7 @@ const SHELL_ASSETS = [
   './tailwind.min.css',
   './style.css',
   './app.js',
+  './explore-seed.json',
   './google-auth.html',
   './manifest.json',
   './icon-192.png',
@@ -22,6 +23,7 @@ const BYPASS_HOSTS = [
   'googlevideo.com',
   'spotify.com',
   'lrclib.net',
+  'audius.co',
   'savenow.to',
   'lbserver.xyz',
   'googleapis.com'
@@ -121,12 +123,13 @@ self.addEventListener('fetch', (event) => {
   }
 
   if (url.protocol !== 'http:' && url.protocol !== 'https:') return;
+  if (url.pathname.startsWith('/__kurfa_native_audio__/')) return;
   if (url.pathname.includes('/api/')) return;
   if (shouldBypassHost(url.hostname)) return;
   if (url.origin !== self.location.origin) return;
-  if (url.pathname.toLowerCase().endsWith('.apk')) return;
+  if (url.pathname.toLowerCase().endsWith('.apk') || url.pathname.toLowerCase().endsWith('.zip') || url.pathname.toLowerCase().endsWith('.user.js')) return;
 
-  if (request.mode === 'navigate' || isAppShellPath(url.pathname)) {
+  if (request.mode === 'navigate' || isAppShellPath(url.pathname) || url.pathname.endsWith('/explore-seed.json')) {
     event.respondWith(networkFirst(request, request.mode === 'navigate'));
     return;
   }
