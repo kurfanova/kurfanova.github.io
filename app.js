@@ -501,20 +501,9 @@ function initWebAutoUpdater() {
   if (typeof navigator === 'undefined' || !('serviceWorker' in navigator)) return;
   if (window.location.protocol !== 'https:' && window.location.hostname !== 'localhost') return;
   try {
-    navigator.serviceWorker.register('./sw.js?v=4.3.6').then((reg) => {
+    navigator.serviceWorker.register('./sw.js?v=4.3.8').then((reg) => {
       __kurfaSwRegistration = reg;
       __kurfaLastSwUpdateCheckAt = Date.now();
-      reg.addEventListener('updatefound', () => {
-        const nextWorker = reg.installing;
-        if (!nextWorker) return;
-        nextWorker.addEventListener('statechange', () => {
-          if (nextWorker.state === 'installed' && navigator.serviceWorker.controller) {
-            if (typeof showToast === 'function') {
-              showToast('Yeni web güncellemesi hazır, arka planda etkinleştiriliyor.');
-            }
-          }
-        });
-      });
     }).catch(() => {});
 
     let __swReloading = false;
@@ -528,6 +517,7 @@ function initWebAutoUpdater() {
 }
 
 window.__kurfaOnNativeUpdateReady = function (info) {
+  if (info && info.uiHandled) return;
   const ver = String(info?.version || '');
   if (typeof showToast === 'function' && ver) {
     showToast(`Kurfamüzik v${ver} indirildi ve doğrulandı — kapanışta otomatik güncellenecek.`);
@@ -541,10 +531,6 @@ window.requestNativeAppUpdateCheck = function () {
   }
   if (getBrowserExtensionMode().startsWith('desktop')) {
     callExtensionBridge('CHECK_UPDATE', {}, 8000);
-    return true;
-  }
-  if (__kurfaSwRegistration && typeof __kurfaSwRegistration.update === 'function') {
-    __kurfaSwRegistration.update().catch(() => {});
     return true;
   }
   return false;

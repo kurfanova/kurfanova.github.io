@@ -1,5 +1,5 @@
 // Kurfanova PWA Service Worker
-const CACHE_NAME = 'kurfanova-shell-v4.3.7';
+const CACHE_NAME = 'kurfanova-shell-v4.3.8';
 
 const SHELL_ASSETS = [
   './',
