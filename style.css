@@ -378,15 +378,49 @@ body.tahta-mode .animate-spin-slow {
   transform: translateX(-50%) translateY(3px) scale(0.97);
 }
 
+/* Native <progress> styling per modern-web-guidance */
+progress.kurfa-progress {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 100%;
+  height: 0.5rem;
+  border: 0;
+  border-radius: 9999px;
+  overflow: clip;
+  background-color: rgba(148, 163, 184, 0.22);
+  color: var(--kurfa-primary);
+}
+progress.kurfa-progress::-webkit-progress-bar {
+  background-color: rgba(148, 163, 184, 0.22);
+  border-radius: 9999px;
+}
+progress.kurfa-progress::-webkit-progress-value {
+  background: linear-gradient(90deg, var(--kurfa-primary), #ec4899);
+  border-radius: 9999px;
+  transition: width 0.2s ease;
+}
+progress.kurfa-progress::-moz-progress-bar {
+  background: linear-gradient(90deg, var(--kurfa-primary), #ec4899);
+  border-radius: 9999px;
+}
+body.dark-mode progress.kurfa-progress {
+  background-color: rgba(255, 255, 255, 0.12);
+}
+body.dark-mode progress.kurfa-progress::-webkit-progress-bar {
+  background-color: rgba(255, 255, 255, 0.12);
+}
+
 /* Lyrics Karaoke Highlight */
 .lyric-line,
 .lyrics-line {
-  transition: all 0.28s cubic-bezier(0.2, 0.9, 0.3, 1);
+  transition: color 0.22s ease, background-color 0.22s ease, border-color 0.22s ease;
   cursor: pointer;
   scroll-margin: 60px 0;
-  padding: 8px 14px;
-  border-radius: 14px;
-  line-height: 1.6;
+  padding: 10px 14px;
+  border-radius: 12px;
+  border-left: 3px solid transparent;
+  line-height: 1.65;
+  color: #475569;
 }
 .lyric-line:hover,
 .lyrics-line:hover {
@@ -396,23 +430,29 @@ body.tahta-mode .animate-spin-slow {
 .lyric-line.active,
 .lyric-line.active-lyric,
 .lyrics-line.active {
-  color: #0f172a !important;
-  background: linear-gradient(135deg, rgba(255, 32, 86, 0.16), rgba(99, 102, 241, 0.12)) !important;
-  padding: 12px 20px;
-  border-radius: 16px;
-  font-weight: 800;
-  font-size: 1.15rem;
-  transform: scale(1.02);
-  border-left: 4px solid var(--kurfa-primary);
-  box-shadow: 0 8px 24px rgba(255, 32, 86, 0.16);
+  color: #be123c !important;
+  background: rgba(255, 32, 86, 0.09) !important;
+  padding: 10px 14px;
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 1.08rem;
+  border-left: 3px solid var(--kurfa-primary);
+}
+body.dark-mode .lyric-line,
+body.dark-mode .lyrics-line {
+  color: #94a3b8;
+}
+body.dark-mode .lyric-line:hover,
+body.dark-mode .lyrics-line:hover {
+  color: #f8fafc;
+  background-color: rgba(255, 255, 255, 0.05);
 }
 body.dark-mode .lyric-line.active,
 body.dark-mode .lyric-line.active-lyric,
 body.dark-mode .lyrics-line.active {
   color: #ffffff !important;
-  background: linear-gradient(135deg, rgba(255, 32, 86, 0.28), rgba(99, 102, 241, 0.2)) !important;
-  border-left: 4px solid var(--kurfa-primary);
-  box-shadow: 0 8px 24px rgba(255, 32, 86, 0.2);
+  background: rgba(255, 32, 86, 0.2) !important;
+  border-left: 3px solid var(--kurfa-primary);
 }
 
 /* Equalizer Bars */
@@ -543,6 +583,11 @@ body.dark-mode .bg-surface-container-low {
   background-color: #121724 !important;
 }
 
+body.dark-mode .hover\:bg-surface-container-low:hover {
+  background-color: #192235 !important;
+}
+
+body.dark-mode .bg-surface-container-low\/50,
 body.dark-mode .bg-surface-container-low\/60 {
   background-color: rgba(18, 23, 36, 0.78) !important;
 }
@@ -551,8 +596,21 @@ body.dark-mode .bg-surface-container {
   background-color: #182030 !important;
 }
 
+body.dark-mode .hover\:bg-surface-container:hover {
+  background-color: #202b40 !important;
+}
+
 body.dark-mode .bg-surface-container-high {
   background-color: #202b40 !important;
+}
+
+body.dark-mode .hover\:bg-surface-container-high:hover {
+  background-color: #26334d !important;
+}
+
+body.dark-mode .bg-surface-container-high\/40:hover,
+body.dark-mode .hover\:bg-surface-container-high\/40:hover {
+  background-color: rgba(38, 51, 77, 0.55) !important;
 }
 
 body.dark-mode .bg-surface-container-high\/90,
@@ -652,15 +710,20 @@ body.dark-mode .filter-pill:not(.active):hover {
 /* Track list table rows */
 .track-row {
   transition: background-color 0.15s ease, border-left-color 0.15s ease;
+  border-left: 3px solid transparent;
 }
 .track-row:hover {
-  background-color: rgba(0, 0, 0, 0.03);
+  background-color: rgba(15, 23, 42, 0.04) !important;
+}
+.track-row.active {
+  background-color: rgba(255, 32, 86, 0.08) !important;
+  border-left: 3px solid var(--kurfa-primary) !important;
 }
 body.dark-mode .track-row:hover {
-  background-color: rgba(255, 255, 255, 0.05) !important;
+  background-color: rgba(255, 255, 255, 0.06) !important;
 }
 body.dark-mode .track-row.active {
-  background-color: rgba(255, 32, 86, 0.15) !important;
+  background-color: rgba(255, 32, 86, 0.16) !important;
   border-left: 3px solid var(--kurfa-primary) !important;
 }
 

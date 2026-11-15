@@ -121,8 +121,8 @@
       pointer-events: none !important;
     }
   </style>
-  <link rel="stylesheet" href="./tailwind.min.css?v=20261115_v1">
-  <link rel="stylesheet" href="./style.css?v=20261115_v2">
+  <link rel="stylesheet" href="./tailwind.min.css?v=20261115_v3">
+  <link rel="stylesheet" href="./style.css?v=20261115_v3">
 </head>
 <body class="bg-background font-sans text-on-surface antialiased min-h-screen">
   <script>
@@ -161,7 +161,7 @@
   <!-- ===================================================================== -->
   <!-- 1. LEFT SIDEBAR NAVIGATION                                            -->
   <!-- ===================================================================== -->
-  <aside class="fixed left-0 top-0 h-[calc(100vh-6rem)] w-64 bg-surface-container-lowest z-40 flex flex-col justify-between shadow-[0_1px_8px_rgba(0,0,0,0.04)] overflow-y-auto hidden md:flex">
+  <aside class="fixed left-0 top-0 h-[calc(100vh-5.5rem)] w-64 bg-surface-container-lowest z-40 flex flex-col justify-between shadow-[0_1px_8px_rgba(0,0,0,0.04)] overflow-y-auto hidden md:flex">
     <div class="p-space-lg">
       
       <!-- Brand Logo & Title -->
@@ -221,7 +221,7 @@
     </div>
 
     <!-- Reklamsız Uygulamalar & Eklenti Kurulumu -->
-    <div class="px-space-md pb-5 mb-1">
+    <div class="px-3 pb-4 pt-2">
       <button type="button" id="btn-sidebar-install-apk" class="w-full p-2.5 rounded-2xl bg-surface-container-low border border-surface-container hover:border-primary/40 hover:bg-surface-container flex items-center justify-between gap-2 cursor-pointer transition-all group text-left" onclick="openAppInstallModal()" title="Kurfamüzik Reklamsız Uygulama & Eklenti Kur">
         <div class="flex items-center gap-2 min-w-0 flex-1">
           <div class="w-8 h-8 rounded-xl bg-primary/10 text-primary border border-primary/20 flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform">
@@ -586,7 +586,7 @@
           <div class="flex items-center justify-between">
             <button type="button" onclick="closeArtistDetail()" class="flex items-center gap-2 px-4 py-2 rounded-full bg-surface-container-low hover:bg-surface-container border border-surface-container/60 text-xs font-bold text-on-surface transition-all active:scale-95 shadow-sm">
               <span class="material-symbols-outlined text-[18px]">arrow_back</span>
-              <span>Keşfet'e Dön</span>
+              <span id="artist-detail-back-label">Keşfet'e Dön</span>
             </button>
             <span class="text-xs font-semibold text-primary flex items-center gap-1">
               <span class="material-symbols-outlined text-[16px] filled">verified</span>
@@ -595,8 +595,8 @@
           </div>
 
           <!-- Spotify-Style Artist Header Banner -->
-          <div class="relative w-full rounded-2xl overflow-hidden bg-gradient-to-r from-surface-container-low via-surface-container to-surface-container-high border border-surface-container shadow-md p-6 sm:p-8 flex flex-col md:flex-row items-center md:items-end gap-6">
-            <div class="relative w-28 h-28 sm:w-36 sm:h-36 rounded-full overflow-hidden shadow-2xl ring-4 ring-white/10 flex-shrink-0 bg-surface-container-highest">
+          <div class="relative w-full rounded-2xl overflow-hidden bg-surface-container-lowest border border-surface-container shadow-md p-6 sm:p-8 flex flex-col md:flex-row items-center md:items-end gap-6">
+            <div class="relative w-28 h-28 sm:w-36 sm:h-36 rounded-full overflow-hidden shadow-2xl ring-2 ring-primary/25 flex-shrink-0 bg-surface-container-high">
               <img id="artist-profile-avatar" src="./kurfamuzik_logo.png" alt="Sanatçı" loading="lazy" class="w-full h-full object-cover" onerror="this.onerror=null; this.src='./kurfamuzik_logo.png';">
             </div>
             <div class="flex flex-col items-center md:items-start text-center md:text-left min-w-0 flex-1">
@@ -612,7 +612,7 @@
                   <span class="material-symbols-outlined text-[20px] filled">play_arrow</span>
                   <span>Tüm Şarkıları Çal</span>
                 </button>
-                <button type="button" id="artist-shuffle-btn" class="flex items-center gap-2 px-4 py-2.5 rounded-full bg-surface-container-lowest/80 hover:bg-surface-container-lowest text-on-surface border border-surface-container font-semibold text-xs transition-all active:scale-95">
+                <button type="button" id="artist-shuffle-btn" class="flex items-center gap-2 px-4 py-2.5 rounded-full bg-surface-container hover:bg-surface-container-high text-on-surface border border-surface-container font-semibold text-xs transition-all active:scale-95">
                   <span class="material-symbols-outlined text-[18px]">shuffle</span>
                   <span>Karışık</span>
                 </button>
@@ -637,51 +637,46 @@
 
 
       <!-- ================================================================= -->
-      <!-- TAB 2: ARAMA (YOUTUBE AUDIO SEARCH & CONVERTER)                   -->
+      <!-- TAB 2: ARAMA (SANATÇILAR, YOUTUBE & AÇIK KATALOG)                 -->
       <!-- ================================================================= -->
-      <div id="tab-arama" class="view-tab flex flex-col w-full gap-space-lg">
+      <div id="tab-arama" class="view-tab flex flex-col w-full gap-5">
         
-        <!-- Search Controller Banner -->
-        <section class="relative overflow-hidden rounded-2xl bg-surface-container-lowest p-4 sm:p-6 md:p-space-lg shadow-sm">
-          <div class="absolute -right-20 -top-20 w-80 h-80 rounded-full bg-primary-fixed/30 blur-xl pointer-events-none"></div>
-          <div class="absolute -left-10 -bottom-10 w-64 h-64 rounded-full bg-secondary-fixed/40 blur-xl pointer-events-none"></div>
-          
-          <div class="relative flex flex-col gap-3 sm:gap-space-md">
-            <div class="flex flex-col sm:flex-row gap-2.5 sm:gap-space-sm items-stretch sm:items-center justify-between">
+        <!-- Unified Search Bar & Source Chips -->
+        <section class="rounded-2xl bg-surface-container-lowest p-4 sm:p-5 shadow-sm border border-surface-container/70">
+          <div class="flex flex-col gap-3">
+            <div class="flex flex-col sm:flex-row gap-2.5 items-stretch sm:items-center">
               <div class="flex-1 relative flex items-center">
-                <div class="absolute left-3.5 flex items-center pointer-events-none text-primary">
-                  <span class="material-symbols-outlined text-[20px] sm:text-[24px]" aria-hidden="true">smart_display</span>
-                </div>
+                <span class="material-symbols-outlined absolute left-3.5 text-on-surface-variant text-[20px] pointer-events-none" aria-hidden="true">search</span>
                 <input 
                   type="text" 
                   id="engine-search-input" 
-                  placeholder="YouTube video linki veya parça / şarkıcı ara..." 
-                  aria-label="YouTube Müzik Arama Girişi"
-                  class="w-full h-11 sm:h-14 pl-10 sm:pl-12 pr-28 sm:pr-32 rounded-xl bg-surface-container-low text-xs sm:text-base text-on-surface placeholder:text-on-surface-variant focus:outline-none focus:bg-surface-container-lowest focus:ring-2 focus:ring-primary shadow-inner"
+                  placeholder="Sanatçı, şarkı adı veya YouTube linki ara..." 
+                  aria-label="Müzik ve Sanatçı Arama Girişi"
+                  class="w-full h-11 pl-10 pr-24 rounded-xl bg-surface-container-low border border-surface-container text-xs sm:text-sm text-on-surface placeholder:text-on-surface-variant focus:outline-none focus:border-primary/60 focus:ring-2 focus:ring-primary/20 transition-all"
                 />
-                <div class="absolute right-2.5 flex items-center gap-1 sm:gap-1.5">
-                  <button type="button" aria-label="Panodan Yapıştır" class="px-2 sm:px-2.5 py-1 sm:py-1.5 rounded-lg bg-surface-container hover:bg-surface-container-high text-on-surface-variant text-[11px] sm:text-xs font-semibold flex items-center gap-1 transition-colors" onclick="pasteFromClipboard()" title="Panodan Yapıştır">
-                    <span class="material-symbols-outlined text-[15px] sm:text-[16px]" aria-hidden="true">content_paste</span>
+                <div class="absolute right-2 flex items-center gap-1">
+                  <button type="button" aria-label="Panodan Yapıştır" class="px-2 py-1 rounded-lg bg-surface-container hover:bg-surface-container-high text-on-surface-variant text-[11px] font-semibold flex items-center gap-1 transition-colors" onclick="pasteFromClipboard()" title="Panodan Yapıştır">
+                    <span class="material-symbols-outlined text-[15px]" aria-hidden="true">content_paste</span>
                     <span class="hidden sm:inline">Yapıştır</span>
                   </button>
-                  <button type="button" aria-label="Aramayı Temizle" class="w-7 h-7 sm:w-8 sm:h-8 rounded-lg flex items-center justify-center text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-colors" onclick="clearSearchInput()" title="Temizle">
-                    <span class="material-symbols-outlined text-[16px] sm:text-[18px]" aria-hidden="true">close</span>
+                  <button type="button" aria-label="Aramayı Temizle" class="w-7 h-7 rounded-lg flex items-center justify-center text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-colors" onclick="clearSearchInput()" title="Temizle">
+                    <span class="material-symbols-outlined text-[16px]" aria-hidden="true">close</span>
                   </button>
                 </div>
               </div>
 
-              <button type="button" aria-label="Aramayı Başlat" class="h-11 sm:h-14 px-5 sm:px-space-lg bg-primary hover:bg-primary-container text-on-primary rounded-xl text-xs sm:text-sm font-bold flex items-center justify-center gap-2 shadow-md hover:shadow-lg active:scale-95 transition-all" onclick="executeSearchFromInput()">
-                <span class="material-symbols-outlined text-[18px] sm:text-[20px]" aria-hidden="true">search</span>
-                <span>Hemen Getir</span>
+              <button type="button" aria-label="Aramayı Başlat" class="h-11 px-5 bg-primary hover:bg-primary-container text-on-primary rounded-xl text-xs sm:text-sm font-bold flex items-center justify-center gap-1.5 shadow-sm active:scale-95 transition-all flex-shrink-0" onclick="executeSearchFromInput()">
+                <span class="material-symbols-outlined text-[18px]" aria-hidden="true">search</span>
+                <span>Ara</span>
               </button>
             </div>
 
-            <!-- Tags Filter Chips (Horizontal swipeable on mobile) -->
-            <div class="flex items-center justify-between gap-space-sm pt-1">
-              <div class="flex items-center gap-2 overflow-x-auto whitespace-nowrap scrollbar-none py-1 max-w-full" id="search-filter-chips">
+            <!-- Source & Category Chips -->
+            <div class="flex items-center justify-between gap-2">
+              <div class="flex items-center gap-1.5 overflow-x-auto whitespace-nowrap scrollbar-none py-0.5 max-w-full" id="search-filter-chips">
                 <button type="button" class="filter-chip active shrink-0 flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-primary text-on-primary text-xs font-semibold transition-all" onclick="applySearchFilter('all', this)">
                   <span class="material-symbols-outlined text-[15px]" aria-hidden="true">library_music</span>
-                  <span>YouTube Müzik</span>
+                  <span>Tümü</span>
                 </button>
                 <button type="button" class="filter-chip shrink-0 flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-surface-container-low hover:bg-surface-container text-on-surface-variant text-xs font-semibold transition-all" onclick="applySearchFilter('Resmi Klip', this)">
                   <span class="material-symbols-outlined text-[15px]" aria-hidden="true">videocam</span>
@@ -689,17 +684,17 @@
                 </button>
                 <button type="button" class="filter-chip shrink-0 flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-surface-container-low hover:bg-surface-container text-on-surface-variant text-xs font-semibold transition-all" onclick="applySearchFilter('Canlı Performans', this)">
                   <span class="material-symbols-outlined text-[15px]" aria-hidden="true">mic_external_on</span>
-                  <span>Canlı Performanslar</span>
+                  <span>Canlı</span>
                 </button>
                 <button type="button" class="filter-chip shrink-0 flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-surface-container-low hover:bg-surface-container text-on-surface-variant text-xs font-semibold transition-all" onclick="applySearchFilter('Remix Mashup', this)">
                   <span class="material-symbols-outlined text-[15px]" aria-hidden="true">album</span>
-                  <span>Remix & Mashup</span>
+                  <span>Remix</span>
                 </button>
                 <button type="button" class="filter-chip shrink-0 flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-surface-container-low hover:bg-surface-container text-on-surface-variant text-xs font-semibold transition-all" onclick="applySearchFilter('Akustik', this)">
                   <span class="material-symbols-outlined text-[15px]" aria-hidden="true">graphic_eq</span>
-                  <span>Akustik & Enstrümantal</span>
+                  <span>Akustik</span>
                 </button>
-                <button type="button" class="filter-chip shrink-0 flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-surface-container-low hover:bg-surface-container text-emerald-500 text-xs font-semibold transition-all" onclick="applySearchFilter('audius', this)" title="YouTube dışı, doğrudan tarayıcıdan %0 reklamlı açık müzik kataloğu">
+                <button type="button" class="filter-chip shrink-0 flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-surface-container-low hover:bg-surface-container text-emerald-500 text-xs font-semibold transition-all" onclick="applySearchFilter('audius', this)" title="Audius, Deezer ve Apple destekli reklamsız açık katalog">
                   <span class="material-symbols-outlined text-[15px]" aria-hidden="true">verified_user</span>
                   <span>Reklamsız Açık Katalog</span>
                 </button>
@@ -708,51 +703,37 @@
           </div>
         </section>
 
+        <!-- Dynamic Artists Shelf (Populates live from query) -->
+        <section id="search-artists-section" class="hidden flex-col gap-3">
+          <div class="flex items-center justify-between">
+            <h2 class="text-base sm:text-lg font-bold text-on-surface tracking-tight">Sanatçılar</h2>
+            <span class="text-xs text-on-surface-variant" id="search-artists-subtitle">Profil & tüm şarkıları gör</span>
+          </div>
+          <div id="search-artists-grid" class="flex items-stretch gap-3 overflow-x-auto pb-2 scrollbar-none">
+            <!-- Injected dynamically -->
+          </div>
+        </section>
+
         <!-- Spotlight Best Match Card -->
-        <div id="search-spotlight-box" class="w-full rounded-2xl bg-surface-container-lowest p-space-md lg:p-space-lg shadow-sm relative overflow-hidden" style="display:none;">
+        <div id="search-spotlight-box" class="w-full rounded-2xl bg-surface-container-lowest p-4 sm:p-5 shadow-sm border border-surface-container/70" style="display:none;">
           <!-- Injected dynamically -->
         </div>
 
-        <!-- Search Results Grid / List -->
-        <div class="grid grid-cols-1 xl:grid-cols-12 gap-space-lg items-start">
-          <div class="xl:col-span-8 flex flex-col gap-space-md">
-            <div class="flex items-center justify-between">
-              <h2 class="text-lg font-bold text-on-surface" id="search-results-count">Arama Sonuçları</h2>
-            </div>
-            
-            <div class="bg-surface-container-lowest rounded-2xl p-space-sm shadow-sm flex flex-col gap-1" id="search-results-list">
-              <div class="p-8 text-center text-on-surface-variant text-sm">
-                Aramak istediğin şarkı veya sanatçı adını yazıp ara.
-              </div>
+        <!-- Full-Width Search Results List -->
+        <div class="flex flex-col gap-3 w-full">
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <h2 class="text-base sm:text-lg font-bold text-on-surface" id="search-results-count">Arama Sonuçları</h2>
+            <div class="inline-flex items-center gap-1 bg-surface-container-low p-1 rounded-xl border border-surface-container/60 text-xs" id="search-sort-buttons-row">
+              <button type="button" id="btn-sort-alaka" class="px-3 py-1 rounded-lg bg-surface-container-lowest font-bold text-primary shadow-xs transition-all" onclick="setSearchSort('alaka')">Alaka</button>
+              <button type="button" id="btn-sort-izlenme" class="px-3 py-1 rounded-lg text-on-surface-variant hover:text-on-surface font-medium transition-all" onclick="setSearchSort('izlenme')">İzlenme</button>
+              <button type="button" id="btn-sort-en-yeni" class="px-3 py-1 rounded-lg text-on-surface-variant hover:text-on-surface font-medium transition-all" onclick="setSearchSort('en-yeni')">En Yeni</button>
+              <button type="button" class="px-2.5 py-1 rounded-lg text-primary hover:bg-primary/10 font-semibold transition-all" onclick="resetSearchFilters()" title="Filtreleri Sıfırla">Sıfırla</button>
             </div>
           </div>
 
-          <!-- Right Sidebar Filters -->
-          <div class="xl:col-span-4 flex flex-col gap-space-md">
-            <div class="bg-surface-container-lowest rounded-2xl p-space-md shadow-sm flex flex-col gap-space-sm">
-              <div class="flex items-center justify-between pb-2 border-b border-surface-container">
-                <span class="font-bold text-sm text-on-surface">Arama Bilgisi & Formatlar</span>
-                <button type="button" class="text-xs text-primary hover:underline font-bold transition-all cursor-pointer" onclick="resetSearchFilters()">Sıfırla</button>
-              </div>
-              <div class="flex flex-col gap-2">
-                <span class="text-xs font-semibold text-on-surface-variant">Sıralama Ölçütü</span>
-                <div class="grid grid-cols-3 gap-1 bg-surface-container-low p-1 rounded-xl text-center text-xs" id="search-sort-buttons-row">
-                  <button type="button" id="btn-sort-alaka" class="py-1.5 rounded-lg bg-surface-container-lowest font-bold text-primary shadow-xs transition-all active:scale-95" onclick="setSearchSort('alaka')">Alaka</button>
-                  <button type="button" id="btn-sort-izlenme" class="py-1.5 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high/40 font-medium transition-all active:scale-95" onclick="setSearchSort('izlenme')">İzlenme</button>
-                  <button type="button" id="btn-sort-en-yeni" class="py-1.5 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high/40 font-medium transition-all active:scale-95" onclick="setSearchSort('en-yeni')">En Yeni</button>
-                </div>
-              </div>
-              <div class="flex flex-col gap-1 mt-2">
-                <span class="text-xs font-semibold text-on-surface-variant">Akış & Ses Formatı</span>
-                <div class="flex items-center justify-between text-xs py-1">
-                  <span>YouTube Akış Sesi</span>
-                  <span class="text-secondary font-bold">AAC / Opus (128-160k)</span>
-                </div>
-                <div class="flex items-center justify-between text-xs py-1">
-                  <span>İndirme Formatı</span>
-                  <span class="text-primary font-bold">M4A / Standart MP3</span>
-                </div>
-              </div>
+          <div class="bg-surface-container-lowest rounded-2xl p-2 sm:p-3 shadow-sm border border-surface-container/60 flex flex-col gap-1" id="search-results-list">
+            <div class="py-10 px-4 text-center text-on-surface-variant text-sm">
+              Sanatçı adı, şarkı veya YouTube bağlantısı yazarak hemen arayın.
             </div>
           </div>
         </div>
@@ -1119,44 +1100,16 @@
       </div><!-- /#tab-calma-listeleri -->
 
       <!-- ================================================================= -->
-      <!-- FOOTER: DEVELOPER SIGNATURE, BRANDING & LINKS                     -->
+      <!-- FOOTER: MINIMAL BRANDING LINE                                     -->
       <!-- ================================================================= -->
-      <footer class="w-full mt-12 pt-8 pb-12 border-t border-surface-container text-xs text-on-surface-variant flex flex-col gap-6">
-        
-        <!-- Developer Profile & Credit (Subtle, sleek, non-intrusive) -->
-        <div class="w-full px-4 py-3 rounded-xl bg-surface-container-low/60 border border-surface-container flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
-          <div class="flex items-center gap-2.5">
-            <span class="w-7 h-7 rounded-lg bg-primary/10 text-primary border border-primary/20 flex items-center justify-center font-extrabold text-xs flex-shrink-0">KS</span>
-            <div class="flex items-center gap-2 flex-wrap">
-              <span class="font-bold text-on-surface">Ozan Sarsılmaz (KURFA)</span>
-              <span class="text-[11px] text-on-surface-variant">• Kurucu & Geliştirici</span>
-            </div>
-          </div>
-          <a href="https://www.instagram.com/5o.z.a.n6/" target="_blank" rel="noopener noreferrer" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-surface-container hover:bg-surface-container-high text-on-surface text-xs font-semibold border border-surface-container transition-colors" title="Instagram Profilini Aç">
-            <svg class="w-3.5 h-3.5 fill-current text-pink-500" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
-            <span>@5o.z.a.n6</span>
-          </a>
+      <footer class="w-full mt-10 pt-5 pb-6 border-t border-surface-container/70 text-[11px] text-on-surface-variant/80 flex flex-wrap items-center justify-between gap-3">
+        <div class="flex items-center gap-2">
+          <span class="font-bold text-on-surface">Kurfanova</span>
+          <span>• Ozan Sarsılmaz • 2026</span>
         </div>
-
-        <div class="flex flex-col md:flex-row items-center justify-between gap-4">
-          <div class="flex items-center gap-2">
-            <img src="./assets/kurfamuzik_logo.png" alt="Kurfanova" loading="lazy" class="h-6 w-auto rounded object-contain" onerror="this.onerror=null; this.src='./kurfamuzik_logo.png';">
-            <span class="font-bold text-on-surface">Kurfanova Pro</span>
-            <span>• Ozan Sarsılmaz Yapımı</span>
-          </div>
-          <div class="flex flex-wrap items-center justify-center gap-4">
-            <a href="https://www.instagram.com/5o.z.a.n6/" target="_blank" rel="noopener noreferrer" class="hover:text-primary transition-colors font-medium">İletişim (Instagram: @5o.z.a.n6)</a>
-            <a href="#" class="hover:text-primary transition-colors" onclick="event.preventDefault(); showToast('Telif hakları ve YouTube politikalarına tam uyumludur.');">Telif Hakları</a>
-            <a href="#" class="hover:text-primary transition-colors" onclick="event.preventDefault(); toggleDarkMode();">Temayı Değiştir</a>
-          </div>
-          <div class="flex items-center gap-1.5 text-[11px] text-tertiary font-semibold">
-            <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
-            <span>Doğrudan Akış Motoru Aktif</span>
-          </div>
-        </div>
-
-        <div class="w-full text-center text-xs text-on-surface-variant/60 border-t border-surface-container/50 pt-3">
-          Kurfanova • Ozan Sarsılmaz Tarafından Geliştirilmiştir • 2026
+        <div class="flex items-center gap-4">
+          <a href="https://www.instagram.com/5o.z.a.n6/" target="_blank" rel="noopener noreferrer" class="hover:text-primary transition-colors font-medium">@5o.z.a.n6</a>
+          <a href="#" class="hover:text-primary transition-colors" onclick="event.preventDefault(); toggleDarkMode();">Temayı Değiştir</a>
         </div>
       </footer>
 
@@ -1168,7 +1121,7 @@
   <!-- ===================================================================== -->
   
   <!-- DESKTOP FOOTER DECK (Hidden on mobile) -->
-  <footer class="hidden md:flex fixed bottom-0 left-0 right-0 h-[5.5rem] bg-surface-container-lowest/95 backdrop-blur-md z-50 shadow-[0_-4px_20px_rgba(0,0,0,0.06)] px-4 md:px-space-lg items-center justify-between">
+  <footer id="desktop-player-bar" class="hidden md:flex fixed bottom-0 left-0 right-0 h-[5.5rem] bg-surface-container-lowest/95 backdrop-blur-md z-50 shadow-[0_-4px_20px_rgba(0,0,0,0.06)] px-4 md:px-space-lg items-center justify-between">
     
     <!-- Left: Track Metadata -->
     <div class="flex items-center gap-space-md w-1/4 min-w-[200px]">
@@ -1345,15 +1298,15 @@
   <!-- 7. YOUTUBE & MEDIA DOWNLOADER MODAL                                   -->
   <!-- ===================================================================== -->
   <div id="downloader-modal" class="fixed inset-0 bg-black/60 backdrop-blur-md z-50 flex items-center justify-center p-4 opacity-0 pointer-events-none transition-opacity duration-200">
-    <div class="bg-surface-container-lowest border border-outline/10 rounded-2xl p-6 max-w-md w-full shadow-2xl flex flex-col gap-4 transform scale-95 transition-transform duration-200" id="downloader-modal-card">
+    <div class="bg-surface-container-lowest border border-surface-container rounded-2xl p-5 sm:p-6 max-w-md w-full shadow-2xl flex flex-col gap-4 transform scale-95 transition-transform duration-200" id="downloader-modal-card">
       <div class="flex items-center justify-between">
         <div class="flex items-center gap-2.5">
           <div class="w-9 h-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
-            <span class="material-symbols-outlined text-[22px]" aria-hidden="true">download</span>
+            <span class="material-symbols-outlined text-[20px]" aria-hidden="true">download</span>
           </div>
           <div>
-            <h3 class="font-bold text-base text-on-surface">Medya İndirici (MP3 & MP4)</h3>
-            <p class="text-[11px] text-on-surface-variant">Doğrudan Cihazınıza Reklamsız İndirin</p>
+            <h3 class="font-bold text-base text-on-surface leading-tight">Medya İndirici</h3>
+            <p class="text-[11px] text-on-surface-variant">Doğrudan cihaza reklamsız kayıt</p>
           </div>
         </div>
         <button type="button" aria-label="Kapat" class="w-8 h-8 rounded-full flex items-center justify-center hover:bg-surface-container text-on-surface-variant transition-colors" onclick="closeDownloaderModal()">
@@ -1362,26 +1315,26 @@
       </div>
 
       <div class="relative">
-        <input type="text" id="modal-url-input" placeholder="YouTube linki yapıştırın veya listeden seçin..." aria-label="YouTube Video Linki" class="w-full h-11 pl-3.5 pr-10 rounded-xl bg-surface-container-low text-xs text-on-surface focus:outline-none focus:ring-2 focus:ring-primary border border-outline/10 placeholder:text-on-surface-variant/50">
+        <input type="text" id="modal-url-input" placeholder="YouTube linki yapıştırın veya parçayı seçin..." aria-label="YouTube Video Linki" class="w-full h-11 pl-3.5 pr-10 rounded-xl bg-surface-container-low border border-surface-container text-xs text-on-surface focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary placeholder:text-on-surface-variant/60">
         <button type="button" aria-label="Panodan Yapıştır" class="absolute right-2.5 top-2.5 text-on-surface-variant hover:text-primary transition-colors" onclick="pasteModalUrl()" title="Panodan Yapıştır">
           <span class="material-symbols-outlined text-[20px]" aria-hidden="true">content_paste</span>
         </button>
       </div>
 
-      <!-- Ongoing Download Alert & Queue Notification Box -->
+      <!-- Ongoing Download Alert -->
       <div id="modal-ongoing-download-box" class="hidden p-3 rounded-xl bg-primary/10 border border-primary/25 items-center justify-between gap-2.5">
         <div class="flex items-center gap-2.5 min-w-0">
           <span class="material-symbols-outlined text-primary text-[20px] animate-spin flex-shrink-0" id="modal-ongoing-dl-spinner">progress_activity</span>
           <div class="flex flex-col min-w-0">
-            <span class="text-[11px] font-bold text-primary truncate" id="modal-ongoing-dl-title">Şarkı İndiriliyor...</span>
-            <span class="text-[10px] text-on-surface-variant truncate">Arka planda devam ediyor. İsterseniz bu şarkıyı da doğrudan indirebilirsiniz.</span>
+            <span class="text-[11px] font-bold text-primary truncate" id="modal-ongoing-dl-title">İndiriliyor...</span>
+            <span class="text-[10px] text-on-surface-variant truncate">Arka planda devam ediyor.</span>
           </div>
         </div>
         <span class="text-[10px] font-black font-mono text-primary px-2 py-0.5 rounded-full bg-primary/20 flex-shrink-0" id="modal-ongoing-dl-percent">0%</span>
       </div>
 
       <!-- Active Track Preview -->
-      <div id="modal-track-preview" class="hidden flex items-center gap-3 p-2.5 rounded-xl bg-surface-container-low border border-outline/10">
+      <div id="modal-track-preview" class="hidden flex items-center gap-3 p-2.5 rounded-xl bg-surface-container-low border border-surface-container">
         <img id="modal-preview-img" src="./kurfamuzik_logo.png" alt="" loading="lazy" class="w-12 h-12 rounded-lg object-cover bg-surface-container flex-shrink-0" onerror="this.onerror=null; this.src='./assets/kurfamuzik_logo.png';">
         <div class="min-w-0 flex-1">
           <p id="modal-preview-title" class="text-xs font-bold text-on-surface truncate"></p>
@@ -1391,35 +1344,36 @@
 
       <!-- Format Selection Buttons -->
       <div class="grid grid-cols-2 gap-2.5">
-        <button type="button" id="btn-dl-mp3" class="py-3 px-3 rounded-xl bg-primary text-on-primary text-xs font-bold hover:bg-primary/90 shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-95" onclick="processModalDownload('mp3')">
+        <button type="button" id="btn-dl-mp3" class="py-3 px-3 rounded-xl bg-primary text-on-primary text-xs font-bold hover:bg-primary/90 shadow-sm transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-95" onclick="processModalDownload('mp3')">
           <span class="material-symbols-outlined text-[18px]" aria-hidden="true">music_note</span>
-          <span>MP3 İndir (320k)</span>
+          <span>Ses İndir</span>
         </button>
-        <button type="button" id="btn-dl-mp4" class="py-3 px-3 rounded-xl bg-secondary text-on-secondary text-xs font-bold hover:bg-secondary/90 shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-95" onclick="processModalDownload('720')">
+        <button type="button" id="btn-dl-mp4" class="py-3 px-3 rounded-xl bg-secondary text-on-secondary text-xs font-bold hover:bg-secondary/90 shadow-sm transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-95" onclick="processModalDownload('720')">
           <span class="material-symbols-outlined text-[18px]" aria-hidden="true">movie</span>
-          <span>MP4 Video (720p)</span>
+          <span>Video (MP4)</span>
         </button>
       </div>
 
-      <button type="button" class="w-full py-2.5 rounded-xl bg-surface-container hover:bg-surface-container-high text-xs font-medium text-on-surface flex items-center justify-center gap-2 transition-all cursor-pointer" onclick="processModalDownload('play')">
+      <button type="button" class="w-full py-2.5 rounded-xl bg-surface-container hover:bg-surface-container-high text-xs font-semibold text-on-surface flex items-center justify-center gap-2 transition-all cursor-pointer" onclick="processModalDownload('play')">
         <span class="material-symbols-outlined text-[18px]" aria-hidden="true">play_arrow</span>
         <span>Hemen Dinle / Oynat</span>
       </button>
 
       <!-- Live In-App Progress Box -->
-      <div id="modal-dl-progress-box" class="hidden flex flex-col gap-2 p-3 rounded-xl bg-surface-container border border-primary/20">
-        <div class="flex items-center justify-between text-xs">
-          <span id="modal-dl-status-text" class="font-medium text-primary">Dönüştürme hazırlanıyor...</span>
-          <span id="modal-dl-percent-text" class="font-bold text-on-surface">0%</span>
+      <div id="modal-dl-progress-box" class="hidden flex-col gap-2 p-3.5 rounded-xl bg-surface-container-low border border-surface-container">
+        <div class="flex items-center justify-between gap-2 text-xs">
+          <span id="modal-dl-status-text" class="font-semibold text-on-surface truncate">Hazırlanıyor...</span>
+          <span id="modal-dl-percent-text" class="font-bold font-mono text-primary flex-shrink-0">0%</span>
         </div>
-        <div class="w-full h-2 rounded-full bg-surface-container-highest overflow-hidden">
-          <div id="modal-dl-progress-bar" class="h-full bg-primary transition-all duration-300 rounded-full" style="width: 0%"></div>
+        <progress id="modal-dl-progress-native" class="kurfa-progress" max="100" value="0" aria-label="İndirme İlerlemesi"></progress>
+        <div class="flex items-center justify-between gap-2">
+          <span id="modal-dl-detail-text" class="text-[11px] text-on-surface-variant truncate">Bağlantı kuruluyor...</span>
+          <button type="button" id="btn-dl-open-folder" class="hidden text-[11px] font-bold text-primary hover:underline flex-shrink-0" onclick="openLastDownloadFolder()">Klasörü Aç</button>
         </div>
-        <p class="text-[10px] text-on-surface-variant text-center">Dosya dönüştürülüyor, lütfen bekleyin...</p>
       </div>
 
-      <p class="text-[10px] text-on-surface-variant/70 text-center leading-normal">
-        Yalnızca kişisel kullanım ve açık lisanslı içerikler içindir. Dosyalar doğrudan sunucu ağından cihazınıza kaydedilir.
+      <p class="text-[10px] text-on-surface-variant/75 text-center leading-normal">
+        Yalnızca kişisel kullanım içindir. Masaüstü ve Android uygulamasında doğrudan cihaza kaydedilir.
       </p>
     </div>
   </div>
@@ -1427,21 +1381,23 @@
   <!-- ===================================================================== -->
   <!-- 8. SOCIAL SHARE MODAL                                                 -->
   <!-- ===================================================================== -->
-  <div id="share-modal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 opacity-0 pointer-events-none transition-opacity duration-200">
-    <div class="bg-surface-container-lowest rounded-2xl p-6 max-w-md w-full shadow-2xl flex flex-col gap-4 transform scale-95 transition-transform duration-200" id="share-modal-card">
+  <div id="share-modal" class="fixed inset-0 bg-black/55 backdrop-blur-sm z-50 flex items-center justify-center p-4 opacity-0 pointer-events-none transition-opacity duration-200">
+    <div class="bg-surface-container-lowest border border-surface-container rounded-2xl p-5 sm:p-6 max-w-md w-full shadow-2xl flex flex-col gap-4 transform scale-95 transition-transform duration-200" id="share-modal-card">
       <div class="flex items-center justify-between">
-        <div class="flex items-center gap-2">
-          <span class="material-symbols-outlined text-secondary text-[24px]" aria-hidden="true">share</span>
-          <h3 class="font-bold text-lg text-on-surface">Şarkıyı Paylaş</h3>
+        <div class="flex items-center gap-2.5">
+          <div class="w-9 h-9 rounded-xl bg-secondary/10 text-secondary flex items-center justify-center">
+            <span class="material-symbols-outlined text-[20px]" aria-hidden="true">share</span>
+          </div>
+          <h3 class="font-bold text-base text-on-surface">Şarkıyı Paylaş</h3>
         </div>
-        <button type="button" aria-label="Kapat" class="w-8 h-8 rounded-full flex items-center justify-center hover:bg-surface-container text-on-surface-variant" onclick="closeShareModal()">
+        <button type="button" aria-label="Kapat" class="w-8 h-8 rounded-full flex items-center justify-center hover:bg-surface-container text-on-surface-variant transition-colors" onclick="closeShareModal()">
           <span class="material-symbols-outlined text-[20px]" aria-hidden="true">close</span>
         </button>
       </div>
 
       <!-- Track Preview -->
-      <div class="flex items-center gap-3 p-3 rounded-xl bg-surface-container-low">
-        <img id="share-track-thumb" src="./kurfamuzik_logo.png" alt="Cover" loading="lazy" class="w-12 h-12 rounded-lg object-cover" onerror="this.onerror=null; this.src='./assets/kurfamuzik_logo.png';">
+      <div class="flex items-center gap-3 p-3 rounded-xl bg-surface-container-low border border-surface-container">
+        <img id="share-track-thumb" src="./kurfamuzik_logo.png" alt="Kapak" loading="lazy" class="w-12 h-12 rounded-lg object-cover flex-shrink-0" onerror="this.onerror=null; this.src='./assets/kurfamuzik_logo.png';">
         <div class="flex flex-col min-w-0">
           <span id="share-track-title" class="text-xs font-bold text-on-surface truncate">Kurfa Müzik</span>
           <span id="share-track-artist" class="text-[11px] text-on-surface-variant truncate">Şarkı Paylaş</span>
@@ -1452,7 +1408,7 @@
       <div class="flex flex-col gap-1.5">
         <label for="share-link-input" class="text-[11px] font-bold text-on-surface-variant uppercase tracking-wider">Doğrudan Dinleme Linki</label>
         <div class="relative flex items-center">
-          <input type="text" id="share-link-input" readonly aria-label="Paylaşım Linki" class="w-full h-10 pl-3 pr-24 rounded-xl bg-surface-container-low text-xs text-on-surface select-all focus:outline-none">
+          <input type="text" id="share-link-input" readonly aria-label="Paylaşım Linki" class="w-full h-10 pl-3 pr-24 rounded-xl bg-surface-container-low border border-surface-container text-xs text-on-surface select-all focus:outline-none">
           <button type="button" class="absolute right-1 px-3 py-1.5 rounded-lg bg-primary text-on-primary text-xs font-bold shadow-sm hover:bg-primary-container transition-all" onclick="copyShareUrl()">
             <span id="share-copy-btn-text">Kopyala</span>
           </button>
@@ -1461,7 +1417,7 @@
 
       <!-- Web Share / Social Buttons -->
       <div class="flex gap-2">
-        <button type="button" class="flex-1 py-2.5 rounded-xl bg-secondary-fixed text-on-secondary-fixed text-xs font-bold hover:bg-secondary hover:text-white transition-all flex items-center justify-center gap-1.5" onclick="triggerWebShare()">
+        <button type="button" class="flex-1 py-2.5 rounded-xl bg-secondary text-on-secondary text-xs font-bold hover:bg-secondary/90 transition-all flex items-center justify-center gap-1.5" onclick="triggerWebShare()">
           <span class="material-symbols-outlined text-[18px]" aria-hidden="true">send_to_mobile</span>
           <span>Cihazda Paylaş</span>
         </button>
@@ -1498,7 +1454,7 @@
             <div class="min-w-0">
               <div class="flex items-center gap-2 flex-wrap">
                 <p class="text-sm font-bold text-on-surface">Uygulama Sürümü</p>
-                <span id="settings-app-version-pill" class="px-2 py-0.5 rounded-full text-[11px] font-bold bg-primary/10 text-primary">Kontrol ediliyor</span>
+                <span id="settings-app-version-pill" class="px-2 py-0.5 rounded-full text-[11px] font-bold bg-surface-container text-on-surface border border-surface-container-high">Kontrol ediliyor</span>
               </div>
               <p id="settings-update-check-line" class="text-xs text-on-surface-variant mt-0.5">Sürüm bilgisi okunuyor...</p>
             </div>
@@ -1526,6 +1482,10 @@
               <span class="text-xs font-medium text-on-surface">Windows Açılışında Başlat</span>
               <button type="button" id="btn-desktop-startup-toggle" onclick="toggleDesktopSetting('launchOnStartup')" class="px-3 py-1 rounded-full text-[11px] font-bold bg-surface-container text-on-surface-variant transition-colors">Kapalı</button>
             </div>
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-medium text-on-surface">Kapatınca Tepsiye Küçült</span>
+              <button type="button" id="btn-desktop-tray-toggle" onclick="toggleDesktopSetting('minimizeToTray')" class="px-3 py-1 rounded-full text-[11px] font-bold bg-primary text-on-primary transition-colors">Açık</button>
+            </div>
           </div>
 
           <div class="grid grid-cols-2 gap-2.5 pt-1">
@@ -1533,8 +1493,8 @@
               <span class="material-symbols-outlined text-[16px]">folder_open</span>
               <span>Klasörü Aç</span>
             </button>
-            <button type="button" onclick="triggerDesktopUpdateCheck()" class="w-full py-2 px-3 rounded-xl bg-primary/10 hover:bg-primary/20 text-primary text-xs font-bold flex items-center justify-center gap-1.5 transition-colors active:scale-95">
-              <span class="material-symbols-outlined text-[16px]">sync</span>
+            <button type="button" onclick="triggerDesktopUpdateCheck()" class="w-full py-2 px-3 rounded-xl bg-surface-container hover:bg-surface-container-high border border-primary/35 text-on-surface text-xs font-bold flex items-center justify-center gap-1.5 transition-colors active:scale-95">
+              <span class="material-symbols-outlined text-[16px] text-primary">sync</span>
               <span>Güncelleme Denetle</span>
             </button>
           </div>
@@ -1542,8 +1502,8 @@
 
         <!-- Android Güncelleme Denetimi (Yalnızca Android APK modunda görünür) -->
         <div id="android-app-settings-card" class="hidden p-4">
-          <button type="button" onclick="window.kurfaCheckAppUpdate && window.kurfaCheckAppUpdate()" class="w-full py-2.5 px-3 rounded-xl bg-primary/10 hover:bg-primary/20 text-primary text-xs font-bold flex items-center justify-center gap-1.5 transition-colors active:scale-95">
-            <span class="material-symbols-outlined text-[16px]">sync</span>
+          <button type="button" onclick="window.kurfaCheckAppUpdate && window.kurfaCheckAppUpdate()" class="w-full py-2.5 px-3 rounded-xl bg-surface-container hover:bg-surface-container-high border border-primary/35 text-on-surface text-xs font-bold flex items-center justify-center gap-1.5 transition-colors active:scale-95">
+            <span class="material-symbols-outlined text-[16px] text-primary">sync</span>
             <span>Güncelleme Denetle</span>
           </button>
         </div>
@@ -1885,15 +1845,15 @@
   <!-- 14. UYGULAMA İNDİR & CİHAZ MOTORU MODALI                              -->
   <!-- ===================================================================== -->
   <div id="app-install-modal" class="fixed inset-0 bg-black/65 backdrop-blur-md z-50 flex items-center justify-center p-4 opacity-0 pointer-events-none transition-opacity duration-200">
-    <div class="bg-surface-container-lowest rounded-3xl p-5 sm:p-6 max-w-md w-full max-h-[90vh] overflow-y-auto shadow-2xl flex flex-col gap-4 border border-surface-container transform scale-95 transition-transform duration-200" id="app-install-modal-card">
+    <div class="bg-surface-container-lowest rounded-2xl p-5 sm:p-6 max-w-md w-full max-h-[90vh] overflow-y-auto shadow-2xl flex flex-col gap-4 border border-surface-container transform scale-95 transition-transform duration-200" id="app-install-modal-card">
       
       <!-- Modal Header -->
       <div class="flex items-center justify-between pb-3 border-b border-surface-container">
         <div class="flex items-center gap-3">
-          <img src="./kurfamuzik_logo.png" alt="Kurfamüzik" class="w-10 h-10 rounded-2xl object-cover shadow-md border border-primary/25 flex-shrink-0" onerror="this.onerror=null; this.src='./assets/kurfamuzik_logo.png';">
+          <img src="./kurfamuzik_logo.png" alt="Kurfamüzik" class="w-10 h-10 rounded-xl object-cover shadow-sm border border-surface-container flex-shrink-0" onerror="this.onerror=null; this.src='./assets/kurfamuzik_logo.png';">
           <div>
-            <h3 class="font-bold text-base text-on-surface leading-tight">Kurfamüzik Cihaz Uygulaması</h3>
-            <p class="text-[11px] text-on-surface-variant">%0 Reklam • Cihazdan Doğrudan Ses & Canlı Güncelleme</p>
+            <h3 class="font-bold text-base text-on-surface leading-tight">Kurfamüzik Uygulamaları</h3>
+            <p class="text-[11px] text-on-surface-variant">Reklamsız masaüstü ve mobil kurulumlar</p>
           </div>
         </div>
         <button type="button" aria-label="Kapat" class="w-8 h-8 rounded-full flex items-center justify-center hover:bg-surface-container text-on-surface-variant transition-colors" onclick="closeAppInstallModal()">
@@ -1901,70 +1861,55 @@
         </button>
       </div>
 
-      <!-- Feature Bullets -->
-      <div class="grid grid-cols-2 gap-2 text-xs">
-        <div class="p-2.5 rounded-xl bg-surface-container-low border border-surface-container flex items-center gap-2">
-          <span class="material-symbols-outlined text-primary text-[18px]">bolt</span>
-          <span class="font-semibold text-on-surface text-[11px]">Sıfır Kasma & Donma</span>
-        </div>
-        <div class="p-2.5 rounded-xl bg-surface-container-low border border-surface-container flex items-center gap-2">
-          <span class="material-symbols-outlined text-secondary text-[18px]">sync</span>
-          <span class="font-semibold text-on-surface text-[11px]">Canlı Güncelleme</span>
-        </div>
-        <div class="p-2.5 rounded-xl bg-surface-container-low border border-surface-container flex items-center gap-2">
-          <span class="material-symbols-outlined text-emerald-500 text-[18px]">lock_clock</span>
-          <span class="font-semibold text-on-surface text-[11px]">Kilit Ekranı Çalma</span>
-        </div>
-        <div class="p-2.5 rounded-xl bg-surface-container-low border border-surface-container flex items-center gap-2">
-          <span class="material-symbols-outlined text-amber-500 text-[18px]">block</span>
-          <span class="font-semibold text-on-surface text-[11px]">Tamamen Reklamsız</span>
-        </div>
-      </div>
-
-      <!-- Installation Options -->
-      <div class="flex flex-col gap-2.5">
-        <!-- Direct Android APK Download (Public GitHub Release & Direct Fast Download) -->
-        <a href="https://github.com/KurfaCore/kurfanova-app/releases/latest/download/Kurfanova-Muzik.apk" id="btn-download-apk-direct" target="_blank" rel="noopener noreferrer" class="w-full py-3 px-4 rounded-2xl bg-primary text-on-primary font-bold text-xs flex items-center justify-between shadow-lg shadow-primary/25 hover:bg-primary-container active:scale-95 transition-all">
+      <!-- Native Apps Group (Android APK + Windows EXE) -->
+      <div class="flex flex-col gap-2">
+        <span class="text-[11px] font-bold uppercase tracking-wider text-on-surface-variant px-0.5">Cihaz Uygulamaları (EXE & APK)</span>
+        <a href="https://github.com/KurfaCore/kurfanova-app/releases/latest/download/Kurfanova-Muzik.apk" id="btn-download-apk-direct" target="_blank" rel="noopener noreferrer" class="w-full py-3 px-4 rounded-xl bg-primary text-on-primary font-bold text-xs flex items-center justify-between shadow-sm hover:bg-primary-container active:scale-95 transition-all">
           <div class="flex items-center gap-2.5">
             <span class="material-symbols-outlined text-[20px]">android</span>
             <div class="flex flex-col text-left">
-              <span class="leading-tight">Android APK İndir (v1.2.0 • %0 Reklam)</span>
-              <span class="text-[10px] opacity-80 font-normal">Cihazdan doğrudan ses & arama (0 Sunucu Yükü)</span>
+              <span class="leading-tight">Android APK İndir <span id="install-modal-apk-ver" class="opacity-85 font-semibold"></span></span>
+              <span class="text-[10px] opacity-80 font-normal">Arka plan çalma • %0 reklam • Yerel indirme</span>
             </div>
           </div>
-          <span class="material-symbols-outlined text-[20px]">download</span>
+          <span class="material-symbols-outlined text-[18px]">download</span>
         </a>
 
-        <!-- Windows Desktop App Download (.exe • %0 Reklam) -->
-        <a href="https://github.com/KurfaCore/kurfanova-app/releases/latest/download/Kurfanova-Muzik-Windows.exe" id="btn-download-win-direct" target="_blank" rel="noopener noreferrer" download="Kurfanova-Muzik-Windows.exe" class="w-full py-2.5 px-4 rounded-2xl bg-surface-container hover:bg-surface-container-high text-on-surface font-bold text-xs flex items-center justify-between border border-surface-container-high transition-all active:scale-95">
+        <a href="https://github.com/KurfaCore/kurfanova-app/releases/latest/download/Kurfanova-Muzik-Windows.exe" id="btn-download-win-direct" target="_blank" rel="noopener noreferrer" download="Kurfanova-Muzik-Windows.exe" class="w-full py-2.5 px-4 rounded-xl bg-surface-container-low hover:bg-surface-container text-on-surface font-bold text-xs flex items-center justify-between border border-surface-container transition-all active:scale-95">
           <div class="flex items-center gap-2.5">
             <span class="material-symbols-outlined text-[20px] text-primary">desktop_windows</span>
             <div class="flex flex-col text-left">
-              <span class="leading-tight">Windows Masaüstü İndir (.exe • %0 Reklam)</span>
-              <span class="text-[10px] text-on-surface-variant font-normal">Resmi kurulum sihirbazı • Masaüstü kısayolu & oto güncelleme</span>
+              <span class="leading-tight">Windows Masaüstü (.exe) <span id="install-modal-win-ver" class="text-on-surface-variant font-semibold"></span></span>
+              <span class="text-[10px] text-on-surface-variant font-normal">Sistem tepsisi • Otomatik güncelleme</span>
             </div>
           </div>
           <span class="material-symbols-outlined text-[18px] text-on-surface-variant">download</span>
         </a>
+      </div>
 
-        <!-- Otomatik Tarayıcı Eklentisi (Resmi Mağaza • Her Tarayıcıda Geçerli) -->
-        <div class="p-3 rounded-2xl bg-surface-container-low border border-surface-container flex flex-col gap-2.5">
+      <!-- Clear Divider separating Native EXE/APK from Web Options -->
+      <div id="install-modal-divider" class="border-t border-surface-container"></div>
+
+      <!-- Web Browser Options (AdGuard + PWA) -->
+      <div id="install-modal-browser-section" class="flex flex-col gap-2.5">
+        <span class="text-[11px] font-bold uppercase tracking-wider text-on-surface-variant px-0.5">Web Tarayıcı Seçenekleri</span>
+        <div class="p-3 rounded-xl bg-surface-container-low border border-surface-container flex flex-col gap-2.5">
           <div class="flex items-center justify-between gap-2">
             <div class="flex items-center gap-2 min-w-0">
               <span class="material-symbols-outlined text-[18px] text-primary flex-shrink-0">shield_lock</span>
-              <span class="text-xs font-bold text-on-surface truncate">Otomatik Reklam Engelleyici</span>
+              <span class="text-xs font-bold text-on-surface truncate">Tarayıcı Reklam Engelleyici</span>
             </div>
-            <span id="kurfa-local-engine-status" class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-surface-container text-on-surface-variant whitespace-nowrap flex-shrink-0">Tarayıcı Modu</span>
+            <span id="kurfa-local-engine-status" class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-surface-container text-on-surface-variant whitespace-nowrap flex-shrink-0">Tarayıcı</span>
           </div>
           <p id="kurfa-store-install-hint" class="text-[11px] text-on-surface-variant leading-relaxed">
-            Tarayıcınız için resmi AdGuard mağaza sayfasını açar; eklediğiniz anda sistem arka planda otomatik algılar.
+            Resmi AdGuard tarayıcı eklentisini kurarak web üzerinde de reklamsız dinleyin.
           </p>
-          <a id="btn-install-store-adblock" href="https://chromewebstore.google.com/detail/adguard-adblocker/bgnkhhnnamicmpeenaelnjfhikgbkllg" target="_blank" rel="noopener noreferrer" onclick="onStoreLinkClicked()" class="w-full py-2.5 px-3 rounded-xl bg-surface-container hover:bg-surface-container-high text-on-surface font-bold text-xs flex items-center justify-between gap-2 border border-surface-container-high transition-all active:scale-95">
+          <a id="btn-install-store-adblock" href="https://chromewebstore.google.com/detail/adguard-adblocker/bgnkhhnnamicmpeenaelnjfhikgbkllg" target="_blank" rel="noopener noreferrer" onclick="onStoreLinkClicked()" class="w-full py-2 px-3 rounded-xl bg-surface-container hover:bg-surface-container-high text-on-surface font-bold text-xs flex items-center justify-between gap-2 border border-surface-container-high transition-all active:scale-95">
             <span class="flex items-center gap-2 min-w-0">
-              <span class="material-symbols-outlined text-[18px] text-primary flex-shrink-0">add_circle</span>
-              <span id="btn-install-store-adblock-label" class="truncate">AdGuard Ekle (Resmi Mağaza)</span>
+              <span class="material-symbols-outlined text-[17px] text-primary flex-shrink-0">add_circle</span>
+              <span id="btn-install-store-adblock-label" class="truncate">AdGuard Ekle</span>
             </span>
-            <span class="material-symbols-outlined text-[16px] text-on-surface-variant flex-shrink-0">open_in_new</span>
+            <span class="material-symbols-outlined text-[15px] text-on-surface-variant flex-shrink-0">open_in_new</span>
           </a>
           <div class="flex items-center gap-1.5">
             <a data-store-browser="chrome" href="https://chromewebstore.google.com/detail/adguard-adblocker/bgnkhhnnamicmpeenaelnjfhikgbkllg" target="_blank" rel="noopener noreferrer" onclick="onStoreLinkClicked('chrome')" class="flex-1 py-1.5 px-1 rounded-lg bg-surface-container hover:bg-surface-container-high text-[10px] font-semibold text-on-surface-variant hover:text-on-surface border border-surface-container transition-colors text-center truncate" title="Chrome / Brave Web Mağazası">Chrome</a>
@@ -1975,23 +1920,13 @@
           </div>
         </div>
 
-        <!-- WebAPK / PWA 1-Click Install Button -->
-        <button type="button" id="btn-modal-install-pwa" class="w-full py-2.5 px-4 rounded-2xl bg-surface-container hover:bg-surface-container-high text-on-surface font-bold text-xs flex items-center justify-between border border-surface-container-high transition-all active:scale-95" onclick="triggerPwaInstall()">
+        <button type="button" id="btn-modal-install-pwa" class="w-full py-2.5 px-4 rounded-xl bg-surface-container-low hover:bg-surface-container text-on-surface font-bold text-xs flex items-center justify-between border border-surface-container transition-all active:scale-95" onclick="triggerPwaInstall()">
           <div class="flex items-center gap-2.5">
-            <span class="material-symbols-outlined text-[20px] text-secondary">add_to_home_screen</span>
-            <div class="flex flex-col text-left">
-              <span class="leading-tight">Ana Ekrana Ekle (WebAPK)</span>
-              <span class="text-[10px] text-on-surface-variant font-normal">Tek tıkla tarayıcı kısayolu olarak yükle</span>
-            </div>
+            <span class="material-symbols-outlined text-[18px] text-secondary">add_to_home_screen</span>
+            <span class="leading-tight">Ana Ekrana Ekle (Web Uygulaması)</span>
           </div>
-          <span class="material-symbols-outlined text-[18px] text-on-surface-variant">arrow_forward</span>
+          <span class="material-symbols-outlined text-[16px] text-on-surface-variant">arrow_forward</span>
         </button>
-      </div>
-
-      <!-- Live Guarantee Badge -->
-      <div class="p-3 rounded-xl bg-surface-container-lowest border border-surface-container text-[11px] text-on-surface-variant flex items-start gap-2">
-        <span class="material-symbols-outlined text-secondary text-[16px] flex-shrink-0 mt-0.5">verified</span>
-        <span>Web arayüzü ve uygulama motorları otomatik güncellenir: Windows EXE yeni sürümü arka planda doğrulayıp kendini yeniler, Android APK yeni sürümü uygulama içi tek tıkla kurar.</span>
       </div>
 
     </div>
@@ -2235,6 +2170,6 @@
 
   <!-- Scripts -->
   <script src="https://www.youtube.com/iframe_api"></script>
-  <script src="./app.js?v=20261115_v2"></script>
+  <script src="./app.js?v=20261115_v3"></script>
 </body>
 </html>
