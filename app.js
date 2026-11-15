@@ -6763,20 +6763,85 @@ function dismissDownloadPill(e) {
   updateAllDownloadIndicators('hide');
 }
 
-function setModalDownloadProgressUI(percent, statusText, detailText) {
+function setModalDownloadProgressUI(percent, statusText, detailText, mode = 'progress', opts = {}) {
   const pct = Math.max(0, Math.min(100, Math.round(Number(percent) || 0)));
+  const box = document.getElementById('modal-dl-progress-box');
+  const iconEl = document.getElementById('modal-dl-state-icon');
   const statusEl = document.getElementById('modal-dl-status-text');
   const pctEl = document.getElementById('modal-dl-percent-text');
   const nativeProg = document.getElementById('modal-dl-progress-native');
   const legacyBar = document.getElementById('modal-dl-progress-bar');
   const detailEl = document.getElementById('modal-dl-detail-text');
+  const actionsRow = document.getElementById('modal-dl-actions-row');
+  const retryBtn = document.getElementById('btn-dl-retry');
+  const getAppBtn = document.getElementById('btn-dl-get-app');
 
-  if (statusEl && statusText) statusEl.textContent = statusText;
-  if (pctEl) pctEl.textContent = `${pct}%`;
-  if (nativeProg) nativeProg.value = pct;
+  const isError = mode === 'error';
+  const isSuccess = mode === 'success';
+
+  if (box) {
+    box.classList.remove(
+      'bg-surface-container-low', 'border-surface-container',
+      'bg-rose-500/10', 'border-rose-500/25',
+      'bg-emerald-500/10', 'border-emerald-500/25'
+    );
+    if (isError) {
+      box.classList.add('bg-rose-500/10', 'border-rose-500/25');
+    } else if (isSuccess) {
+      box.classList.add('bg-emerald-500/10', 'border-emerald-500/25');
+    } else {
+      box.classList.add('bg-surface-container-low', 'border-surface-container');
+    }
+  }
+
+  if (iconEl) {
+    iconEl.classList.remove('text-primary', 'text-rose-500', 'text-emerald-500');
+    if (isError) {
+      iconEl.textContent = 'error';
+      iconEl.classList.add('text-rose-500');
+    } else if (isSuccess) {
+      iconEl.textContent = 'check_circle';
+      iconEl.classList.add('text-emerald-500');
+    } else {
+      iconEl.textContent = 'downloading';
+      iconEl.classList.add('text-primary');
+    }
+  }
+
+  if (statusEl && statusText) {
+    statusEl.textContent = statusText;
+    statusEl.classList.toggle('text-rose-500', isError);
+    statusEl.classList.toggle('text-on-surface', !isError);
+  }
+  if (pctEl) {
+    pctEl.textContent = `${pct}%`;
+    pctEl.classList.toggle('hidden', isError);
+  }
+  if (nativeProg) {
+    nativeProg.value = pct;
+    nativeProg.classList.toggle('hidden', isError);
+  }
   if (legacyBar) legacyBar.style.width = `${pct}%`;
   if (detailEl && detailText) detailEl.textContent = detailText;
+
+  const showRetry = isError && Boolean(opts.showRetry !== false && state._lastDownloadArgs);
+  const showAppCta = isError && Boolean(opts.showAppCta);
+  if (retryBtn) retryBtn.classList.toggle('hidden', !showRetry);
+  if (getAppBtn) getAppBtn.classList.toggle('hidden', !showAppCta);
+  if (actionsRow) {
+    const openFolderBtn = document.getElementById('btn-dl-open-folder');
+    const hasOpenFolder = openFolderBtn && !openFolderBtn.classList.contains('hidden');
+    const anyAction = showRetry || showAppCta || hasOpenFolder;
+    actionsRow.classList.toggle('hidden', !anyAction);
+    actionsRow.classList.toggle('flex', anyAction);
+  }
 }
+
+window.retryLastDownload = function () {
+  const args = state._lastDownloadArgs;
+  if (!args) return;
+  startDirectDownload(args.videoId, args.format, args.trackMeta);
+};
 
 function formatBytesMb(bytes) {
   const b = Number(bytes || 0);
@@ -6827,6 +6892,7 @@ async function startDirectDownload(videoId, format, trackMeta) {
   if (btnMp3) btnMp3.disabled = true;
   if (btnMp4) btnMp4.disabled = true;
 
+  state._lastDownloadArgs = { videoId, format, trackMeta };
   const displayTitle = trackMeta?.title || validVideoId || 'Kurfanova Parçası';
   const displayArtist = trackMeta?.artist || 'Kurfanova';
   const combinedTitle = (displayArtist && displayArtist !== 'Kurfanova' && !displayTitle.toLowerCase().includes(displayArtist.toLowerCase()))
@@ -6880,8 +6946,15 @@ async function startDirectDownload(videoId, format, trackMeta) {
       if (res && res.success) {
         state._lastDownloadFilePath = res.filePath || '';
         const mbStr = formatBytesMb(res.bytesDownloaded) || 'Kaydedildi';
-        setModalDownloadProgressUI(100, `${label} indirildi`, `${res.fileName || combinedTitle} (${mbStr})`);
-        if (openFolderBtn) openFolderBtn.classList.remove('hidden');
+        setModalDownloadProgressUI(100, `${label} indirildi`, `${res.fileName || combinedTitle} (${mbStr})`, 'success');
+        if (openFolderBtn) {
+          openFolderBtn.classList.remove('hidden');
+          const actionsRow = document.getElementById('modal-dl-actions-row');
+          if (actionsRow) {
+            actionsRow.classList.remove('hidden');
+            actionsRow.classList.add('flex');
+          }
+        }
         updateAllDownloadIndicators('done', 100, displayTitle, label);
         recordCompletedDownload(isMp4 ? 'MP4' : 'M4A', mbStr);
         showToast(`İndirilenler klasörüne kaydedildi: ${res.fileName || displayTitle}`);
@@ -6900,7 +6973,7 @@ async function startDirectDownload(videoId, format, trackMeta) {
       ], 180000);
       if (res && res.success) {
         const mbStr = formatBytesMb(res.bytesDownloaded) || 'Kaydedildi';
-        setModalDownloadProgressUI(100, `${label} indirildi`, `${res.fileName || combinedTitle} (${mbStr})`);
+        setModalDownloadProgressUI(100, `${label} indirildi`, `${res.fileName || combinedTitle} (${mbStr})`, 'success');
         updateAllDownloadIndicators('done', 100, displayTitle, label);
         recordCompletedDownload(isMp4 ? 'MP4' : 'M4A', mbStr);
         showToast(`Cihaza kaydedildi: ${res.fileName || displayTitle}`);
@@ -6957,26 +7030,29 @@ async function startDirectDownload(videoId, format, trackMeta) {
       }, 3000);
 
       const mbStr = formatBytesMb(blob.size) || 'MP3';
-      setModalDownloadProgressUI(100, 'Ses dosyası indirildi', `${a.download} (${mbStr})`);
+      setModalDownloadProgressUI(100, 'Ses dosyası indirildi', `${a.download} (${mbStr})`, 'success');
       updateAllDownloadIndicators('done', 100, displayTitle, 'MP3 İndirildi');
       recordCompletedDownload('MP3', mbStr);
       showToast(`İndirildi: ${displayTitle}`);
       return;
     }
 
-    // 4. WEB FALLBACK FOR YOUTUBE LINKS (Try free public Cobalt instances before failing gracefully)
+    // 4. WEB FALLBACK FOR YOUTUBE LINKS (Fast-timeout check before clean app CTA)
     if (targetYtId) {
-      setModalDownloadProgressUI(20, 'Web indirme servisine bağlanılıyor...', 'Genel ayna deneniyor...');
+      setModalDownloadProgressUI(20, 'Web indirme servisine bağlanılıyor...', 'Ayna sunucu deneniyor...');
       const cobaltMirrors = [
-        'https://cobalt-api.kwiatekmiki.com/',
-        'https://co.wuk.sh/'
+        'https://cobalt-api.kwiatekmiki.com/'
       ];
       let tunnelUrl = '';
       for (const ep of cobaltMirrors) {
         try {
+          const sig = typeof AbortSignal !== 'undefined' && typeof AbortSignal.timeout === 'function'
+            ? AbortSignal.timeout(3500)
+            : undefined;
           const cRes = await fetch(ep, {
             method: 'POST',
             headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
+            signal: sig,
             body: JSON.stringify({
               url: `https://www.youtube.com/watch?v=${targetYtId}`,
               downloadMode: isMp4 ? 'auto' : 'audio',
@@ -6995,7 +7071,7 @@ async function startDirectDownload(videoId, format, trackMeta) {
       }
 
       if (tunnelUrl) {
-        setModalDownloadProgressUI(100, `${label} hazır`, 'Tarayıcı indirmesi başlatılıyor...');
+        setModalDownloadProgressUI(100, `${label} hazır`, 'Tarayıcı indirmesi başlatılıyor...', 'success');
         const a = document.createElement('a');
         a.href = tunnelUrl;
         a.download = `${combinedTitle.replace(/[\\/:*?"<>|]/g, '')}.${isMp4 ? 'mp4' : 'mp3'}`;
@@ -7015,10 +7091,15 @@ async function startDirectDownload(videoId, format, trackMeta) {
   } catch (err) {
     console.error("Download error:", err);
     const isWebCors = String(err?.message || '') === 'WEB_CORS_UNAVAILABLE';
+    const isNativeEnv = (typeof isAndroidNativeEngine === 'function' && isAndroidNativeEngine()) || Boolean(getBrowserExtensionMode());
+    const errTitle = isMp4 ? 'Video indirilemedi' : 'Ses indirilemedi';
     const errDetail = isWebCors
-      ? 'Tarayıcı güvenlik kısıtı nedeniyle bu parça için Masaüstü (.exe) veya Android (.apk) uygulamasını kullanın.'
-      : (err?.message || 'Bağlantı zaman aşımına uğradı.');
-    setModalDownloadProgressUI(0, 'İndirme tamamlanamadı', errDetail);
+      ? 'Tarayıcı güvenlik kısıtı nedeniyle YouTube MP4 dosyaları doğrudan indirilemiyor. Masaüstü (.exe) veya Android (.apk) üzerinden tek dokunuşla indirebilirsiniz.'
+      : (err?.message || 'Bağlantı zaman aşımına uğradı, lütfen tekrar deneyin.');
+    setModalDownloadProgressUI(0, errTitle, errDetail, 'error', {
+      showRetry: true,
+      showAppCta: isWebCors && !isNativeEnv
+    });
     updateAllDownloadIndicators('error', 0, displayTitle, 'Hata');
     showToast(isWebCors ? 'Tam indirme için EXE veya APK uygulamasını kullanın.' : 'İndirme başarısız oldu.');
   } finally {
@@ -10029,80 +10110,107 @@ function setupEventListeners() {
 
   // Audio Engine Lifecycle & Strict Mutual Exclusion
   if (DOM.audioEngine) {
-    DOM.audioEngine.addEventListener('ended', () => {
-      handleTrackEnd();
-    });
-    DOM.audioEngine.addEventListener('error', (e) => {
-      // Ignore spurious error events when src has already been cleared
-      if (!DOM.audioEngine.getAttribute('src')) return;
-      console.warn("DOM.audioEngine media error:", e);
-      if (state._playerInError || state._lastErrorVideoId) {
-        return;
+    let _audioStallTimer = null;
+    const clearAudioStallWatchdog = () => {
+      if (_audioStallTimer) {
+        clearTimeout(_audioStallTimer);
+        _audioStallTimer = null;
       }
+    };
+
+    const handoffAudioErrorOrStall = async (curTimeSec) => {
+      if (state._playerInError || state._lastErrorVideoId || state._switchingDeckMode) return;
       const isAudius = String(state.currentTrack?.id || '').startsWith('audius_');
       const playId = isAudius ? null : safeYtId(state.currentTrack?.ytId || state.currentTrack?.id);
-      const cur = Math.max(0, Math.floor(DOM.audioEngine.currentTime || state.currentPlayheadTime || 0));
       const errToken = currentPlaybackToken;
-      if (
-        !state._switchingDeckMode &&
-        playId &&
-        state.isPlaying &&
-        !state.userPaused &&
-        hasAdFreeLocalEngine() &&
-        state.deckVisualMode !== 'video' &&
-        state._audioEngineRetryToken !== errToken
-      ) {
+      if (!state.isPlaying || state.userPaused) return;
+
+      if (state._audioEngineRetryToken !== errToken) {
         state._audioEngineRetryToken = errToken;
-        const retryUrl = `${DOM.audioEngine.getAttribute('src') || ''}`;
-        (async () => {
-          try {
-            const fresh = await kurfaResolveDirectAudio(playId);
-            if (errToken !== currentPlaybackToken || state.userPaused) return;
-            if (fresh && fresh.success && fresh.streamUrl && fresh.streamUrl !== retryUrl) {
-              loadDirectAudioStream(fresh.streamUrl, cur, errToken, playId);
-              return;
-            }
-          } catch(_) {}
-          try {
-            const aud = await kurfaTryQuickAudiusMatch(state.currentTrack, 1600);
-            if (errToken !== currentPlaybackToken || state.userPaused) return;
-            if (aud && aud.success && aud.streamUrl) {
-              loadDirectAudioStream(aud.streamUrl, cur, errToken, null);
-              return;
-            }
-          } catch(_) {}
-          if (
-            errToken === currentPlaybackToken &&
-            !state.userPaused &&
-            state.ytReady &&
-            state.ytPlayer &&
-            typeof state.ytPlayer.loadVideoById === 'function'
-          ) {
-            state.ytPlayer.loadVideoById({ videoId: playId, startSeconds: cur });
-            state.isPlaying = true;
-            updatePlayPauseUI(true);
-          }
-        })();
-        return;
+        state._audioEngineRetryCount = 0;
       }
-      if (
-        !state._switchingDeckMode &&
-        playId &&
-        state.isPlaying &&
-        state.ytReady &&
-        state.ytPlayer &&
-        typeof state.ytPlayer.loadVideoById === 'function'
-      ) {
-        state.ytPlayer.loadVideoById({ videoId: playId, startSeconds: cur });
-        state.isPlaying = true;
-        updatePlayPauseUI(true);
+      state._audioEngineRetryCount = (state._audioEngineRetryCount || 0) + 1;
+
+      if (playId && hasAdFreeLocalEngine() && state.deckVisualMode !== 'video' && state._audioEngineRetryCount <= 2) {
+        const prevSrc = `${DOM.audioEngine.getAttribute('src') || ''}`;
+        try {
+          if (window.KurfaAndroidBridge && typeof window.KurfaAndroidBridge.invalidateAudioStream === 'function') {
+            window.KurfaAndroidBridge.invalidateAudioStream(playId);
+          }
+          const fresh = await kurfaResolveDirectAudio(playId);
+          if (errToken !== currentPlaybackToken || state.userPaused || state.deckVisualMode === 'video') return;
+          if (fresh && fresh.success && fresh.streamUrl) {
+            let nextUrl = fresh.streamUrl;
+            if (nextUrl === prevSrc || nextUrl.includes('/__kurfa_native_audio__/')) {
+              const sep = nextUrl.includes('?') ? '&' : '?';
+              nextUrl = `${nextUrl.split('?')[0]}${sep}cb=${Date.now()}`;
+            }
+            loadDirectAudioStream(nextUrl, curTimeSec, errToken, playId);
+            return;
+          }
+        } catch (_) {}
+        try {
+          const aud = await kurfaTryQuickAudiusMatch(state.currentTrack, 1600);
+          if (errToken !== currentPlaybackToken || state.userPaused || state.deckVisualMode === 'video') return;
+          if (aud && aud.success && aud.streamUrl && aud.streamUrl !== prevSrc) {
+            loadDirectAudioStream(aud.streamUrl, curTimeSec, errToken, null);
+            return;
+          }
+        } catch (_) {}
+      }
+
+      if (playId && errToken === currentPlaybackToken && !state.userPaused) {
+        try {
+          DOM.audioEngine.pause();
+          DOM.audioEngine.removeAttribute('src');
+        } catch (_) {}
+        loadYouTubePlayback(
+          playId,
+          state.currentTrack,
+          curTimeSec,
+          errToken,
+          Boolean(state.ytReady && state.ytPlayer && typeof state.ytPlayer.loadVideoById === 'function')
+        );
       } else if (isAudius && state.isPlaying && !state.userPaused) {
         playNextTrack({ isAutoErrorSkip: true });
       }
+    };
+
+    const scheduleStallWatchdog = () => {
+      clearAudioStallWatchdog();
+      if (!DOM.audioEngine.getAttribute('src') || state.userPaused || !state.isPlaying || state.deckVisualMode === 'video') return;
+      const snapTime = DOM.audioEngine.currentTime || 0;
+      const snapToken = currentPlaybackToken;
+      _audioStallTimer = setTimeout(() => {
+        _audioStallTimer = null;
+        if (snapToken !== currentPlaybackToken || state.userPaused || !state.isPlaying || state.deckVisualMode === 'video') return;
+        if (!DOM.audioEngine || !DOM.audioEngine.getAttribute('src') || DOM.audioEngine.ended) return;
+        const nowTime = DOM.audioEngine.currentTime || 0;
+        if (Math.abs(nowTime - snapTime) < 0.25) {
+          handoffAudioErrorOrStall(Math.max(0, Math.floor(nowTime || state.currentPlayheadTime || 0)));
+        }
+      }, 7500);
+    };
+
+    DOM.audioEngine.addEventListener('ended', () => {
+      clearAudioStallWatchdog();
+      handleTrackEnd();
+    });
+    DOM.audioEngine.addEventListener('playing', clearAudioStallWatchdog);
+    DOM.audioEngine.addEventListener('timeupdate', clearAudioStallWatchdog);
+    DOM.audioEngine.addEventListener('waiting', scheduleStallWatchdog);
+    DOM.audioEngine.addEventListener('stalled', scheduleStallWatchdog);
+    DOM.audioEngine.addEventListener('error', (e) => {
+      clearAudioStallWatchdog();
+      if (!DOM.audioEngine.getAttribute('src')) return;
+      console.warn("DOM.audioEngine media error:", e);
+      const cur = Math.max(0, Math.floor(DOM.audioEngine.currentTime || state.currentPlayheadTime || 0));
+      handoffAudioErrorOrStall(cur);
     });
     let _bgPauseRecoverCount = 0;
     DOM.audioEngine.addEventListener('play', () => {
       _bgPauseRecoverCount = 0;
+      clearAudioStallWatchdog();
       if (state.ytPlayer && typeof state.ytPlayer.pauseVideo === 'function') {
         try { state.ytPlayer.pauseVideo(); } catch (e) {}
       }
@@ -10116,6 +10224,7 @@ function setupEventListeners() {
       startSeekbarTicker();
     });
     DOM.audioEngine.addEventListener('pause', () => {
+      clearAudioStallWatchdog();
       if (DOM.audioEngine.getAttribute('src') && state.userPaused) {
         try {
           if (window.KurfaAndroidBridge && typeof window.KurfaAndroidBridge.setNativePlaybackState === 'function') {
@@ -10126,12 +10235,16 @@ function setupEventListeners() {
         updatePlayPauseUI(false);
       } else if (
         typeof isAndroidNativeEngine === 'function' && isAndroidNativeEngine() &&
-        DOM.audioEngine.getAttribute('src') && !state.userPaused && state.isPlaying && !DOM.audioEngine.ended &&
+        DOM.audioEngine.getAttribute('src') && !DOM.audioEngine.seeking &&
+        state.deckVisualMode !== 'video' && !state.userPaused && state.isPlaying && !DOM.audioEngine.ended &&
         _bgPauseRecoverCount < 3
       ) {
         _bgPauseRecoverCount += 1;
         setTimeout(() => {
-          if (!state.userPaused && state.isPlaying && DOM.audioEngine && DOM.audioEngine.paused && !DOM.audioEngine.ended) {
+          if (
+            !state.userPaused && state.isPlaying && state.deckVisualMode !== 'video' &&
+            DOM.audioEngine && DOM.audioEngine.getAttribute('src') && DOM.audioEngine.paused && !DOM.audioEngine.ended
+          ) {
             DOM.audioEngine.play().catch(() => {});
           }
         }, 90);

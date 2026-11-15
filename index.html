@@ -1346,16 +1346,21 @@
         <span>Hemen Dinle / Oynat</span>
       </button>
 
-      <!-- Live In-App Progress Box -->
-      <div id="modal-dl-progress-box" class="hidden flex-col gap-2 p-3.5 rounded-xl bg-surface-container-low border border-surface-container">
+      <!-- Live In-App Progress / Error / Success Box -->
+      <div id="modal-dl-progress-box" class="hidden flex-col gap-2.5 p-3.5 rounded-2xl bg-surface-container-low border border-surface-container transition-colors">
         <div class="flex items-center justify-between gap-2 text-xs">
-          <span id="modal-dl-status-text" class="font-semibold text-on-surface truncate">Hazırlanıyor...</span>
+          <div class="flex items-center gap-2 min-w-0">
+            <span id="modal-dl-state-icon" class="material-symbols-outlined text-[18px] text-primary flex-shrink-0" aria-hidden="true">downloading</span>
+            <span id="modal-dl-status-text" class="font-bold text-on-surface truncate">Hazırlanıyor...</span>
+          </div>
           <span id="modal-dl-percent-text" class="font-bold font-mono text-primary flex-shrink-0">0%</span>
         </div>
         <progress id="modal-dl-progress-native" class="kurfa-progress" max="100" value="0" aria-label="İndirme İlerlemesi"></progress>
-        <div class="flex items-center justify-between gap-2">
-          <span id="modal-dl-detail-text" class="text-[11px] text-on-surface-variant truncate">Bağlantı kuruluyor...</span>
-          <button type="button" id="btn-dl-open-folder" class="hidden text-[11px] font-bold text-primary hover:underline flex-shrink-0" onclick="openLastDownloadFolder()">Klasörü Aç</button>
+        <p id="modal-dl-detail-text" class="text-[11px] text-on-surface-variant leading-relaxed break-words">Bağlantı kuruluyor...</p>
+        <div id="modal-dl-actions-row" class="hidden items-center justify-end gap-2 pt-0.5">
+          <button type="button" id="btn-dl-retry" class="hidden px-3 py-1.5 rounded-full bg-surface-container hover:bg-surface-container-high text-on-surface text-[11px] font-bold transition-colors active:scale-95" onclick="retryLastDownload()">Tekrar Dene</button>
+          <button type="button" id="btn-dl-get-app" class="hidden px-3 py-1.5 rounded-full bg-primary text-on-primary text-[11px] font-bold hover:bg-primary-container transition-colors active:scale-95" onclick="closeDownloaderModal(); openAppInstallModal();">Uygulamayı İndir</button>
+          <button type="button" id="btn-dl-open-folder" class="hidden px-3 py-1.5 rounded-full bg-primary/15 text-primary text-[11px] font-bold hover:bg-primary/25 transition-colors active:scale-95" onclick="openLastDownloadFolder()">Klasörü Aç</button>
         </div>
       </div>
 
