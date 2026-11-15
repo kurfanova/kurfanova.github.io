@@ -993,7 +993,40 @@ async function kurfaSearchTracks(query, opts = {}) {
 // 1. DYNAMIC DATA LAYER & REAL YOUTUBE TRENDS
 // =============================================================================
 
-// Dynamic live YouTube explore data (restored instantly from client storage if available)
+// Instant synchronous explore seed so phones never stare at an empty skeleton for 7-10s
+const DEFAULT_EXPLORE_SEED = {
+  success: true,
+  hero: { id: "y5A2NmlFbOY", title: "Umur Doma & Hande Ünsal - Gel", artist: "netd müzik", duration: "2:42", thumbnail: "https://i.ytimg.com/vi/y5A2NmlFbOY/hqdefault.jpg" },
+  trends: [
+    { id: "y5A2NmlFbOY", title: "Umur Doma & Hande Ünsal - Gel", artist: "netd müzik", duration: "2:42", thumbnail: "https://i.ytimg.com/vi/y5A2NmlFbOY/hqdefault.jpg" },
+    { id: "rZWeR8bQlaE", title: "Eypio - Şahidim", artist: "netd müzik", duration: "3:03", thumbnail: "https://i.ytimg.com/vi/rZWeR8bQlaE/hqdefault.jpg" },
+    { id: "Qwfl2M67xCI", title: "Mabel Matiz - Umrumdışı", artist: "mabelmatiz", duration: "4:00", thumbnail: "https://i.ytimg.com/vi/Qwfl2M67xCI/hqdefault.jpg" },
+    { id: "qcfS7amxPYA", title: "Can Demir - Gel Dedim Geldin", artist: "netd müzik", duration: "2:07", thumbnail: "https://i.ytimg.com/vi/qcfS7amxPYA/hqdefault.jpg" },
+    { id: "vLzF3YeBqqk", title: "Onur Bayraktar & Nur Cennet - Sana Yar Diyemem", artist: "netd müzik", duration: "2:29", thumbnail: "https://i.ytimg.com/vi/vLzF3YeBqqk/hqdefault.jpg" },
+    { id: "qgSVE71wNec", title: "Sibel Can & Eypio – KIYAMAM", artist: "Sibel Can", duration: "2:28", thumbnail: "https://i.ytimg.com/vi/qgSVE71wNec/hqdefault.jpg" },
+    { id: "GILi_0RamtY", title: "Simge - Önümüz Yaz", artist: "netd müzik", duration: "3:07", thumbnail: "https://i.ytimg.com/vi/GILi_0RamtY/hqdefault.jpg" },
+    { id: "Tb-zjsEqr1k", title: "Tuğba Yurt - İnceden İnceden", artist: "netd müzik", duration: "3:12", thumbnail: "https://i.ytimg.com/vi/Tb-zjsEqr1k/hqdefault.jpg" },
+    { id: "GR6r-jIryH0", title: "Tefo & Seko Ft. Serdar Ortaç - Heyecan", artist: "Poll Production", duration: "2:50", thumbnail: "https://i.ytimg.com/vi/GR6r-jIryH0/hqdefault.jpg" },
+    { id: "JlV7dM4TxkY", title: "Kurtuluş Kuş & Feryal Sepin & Burak Bulut - Karalaya Karalaya", artist: "netd müzik", duration: "2:48", thumbnail: "https://i.ytimg.com/vi/JlV7dM4TxkY/hqdefault.jpg" },
+    { id: "XScahAwKYHU", title: "Serkan Nişancı - Eller Üzer", artist: "Serkan Nişancı", duration: "3:15", thumbnail: "https://i.ytimg.com/vi/XScahAwKYHU/hqdefault.jpg" },
+    { id: "GKvHAmg7i5k", title: "Emrah Karaduman & İrem Derici - Deli Yangınım", artist: "netd müzik", duration: "3:44", thumbnail: "https://i.ytimg.com/vi/GKvHAmg7i5k/hqdefault.jpg" },
+    { id: "69L-nKRY3ac", title: "BLOK3 - SEBEBİ YAR", artist: "Blok3", duration: "3:19", thumbnail: "https://i.ytimg.com/vi/69L-nKRY3ac/hqdefault.jpg" },
+    { id: "9XBOcX_s1xA", title: "Ziynet Sali - Tam İsabet", artist: "Ziynet Sali", duration: "3:04", thumbnail: "https://i.ytimg.com/vi/9XBOcX_s1xA/hqdefault.jpg" },
+    { id: "Tfz-PmS9fb0", title: "İrem Derici - Durum Çok Acil", artist: "İrem Derici", duration: "2:54", thumbnail: "https://i.ytimg.com/vi/Tfz-PmS9fb0/hqdefault.jpg" }
+  ],
+  top10: [],
+  fresh: [
+    { id: "59aQ2iIwI8s", title: "Demet Akalın - Bi' Şey Mi Dedin?", artist: "Demet Akalın", duration: "2:42", thumbnail: "https://i.ytimg.com/vi/59aQ2iIwI8s/hqdefault.jpg" },
+    { id: "zJY8z8v0xbo", title: "Burak Bulut & İrem Derici - GARSON", artist: "Burak Bulut", duration: "3:15", thumbnail: "https://i.ytimg.com/vi/zJY8z8v0xbo/hqdefault.jpg" },
+    { id: "7plvaIPtO04", title: "Soner Sarıkabadayı & Sefo - Her İki Durumda", artist: "Soner Sarıkabadayı", duration: "3:11", thumbnail: "https://i.ytimg.com/vi/7plvaIPtO04/hqdefault.jpg" },
+    { id: "HsC2PIr4BXs", title: "Bengü - Dur Nereye", artist: "Bengü", duration: "3:30", thumbnail: "https://i.ytimg.com/vi/HsC2PIr4BXs/hqdefault.jpg" },
+    { id: "2_o4hd4y8FQ", title: "Aynur Polat & Serdar Ortaç - Padişah", artist: "netd müzik", duration: "3:06", thumbnail: "https://i.ytimg.com/vi/2_o4hd4y8FQ/hqdefault.jpg" },
+    { id: "KF6SfC6Q-ZA", title: "Burak Bulut - Ah Be Manolya", artist: "Burak Bulut", duration: "2:58", thumbnail: "https://i.ytimg.com/vi/KF6SfC6Q-ZA/hqdefault.jpg" }
+  ],
+  mixes: []
+};
+
+// Dynamic live YouTube explore data (restored instantly from client storage or synchronous seed)
 let exploreData = (function() {
   try {
     const cached = JSON.parse(localStorage.getItem('kurfa_explore_cache') || 'null');
@@ -1002,10 +1035,10 @@ let exploreData = (function() {
     }
   } catch(e) {}
   return {
-    hero: null,
-    trends: [],
-    top10: [],
-    fresh: [],
+    ...DEFAULT_EXPLORE_SEED,
+    trends: [...DEFAULT_EXPLORE_SEED.trends],
+    top10: DEFAULT_EXPLORE_SEED.trends.slice(0, 10),
+    fresh: [...DEFAULT_EXPLORE_SEED.fresh],
     mixes: []
   };
 })();
@@ -1349,7 +1382,7 @@ const DOM = {
   
   // Search
   topSearchInput: document.getElementById('top-search-input'),
-  engineSearchInput: document.getElementById('engine-search-input'),
+  engineSearchInput: null,
   searchResultsList: document.getElementById('search-results-list'),
   searchResultsCount: document.getElementById('search-results-count'),
   searchSpotlightBox: document.getElementById('search-spotlight-box'),
@@ -1432,9 +1465,9 @@ window.dismissToast = dismissToast;
 // 5. NAVIGATION & TAB SWITCHING (DESKTOP & MOBILE - 4 CONSOLIDATED TABS)
 // =============================================================================
 
-function switchTab(tabId, shouldScroll = true) {
+function switchTab(tabId, shouldScroll = true, opts = {}) {
   state.currentTab = tabId;
-  if (tabId === "kesfet") {
+  if (tabId === "kesfet" && !(opts && opts.preserveArtist)) {
     closeArtistDetail();
   }
   safeSetStorage('kurfa_last_tab', tabId);
@@ -1470,14 +1503,10 @@ function switchTab(tabId, shouldScroll = true) {
     }
   });
 
-  // Mobile mini-player: Hide on full player & lyrics tab so it doesn't overlap lyrics
+  // Keep floating mini-player visible across all mobile tabs (including Sözler & EQ)
   const mobileMiniPlayer = document.getElementById('mobile-mini-player');
   if (mobileMiniPlayer) {
-    if (tabId === 'calma-listeleri') {
-      mobileMiniPlayer.style.display = 'none';
-    } else {
-      mobileMiniPlayer.style.display = '';
-    }
+    mobileMiniPlayer.style.display = '';
   }
 
   // Re-render specific tab contents only when needed (Avoid unnecessary DOM destruction)
@@ -1506,11 +1535,9 @@ function switchTab(tabId, shouldScroll = true) {
       renderPopularArtistsGrid();
     }
   } else if (tabId === 'arama') {
-    setTimeout(() => {
-      if (DOM.engineSearchInput) {
-        DOM.engineSearchInput.focus();
-      }
-    }, 120);
+    if (DOM.topSearchInput && state.currentSearchQuery && !DOM.topSearchInput.value) {
+      DOM.topSearchInput.value = state.currentSearchQuery;
+    }
   }
 
   // Handle Video Player visibility across tabs
@@ -2993,22 +3020,12 @@ function updatePlayerTrackUI(track) {
   if (DOM.playerTitleMobile) DOM.playerTitleMobile.textContent = track.title || "Şarkı";
   if (DOM.playerArtistMobile) DOM.playerArtistMobile.textContent = track.artist || "Sanatçı";
 
-  // Mobile Fullscreen Player elements (Photo 2 Reference)
-  const mnpCover = document.getElementById('mnp-cover-art');
-  const mnpBg = document.getElementById('mnp-bg-art');
-  const mnpTitle = document.getElementById('mnp-title');
-  const mnpArtist = document.getElementById('mnp-artist');
-  const mnpDur = document.getElementById('mnp-time-dur');
-  const mnpContextSub = document.getElementById('mnp-context-sub');
-  const mnpContextTitle = document.getElementById('mnp-context-title');
-
-  if (mnpCover) mnpCover.src = safeThumb;
-  if (mnpBg) mnpBg.src = safeThumb;
-  if (mnpTitle) mnpTitle.textContent = track.title || "Şarkı";
-  if (mnpArtist) mnpArtist.textContent = track.artist || "Sanatçı";
-  if (mnpDur) mnpDur.textContent = track.duration || "3:30";
-  if (mnpContextSub) mnpContextSub.textContent = state.playingContextSub || "ÇALMA LİSTESİNDEN ÇALINIYOR";
-  if (mnpContextTitle) mnpContextTitle.textContent = state.playingContextTitle || "YouTube Trendleri";
+  // Native Android Foreground MediaService & Lockscreen Sync
+  try {
+    if (window.KurfaAndroidBridge && typeof window.KurfaAndroidBridge.updateNowPlayingMetadata === 'function') {
+      window.KurfaAndroidBridge.updateNowPlayingMetadata(track.title || "Kurfa Müzik", track.artist || "Sanatçı", safeThumb);
+    }
+  } catch (e) {}
 
   // Visualizer / Lyrics tab sync
   if (DOM.deckCoverImg) DOM.deckCoverImg.src = safeThumb;
@@ -3029,11 +3046,6 @@ function updatePlayPauseUI(playing) {
   if (DOM.playerPlayIconMobile) {
     DOM.playerPlayIconMobile.textContent = playing ? 'pause' : 'play_arrow';
   }
-  // Mobile Fullscreen
-  const mnpPlayIcon = document.getElementById('mnp-play-icon');
-  if (mnpPlayIcon) {
-    mnpPlayIcon.textContent = playing ? 'pause' : 'play_arrow';
-  }
   // Vinyl
   if (DOM.vinylDisc) {
     if (playing) {
@@ -3051,8 +3063,13 @@ function updatePlayPauseUI(playing) {
   }
 
   syncFloatingPipUI();
-  renderPlaylistTracksTable();
-  renderHomeTracklistTable();
+  const activeId = state.currentTrack ? state.currentTrack.id : null;
+  if (state.currentTab === 'calma-listeleri') {
+    renderPlaylistTracksTable();
+  } else if (state._lastRenderedActiveId !== activeId) {
+    state._lastRenderedActiveId = activeId;
+    if (state.currentTab === 'kesfet') renderHomeTracklistTable();
+  }
 }
 
 function updatePlayerFavBtn() {
@@ -4037,9 +4054,6 @@ async function executeSearchImmediate(query, autoSwitchTab = true, options = {})
     if (DOM.topSearchInput && DOM.topSearchInput.value !== cleanQ) {
       DOM.topSearchInput.value = cleanQ;
     }
-    if (DOM.engineSearchInput && DOM.engineSearchInput.value !== cleanQ) {
-      DOM.engineSearchInput.value = cleanQ;
-    }
   }
 
   const urlMatch = cleanQ.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=|shorts\/))([\w-]{11})/);
@@ -4132,8 +4146,8 @@ async function executeSearchImmediate(query, autoSwitchTab = true, options = {})
     }
   }
 
-  if (DOM.engineSearchInput && autoSwitchTab) {
-    DOM.engineSearchInput.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  if (autoSwitchTab) {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 }
 
@@ -4375,8 +4389,7 @@ function renderSearchEmpty(query) {
 }
 
 function executeSearchFromInput() {
-  const query = (DOM.engineSearchInput ? DOM.engineSearchInput.value : "") ||
-                (DOM.topSearchInput ? DOM.topSearchInput.value : "");
+  const query = (DOM.topSearchInput ? DOM.topSearchInput.value : "");
   if (query && query.trim()) {
     executeSearchImmediate(query.trim(), true);
   } else {
@@ -4395,8 +4408,12 @@ function clearSearchInput() {
   state.currentSearchQuery = '';
   state.baseSearchQuery = '';
 
-  if (DOM.engineSearchInput) DOM.engineSearchInput.value = '';
   if (DOM.topSearchInput) DOM.topSearchInput.value = '';
+  const artistsSection = document.getElementById('search-artists-section');
+  if (artistsSection) {
+    artistsSection.classList.add('hidden');
+    artistsSection.classList.remove('flex');
+  }
   if (DOM.searchResultsCount) DOM.searchResultsCount.textContent = 'Arama Sonuçları';
   if (DOM.searchSpotlightBox) DOM.searchSpotlightBox.style.display = 'none';
   if (DOM.searchResultsList) {
@@ -4412,7 +4429,6 @@ async function pasteFromClipboard() {
   try {
     const text = await navigator.clipboard.readText();
     if (text) {
-      if (DOM.engineSearchInput) DOM.engineSearchInput.value = text;
       if (DOM.topSearchInput) DOM.topSearchInput.value = text;
       executeSearchImmediate(text, true);
     }
@@ -4432,7 +4448,7 @@ function applySearchFilter(filter, el) {
     el.classList.remove('bg-surface-container-low', 'text-on-surface-variant');
   }
 
-  const inputVal = (DOM.engineSearchInput ? DOM.engineSearchInput.value : "").trim();
+  const inputVal = (DOM.topSearchInput ? DOM.topSearchInput.value : "").trim();
   if (inputVal && (!state.currentSearchQuery || inputVal !== state.currentSearchQuery)) {
     state.baseSearchQuery = inputVal;
   }
@@ -5018,7 +5034,7 @@ function openArtistDetail(artist) {
   if (prevTab !== 'kesfet') {
     state._artistReturnTab = prevTab;
     if (backLabel) backLabel.textContent = prevTab === 'arama' ? "Arama'ya Dön" : "Geri Dön";
-    switchTab('kesfet', false);
+    switchTab('kesfet', false, { preserveArtist: true });
   } else {
     state._artistReturnTab = null;
     if (backLabel) backLabel.textContent = "Keşfet'e Dön";
@@ -7532,99 +7548,28 @@ function handleUrlParameters() {
 }
 
 // =============================================================================
-// 13.6 SPOTIFY-STYLE MOBILE FULLSCREEN NOW PLAYING CONTROLS
+// =============================================================================
+// 13.6 MOBILE PLAYER REDIRECT (CANVAS MODE REMOVED FOR LOW-END PERFORMANCE)
 // =============================================================================
 
-let mobileCanvasMode = localStorage.getItem('kurfa_canvas_mode') === 'true';
+let mobileCanvasMode = false;
+try { localStorage.removeItem('kurfa_canvas_mode'); } catch (_) {}
 
 function toggleMobileCanvasMode() {
-  mobileCanvasMode = !mobileCanvasMode;
-  safeSetStorage('kurfa_canvas_mode', mobileCanvasMode ? 'true' : 'false');
-  updateMobileCanvasUI();
-  showToast(mobileCanvasMode ? "Canlı Video Klip Modu Açıldı" : "Plak / Kapak Modu Aktif (Reklamsız)");
+  mobileCanvasMode = false;
 }
 
 function updateMobileCanvasUI() {
-  const modal = document.getElementById('mobile-now-playing-modal');
-  const bgArt = document.getElementById('mnp-bg-art');
-  const coverContainer = document.getElementById('mnp-cover-container');
-  const canvasBtn = document.getElementById('mnp-btn-canvas');
-  const canvasLabel = document.getElementById('mnp-canvas-label');
-
-  if (modal) {
-    if (mobileCanvasMode) {
-      modal.classList.remove('bg-[#0c0e17]');
-      modal.classList.add('bg-black/40');
-    } else {
-      modal.classList.add('bg-[#0c0e17]');
-      modal.classList.remove('bg-black/40');
-    }
-  }
-
-  if (bgArt) {
-    if (mobileCanvasMode) {
-      bgArt.classList.add('opacity-0');
-      bgArt.classList.remove('opacity-30');
-    } else {
-      bgArt.classList.remove('opacity-0');
-      bgArt.classList.add('opacity-30');
-    }
-  }
-
-  if (coverContainer) {
-    if (mobileCanvasMode) {
-      coverContainer.classList.add('opacity-0', 'scale-90', 'pointer-events-none');
-    } else {
-      coverContainer.classList.remove('opacity-0', 'scale-90', 'pointer-events-none');
-    }
-  }
-
-  if (canvasBtn) {
-    canvasBtn.classList.toggle('text-primary', mobileCanvasMode);
-    canvasBtn.classList.toggle('text-white/60', !mobileCanvasMode);
-  }
-  if (canvasLabel) {
-    canvasLabel.textContent = mobileCanvasMode ? "Klip Açık" : "Klip Modu";
-  }
-
   syncPersistentPlayerPosition();
 }
 
 function openMobileNowPlaying() {
-  const modal = document.getElementById('mobile-now-playing-modal');
-  if (!modal) return;
-  state.mobileNowPlayingOpen = true;
-  modal.style.contentVisibility = 'visible';
-
-  modal.classList.remove('translate-y-full', 'opacity-0', 'pointer-events-none');
-  modal.classList.add('translate-y-0', 'opacity-100', 'pointer-events-auto');
-
-  // Sync track information
-  updatePlayerTrackUI(state.currentTrack);
-  updatePlayPauseUI(state.isPlaying);
-
-  // Sync lyrics state immediately
-  if (state.currentTrack) {
-    updateLyricsDisplay();
-  }
-
-  updateMobileCanvasUI();
+  state.mobileNowPlayingOpen = false;
+  switchTab('calma-listeleri');
 }
 
 function closeMobileNowPlaying() {
-  const modal = document.getElementById('mobile-now-playing-modal');
-  if (!modal) return;
   state.mobileNowPlayingOpen = false;
-
-  modal.classList.add('translate-y-full', 'opacity-0', 'pointer-events-none');
-  modal.classList.remove('translate-y-0', 'opacity-100', 'pointer-events-auto');
-
-  setTimeout(() => {
-    if (!state.mobileNowPlayingOpen && modal) {
-      modal.style.contentVisibility = 'hidden';
-    }
-  }, 320);
-
   syncPersistentPlayerPosition();
 }
 
@@ -7712,20 +7657,14 @@ function renderCustomPlaylistsGrid() {
   const playlists = state.customPlaylists || [];
   if (playlists.length === 0) {
     grid.innerHTML = `
-      <div class="col-span-full px-4 py-3.5 rounded-2xl bg-surface-container-lowest border border-surface-container flex items-center justify-between gap-3">
-        <div class="flex items-center gap-3 min-w-0">
-          <div class="w-9 h-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center flex-shrink-0">
-            <span class="material-symbols-outlined text-[20px]">playlist_add</span>
-          </div>
-          <div class="min-w-0">
-            <h3 class="text-xs sm:text-sm font-bold text-on-surface truncate">Henüz özel çalma listeniz yok</h3>
-            <p class="text-[11px] text-on-surface-variant truncate">Sevdiğiniz parçaları listelere ayırın.</p>
-          </div>
+      <div class="col-span-full px-4 py-4 rounded-2xl bg-surface-container-lowest border border-surface-container flex items-center gap-3">
+        <div class="w-9 h-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center flex-shrink-0">
+          <span class="material-symbols-outlined text-[20px]">playlist_add</span>
         </div>
-        <button type="button" class="px-3.5 py-2 rounded-full bg-primary text-on-primary text-xs font-bold hover:bg-primary-container transition-all flex-shrink-0 flex items-center gap-1" onclick="openCreatePlaylistModal()">
-          <span class="material-symbols-outlined text-[15px]">add</span>
-          <span>Oluştur</span>
-        </button>
+        <div class="min-w-0 flex-1">
+          <h3 class="text-xs sm:text-sm font-bold text-on-surface truncate">Henüz özel çalma listeniz yok</h3>
+          <p class="text-[11px] text-on-surface-variant truncate">Yukarıdaki "Yeni Liste" butonunu kullanarak listenizi oluşturabilirsiniz.</p>
+        </div>
       </div>
     `;
     return;
@@ -9076,31 +9015,7 @@ function syncPersistentPlayerPosition() {
   const pDeck = document.getElementById('persistent-player-deck');
   if (!pDeck) return;
 
-  // 1. Mobile Fullscreen Now Playing Spotify Canvas Video Mode
-  if (state.mobileNowPlayingOpen && mobileCanvasMode) {
-    const modal = document.getElementById('mobile-now-playing-modal');
-    if (modal && !modal.classList.contains('pointer-events-none')) {
-      pDeck.dataset.deckPosMode = 'mobile-canvas';
-      pDeck.style.position = 'fixed';
-      pDeck.style.left = '50%';
-      pDeck.style.top = '50%';
-      pDeck.style.bottom = 'auto';
-      pDeck.style.right = 'auto';
-      pDeck.style.transform = 'translate(-50%, -50%)';
-      // 178vh aspect ratio completely covers 9:16 vertical phone screen without black letterboxing
-      pDeck.style.width = '178vh';
-      pDeck.style.height = '100vh';
-      pDeck.style.minWidth = '100vw';
-      pDeck.style.minHeight = '56.25vw';
-      pDeck.style.opacity = '1';
-      pDeck.style.pointerEvents = 'none'; // touch gestures pass straight through to controls
-      pDeck.style.zIndex = '60'; // directly behind modal controls (z-[65])
-      pDeck.style.borderRadius = '0px';
-      return;
-    }
-  }
-
-  // 2. Desktop Video Deck Mode (on Çalma Listeleri tab)
+  // Desktop Video Deck Mode (on Çalma Listeleri tab)
   const slot = document.getElementById('deck-video-slot');
   if (state.currentTab === 'calma-listeleri' && state.deckVisualMode === 'video' && slot) {
     const rect = slot.getBoundingClientRect();
@@ -9965,21 +9880,6 @@ function setupEventListeners() {
     });
   }
 
-  // Engine Search Input in Arama Tab
-  if (DOM.engineSearchInput) {
-    DOM.engineSearchInput.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') {
-        e.preventDefault();
-        const val = DOM.engineSearchInput.value.trim();
-        if (val) executeSearchImmediate(val, true);
-      }
-    });
-    DOM.engineSearchInput.addEventListener('input', (e) => {
-      const val = e.target.value.trim();
-      if (val.length >= 2) debouncedSearch(val);
-    });
-  }
-
   // Global Keyboard Shortcuts
   window.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') {
@@ -10272,6 +10172,26 @@ function initApp() {
 
   console.log("Kurfamüzik Client v5 Initialized");
 }
+
+// Native Android MediaSession & Updater Callbacks
+window.kurfaNativeTogglePlay = function() {
+  if (typeof togglePlay === 'function') togglePlay();
+};
+window.kurfaNativeNextTrack = function() {
+  if (typeof playNextTrack === 'function') playNextTrack();
+};
+window.kurfaNativePrevTrack = function() {
+  if (typeof playPrevTrack === 'function') playPrevTrack();
+};
+window.kurfaOnAndroidUpdateEvent = function(statusText, hasUpdate) {
+  const lineEl = document.getElementById('settings-update-check-line');
+  if (lineEl && statusText) {
+    lineEl.textContent = String(statusText);
+  }
+  if (hasUpdate && typeof showToast === 'function') {
+    showToast('Yeni Android sürümü hazır (Ayarlar -> Güncelleme)');
+  }
+};
 
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', initApp);
@@ -10996,7 +10916,6 @@ function openAdWarningModal(target, options = {}) {
         dismissAdWarningModal(false);
         switchTab('arama');
         if (q) {
-          if (DOM.engineSearchInput) DOM.engineSearchInput.value = q;
           if (DOM.topSearchInput) DOM.topSearchInput.value = q;
           state.baseSearchQuery = q;
         }

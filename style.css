@@ -1066,8 +1066,43 @@ body.tahta-mode h3 {
 }
 
 /* ==========================================================================
-   MOBILE & SMARTPHONE ERGONOMICS & OPTIMIZATION (<= 640px)
+   MOBILE & SMARTPHONE ERGONOMICS & HIGH-FPS OPTIMIZATION
    ========================================================================== */
+
+/* Defer below-fold heavy lists/shelves safely with paired contain-intrinsic-size (no CLS) */
+.perf-below-fold {
+  content-visibility: auto;
+  contain-intrinsic-size: auto none auto 420px;
+}
+
+@media (max-width: 768px) {
+  /* Kill expensive mobile backdrop-filter GPU passes that cause frame drops on Redmi/Android WebView */
+  header,
+  #mobile-mini-player,
+  #mobile-bottom-nav,
+  .backdrop-blur-md,
+  .backdrop-blur-sm {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+
+  header,
+  #mobile-mini-player,
+  #mobile-bottom-nav {
+    background-color: rgba(255, 255, 255, 0.97) !important;
+  }
+
+  body.dark-mode header,
+  body.dark-mode #mobile-mini-player,
+  body.dark-mode #mobile-bottom-nav {
+    background-color: rgba(14, 18, 28, 0.97) !important;
+  }
+
+  .modern-card:hover {
+    transform: none !important;
+  }
+}
+
 @media (max-width: 640px) {
   body {
     -webkit-overflow-scrolling: touch;
@@ -1078,8 +1113,6 @@ body.tahta-mode h3 {
   #mobile-bottom-nav {
     transform: translateZ(0);
     will-change: transform;
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
   }
 
   /* Touch target ergonomics for navigation */
