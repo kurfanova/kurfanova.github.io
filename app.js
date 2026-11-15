@@ -1877,6 +1877,11 @@ function onPlayerStateChange(event) {
     state.isPlaying = true;
     state.userPaused = false;
     updatePlayPauseUI(true);
+    try {
+      if (window.KurfaAndroidBridge && typeof window.KurfaAndroidBridge.setNativePlaybackState === 'function') {
+        window.KurfaAndroidBridge.setNativePlaybackState(true);
+      }
+    } catch (_) {}
     startSeekbarTicker();
     checkAndHandleAdPlayback();
   } else if (event.data === 3) {
@@ -1888,9 +1893,18 @@ function onPlayerStateChange(event) {
       return;
     }
 
+    const syncAndroidPaused = () => {
+      try {
+        if (window.KurfaAndroidBridge && typeof window.KurfaAndroidBridge.setNativePlaybackState === 'function') {
+          window.KurfaAndroidBridge.setNativePlaybackState(false);
+        }
+      } catch (_) {}
+    };
+
     if (state._playerInError || state._lastErrorVideoId) {
       state.isPlaying = false;
       updatePlayPauseUI(false);
+      syncAndroidPaused();
       return;
     }
 
@@ -1913,6 +1927,7 @@ function onPlayerStateChange(event) {
               if (ps !== 1 && ps !== 3) {
                 state.isPlaying = false;
                 updatePlayPauseUI(false);
+                syncAndroidPaused();
               }
             } catch(e) {}
           }, 500);
@@ -1922,6 +1937,7 @@ function onPlayerStateChange(event) {
     }
     state.isPlaying = false;
     updatePlayPauseUI(false);
+    syncAndroidPaused();
   } else if (event.data === YT.PlayerState.ENDED) {
     clearTimeout(state._stallWatchdogTimer);
     handleTrackEnd();
@@ -3200,6 +3216,20 @@ function updateSeekbarUI(cur, dur) {
     if (extCur) extCur.textContent = timeCurStr;
     if (extDur) extDur.textContent = timeDurStr;
   }
+
+  // Android MediaSession timer & progress bar sync (immediate on track change, throttled every 4s)
+  try {
+    if (state.isPlaying && typeof isAndroidNativeEngine === 'function' && isAndroidNativeEngine() &&
+        window.KurfaAndroidBridge && typeof window.KurfaAndroidBridge.updatePlaybackTiming === 'function') {
+      const nowMs = Date.now();
+      const tid = state.currentTrack ? (state.currentTrack.id || '') : '';
+      if (window._lastAndroidTimingTrackId !== tid || !window._lastAndroidTimingSyncAt || (nowMs - window._lastAndroidTimingSyncAt) >= 4000) {
+        window._lastAndroidTimingTrackId = tid;
+        window._lastAndroidTimingSyncAt = nowMs;
+        window.KurfaAndroidBridge.updatePlaybackTiming(Math.floor(cur || 0), Math.floor(dur || 0));
+      }
+    }
+  } catch (_) {}
 }
 window.updateSeekbarUI = updateSeekbarUI;
 
@@ -10070,7 +10100,9 @@ function setupEventListeners() {
         playNextTrack({ isAutoErrorSkip: true });
       }
     });
+    let _bgPauseRecoverCount = 0;
     DOM.audioEngine.addEventListener('play', () => {
+      _bgPauseRecoverCount = 0;
       if (state.ytPlayer && typeof state.ytPlayer.pauseVideo === 'function') {
         try { state.ytPlayer.pauseVideo(); } catch (e) {}
       }
@@ -10092,6 +10124,17 @@ function setupEventListeners() {
         } catch(e) {}
         state.isPlaying = false;
         updatePlayPauseUI(false);
+      } else if (
+        typeof isAndroidNativeEngine === 'function' && isAndroidNativeEngine() &&
+        DOM.audioEngine.getAttribute('src') && !state.userPaused && state.isPlaying && !DOM.audioEngine.ended &&
+        _bgPauseRecoverCount < 3
+      ) {
+        _bgPauseRecoverCount += 1;
+        setTimeout(() => {
+          if (!state.userPaused && state.isPlaying && DOM.audioEngine && DOM.audioEngine.paused && !DOM.audioEngine.ended) {
+            DOM.audioEngine.play().catch(() => {});
+          }
+        }, 90);
       }
     });
   }
@@ -10660,19 +10703,8 @@ async function refreshAppVersionAndUpdateStatus() {
 
   if (!lineEl) return;
   if (!isNativeApp) {
-    lineEl.textContent = 'Web sürümü otomatik güncel • Sürüm kontrol ediliyor...';
-    lineEl.className = 'text-xs text-on-surface-variant mt-0.5';
-    const latest = await fetchLatestPublishedAppVersions();
-    if (latest) {
-      const parts = [];
-      if (latest.desktop?.version) parts.push(`Windows v${latest.desktop.version}`);
-      if (latest.android?.versionName) parts.push(`Android v${latest.android.versionName}`);
-      lineEl.textContent = parts.length
-        ? `Web otomatik güncel • Güncel paketler: ${parts.join(' / ')}`
-        : 'Web sürümü otomatik güncellenir';
-    } else {
-      lineEl.textContent = 'Web sürümü sayfa açılışında otomatik güncellenir';
-    }
+    lineEl.textContent = 'Sayfa açılışında otomatik güncellenir.';
+    lineEl.className = 'text-[11px] text-on-surface-variant mt-0.5';
     return;
   }
 
