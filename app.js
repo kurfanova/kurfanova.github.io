@@ -1232,6 +1232,7 @@ function saveQueueState() {
   }
   safeSetStorage('kurfa_queue', JSON.stringify(state.queue));
   safeSetStorage('kurfa_user_queue', JSON.stringify(state.userQueue));
+  safeSetStorage('kurfa_queue_index', String(state.queueIndex || 0));
 }
 
 const failedVideoIds = new Set();
@@ -1257,8 +1258,11 @@ const state = {
   queue: cleanDeduplicateQueueArray(safeGetJSON('kurfa_queue', [])),
   userQueue: cleanDeduplicateQueueArray(safeGetJSON('kurfa_user_queue', [])),
   originalQueue: [],
-  queueIndex: 0,
-  volume: safeGetFloat('kurfa_vol', 0.8),
+  queueIndex: safeGetInt('kurfa_queue_index', 0),
+  volume: (function() {
+    const isMob = /Android|webOS|iPhone|iPad|iPod/i.test(navigator.userAgent || '') || (typeof window !== 'undefined' && window.innerWidth < 768);
+    return isMob ? 1.0 : safeGetFloat('kurfa_vol', 0.8);
+  })(),
   isMuted: false,
   isShuffle: localStorage.getItem('kurfa_shuffle') === 'true',
   repeatMode: safeGetInt('kurfa_repeat', 0), // 0: off, 1: all, 2: one
@@ -3034,6 +3038,10 @@ function updatePlayerTrackUI(track) {
   if (DOM.playerArtist) DOM.playerArtist.textContent = track.artist || "Sanatçı";
   if (DOM.playerTimeDur) DOM.playerTimeDur.textContent = track.duration || "3:30";
 
+  if (typeof syncDesktopMiniPlayerState === 'function' && window.__kurfaDesktopMiniPlayerOpen) {
+    syncDesktopMiniPlayerState(state.currentPlayheadTime || 0, parseDurationToSec(track.duration) || 210);
+  }
+
   // Mobile mini elements
   if (DOM.playerThumbMobile) DOM.playerThumbMobile.src = safeThumb;
   if (DOM.playerTitleMobile) DOM.playerTitleMobile.textContent = track.title || "Şarkı";
@@ -3399,6 +3407,16 @@ function initVolumeInteractions() {
 
   DOM.playerVolTrack.addEventListener('mousedown', onPointerDown);
   DOM.playerVolTrack.addEventListener('touchstart', onPointerDown, { passive: true });
+
+  const onVolumeWheel = (e) => {
+    e.preventDefault();
+    const delta = e.deltaY < 0 ? 0.05 : -0.05;
+    setPlayerVolume((state.volume || 0) + delta);
+  };
+  DOM.playerVolTrack.addEventListener('wheel', onVolumeWheel, { passive: false });
+  if (DOM.btnVolumeIcon) {
+    DOM.btnVolumeIcon.addEventListener('wheel', onVolumeWheel, { passive: false });
+  }
 }
 
 function setPlayerVolume(vol) {
@@ -3432,6 +3450,9 @@ function setPlayerVolume(vol) {
       else if (state.volume < 0.5) icon.textContent = 'volume_down';
       else icon.textContent = 'volume_up';
     }
+  }
+  if (typeof syncDesktopMiniPlayerState === 'function' && window.__kurfaDesktopMiniPlayerOpen) {
+    syncDesktopMiniPlayerState(getActiveMediaCurrentTime() || 0, getActiveMediaDuration() || 0);
   }
 }
 
@@ -9552,24 +9573,33 @@ function syncDesktopMiniPlayerState(curSec, durSec) {
   if (typeof getBrowserExtensionMode !== 'function' || !getBrowserExtensionMode().startsWith('desktop')) return;
   const track = state.currentTrack;
   const payload = {
-    title: (track && track.title) ? track.title : 'Kurfa Müzik',
+    title: (track && track.title) ? track.title : 'Kurfamüzik',
     artist: (track && track.artist) ? track.artist : 'Bir parça seçin',
     thumbnail: track ? getTrackThumbnail(track) : '',
     isPlaying: Boolean(state.isPlaying),
+    isMuted: Boolean(state.isMuted || state.volume === 0),
     cur: Number.isFinite(curSec) ? curSec : (getActiveMediaCurrentTime() || 0),
     dur: Number.isFinite(durSec) ? durSec : (getActiveMediaDuration() || 0)
   };
   callExtensionBridge('UPDATE_MINI_PLAYER', payload, 2500).catch(() => {});
 }
 
+window.seekPlaybackToFraction = function (frac) {
+  const dur = getActiveMediaDuration();
+  if (dur > 0) {
+    seekPlaybackToSeconds(Math.max(0, Math.min(1, Number(frac) || 0)) * dur);
+  }
+};
+
 async function toggleDocumentPipPlayer() {
   if (typeof getBrowserExtensionMode === 'function' && getBrowserExtensionMode().startsWith('desktop')) {
     const track = state.currentTrack;
     const res = await callExtensionBridge('TOGGLE_MINI_PLAYER', {
-      title: (track && track.title) ? track.title : 'Kurfa Müzik',
+      title: (track && track.title) ? track.title : 'Kurfamüzik',
       artist: (track && track.artist) ? track.artist : 'Bir parça seçin',
       thumbnail: track ? getTrackThumbnail(track) : '',
       isPlaying: Boolean(state.isPlaying),
+      isMuted: Boolean(state.isMuted || state.volume === 0),
       cur: getActiveMediaCurrentTime() || 0,
       dur: getActiveMediaDuration() || 0
     }, 4000);
@@ -10279,6 +10309,20 @@ function setupEventListeners() {
     }
   });
 
+  document.addEventListener('keydown', (e) => {
+    const tag = (e.target && e.target.tagName) ? e.target.tagName.toLowerCase() : '';
+    if (tag === 'input' || tag === 'textarea' || (e.target && e.target.isContentEditable)) return;
+    if (e.key === 'ArrowUp' && !e.ctrlKey && !e.metaKey && !e.altKey) {
+      e.preventDefault();
+      setPlayerVolume((state.volume || 0) + 0.05);
+    } else if (e.key === 'ArrowDown' && !e.ctrlKey && !e.metaKey && !e.altKey) {
+      e.preventDefault();
+      setPlayerVolume((state.volume || 0) - 0.05);
+    } else if ((e.key === 'm' || e.key === 'M') && !e.ctrlKey && !e.metaKey && !e.altKey) {
+      toggleMute();
+    }
+  });
+
   // Seamless Background Tab & Alt-Tab Audio Continuity + Zero-Waste Idle Mode (for Gaming/Low-End PCs)
   document.addEventListener('visibilitychange', () => {
     const isHidden = Boolean(document.hidden);
@@ -10551,6 +10595,23 @@ function initApp() {
   syncPersistentPlayerPosition();
   window.addEventListener('resize', scheduleSyncPersistentPlayerPosition, { passive: true });
   window.addEventListener('scroll', scheduleSyncPersistentPlayerPosition, { passive: true });
+  const persistPlaybackSession = () => {
+    try {
+      if (state.currentTrack) {
+        safeSetStorage('kurfa_last_track', JSON.stringify({
+          id: state.currentTrack.id,
+          title: state.currentTrack.title,
+          artist: state.currentTrack.artist,
+          thumbnail: getTrackThumbnail(state.currentTrack),
+          duration: state.currentTrack.duration,
+          currentTime: getActiveMediaCurrentTime() || state.currentPlayheadTime || 0
+        }));
+      }
+      safeSetStorage('kurfa_queue_index', String(state.queueIndex || 0));
+    } catch (_) {}
+  };
+  window.addEventListener('pagehide', persistPlaybackSession);
+  window.addEventListener('beforeunload', persistPlaybackSession);
 
   console.log("Kurfamüzik Client v5 Initialized");
 }

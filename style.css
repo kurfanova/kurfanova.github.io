@@ -340,9 +340,9 @@ body.kurfa-bg-idle .animate-spin-slow {
 /* Modern Dynamic Island Floating Toast */
 .kurfa-toast {
   position: fixed;
-  top: calc(1.25rem + env(safe-area-inset-top, 0px));
+  bottom: calc(6.25rem + env(safe-area-inset-bottom, 0px));
   left: 50%;
-  transform: translateX(-50%) translateY(-28px) scale(0.92);
+  transform: translateX(-50%) translateY(24px) scale(0.92);
   background: rgba(255, 255, 255, 0.94);
   color: #0f172a;
   padding: 8px 16px 8px 10px;
@@ -375,6 +375,11 @@ body.kurfa-bg-idle .animate-spin-slow {
 }
 .kurfa-toast:active {
   transform: translateX(-50%) translateY(3px) scale(0.97);
+}
+@media (max-width: 768px) {
+  .kurfa-toast {
+    bottom: calc(8.75rem + env(safe-area-inset-bottom, 0px));
+  }
 }
 
 /* Native <progress> styling per modern-web-guidance */

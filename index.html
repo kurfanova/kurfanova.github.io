@@ -1303,33 +1303,30 @@
   <!-- 7. YOUTUBE & MEDIA DOWNLOADER MODAL                                   -->
   <!-- ===================================================================== -->
   <div id="downloader-modal" class="fixed inset-0 bg-black/60 backdrop-blur-md z-50 flex items-center justify-center p-4 opacity-0 pointer-events-none transition-opacity duration-200">
-    <div class="bg-surface-container-lowest border border-surface-container rounded-2xl p-5 sm:p-6 max-w-md w-full shadow-2xl flex flex-col gap-4 transform scale-95 transition-transform duration-200" id="downloader-modal-card">
+    <div class="bg-surface-container-lowest border border-surface-container rounded-3xl p-5 max-w-md w-full shadow-2xl flex flex-col gap-3.5 transform scale-95 transition-transform duration-200" id="downloader-modal-card">
       <div class="flex items-center justify-between">
         <div class="flex items-center gap-2.5">
-          <div class="w-9 h-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
-            <span class="material-symbols-outlined text-[20px]" aria-hidden="true">download</span>
+          <div class="w-8 h-8 rounded-xl bg-primary/15 text-primary flex items-center justify-center">
+            <span class="material-symbols-outlined text-[18px]" aria-hidden="true">download</span>
           </div>
-          <div>
-            <h3 class="font-bold text-base text-on-surface leading-tight">Medya İndirici</h3>
-            <p class="text-[11px] text-on-surface-variant">Doğrudan cihaza reklamsız kayıt</p>
-          </div>
+          <h3 class="font-bold text-sm text-on-surface tracking-tight">Medya İndirici</h3>
         </div>
-        <button type="button" aria-label="Kapat" class="w-8 h-8 rounded-full flex items-center justify-center hover:bg-surface-container text-on-surface-variant transition-colors" onclick="closeDownloaderModal()">
-          <span class="material-symbols-outlined text-[20px]" aria-hidden="true">close</span>
+        <button type="button" aria-label="Kapat" class="w-7 h-7 rounded-full flex items-center justify-center hover:bg-surface-container text-on-surface-variant transition-colors" onclick="closeDownloaderModal()">
+          <span class="material-symbols-outlined text-[18px]" aria-hidden="true">close</span>
         </button>
       </div>
 
-      <div class="relative">
-        <input type="text" id="modal-url-input" placeholder="YouTube linki yapıştırın veya parçayı seçin..." aria-label="YouTube Video Linki" class="w-full h-11 pl-3.5 pr-10 rounded-xl bg-surface-container-low border border-surface-container text-xs text-on-surface focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary placeholder:text-on-surface-variant/60">
-        <button type="button" aria-label="Panodan Yapıştır" class="absolute right-2.5 top-2.5 text-on-surface-variant hover:text-primary transition-colors" onclick="pasteModalUrl()" title="Panodan Yapıştır">
-          <span class="material-symbols-outlined text-[20px]" aria-hidden="true">content_paste</span>
+      <div class="relative flex items-center">
+        <input type="text" id="modal-url-input" placeholder="YouTube bağlantısı yapıştırın..." aria-label="YouTube Video Linki" class="w-full h-10 pl-3.5 pr-10 rounded-2xl bg-surface-container-low border border-surface-container text-xs text-on-surface focus:outline-none focus:border-primary placeholder:text-on-surface-variant/60">
+        <button type="button" aria-label="Panodan Yapıştır" class="absolute right-2.5 text-on-surface-variant hover:text-primary transition-colors" onclick="pasteModalUrl()" title="Panodan Yapıştır">
+          <span class="material-symbols-outlined text-[18px]" aria-hidden="true">content_paste</span>
         </button>
       </div>
 
       <!-- Ongoing Download Alert -->
-      <div id="modal-ongoing-download-box" class="hidden p-3 rounded-xl bg-primary/10 border border-primary/25 items-center justify-between gap-2.5">
+      <div id="modal-ongoing-download-box" class="hidden p-3 rounded-2xl bg-primary/10 border border-primary/25 items-center justify-between gap-2.5">
         <div class="flex items-center gap-2.5 min-w-0">
-          <span class="material-symbols-outlined text-primary text-[20px] animate-spin flex-shrink-0" id="modal-ongoing-dl-spinner">progress_activity</span>
+          <span class="material-symbols-outlined text-primary text-[18px] animate-spin flex-shrink-0" id="modal-ongoing-dl-spinner">progress_activity</span>
           <div class="flex flex-col min-w-0">
             <span class="text-[11px] font-bold text-primary truncate" id="modal-ongoing-dl-title">İndiriliyor...</span>
             <span class="text-[10px] text-on-surface-variant truncate">Arka planda devam ediyor.</span>
@@ -1339,36 +1336,34 @@
       </div>
 
       <!-- Active Track Preview -->
-      <div id="modal-track-preview" class="hidden flex items-center gap-3 p-2.5 rounded-xl bg-surface-container-low border border-surface-container">
-        <img id="modal-preview-img" src="./kurfamuzik_logo.png" alt="" loading="lazy" class="w-12 h-12 rounded-lg object-cover bg-surface-container flex-shrink-0" onerror="this.onerror=null; this.src='./assets/kurfamuzik_logo.png';">
+      <div id="modal-track-preview" class="hidden flex items-center gap-3 p-2.5 rounded-2xl bg-surface-container-low border border-surface-container/60">
+        <img id="modal-preview-img" src="./kurfamuzik_logo.png" alt="" loading="lazy" class="w-11 h-11 rounded-xl object-cover bg-surface-container flex-shrink-0" onerror="this.onerror=null; this.src='./kurfamuzik_logo.png';">
         <div class="min-w-0 flex-1">
           <p id="modal-preview-title" class="text-xs font-bold text-on-surface truncate"></p>
           <p id="modal-preview-artist" class="text-[11px] text-on-surface-variant truncate"></p>
         </div>
       </div>
 
-      <!-- Format Selection Buttons -->
-      <div class="grid grid-cols-2 gap-2.5">
-        <button type="button" id="btn-dl-mp3" class="py-3 px-3 rounded-xl bg-primary text-on-primary text-xs font-bold hover:bg-primary/90 shadow-sm transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-95" onclick="processModalDownload('mp3')">
-          <span class="material-symbols-outlined text-[18px]" aria-hidden="true">music_note</span>
-          <span>Ses İndir</span>
+      <!-- Format Selection Row -->
+      <div class="flex items-center gap-2">
+        <button type="button" id="btn-dl-mp3" class="flex-1 h-10 px-3 rounded-2xl bg-primary text-on-primary text-xs font-bold hover:bg-primary/90 shadow-xs transition-all flex items-center justify-center gap-1.5 cursor-pointer active:scale-95" onclick="processModalDownload('mp3')">
+          <span class="material-symbols-outlined text-[17px]" aria-hidden="true">music_note</span>
+          <span>Ses (M4A)</span>
         </button>
-        <button type="button" id="btn-dl-mp4" class="py-3 px-3 rounded-xl bg-secondary text-on-secondary text-xs font-bold hover:bg-secondary/90 shadow-sm transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-95" onclick="processModalDownload('720')">
-          <span class="material-symbols-outlined text-[18px]" aria-hidden="true">movie</span>
+        <button type="button" id="btn-dl-mp4" class="flex-1 h-10 px-3 rounded-2xl bg-surface-container hover:bg-surface-container-high text-on-surface text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer active:scale-95" onclick="processModalDownload('720')">
+          <span class="material-symbols-outlined text-[17px]" aria-hidden="true">movie</span>
           <span>Video (MP4)</span>
+        </button>
+        <button type="button" class="w-10 h-10 rounded-2xl bg-surface-container-low hover:bg-surface-container text-on-surface flex items-center justify-center transition-all cursor-pointer active:scale-95 flex-shrink-0" onclick="processModalDownload('play')" title="Hemen Oynat">
+          <span class="material-symbols-outlined text-[20px] filled" aria-hidden="true">play_arrow</span>
         </button>
       </div>
 
-      <button type="button" class="w-full py-2.5 rounded-xl bg-surface-container hover:bg-surface-container-high text-xs font-semibold text-on-surface flex items-center justify-center gap-2 transition-all cursor-pointer" onclick="processModalDownload('play')">
-        <span class="material-symbols-outlined text-[18px]" aria-hidden="true">play_arrow</span>
-        <span>Hemen Dinle / Oynat</span>
-      </button>
-
       <!-- Live In-App Progress / Error / Success Box -->
-      <div id="modal-dl-progress-box" class="hidden flex-col gap-2.5 p-3.5 rounded-2xl bg-surface-container-low border border-surface-container transition-colors">
+      <div id="modal-dl-progress-box" class="hidden flex-col gap-2 p-3 rounded-2xl bg-surface-container-low border border-surface-container transition-colors">
         <div class="flex items-center justify-between gap-2 text-xs">
           <div class="flex items-center gap-2 min-w-0">
-            <span id="modal-dl-state-icon" class="material-symbols-outlined text-[18px] text-primary flex-shrink-0" aria-hidden="true">downloading</span>
+            <span id="modal-dl-state-icon" class="material-symbols-outlined text-[17px] text-primary flex-shrink-0" aria-hidden="true">downloading</span>
             <span id="modal-dl-status-text" class="font-bold text-on-surface truncate">Hazırlanıyor...</span>
           </div>
           <span id="modal-dl-percent-text" class="font-bold font-mono text-primary flex-shrink-0">0%</span>
@@ -1381,10 +1376,6 @@
           <button type="button" id="btn-dl-open-folder" class="hidden px-3 py-1.5 rounded-full bg-primary/15 text-primary text-[11px] font-bold hover:bg-primary/25 transition-colors active:scale-95" onclick="openLastDownloadFolder()">Klasörü Aç</button>
         </div>
       </div>
-
-      <p class="text-[10px] text-on-surface-variant/75 text-center leading-normal">
-        Yalnızca kişisel kullanım içindir. Masaüstü ve Android uygulamasında doğrudan cihaza kaydedilir.
-      </p>
     </div>
   </div>
 
@@ -1411,7 +1402,7 @@
 
       <!-- Link Copy Pill -->
       <div class="flex items-center gap-1.5 p-1 rounded-2xl bg-surface-container-low border border-surface-container">
-        <input type="text" id="share-link-input" readonly aria-label="Paylaşım Linki" class="flex-1 min-w-0 h-9 px-2.5 bg-transparent text-xs text-on-surface select-all focus:outline-none">
+        <input type="text" id="share-link-input" readonly aria-label="Paylaşım Linki" class="flex-1 min-w-0 h-9 px-2.5 bg-transparent border-0 outline-none focus:ring-0 text-xs text-on-surface select-all">
         <button type="button" class="px-3.5 h-9 rounded-xl bg-primary text-on-primary text-xs font-bold shadow-xs hover:bg-primary-container active:scale-95 transition-all flex-shrink-0" onclick="copyShareUrl()">
           <span id="share-copy-btn-text">Kopyala</span>
         </button>
@@ -1650,56 +1641,41 @@
   <!-- ===================================================================== -->
   <!-- 13. BLUETOOTH & CİHAZ SEÇİCİ MODAL (Spotify Connect to a Device)     -->
   <!-- ===================================================================== -->
-  <div id="device-picker-modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 opacity-0 pointer-events-none transition-opacity duration-200">
-    <div class="bg-surface-container-lowest rounded-3xl p-6 max-w-sm w-full shadow-2xl flex flex-col gap-4 transform scale-95 transition-transform duration-200 border border-surface-container" id="device-picker-modal-card">
+  <div id="device-picker-modal" class="fixed inset-0 bg-black/60 backdrop-blur-md z-50 flex items-center justify-center p-4 opacity-0 pointer-events-none transition-opacity duration-200">
+    <div class="bg-surface-container-lowest rounded-3xl p-5 max-w-sm w-full shadow-2xl flex flex-col gap-3.5 transform scale-95 transition-transform duration-200 border border-surface-container" id="device-picker-modal-card">
       <div class="flex items-center justify-between">
         <div class="flex items-center gap-2">
-          <span class="material-symbols-outlined text-primary text-[24px]">devices</span>
-          <h3 class="font-bold text-base text-on-surface">Bir Cihaza Bağlan</h3>
+          <span class="material-symbols-outlined text-primary text-[20px]">devices</span>
+          <h3 class="font-bold text-sm text-on-surface tracking-tight">Ses Çıkışı</h3>
         </div>
-        <button type="button" aria-label="Kapat" class="w-8 h-8 rounded-full flex items-center justify-center hover:bg-surface-container text-on-surface-variant transition-colors" onclick="closeDevicePickerModal()">
-          <span class="material-symbols-outlined text-[20px]">close</span>
+        <button type="button" aria-label="Kapat" class="w-7 h-7 rounded-full flex items-center justify-center hover:bg-surface-container text-on-surface-variant transition-colors" onclick="closeDevicePickerModal()">
+          <span class="material-symbols-outlined text-[18px]">close</span>
         </button>
       </div>
 
       <!-- Current Playing Device -->
-      <div class="p-3 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-between">
-        <div class="flex items-center gap-3 min-w-0">
-          <span class="material-symbols-outlined text-[22px] text-primary animate-pulse" id="dp-current-device-icon">speaker</span>
+      <div class="px-3.5 py-2.5 rounded-2xl bg-surface-container-low border border-surface-container flex items-center justify-between gap-2">
+        <div class="flex items-center gap-2.5 min-w-0">
+          <span class="material-symbols-outlined text-[19px] text-primary" id="dp-current-device-icon">speaker</span>
           <div class="flex flex-col min-w-0">
-            <span class="text-xs font-bold text-primary truncate" id="dp-current-device-name">Bu Cihaz (Varsayılan Hoparlör)</span>
-            <span class="text-[10px] text-primary/80 font-medium">Şu anda çalınıyor</span>
+            <span class="text-xs font-bold text-on-surface truncate" id="dp-current-device-name">Sistem Varsayılan Çıkışı</span>
+            <span class="text-[10px] text-on-surface-variant">Aktif ses çıkışı</span>
           </div>
         </div>
-        <span class="w-2.5 h-2.5 rounded-full bg-primary shadow-[0_0_8px_rgba(255,32,86,0.8)]"></span>
+        <span class="w-2 h-2 rounded-full bg-emerald-500 flex-shrink-0"></span>
       </div>
 
       <!-- Available Output Devices List -->
-      <div class="flex flex-col gap-2">
-        <div class="flex items-center justify-between">
-          <span class="text-[11px] font-bold text-on-surface-variant uppercase tracking-wider">Kullanılabilir Ses Çıkışları</span>
-          <button type="button" class="text-[10px] text-primary hover:underline font-bold flex items-center gap-0.5" onclick="openDevicePickerModal()">
+      <div class="flex flex-col gap-1.5">
+        <div class="flex items-center justify-between px-0.5">
+          <span class="text-[11px] font-bold text-on-surface-variant">Cihazlar</span>
+          <button type="button" class="text-[11px] text-primary hover:underline font-semibold flex items-center gap-0.5" onclick="openDevicePickerModal()">
             <span class="material-symbols-outlined text-[13px]">refresh</span>
             <span>Yenile</span>
           </button>
         </div>
-        <div id="dp-devices-list" class="flex flex-col gap-1.5 max-h-52 overflow-y-auto pr-1">
-          <!-- Dynamically populated via navigator.mediaDevices.enumerateDevices() -->
-        </div>
-      </div>
-
-      <!-- Bluetooth Action Button & Instructions -->
-      <div class="pt-2 border-t border-surface-container flex flex-col gap-2.5">
-        <button type="button" id="btn-scan-bluetooth" class="w-full py-2.5 px-3 rounded-xl bg-surface-container hover:bg-surface-container-high text-on-surface text-xs font-bold flex items-center justify-center gap-2 transition-all shadow-xs" onclick="scanBluetoothDevices()">
-          <span class="material-symbols-outlined text-[18px] text-primary">bluetooth_searching</span>
-          <span>Bluetooth Kulaklık / Cihaz Tara</span>
-        </button>
-        
-        <div class="p-2.5 rounded-xl bg-surface-container-low text-[11px] text-on-surface-variant flex items-start gap-2">
-          <span class="material-symbols-outlined text-primary text-[16px] flex-shrink-0 mt-0.5">info</span>
-          <p class="leading-relaxed">
-            Bluetooth kulaklığınızı telefonunuzun veya bilgisayarınızın Bluetooth ayarlarına bağladığınızda, ses otomatik olarak kulaklığınıza aktarılır.
-          </p>
+        <div id="dp-devices-list" class="flex flex-col gap-1.5 max-h-52 overflow-y-auto">
+          <!-- Populated dynamically via navigator.mediaDevices.enumerateDevices() -->
         </div>
       </div>
     </div>
