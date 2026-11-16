@@ -156,8 +156,7 @@ section,
   animation-play-state: paused !important;
 }
 
-body.kurfa-bg-idle .animate-spin-slow,
-body.tahta-mode .animate-spin-slow {
+body.kurfa-bg-idle .animate-spin-slow {
   animation-play-state: paused !important;
 }
 
@@ -964,101 +963,6 @@ body.dark-mode .btn-shelf-arrow:hover {
 
 .cursor-grabbing {
   cursor: grabbing !important;
-}
-
-/* =============================================================================
-   ETKİLEŞİMLİ AKILLI TAHTA & DÜŞÜK DONANIM (VESTEL / ARÇELİK / PARDUS) MODU
-   ============================================================================= */
-
-body.tahta-mode,
-html.tahta-mode,
-body.tahta-mode * {
-  backdrop-filter: none !important;
-  -webkit-backdrop-filter: none !important;
-}
-
-body.tahta-mode {
-  text-rendering: optimizeSpeed;
-}
-
-body.tahta-mode header,
-body.tahta-mode footer,
-body.tahta-mode aside,
-body.tahta-mode #mobile-mini-player,
-body.tahta-mode #mobile-bottom-nav {
-  background-color: #ffffff !important;
-  border-color: #cbd5e1 !important;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08) !important;
-}
-
-body.dark-mode.tahta-mode header,
-body.dark-mode.tahta-mode footer,
-body.dark-mode.tahta-mode aside,
-body.dark-mode.tahta-mode #mobile-mini-player,
-body.dark-mode.tahta-mode #mobile-bottom-nav {
-  background-color: #0b0f17 !important;
-  border-color: #1e293b !important;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4) !important;
-}
-
-body.tahta-mode footer.fixed,
-body.tahta-mode #desktop-player-bar {
-  background-color: #ffffff !important;
-  border-top: 2px solid #cbd5e1 !important;
-}
-body.dark-mode.tahta-mode footer.fixed,
-body.dark-mode.tahta-mode #desktop-player-bar {
-  background-color: #0b0f17 !important;
-  border-top: 2px solid #1e293b !important;
-}
-
-body.tahta-mode .fixed.inset-0 {
-  background-color: rgba(0, 0, 0, 0.75) !important;
-  backdrop-filter: none !important;
-}
-
-body.tahta-mode .shadow-2xl,
-body.tahta-mode .shadow-xl,
-body.tahta-mode .shadow-lg {
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12) !important;
-}
-
-body.tahta-mode .track-row,
-body.tahta-mode tbody tr {
-  padding-top: 0.65rem !important;
-  padding-bottom: 0.65rem !important;
-  touch-action: manipulation !important;
-}
-
-body.tahta-mode .btn-shelf-arrow {
-  opacity: 1 !important;
-  pointer-events: auto !important;
-  display: flex !important;
-  width: 3.5rem !important;
-  height: 3.5rem !important;
-  background-color: #ffffff !important;
-  color: #0f172a !important;
-  border: 2px solid #94a3b8 !important;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.18) !important;
-}
-
-body.dark-mode.tahta-mode .btn-shelf-arrow {
-  background-color: #1e293b !important;
-  color: #ffffff !important;
-  border-color: #475569 !important;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.5) !important;
-}
-
-body.tahta-mode #player-play-icon,
-body.tahta-mode #player-play-icon-mobile {
-  font-size: 32px !important;
-}
-
-body.tahta-mode h1,
-body.tahta-mode h2,
-body.tahta-mode h3 {
-  letter-spacing: -0.01em;
-  font-weight: 800 !important;
 }
 
 /* ==========================================================================

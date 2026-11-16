@@ -1237,7 +1237,7 @@ function saveQueueState() {
 const failedVideoIds = new Set();
 
 const state = {
-  currentTrack: null, // 100% clean and isolated - no track preloaded or forced on user
+  currentTrack: safeGetJSON('kurfa_last_track', null), // Restores user's last played track locally (0 server load)
   isPlaying: false,
   userPaused: false,
   currentPlayheadTime: 0,
@@ -1270,7 +1270,6 @@ const state = {
   downloadQueue: [],
   isDownloading: false,
   deckVisualMode: 'vinyl',
-  isTahtaMode: localStorage.getItem('kurfa_tahta_mode') === 'true',
   activeEqPreset: localStorage.getItem('kurfa_eq_preset') || 'standart',
   lyricsOffset: 0,
   mobileNowPlayingOpen: false,
@@ -2467,7 +2466,6 @@ function playTrackById(videoId, arg2, arg3, arg4, arg5, options = {}) {
     }).catch(() => {
       fallbackFromDirectAudio();
     });
-    showToast(`Reklamsız Çalınıyor: ${target.title}`);
     return;
   }
 
@@ -3273,8 +3271,8 @@ function startSeekbarTicker() {
 
     if (!state.isSeeking) {
       const now = timestamp || performance.now();
-      const throttleInterval = state.isTahtaMode ? 250 : 80;
-      const adCheckInterval = state.isTahtaMode ? 900 : 650;
+      const throttleInterval = 80;
+      const adCheckInterval = 650;
       if (now - lastSeekbarTickTime >= throttleInterval) {
         lastSeekbarTickTime = now;
         if (now - lastAdCheckTime >= adCheckInterval) {
@@ -6030,64 +6028,6 @@ function initDragToScroll(el) {
   }, true);
 }
 
-function initTahtaMode() {
-  const saved = localStorage.getItem('kurfa_tahta_mode');
-  let enable = false;
-
-  if (saved !== null) {
-    enable = saved === 'true';
-  } else {
-    const ua = (navigator.userAgent || '').toLowerCase();
-    const isExplicitSmartboard = /pardus|vestel|arcelik|fatih/i.test(ua);
-    if (isExplicitSmartboard) {
-      enable = true;
-      safeSetStorage('kurfa_tahta_mode', 'true');
-    }
-  }
-
-  applyTahtaMode(enable);
-}
-
-function toggleTahtaMode() {
-  const next = !state.isTahtaMode;
-  safeSetStorage('kurfa_tahta_mode', next ? 'true' : 'false');
-  applyTahtaMode(next);
-  showToast(next
-    ? "Etkileşimli Tahta & Yüksek Performans Modu Aktif (Vestel / Arçelik / Pardus)"
-    : "Standart Görünüm Aktif");
-}
-
-function applyTahtaMode(enable) {
-  state.isTahtaMode = enable;
-  if (enable) {
-    document.body.classList.add('tahta-mode');
-    document.documentElement.classList.add('tahta-mode');
-  } else {
-    document.body.classList.remove('tahta-mode');
-    document.documentElement.classList.remove('tahta-mode');
-  }
-
-  const btn = document.getElementById('topbar-tahta-btn');
-  if (btn) {
-    if (enable) {
-      btn.classList.add('bg-primary-fixed', 'text-primary', 'ring-2', 'ring-primary/40');
-      btn.classList.remove('text-on-surface-variant');
-      btn.setAttribute('title', 'Etkileşimli Tahta Modu Açık (Tıklayarak Kapatabilirsiniz)');
-    } else {
-      btn.classList.remove('bg-primary-fixed', 'text-primary', 'ring-2', 'ring-primary/40');
-      btn.classList.add('text-on-surface-variant');
-      btn.setAttribute('title', 'Etkileşimli Tahta & Eski Cihaz Performans Modu (Vestel / Arçelik / Pardus)');
-    }
-  }
-
-  if (enable && state.ytReady && state.ytPlayer && typeof state.ytPlayer.setPlaybackQuality === 'function') {
-    try { state.ytPlayer.setPlaybackQuality('tiny'); } catch(e) {}
-  }
-  if (DOM.vinylDisc) {
-    DOM.vinylDisc.classList.toggle('paused-animation', enable || !state.isPlaying);
-  }
-}
-
 function scrollShelf(containerId, direction) {
   const container = document.getElementById(containerId);
   if (!container) return;
@@ -7715,6 +7655,9 @@ function toggleDarkMode() {
   state.profile.darkMode = !state.profile.darkMode;
   safeSetStorage('kurfa_profile', JSON.stringify(state.profile));
   updateProfileUI();
+  if (typeof getBrowserExtensionMode === 'function' && getBrowserExtensionMode().startsWith('desktop')) {
+    callExtensionBridge('SET_THEME_MODE', { dark: Boolean(state.profile.darkMode) }, 1500).catch(() => {});
+  }
   showToast(state.profile.darkMode ? "Karanlık Mod Açıldı" : "Aydınlık Mod Açıldı");
 }
 
@@ -7787,19 +7730,17 @@ function handleUrlParameters() {
     const songId = safeYtId(rawSongId);
     if (songId) {
       const existing = (typeof CURATED_TRACKS !== 'undefined' && CURATED_TRACKS.find ? CURATED_TRACKS.find(t => (t.id === songId || t.ytId === songId)) : null) ||
-                       (typeof FRESH_RELEASES !== 'undefined' && FRESH_RELEASES.find ? FRESH_RELEASES.find(t => (t.id === songId || t.ytId === songId)) : null);
+                       (typeof FRESH_RELEASES !== 'undefined' && FRESH_RELEASES.find ? FRESH_RELEASES.find(t => (t.id === songId || t.ytId === songId)) : null) ||
+                       (state.queue || []).find(t => (t.id === songId || t.ytId === songId));
       const sharedTrack = existing || {
         id: songId,
         ytId: songId,
         title: "Paylaşılan Parça",
-        artist: "YouTube",
+        artist: "Kurfamüzik",
         duration: "3:30",
         thumbnail: `https://i.ytimg.com/vi/${songId}/hqdefault.jpg`
       };
       state.currentTrack = sharedTrack;
-      state.isPlaying = false;
-      state.userPaused = true;
-      state.currentPlayheadTime = 0;
       if (!state.queue.some(t => t.id === sharedTrack.id)) {
         state.queue.unshift(sharedTrack);
         state.queueIndex = 0;
@@ -7807,12 +7748,24 @@ function handleUrlParameters() {
       } else {
         state.queueIndex = state.queue.findIndex(t => t.id === sharedTrack.id);
       }
-      updatePlayerTrackUI(sharedTrack);
-      updatePlayPauseUI(false);
-      updateSeekbarUI(0, parseDurationToSec(sharedTrack.duration) || 210);
-      if (state.ytReady && state.ytPlayer && typeof state.ytPlayer.cueVideoById === 'function') {
-        try { state.ytPlayer.cueVideoById(songId); } catch (_) {}
+
+      if (!existing) {
+        fetch(`https://www.youtube.com/oembed?url=${encodeURIComponent('https://www.youtube.com/watch?v=' + songId)}&format=json`)
+          .then(r => (r.ok ? r.json() : null))
+          .then(meta => {
+            if (!meta || !meta.title) return;
+            sharedTrack.title = meta.title;
+            sharedTrack.artist = meta.author_name || sharedTrack.artist;
+            if (state.currentTrack && state.currentTrack.id === songId) {
+              state.currentTrack.title = sharedTrack.title;
+              state.currentTrack.artist = sharedTrack.artist;
+              updatePlayerTrackUI(state.currentTrack);
+              updateLyricsDisplay();
+            }
+          }).catch(() => {});
       }
+
+      playTrackById(songId, sharedTrack);
     }
   } catch (e) {}
 }
@@ -10518,8 +10471,17 @@ function setupEventListeners() {
 function initApp() {
   console.log("Initializing Kurfamüzik Client v5...");
 
-  initTahtaMode();
+  try { localStorage.removeItem('kurfa_tahta_mode'); } catch (_) {}
   updateProfileUI();
+  if (typeof getBrowserExtensionMode === 'function' && getBrowserExtensionMode().startsWith('desktop')) {
+    callExtensionBridge('SET_THEME_MODE', { dark: Boolean(state.profile.darkMode) }, 1500).catch(() => {});
+  }
+
+  // Sync queueIndex with locally restored last played track (0 server load)
+  if (state.currentTrack && Array.isArray(state.queue) && state.queue.length > 0) {
+    const restoredIdx = state.queue.findIndex(t => t && t.id === state.currentTrack.id);
+    if (restoredIdx !== -1) state.queueIndex = restoredIdx;
+  }
   renderPopularCardsGrid();
   renderHomeTracklistTable();
   renderTrendlerCardsGrid();
@@ -10538,6 +10500,12 @@ function initApp() {
   initDragToScroll(document.getElementById('kutuphane-subtabs'));
   
   updatePlayerTrackUI(state.currentTrack);
+  if (state.currentTrack) {
+    const estDur = parseDurationToSec(state.currentTrack.duration) || 210;
+    const savedCur = Math.max(0, Math.min(estDur, Number(state.currentTrack.currentTime) || 0));
+    state.currentPlayheadTime = savedCur;
+    updateSeekbarUI(savedCur, estDur);
+  }
   setPlayerVolume(state.volume);
   updateLyricsDisplay();
   setEqualizerPreset(state.activeEqPreset || 'standart', true);
@@ -10723,7 +10691,6 @@ window.toggleFullScreenVideo = toggleFullScreenVideo;
 window.playCuratedMix = playCuratedMix;
 window.moveQueueTrack = moveQueueTrack;
 window.moveQueueTrackToPosition = moveQueueTrackToPosition;
-window.toggleTahtaMode = toggleTahtaMode;
 window.initDragToScroll = initDragToScroll;
 window.importSpotifyPlaylist = importSpotifyPlaylist;
 window.refreshSpotifyPlaylist = refreshSpotifyPlaylist;
