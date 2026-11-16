@@ -3187,8 +3187,10 @@ function updateSeekbarUI(cur, dur) {
   if (DOM.playerTimeCur) DOM.playerTimeCur.textContent = timeCurStr;
   if (DOM.playerTimeDur) DOM.playerTimeDur.textContent = timeDurStr;
 
-  // Mobile mini seekbar
-  if (DOM.playerMobileSeekFill) DOM.playerMobileSeekFill.style.width = `${pct}%`;
+  // Mobile mini seekbar (skip overwriting while user is actively finger-scrubbing)
+  if (DOM.playerMobileSeekFill && !window.__kurfaMobileMiniScrubbing) {
+    DOM.playerMobileSeekFill.style.width = `${pct}%`;
+  }
 
   // Mobile Fullscreen Modal seekbar (only if open)
   if (state.mobileNowPlayingOpen) {
@@ -3221,6 +3223,17 @@ function updateSeekbarUI(cur, dur) {
     if (extCur) extCur.textContent = timeCurStr;
     if (extDur) extDur.textContent = timeDurStr;
   }
+
+  // Desktop Native Mini Player seekbar/track sync (throttled every 600ms)
+  try {
+    if (window.__kurfaDesktopMiniPlayerOpen && typeof getBrowserExtensionMode === 'function' && getBrowserExtensionMode().startsWith('desktop')) {
+      const nowMs = Date.now();
+      if (!window._lastDesktopMiniSyncAt || (nowMs - window._lastDesktopMiniSyncAt) >= 600) {
+        window._lastDesktopMiniSyncAt = nowMs;
+        syncDesktopMiniPlayerState(cur, dur);
+      }
+    }
+  } catch (_) {}
 
   // Android MediaSession timer & progress bar sync (immediate on track change, throttled every 4s)
   try {
@@ -4009,8 +4022,7 @@ function syncLyricsWithTime(currentTime, forceScroll = false) {
 
   if (!state.activeLyrics || state.activeLyrics.length === 0 || !DOM.deckLyricsLines) return;
 
-  // +0.15s perceptual beat lead so highlight hits right as vocals start
-  const adjustedTime = (currentTime || 0) + (state.lyricsOffset || 0) + 0.15;
+  const adjustedTime = (currentTime || 0) + (state.lyricsOffset || 0);
 
   // 1. Detect and handle Intro / Instrumental phase before first vocal line
   const firstLyricTime = state.activeLyrics[0].time;
@@ -5791,12 +5803,13 @@ function renderQueueDrawerList() {
     const safeThumb = escapeHtml(safeUrl(track.thumbnail || getTrackThumbnail(track), './kurfamuzik_logo.png'));
 
     const item = document.createElement('div');
-    item.className = `flex items-center justify-between p-2 rounded-xl transition-all cursor-pointer group select-none border border-transparent ${isCurrent ? 'bg-primary-fixed/40 font-bold border-primary/30' : 'hover:bg-surface-container-low hover:border-surface-container'}`;
+    item.className = `flex items-center justify-between gap-2 p-2 rounded-xl transition-all cursor-pointer group select-none border border-transparent ${isCurrent ? 'bg-primary-fixed/40 font-bold border-primary/30' : 'hover:bg-surface-container-low hover:border-surface-container'}`;
     item.setAttribute('draggable', 'true');
     item.dataset.index = index;
+    if (isCurrent) item.dataset.current = '1';
 
     item.innerHTML = `
-      <div class="flex items-center gap-2 min-w-0 flex-1">
+      <div class="flex items-center gap-2 min-w-0 flex-1 pr-1">
         <div class="flex flex-col items-center justify-center flex-shrink-0 -mr-0.5">
           <button type="button" class="w-4 h-3.5 flex items-center justify-center text-on-surface-variant hover:text-primary transition-colors btn-queue-up ${index === 0 ? 'opacity-20 cursor-not-allowed pointer-events-none' : ''}" title="Yukarı Taşı">
             <span class="material-symbols-outlined text-[14px]">keyboard_arrow_up</span>
@@ -5805,22 +5818,22 @@ function renderQueueDrawerList() {
             <span class="material-symbols-outlined text-[14px]">keyboard_arrow_down</span>
           </button>
         </div>
-        <span class="w-4 text-center text-xs ${isCurrent ? 'text-primary font-extrabold' : 'text-on-surface-variant'}">${index + 1}</span>
+        <span class="w-4 text-center text-[11px] flex-shrink-0 ${isCurrent ? 'text-primary font-extrabold' : 'text-on-surface-variant'}">${index + 1}</span>
         <img src="${safeThumb}" alt="${safeTitle}" class="w-8 h-8 rounded-md object-cover flex-shrink-0" loading="lazy" onerror="this.onerror=null; this.src='./kurfamuzik_logo.png'">
-        <div class="flex flex-col min-w-0">
+        <div class="flex flex-col min-w-0 flex-1">
           <span class="text-xs text-on-surface truncate ${isCurrent ? 'text-primary font-extrabold' : ''}">${safeTitle}</span>
           <span class="text-[10px] text-on-surface-variant truncate">${safeArtist}</span>
         </div>
       </div>
       <div class="flex items-center gap-1 flex-shrink-0">
-        <span class="text-[11px] text-on-surface-variant font-mono mr-1">${safeDur}</span>
-        <button type="button" class="w-6 h-6 rounded-full flex items-center justify-center text-on-surface-variant hover:text-primary opacity-0 group-hover:opacity-100 transition-opacity btn-queue-add-pl" title="Çalma Listesine Ekle">
+        <span class="text-[11px] text-on-surface-variant font-mono whitespace-nowrap">${safeDur}</span>
+        <button type="button" class="hidden sm:flex w-6 h-6 rounded-full items-center justify-center text-on-surface-variant hover:text-primary opacity-0 group-hover:opacity-100 transition-opacity btn-queue-add-pl" title="Çalma Listesine Ekle">
           <span class="material-symbols-outlined text-[15px]">playlist_add</span>
         </button>
-        <button type="button" class="w-6 h-6 rounded-full flex items-center justify-center text-on-surface-variant hover:text-tertiary opacity-0 group-hover:opacity-100 transition-opacity btn-queue-dl" title="İndir">
+        <button type="button" class="hidden sm:flex w-6 h-6 rounded-full items-center justify-center text-on-surface-variant hover:text-tertiary opacity-0 group-hover:opacity-100 transition-opacity btn-queue-dl" title="İndir">
           <span class="material-symbols-outlined text-[15px]">download</span>
         </button>
-        <button type="button" class="w-6 h-6 rounded-full flex items-center justify-center text-on-surface-variant hover:text-error opacity-0 group-hover:opacity-100 transition-opacity btn-queue-remove" title="Sıradan Çıkar">
+        <button type="button" class="w-6 h-6 rounded-full flex items-center justify-center text-on-surface-variant hover:text-error sm:opacity-0 sm:group-hover:opacity-100 transition-opacity btn-queue-remove" title="Sıradan Çıkar">
           <span class="material-symbols-outlined text-[15px]">close</span>
         </button>
       </div>
@@ -6570,6 +6583,10 @@ function toggleQueueDrawer() {
     renderQueueDrawerList();
     DOM.queueDrawer.classList.remove('opacity-0', 'pointer-events-none', 'translate-y-8');
     DOM.queueDrawer.classList.add('opacity-100', 'pointer-events-auto', 'translate-y-0');
+    const activeRow = DOM.queueDrawerList ? DOM.queueDrawerList.querySelector('[data-current="1"]') : null;
+    if (activeRow && typeof activeRow.scrollIntoView === 'function') {
+      requestAnimationFrame(() => activeRow.scrollIntoView({ block: 'center', behavior: 'smooth' }));
+    }
   } else {
     DOM.queueDrawer.classList.add('opacity-0', 'pointer-events-none', 'translate-y-8');
     DOM.queueDrawer.classList.remove('opacity-100', 'pointer-events-auto', 'translate-y-0');
@@ -9578,7 +9595,36 @@ function seekToFraction(frac) {
   seekPlaybackToSeconds(seekTime);
 }
 
+function syncDesktopMiniPlayerState(curSec, durSec) {
+  if (typeof getBrowserExtensionMode !== 'function' || !getBrowserExtensionMode().startsWith('desktop')) return;
+  const track = state.currentTrack;
+  const payload = {
+    title: (track && track.title) ? track.title : 'Kurfa Müzik',
+    artist: (track && track.artist) ? track.artist : 'Bir parça seçin',
+    thumbnail: track ? getTrackThumbnail(track) : '',
+    isPlaying: Boolean(state.isPlaying),
+    cur: Number.isFinite(curSec) ? curSec : (getActiveMediaCurrentTime() || 0),
+    dur: Number.isFinite(durSec) ? durSec : (getActiveMediaDuration() || 0)
+  };
+  callExtensionBridge('UPDATE_MINI_PLAYER', payload, 2500).catch(() => {});
+}
+
 async function toggleDocumentPipPlayer() {
+  if (typeof getBrowserExtensionMode === 'function' && getBrowserExtensionMode().startsWith('desktop')) {
+    const track = state.currentTrack;
+    const res = await callExtensionBridge('TOGGLE_MINI_PLAYER', {
+      title: (track && track.title) ? track.title : 'Kurfa Müzik',
+      artist: (track && track.artist) ? track.artist : 'Bir parça seçin',
+      thumbnail: track ? getTrackThumbnail(track) : '',
+      isPlaying: Boolean(state.isPlaying),
+      cur: getActiveMediaCurrentTime() || 0,
+      dur: getActiveMediaDuration() || 0
+    }, 4000);
+    if (res && res.success) {
+      window.__kurfaDesktopMiniPlayerOpen = Boolean(res.visible);
+      return;
+    }
+  }
   if (pipWindowInstance) {
     closeDocumentPipPlayer();
     return;
@@ -9590,6 +9636,76 @@ async function toggleDocumentPipPlayer() {
   }
   await openDocumentPipPlayer();
 }
+
+(function initMobileMiniSeekbar() {
+  if (typeof document === 'undefined') return;
+  document.addEventListener('DOMContentLoaded', () => {
+    const hit = document.getElementById('mobile-mini-seek-hit');
+    const track = document.getElementById('mobile-mini-seek-track');
+    const fill = document.getElementById('player-mobile-seek-fill');
+    const thumb = document.getElementById('mobile-mini-seek-thumb');
+    const tip = document.getElementById('mobile-mini-seek-tooltip');
+    if (!hit || !track || !fill) return;
+
+    let activePointerId = null;
+    let pendingFrac = 0;
+
+    const setActiveVisual = (dragging) => {
+      window.__kurfaMobileMiniScrubbing = dragging;
+      track.style.height = dragging ? '8px' : '3px';
+      if (thumb) thumb.style.transform = dragging ? 'translateY(-50%) scale(1)' : 'translateY(-50%) scale(0)';
+      if (tip) tip.classList.toggle('hidden', !dragging);
+    };
+
+    const updateFromClientX = (clientX) => {
+      const rect = hit.getBoundingClientRect();
+      if (!rect || rect.width <= 0) return 0;
+      const frac = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
+      pendingFrac = frac;
+      const pct = frac * 100;
+      fill.style.width = `${pct}%`;
+      const dur = getActiveMediaDuration() || 0;
+      if (tip) {
+        tip.style.left = `${Math.max(12, Math.min(88, pct))}%`;
+        tip.textContent = dur > 0 ? `${formatTime(frac * dur)} / ${formatTime(dur)}` : `${Math.round(pct)}%`;
+      }
+      return frac;
+    };
+
+    hit.addEventListener('pointerdown', (e) => {
+      e.stopPropagation();
+      activePointerId = e.pointerId;
+      try { hit.setPointerCapture(e.pointerId); } catch (_) {}
+      setActiveVisual(true);
+      updateFromClientX(e.clientX);
+    });
+
+    hit.addEventListener('pointermove', (e) => {
+      if (activePointerId !== e.pointerId) return;
+      e.stopPropagation();
+      updateFromClientX(e.clientX);
+    });
+
+    const endScrub = (e) => {
+      if (activePointerId !== e.pointerId) return;
+      e.stopPropagation();
+      try { hit.releasePointerCapture(e.pointerId); } catch (_) {}
+      activePointerId = null;
+      setActiveVisual(false);
+      const dur = getActiveMediaDuration() || 0;
+      if (dur > 0) {
+        seekPlaybackToSeconds(pendingFrac * dur);
+      }
+    };
+
+    hit.addEventListener('pointerup', endScrub);
+    hit.addEventListener('pointercancel', (e) => {
+      if (activePointerId !== e.pointerId) return;
+      activePointerId = null;
+      setActiveVisual(false);
+    });
+  });
+})();
 
 async function openDocumentPipPlayer() {
   // If Chrome / Edge supports Document Picture-in-Picture API:
