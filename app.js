@@ -1519,7 +1519,12 @@ function switchTab(tabId, shouldScroll = true, opts = {}) {
     }
     updateKutuphaneBadges();
   } else if (tabId === 'calma-listeleri') {
-    updateLyricsDisplay();
+    const curTrackId = state.currentTrack ? (state.currentTrack.id || '') : '';
+    if (curTrackId && lyricsLoadedTrackId === curTrackId) {
+      syncLyricsWithTime(getActiveMediaCurrentTime(), true);
+    } else {
+      updateLyricsDisplay();
+    }
     renderPlaylistTracksTable();
   } else if (tabId === 'kesfet') {
     // Only build DOM if not rendered yet to avoid lag on tab switch
@@ -3438,26 +3443,26 @@ function toggleMute() {
 function cleanLyricsQuery(title, artist) {
   let rawT = (title || '')
     .replace(/\s*[\(\[](official\s*(music)?\s*video|video\s*klip|klip|audio|lyric\s*video|visualizer|canlı|live|hd|4k|prod\.[^\)\]]*)[^\)\]]*[\)\]]/gi, '')
-    .replace(/\s*-\s*(official|klip|video|audio).*/gi, '')
+    .replace(/\s*[–—-]\s*(official|klip|video|audio).*/gi, '')
     .replace(/["'"]/g, '')
     .trim();
   let rawA = (artist || '')
     .replace(/\s*-\s*topic/gi, '')
-    .replace(/vevo/gi, '')
+    .replace(/\b(netd\s*müzik|vevo|official|music|records|production)\b/gi, '')
     .replace(/["'"]/g, '')
+    .replace(/\s+/g, ' ')
     .trim();
 
   let parsedArtist = rawA;
   let parsedTitle = rawT;
-  if (rawT.includes(' - ')) {
-    const parts = rawT.split(' - ').map(p => p.trim()).filter(Boolean);
-    if (parts.length >= 2) {
-      parsedArtist = parts[0];
-      parsedTitle = parts.slice(1).join(' - ');
-    }
+  const dashSplit = rawT.split(/\s+[–—-]\s+/).map(p => p.trim()).filter(Boolean);
+  if (dashSplit.length >= 2) {
+    parsedArtist = dashSplit[0];
+    parsedTitle = dashSplit.slice(1).join(' - ');
   }
 
-  return { cleanT: parsedTitle, cleanA: parsedArtist, rawT, rawA };
+  const firstArtist = parsedArtist.split(/\s+(?:ve|&|,|feat\.?|ft\.?)\s+/i)[0]?.trim() || parsedArtist;
+  return { cleanT: parsedTitle, cleanA: parsedArtist, firstA: firstArtist, rawT, rawA };
 }
 
 function updateLyricsOffsetUI() {
@@ -3543,10 +3548,22 @@ window.adjustLyricsOffset = adjustLyricsOffset;
 
 let lyricsAbortController = null;
 let lyricsRequestToken = 0;
+let lyricsLoadedTrackId = null;
+let lyricsUserScrollPauseUntil = 0;
 let mnpLyricTimer = null;
 
+if (typeof document !== 'undefined') {
+  document.addEventListener('DOMContentLoaded', () => {
+    const box = document.getElementById('karaoke-lyrics-box');
+    if (box) {
+      const pauseAutoScroll = () => { lyricsUserScrollPauseUntil = Date.now() + 4000; };
+      box.addEventListener('wheel', pauseAutoScroll, { passive: true });
+      box.addEventListener('touchmove', pauseAutoScroll, { passive: true });
+    }
+  });
+}
+
 async function updateLyricsDisplay() {
-  if (!DOM.deckLyricsLines) return;
   const reqToken = ++lyricsRequestToken;
   if (lyricsAbortController) {
     try { lyricsAbortController.abort(); } catch (e) {}
@@ -3554,7 +3571,13 @@ async function updateLyricsDisplay() {
   lyricsAbortController = (typeof AbortController !== 'undefined') ? new AbortController() : null;
   const signal = lyricsAbortController ? lyricsAbortController.signal : undefined;
 
+  // Immediately clear stale lyrics from previous track so syncLyricsWithTime never highlights old lines
+  state.activeLyrics = [];
   state.currentLyricIndex = -1;
+  lyricsLoadedTrackId = null;
+  lyricsUserScrollPauseUntil = 0;
+
+  if (!DOM.deckLyricsLines) return;
 
   const track = state.currentTrack;
   if (!track) {
@@ -3573,10 +3596,11 @@ async function updateLyricsDisplay() {
   // Check memory cache
   if (lyricsMemoryCache.has(cacheKey)) {
     const cached = lyricsMemoryCache.get(cacheKey);
+    lyricsLoadedTrackId = track.id || cacheKey;
     if (cached.synced && cached.lines) {
       checkAndDisplayClipIntroHint(track, cached.duration || 0);
       renderLyricsList(cached.lines, cached.source);
-      syncLyricsWithTime(getActiveMediaCurrentTime());
+      syncLyricsWithTime(getActiveMediaCurrentTime(), true);
     } else if (cached.plain) {
       checkAndDisplayClipIntroHint(track, 0);
       renderPlainLyrics(cached.plain, cached.source);
@@ -3597,7 +3621,8 @@ async function updateLyricsDisplay() {
     </div>
   `;
 
-  const { cleanT, cleanA, rawT } = cleanLyricsQuery(track.title, track.artist);
+  const { cleanT, cleanA, firstA, rawT } = cleanLyricsQuery(track.title, track.artist);
+  const trackDurationSec = (typeof parseDurationToSec === 'function' ? parseDurationToSec(track.duration) : 0) || getActiveMediaDuration() || 0;
 
   function saveLyricsToLocalStorage(entry) {
     try {
@@ -3616,11 +3641,12 @@ async function updateLyricsDisplay() {
     const store = raw ? JSON.parse(raw) : null;
     const saved = store && store[cacheKey];
     if (saved && saved.expiresAt > Date.now()) {
+      lyricsLoadedTrackId = track.id || cacheKey;
       if (saved.synced && Array.isArray(saved.lines)) {
         lyricsMemoryCache.set(cacheKey, saved);
         checkAndDisplayClipIntroHint(track, saved.duration || 0);
         renderLyricsList(saved.lines, saved.source || "LRCLIB Canlı Sözler");
-        syncLyricsWithTime(getActiveMediaCurrentTime());
+        syncLyricsWithTime(getActiveMediaCurrentTime(), true);
         return;
       } else if (saved.plain) {
         lyricsMemoryCache.set(cacheKey, saved);
@@ -3632,14 +3658,15 @@ async function updateLyricsDisplay() {
   } catch (e) {}
 
   // 1. Direct browser-to-LRCLIB fetch FIRST (0 Cloudflare Worker load, CORS enabled)
-  const clientQueries = [
+  const clientQueries = [...new Set([
     `${cleanT} ${cleanA}`.trim(),
+    firstA && firstA !== cleanA ? `${cleanT} ${firstA}`.trim() : '',
     `${cleanA} ${cleanT}`.trim(),
     cleanT,
     rawT
-  ].filter(Boolean);
+  ].filter(Boolean))];
 
-  function scoreLyricsMatchClient(cand, targetTitle, targetArtist) {
+  function scoreLyricsMatchClient(cand, targetTitle, targetArtist, durSec) {
     if (!cand || (!cand.syncedLyrics && !cand.plainLyrics)) return -1;
     const norm = s => (s || '').toLowerCase()
       .replace(/ğ/g, 'g').replace(/ü/g, 'u').replace(/ş/g, 's')
@@ -3664,15 +3691,29 @@ async function updateLyricsDisplay() {
     if (!isDirect && overlap < 0.6) return -1;
 
     let score = isDirect ? 4.0 : overlap * 3.0;
-    const cleanArt = tArtist.replace(/youtube|vevo|topic|music|sanatci/g, '').trim();
+    const cleanArt = tArtist.replace(/youtube|vevo|topic|music|sanatci|netd|muzik/g, '').trim();
     if (cleanArt) {
       if (cArtist === cleanArt || cArtist.includes(cleanArt) || cleanArt.includes(cArtist)) {
         score += 3.0;
-      } else if (cArtist && words.length <= 2 && !isDirect) {
-        return -1;
+      } else {
+        const firstArtNorm = norm(firstA || '');
+        if (firstArtNorm && (cArtist.includes(firstArtNorm) || firstArtNorm.includes(cArtist))) {
+          score += 2.2;
+        } else if (cArtist && words.length <= 2 && !isDirect) {
+          return -1;
+        }
       }
     }
     if (cand.syncedLyrics) score += 1.5;
+
+    // Duration proximity weighting prevents matching sped-up/cover/short versions
+    if (durSec > 20 && Number(cand.duration) > 20) {
+      const diff = Math.abs(Number(cand.duration) - durSec);
+      if (diff <= 3) score += 3.5;
+      else if (diff <= 8) score += 2.0;
+      else if (diff <= 15) score += 0.5;
+      else if (diff > 35) score -= 3.0;
+    }
     return score;
   }
 
@@ -3688,13 +3729,14 @@ async function updateLyricsDisplay() {
           let best = null;
           let bestSc = 0;
           for (const item of list) {
-            const sc = scoreLyricsMatchClient(item, cleanT, cleanA);
+            const sc = scoreLyricsMatchClient(item, cleanT, cleanA, trackDurationSec);
             if (sc > bestSc) {
               bestSc = sc;
               best = item;
             }
           }
           if (best && bestSc > 0) {
+            lyricsLoadedTrackId = track.id || cacheKey;
             if (best.syncedLyrics) {
               const parsedLines = parseLyricsPayload(best, track);
               const entry = { synced: true, lines: parsedLines, source: "LRCLIB Canlı Sözler", duration: best.duration };
@@ -3702,7 +3744,7 @@ async function updateLyricsDisplay() {
               saveLyricsToLocalStorage(entry);
               checkAndDisplayClipIntroHint(track, best.duration || 0);
               renderLyricsList(parsedLines, "LRCLIB Canlı Sözler");
-              syncLyricsWithTime(getActiveMediaCurrentTime());
+              syncLyricsWithTime(getActiveMediaCurrentTime(), true);
               return;
             } else if (best.plainLyrics) {
               const entry = { synced: false, plain: best.plainLyrics, source: "LRCLIB Tam Metin" };
@@ -3820,7 +3862,15 @@ function parseLyricsPayload(data, track) {
   if (!data || !data.syncedLyrics) return [];
   const lines = [];
   const rawLines = String(data.syncedLyrics).split('\n');
-  const timeTagGlobal = /\[(\d{1,3}):(\d{2})(?:\.(\d{1,3}))?\]/g;
+  let lrcOffsetSec = 0;
+  for (const raw of rawLines) {
+    const offMatch = raw.match(/^\s*\[offset:\s*([+-]?\d+)\s*\]/i);
+    if (offMatch) {
+      lrcOffsetSec = (parseInt(offMatch[1], 10) || 0) / 1000;
+      break;
+    }
+  }
+  const timeTagGlobal = /\[(\d{1,3}):(\d{2})(?:[.:](\d{1,3}))?\]/g;
   for (const raw of rawLines) {
     if (/^\s*\[(ar|ti|al|by|length|offset|re|ve):/i.test(raw)) continue;
     const text = raw.replace(timeTagGlobal, '').trim();
@@ -3830,7 +3880,7 @@ function parseLyricsPayload(data, track) {
       const min = parseInt(match[1], 10);
       const sec = parseInt(match[2], 10);
       const ms = match[3] ? parseFloat('0.' + match[3]) : 0;
-      const totalSec = min * 60 + sec + ms;
+      const totalSec = Math.max(0, min * 60 + sec + ms + lrcOffsetSec);
       if (text && !isLrcMetaLine(text, totalSec, track)) {
         lines.push({ time: totalSec, text });
       }
@@ -3951,7 +4001,7 @@ function renderLyricsEmpty(track) {
   `;
 }
 
-function syncLyricsWithTime(currentTime) {
+function syncLyricsWithTime(currentTime, forceScroll = false) {
   // Exit immediately if tab is hidden or lyrics are not visible on screen (0 ms CPU when dormant)
   if (typeof document !== 'undefined' && document.hidden) return;
   const isLyricsVisible = (state.currentTab === 'calma-listeleri') || (state.mobileNowPlayingOpen === true);
@@ -3959,12 +4009,13 @@ function syncLyricsWithTime(currentTime) {
 
   if (!state.activeLyrics || state.activeLyrics.length === 0 || !DOM.deckLyricsLines) return;
 
-  const adjustedTime = currentTime + (state.lyricsOffset || 0);
+  // +0.15s perceptual beat lead so highlight hits right as vocals start
+  const adjustedTime = (currentTime || 0) + (state.lyricsOffset || 0) + 0.15;
 
   // 1. Detect and handle Intro / Instrumental phase before first vocal line
   const firstLyricTime = state.activeLyrics[0].time;
   if (adjustedTime < firstLyricTime) {
-    if (state.currentLyricIndex !== -2) {
+    if (state.currentLyricIndex !== -2 || forceScroll) {
       state.currentLyricIndex = -2; // -2 designates Intro / Instrumental
       const allLines = DOM.deckLyricsLines.querySelectorAll('.lyric-line');
       allLines.forEach(l => {
@@ -3986,28 +4037,32 @@ function syncLyricsWithTime(currentTime) {
         mnpLyricLine.innerHTML = `<span class="italic opacity-80 flex items-center justify-center gap-1.5"><span class="material-symbols-outlined text-[16px] animate-pulse">graphic_eq</span><span>Enstrümantal Giriş</span></span>`;
       }
 
-      if (DOM.karaokeLyricsBox) {
-        DOM.karaokeLyricsBox.scrollTo({ top: 0, behavior: 'smooth' });
+      if (DOM.karaokeLyricsBox && (forceScroll || Date.now() >= lyricsUserScrollPauseUntil)) {
+        DOM.karaokeLyricsBox.scrollTo({ top: 0, behavior: forceScroll ? 'auto' : 'smooth' });
       }
     }
     return;
   }
 
-  // 2. Active vocal lyrics search
-  let activeIdx = -1;
-  for (let i = 0; i < state.activeLyrics.length; i++) {
-    if (adjustedTime >= state.activeLyrics[i].time) {
-      activeIdx = i;
+  // 2. Active vocal lyrics binary search (O(log N))
+  let lo = 0;
+  let hi = state.activeLyrics.length - 1;
+  let activeIdx = 0;
+  while (lo <= hi) {
+    const mid = (lo + hi) >> 1;
+    if (adjustedTime >= state.activeLyrics[mid].time) {
+      activeIdx = mid;
+      lo = mid + 1;
     } else {
-      break;
+      hi = mid - 1;
     }
   }
 
-  if (activeIdx !== -1 && activeIdx !== state.currentLyricIndex) {
+  if (activeIdx !== state.currentLyricIndex || forceScroll) {
     const wasIntro = (state.currentLyricIndex === -2);
     state.currentLyricIndex = activeIdx;
-    
-    if (wasIntro && DOM.lyricsStatusLabel) {
+
+    if ((wasIntro || forceScroll) && DOM.lyricsStatusLabel) {
       DOM.lyricsStatusLabel.textContent = "Canlı Senkronize Sözler";
     }
 
@@ -4017,14 +4072,14 @@ function syncLyricsWithTime(currentTime) {
         line.classList.add('active-lyric', 'active');
         line.classList.remove('text-on-surface-variant');
 
-        // Scroll ONLY the dedicated lyrics box smoothly without moving the window
-        if (DOM.karaokeLyricsBox) {
+        // Scroll ONLY the dedicated lyrics box smoothly unless user manually scrolled recently
+        if (DOM.karaokeLyricsBox && (forceScroll || Date.now() >= lyricsUserScrollPauseUntil)) {
           const container = DOM.karaokeLyricsBox;
           const containerRect = container.getBoundingClientRect();
           const lineRect = line.getBoundingClientRect();
           const relativeY = (lineRect.top - containerRect.top) + container.scrollTop;
           const targetScroll = relativeY - (container.clientHeight / 2) + (lineRect.height / 2);
-          container.scrollTo({ top: Math.max(0, targetScroll), behavior: 'smooth' });
+          container.scrollTo({ top: Math.max(0, targetScroll), behavior: forceScroll ? 'auto' : 'smooth' });
         }
       } else {
         line.classList.remove('active-lyric', 'active');
@@ -6030,17 +6085,104 @@ function scrollShelf(containerId, direction) {
   });
 }
 
-function updateHeroUI(track) {
+let heroSlideIndex = 0;
+let heroSlideTimer = null;
+
+function getHeroTracks() {
+  const list = (exploreData && Array.isArray(exploreData.trends) && exploreData.trends.length > 0)
+    ? exploreData.trends
+    : getCuratedTracks();
+  return list.slice(0, 5);
+}
+
+function getCurrentHeroTrack() {
+  const slides = getHeroTracks();
+  if (!slides.length) return (exploreData && exploreData.hero) || null;
+  const idx = ((heroSlideIndex % slides.length) + slides.length) % slides.length;
+  return slides[idx];
+}
+
+function renderHeroDots(slidesCount, activeIdx) {
+  const dotsEl = document.getElementById('hero-carousel-dots');
+  if (!dotsEl) return;
+  dotsEl.innerHTML = '';
+  for (let i = 0; i < slidesCount; i++) {
+    const dot = document.createElement('button');
+    dot.type = 'button';
+    dot.setAttribute('aria-label', `${i + 1}. Trend`);
+    dot.className = i === activeIdx
+      ? 'h-1.5 w-6 rounded-full bg-primary transition-all'
+      : 'h-1.5 w-2 rounded-full bg-white/35 hover:bg-white/60 transition-all';
+    dot.onclick = () => goToHeroSlide(i);
+    dotsEl.appendChild(dot);
+  }
+}
+
+function renderHeroSlide(track, rankIdx, totalSlides) {
   if (!track) return;
-  const thumb = safeCssUrl(getTrackThumbnail(track), './kurfamuzik_logo.png');
+  const thumb = safeUrl(getTrackThumbnail(track), './kurfamuzik_logo.png');
+  const cssThumb = safeCssUrl(thumb, './kurfamuzik_logo.png');
+  const rankBadge = document.getElementById('hero-rank-badge');
+  const durPill = document.getElementById('hero-duration-pill');
+  const coverImg = document.getElementById('hero-cover-img');
+
+  if (rankBadge) {
+    rankBadge.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-white animate-pulse"></span><span>#${rankIdx + 1} TÜRKİYE TRENDİ</span>`;
+  }
+  if (durPill) {
+    durPill.textContent = track.duration || '3:15';
+  }
   if (DOM.heroTitle) DOM.heroTitle.textContent = track.title || "Günün En Popüler Şarkıları";
-  if (DOM.heroArtist) DOM.heroArtist.textContent = `${track.artist} - YouTube Müzik Türkiye`;
+  if (DOM.heroArtist) DOM.heroArtist.textContent = `${track.artist || 'Sanatçı'} • YouTube Müzik Türkiye`;
+  if (coverImg) {
+    coverImg.src = thumb;
+    coverImg.alt = track.title || 'Trend Kapak';
+  }
   if (DOM.heroBg) {
-    DOM.heroBg.style.backgroundImage = `linear-gradient(to bottom, rgba(12,16,23,0.45), rgba(12,16,23,0.92)), url('${thumb}')`;
+    DOM.heroBg.style.backgroundImage = `linear-gradient(to right, rgba(12,16,23,0.92), rgba(12,16,23,0.68)), url('${cssThumb}')`;
     DOM.heroBg.style.backgroundSize = 'cover';
     DOM.heroBg.style.backgroundPosition = 'center';
   }
-  updatePlaylistHeroUI(track);
+  renderHeroDots(totalSlides, rankIdx);
+}
+
+function startHeroAutoRotate() {
+  if (heroSlideTimer) clearInterval(heroSlideTimer);
+  heroSlideTimer = setInterval(() => {
+    if (typeof document !== 'undefined' && document.hidden) return;
+    if (state.currentTab !== 'kesfet') return;
+    const slides = getHeroTracks();
+    if (slides.length <= 1) return;
+    heroSlideIndex = (heroSlideIndex + 1) % slides.length;
+    renderHeroSlide(slides[heroSlideIndex], heroSlideIndex, slides.length);
+  }, 8000);
+}
+
+function goToHeroSlide(index) {
+  const slides = getHeroTracks();
+  if (!slides.length) return;
+  heroSlideIndex = ((index % slides.length) + slides.length) % slides.length;
+  renderHeroSlide(slides[heroSlideIndex], heroSlideIndex, slides.length);
+  startHeroAutoRotate();
+}
+window.goToHeroSlide = goToHeroSlide;
+
+function stepHeroSlide(delta) {
+  goToHeroSlide(heroSlideIndex + delta);
+}
+window.stepHeroSlide = stepHeroSlide;
+
+function updateHeroUI(track) {
+  const slides = getHeroTracks();
+  if (slides.length > 0) {
+    heroSlideIndex = 0;
+    renderHeroSlide(slides[0], 0, slides.length);
+    startHeroAutoRotate();
+    updatePlaylistHeroUI(slides[0]);
+  } else if (track) {
+    renderHeroSlide(track, 0, 1);
+    updatePlaylistHeroUI(track);
+  }
 }
 
 function updatePlaylistHeroUI(track) {
@@ -6073,7 +6215,7 @@ function updatePlaylistHeroUI(track) {
 
 function playHeroTrack() {
   const allTracks = getCuratedTracks();
-  const track = (exploreData && exploreData.hero) || (exploreData && exploreData.trends && exploreData.trends[0]) || allTracks[0];
+  const track = getCurrentHeroTrack() || allTracks[0];
   if (track) {
     state.queue = [...allTracks];
     const foundIdx = allTracks.findIndex(t => t.id === track.id);
@@ -6086,14 +6228,14 @@ function playHeroTrack() {
 }
 
 function addHeroTrackToQueue() {
-  const track = exploreData.hero || (exploreData.trends && exploreData.trends[0]) || getCuratedTracks()[0];
+  const track = getCurrentHeroTrack() || getCuratedTracks()[0];
   if (track) {
     addToQueueTrack(track.id, track.title, track.artist, getTrackThumbnail(track), track.duration);
   }
 }
 
 function downloadHeroTrack() {
-  const track = exploreData.hero || (exploreData.trends && exploreData.trends[0]) || getCuratedTracks()[0];
+  const track = getCurrentHeroTrack() || getCuratedTracks()[0];
   if (track) {
     downloadTrackById(track.id);
   }
