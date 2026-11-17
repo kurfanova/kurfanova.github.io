@@ -2324,16 +2324,21 @@ function playTrackById(videoId, arg2, arg3, arg4, arg5, options = {}) {
   }
 
   if (!target) {
-    target = state.queue.find(t => t.id === rawId || t.ytId === rawId) ||
+    target = state.queue.find(t => t && (t.id === rawId || t.ytId === rawId)) ||
+             (Array.isArray(state.deviceAudioTracks) ? state.deviceAudioTracks.find(t => t && t.id === rawId) : null) ||
              CURATED_TRACKS.find(t => t.id === rawId) ||
              state.currentSearchResults.find(t => t.id === rawId);
   }
 
-  const isAudiusTrack = rawId.startsWith('audius_') || Boolean(target?.audiusStreamUrl);
-  const cleanYtId = isAudiusTrack ? null : safeYtId(rawId);
+  const isLocalTrack = rawId.startsWith('local_') || Boolean(target && target.isLocal);
+  if (isLocalTrack && target) {
+    target.isLocal = true;
+  }
+  const isAudiusTrack = !isLocalTrack && (rawId.startsWith('audius_') || Boolean(target?.audiusStreamUrl));
+  const cleanYtId = (isAudiusTrack || isLocalTrack) ? null : safeYtId(rawId);
 
-  // AUTO RESOLVE SPOTIFY & NON-YOUTUBE TRACKS (except Audius direct-stream tracks)
-  if (!isAudiusTrack && (rawId.startsWith('sp-') || !cleanYtId)) {
+  // AUTO RESOLVE SPOTIFY & NON-YOUTUBE TRACKS (never for local device tracks or Audius tracks)
+  if (!isAudiusTrack && !isLocalTrack && (rawId.startsWith('sp-') || !cleanYtId)) {
     const fallbackYt = safeYtId(target?.ytId);
     if (fallbackYt) {
       playTrackById(fallbackYt, target, startTime, undefined, undefined, options);
@@ -2344,11 +2349,12 @@ function playTrackById(videoId, arg2, arg3, arg4, arg5, options = {}) {
   }
 
   const normalizedStart = (typeof startTime === 'number' && !isNaN(startTime) && startTime > 0) ? startTime : 0;
-  const preferDirectAudio = isAudiusTrack || (
+  const preferDirectAudio = isLocalTrack || isAudiusTrack || (
     state.deckVisualMode !== 'video' &&
     hasAdFreeLocalEngine()
   );
   const shouldCheckPrePlayGate = Boolean(
+    !isLocalTrack &&
     !isAudiusTrack &&
     !preferDirectAudio &&
     cleanYtId &&
@@ -2469,7 +2475,7 @@ function playTrackById(videoId, arg2, arg3, arg4, arg5, options = {}) {
     } catch(e) {}
   }
 
-  const isLocalDeviceTrack = Boolean(target && target.isLocal && (target.streamUrl || target.needsIdbBlob));
+  const isLocalDeviceTrack = isLocalTrack || Boolean(target && target.isLocal);
   if (isLocalDeviceTrack && DOM.audioEngine) {
     state.isPlaying = true;
     updatePlayPauseUI(true);
@@ -2478,6 +2484,24 @@ function playTrackById(videoId, arg2, arg3, arg4, arg5, options = {}) {
     }
     if (target.streamUrl) {
       loadDirectAudioStream(target.streamUrl, normalizedStart, token, null);
+    } else if (rawId.startsWith('local_win_') && typeof getBrowserExtensionMode === 'function' && getBrowserExtensionMode().startsWith('desktop')) {
+      callExtensionBridge('GET_LOCAL_AUDIO_TRACKS', {}, 5000).then((res) => {
+        if (token !== currentPlaybackToken || state.userPaused) return;
+        const list = Array.isArray(res?.tracks) ? res.tracks : [];
+        if (list.length > 0) state.deviceAudioTracks = list;
+        const found = list.find(t => t && (t.id === target.id || (t.title === target.title && t.artist === target.artist)));
+        if (found && found.streamUrl) {
+          target.streamUrl = found.streamUrl;
+          loadDirectAudioStream(found.streamUrl, normalizedStart, token, null);
+        } else {
+          showToast('Yerel ses dosyası bulunamadı');
+          state.isPlaying = false;
+          updatePlayPauseUI(false);
+        }
+      }).catch(() => {
+        state.isPlaying = false;
+        updatePlayPauseUI(false);
+      });
     } else if (typeof resolveLocalAudioStreamUrl === 'function') {
       resolveLocalAudioStreamUrl(target.id).then((url) => {
         if (token !== currentPlaybackToken || state.userPaused) return;
@@ -10439,6 +10463,13 @@ function setupEventListeners() {
 
     const handoffAudioErrorOrStall = async (curTimeSec) => {
       if (state._playerInError || state._lastErrorVideoId || state._switchingDeckMode) return;
+      const isLocalCur = Boolean(state.currentTrack?.isLocal) || String(state.currentTrack?.id || '').startsWith('local_');
+      if (isLocalCur) {
+        if (state.isPlaying && !state.userPaused) {
+          playNextTrack({ isAutoErrorSkip: true });
+        }
+        return;
+      }
       const isAudius = String(state.currentTrack?.id || '').startsWith('audius_');
       const playId = isAudius ? null : safeYtId(state.currentTrack?.ytId || state.currentTrack?.id);
       const errToken = currentPlaybackToken;
