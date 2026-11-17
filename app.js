@@ -2468,6 +2468,9 @@ function playTrackById(videoId, arg2, arg3, arg4, arg5, options = {}) {
   renderPlaylistTracksTable();
   renderFavoritesTable();
   renderDownloadsTable();
+  if (typeof syncActiveTrackRowInDeviceAudio === 'function') {
+    syncActiveTrackRowInDeviceAudio();
+  }
   syncPersistentPlayerPosition();
 
   // Immediately reset seekbar to avoid showing stale time from previous track
@@ -3161,6 +3164,9 @@ function updatePlayerTrackUI(track) {
   updatePlayerFavBtn();
   updateMediaSession(track);
   syncFloatingPipUI();
+  if (typeof syncActiveTrackRowInDeviceAudio === 'function') {
+    syncActiveTrackRowInDeviceAudio();
+  }
 }
 
 function updatePlayPauseUI(playing) {
@@ -3195,6 +3201,9 @@ function updatePlayPauseUI(playing) {
   } else if (state._lastRenderedActiveId !== activeId) {
     state._lastRenderedActiveId = activeId;
     if (state.currentTab === 'kesfet') renderHomeTracklistTable();
+  }
+  if (typeof syncActiveTrackRowInDeviceAudio === 'function') {
+    syncActiveTrackRowInDeviceAudio();
   }
 }
 
@@ -11069,14 +11078,15 @@ function renderDeviceAudioList(filterText = '') {
     const isPlayingCur = state.currentTrack && state.currentTrack.id === track.id;
     const row = document.createElement('div');
     row.className = `track-row flex items-center justify-between gap-2 p-2.5 rounded-xl cursor-pointer transition-colors ${isPlayingCur ? 'active' : ''}`;
+    row.dataset.trackId = track.id;
     row.innerHTML = `
       <div class="flex items-center gap-2.5 min-w-0 flex-1">
-        <span class="w-5 text-center text-[11px] font-mono ${isPlayingCur ? 'text-primary font-extrabold' : 'text-on-surface-variant'}">${idx + 1}</span>
+        <span class="w-5 text-center text-[11px] font-mono track-idx-num ${isPlayingCur ? 'text-primary font-extrabold' : 'text-on-surface-variant'}">${idx + 1}</span>
         <div class="w-9 h-9 rounded-lg bg-surface-container-high flex items-center justify-center flex-shrink-0 text-primary">
-          <span class="material-symbols-outlined text-[18px]">${isPlayingCur && state.isPlaying ? 'graphic_eq' : 'music_note'}</span>
+          <span class="material-symbols-outlined text-[18px] track-icon">${isPlayingCur && state.isPlaying ? 'graphic_eq' : 'music_note'}</span>
         </div>
         <div class="flex flex-col min-w-0 flex-1">
-          <span class="text-xs font-bold truncate ${isPlayingCur ? 'text-primary' : 'text-on-surface'}">${escapeHtml(track.title || 'Parça')}</span>
+          <span class="text-xs font-bold truncate track-title-text ${isPlayingCur ? 'text-primary' : 'text-on-surface'}">${escapeHtml(track.title || 'Parça')}</span>
           <span class="text-[11px] text-on-surface-variant truncate">${escapeHtml(track.artist || 'Cihaz Müziği')}</span>
         </div>
       </div>
@@ -11107,6 +11117,47 @@ function renderDeviceAudioList(filterText = '') {
   listEl.appendChild(frag);
 }
 window.renderDeviceAudioList = renderDeviceAudioList;
+
+function syncActiveTrackRowInDeviceAudio() {
+  const listEl = document.getElementById('device-audio-list');
+  if (!listEl) return;
+  const curId = state.currentTrack ? state.currentTrack.id : null;
+  const all = Array.isArray(state.deviceAudioTracks) ? state.deviceAudioTracks : [];
+  if (curId && all.some(t => t && t.id === curId)) {
+    const filterText = document.getElementById('device-audio-filter')?.value || '';
+    const q = String(filterText).trim().toLowerCase();
+    const filtered = q ? all.filter(t => (t.title || '').toLowerCase().includes(q) || (t.artist || '').toLowerCase().includes(q)) : all;
+    const curIdxInFiltered = filtered.findIndex(t => t.id === curId);
+    const limit = Math.max(80, Number(state.deviceAudioRenderLimit) || 80);
+    if (curIdxInFiltered >= limit) {
+      state.deviceAudioRenderLimit = Math.min(filtered.length, curIdxInFiltered + 40);
+      renderDeviceAudioList(filterText);
+      return;
+    }
+  }
+
+  const isPlaying = Boolean(state.isPlaying);
+  listEl.querySelectorAll('.track-row').forEach(row => {
+    const isCur = Boolean(curId && row.dataset.trackId === curId);
+    row.classList.toggle('active', isCur);
+    const numEl = row.querySelector('.track-idx-num');
+    if (numEl) {
+      numEl.classList.toggle('text-primary', isCur);
+      numEl.classList.toggle('font-extrabold', isCur);
+      numEl.classList.toggle('text-on-surface-variant', !isCur);
+    }
+    const iconEl = row.querySelector('.track-icon');
+    if (iconEl) {
+      iconEl.textContent = isCur && isPlaying ? 'graphic_eq' : 'music_note';
+    }
+    const titleEl = row.querySelector('.track-title-text');
+    if (titleEl) {
+      titleEl.classList.toggle('text-primary', isCur);
+      titleEl.classList.toggle('text-on-surface', !isCur);
+    }
+  });
+}
+window.syncActiveTrackRowInDeviceAudio = syncActiveTrackRowInDeviceAudio;
 
 function playAllDeviceAudio() {
   const all = Array.isArray(state.deviceAudioTracks) ? state.deviceAudioTracks : [];
