@@ -1626,10 +1626,12 @@ function switchKutuphaneSubTab(subTabId) {
   const pList = document.getElementById('kutuphane-pane-listelerim');
   const pSpotify = document.getElementById('kutuphane-pane-spotify');
   const pFav = document.getElementById('kutuphane-pane-favoriler');
+  const pCihaz = document.getElementById('kutuphane-pane-cihaz');
 
   if (pList) pList.classList.toggle('hidden', subTabId !== 'listelerim');
   if (pSpotify) pSpotify.classList.toggle('hidden', subTabId !== 'spotify');
   if (pFav) pFav.classList.toggle('hidden', subTabId !== 'favoriler');
+  if (pCihaz) pCihaz.classList.toggle('hidden', subTabId !== 'cihaz');
 
   if (subTabId === 'listelerim') {
     renderCustomPlaylistsGrid();
@@ -1637,6 +1639,11 @@ function switchKutuphaneSubTab(subTabId) {
     renderSpotifyPlaylistsGrid();
   } else if (subTabId === 'favoriler') {
     renderFavoritesTable();
+  } else if (subTabId === 'cihaz') {
+    renderDeviceAudioList();
+    if (!Array.isArray(state.deviceAudioTracks) || state.deviceAudioTracks.length === 0) {
+      scanLocalDeviceAudio(false);
+    }
   }
   updateKutuphaneBadges();
 }
@@ -2432,6 +2439,17 @@ function playTrackById(videoId, arg2, arg3, arg4, arg5, options = {}) {
         DOM.audioEngine.pause();
       }
     } catch(e) {}
+  }
+
+  const isLocalDeviceTrack = Boolean(target && target.isLocal && target.streamUrl);
+  if (isLocalDeviceTrack && DOM.audioEngine) {
+    state.isPlaying = true;
+    updatePlayPauseUI(true);
+    if (state.ytPlayer && typeof state.ytPlayer.pauseVideo === 'function') {
+      try { state.ytPlayer.pauseVideo(); } catch(e) {}
+    }
+    loadDirectAudioStream(target.streamUrl, normalizedStart, token, null);
+    return;
   }
 
   if (isAudiusTrack && DOM.audioEngine) {
@@ -6099,6 +6117,7 @@ function renderHeroSlide(track, rankIdx, totalSlides) {
   const rankBadge = document.getElementById('hero-rank-badge');
   const durPill = document.getElementById('hero-duration-pill');
   const coverImg = document.getElementById('hero-cover-img');
+  const coverImgMobile = document.getElementById('hero-cover-img-mobile');
 
   if (rankBadge) {
     rankBadge.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-white animate-pulse"></span><span>#${rankIdx + 1} TÜRKİYE TRENDİ</span>`;
@@ -6111,6 +6130,10 @@ function renderHeroSlide(track, rankIdx, totalSlides) {
   if (coverImg) {
     coverImg.src = thumb;
     coverImg.alt = track.title || 'Trend Kapak';
+  }
+  if (coverImgMobile) {
+    coverImgMobile.src = thumb;
+    coverImgMobile.alt = track.title || 'Trend Kapak';
   }
   if (DOM.heroBg) {
     DOM.heroBg.style.backgroundImage = `linear-gradient(to right, rgba(12,16,23,0.92), rgba(12,16,23,0.68)), url('${cssThumb}')`;
@@ -9635,7 +9658,7 @@ async function toggleDocumentPipPlayer() {
 
     const setActiveVisual = (dragging) => {
       window.__kurfaMobileMiniScrubbing = dragging;
-      track.style.height = dragging ? '8px' : '3px';
+      track.style.height = dragging ? '9px' : '5px';
       if (thumb) thumb.style.transform = dragging ? 'translateY(-50%) scale(1)' : 'translateY(-50%) scale(0)';
       if (tip) tip.classList.toggle('hidden', !dragging);
     };
@@ -10626,6 +10649,155 @@ window.kurfaNativeNextTrack = function() {
 window.kurfaNativePrevTrack = function() {
   if (typeof playPrevTrack === 'function') playPrevTrack();
 };
+window.kurfaNativeSeekToSeconds = function(sec) {
+  if (typeof seekPlaybackToSeconds === 'function') seekPlaybackToSeconds(Number(sec) || 0);
+};
+
+// =============================================================================
+// 16. MYT-STYLE LOCAL DEVICE AUDIO SCANNER & OFFLINE QUEUE
+// =============================================================================
+state.deviceAudioTracks = state.deviceAudioTracks || [];
+const __kurfaPendingLocalAudioScans = new Map();
+
+window.__kurfaNativeLocalAudioCallback = function(reqId, payload) {
+  const resolver = __kurfaPendingLocalAudioScans.get(reqId);
+  if (!resolver) return;
+  __kurfaPendingLocalAudioScans.delete(reqId);
+  resolver(payload);
+};
+
+async function scanLocalDeviceAudio(userInitiated = false) {
+  const listEl = document.getElementById('device-audio-list');
+  if (typeof isAndroidNativeEngine === 'function' && isAndroidNativeEngine() &&
+      window.KurfaAndroidBridge && typeof window.KurfaAndroidBridge.scanLocalDeviceAudioAsync === 'function') {
+    if (listEl) {
+      listEl.innerHTML = `<div class="py-8 text-center text-xs text-on-surface-variant flex items-center justify-center gap-2"><span class="material-symbols-outlined text-[18px] animate-spin text-primary">progress_activity</span><span>Cihazdaki müzikler taranıyor...</span></div>`;
+    }
+    const reqId = 'loc_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6);
+    const res = await new Promise((resolve) => {
+      const timer = setTimeout(() => {
+        __kurfaPendingLocalAudioScans.delete(reqId);
+        resolve({ success: false, tracks: [] });
+      }, 15000);
+      __kurfaPendingLocalAudioScans.set(reqId, (data) => {
+        clearTimeout(timer);
+        resolve(data || { success: false, tracks: [] });
+      });
+      window.KurfaAndroidBridge.scanLocalDeviceAudioAsync(reqId);
+    });
+
+    if (res && res.permissionDenied) {
+      if (listEl) {
+        listEl.innerHTML = `<div class="py-8 px-4 text-center flex flex-col items-center gap-2"><span class="material-symbols-outlined text-3xl text-on-surface-variant/60">folder_off</span><p class="text-xs font-semibold text-on-surface">Müzik dosyalarına erişim izni verilmedi</p><button type="button" class="px-4 py-1.5 rounded-full bg-primary text-on-primary text-xs font-bold" onclick="scanLocalDeviceAudio(true)">İzin Ver ve Tara</button></div>`;
+      }
+      return;
+    }
+
+    state.deviceAudioTracks = Array.isArray(res?.tracks) ? res.tracks : [];
+    renderDeviceAudioList(document.getElementById('device-audio-filter')?.value || '');
+    return;
+  }
+
+  // Web / Desktop EXE fallback: open local audio file picker when user clicks "Tara / Seç"
+  if (userInitiated) {
+    const picker = document.getElementById('device-audio-file-picker');
+    if (picker) picker.click();
+  } else {
+    renderDeviceAudioList();
+  }
+}
+window.scanLocalDeviceAudio = scanLocalDeviceAudio;
+
+function handleWebLocalAudioFiles(fileList) {
+  if (!fileList || fileList.length === 0) return;
+  const added = [];
+  for (const file of Array.from(fileList)) {
+    if (!file || !file.name) continue;
+    const objUrl = URL.createObjectURL(file);
+    const cleanName = file.name.replace(/\.(mp3|m4a|wav|flac|ogg|aac|opus|webm)$/i, '');
+    const parts = cleanName.split(/\s+[–—-]\s+/);
+    added.push({
+      id: 'local_web_' + Math.random().toString(36).slice(2, 9),
+      isLocal: true,
+      title: parts.length >= 2 ? parts.slice(1).join(' - ') : cleanName,
+      artist: parts.length >= 2 ? parts[0] : 'Yerel Dosya',
+      duration: '3:30',
+      streamUrl: objUrl,
+      thumbnail: './kurfamuzik_logo.png'
+    });
+  }
+  state.deviceAudioTracks = [...added, ...(state.deviceAudioTracks || [])];
+  renderDeviceAudioList(document.getElementById('device-audio-filter')?.value || '');
+  showToast(`${added.length} yerel şarkı listeye eklendi`, 'success');
+}
+window.handleWebLocalAudioFiles = handleWebLocalAudioFiles;
+
+function renderDeviceAudioList(filterText = '') {
+  const listEl = document.getElementById('device-audio-list');
+  const countEl = document.getElementById('device-audio-count-text');
+  const badgeEl = document.getElementById('device-audio-badge-count');
+  const all = Array.isArray(state.deviceAudioTracks) ? state.deviceAudioTracks : [];
+
+  if (badgeEl) badgeEl.textContent = String(all.length);
+  if (countEl) countEl.textContent = `${all.length} Parça`;
+  if (!listEl) return;
+
+  const q = String(filterText || '').trim().toLowerCase();
+  const filtered = q ? all.filter(t => (t.title || '').toLowerCase().includes(q) || (t.artist || '').toLowerCase().includes(q)) : all;
+
+  if (filtered.length === 0) {
+    listEl.innerHTML = `<div class="py-8 px-4 text-center flex flex-col items-center gap-2"><span class="material-symbols-outlined text-3xl text-on-surface-variant/60">library_music</span><p class="text-xs font-semibold text-on-surface">${all.length === 0 ? 'Cihazdaki müzikler henüz taranmadı' : 'Aramayla eşleşen yerel parça yok'}</p><button type="button" class="px-4 py-1.5 rounded-full bg-primary text-on-primary text-xs font-bold" onclick="scanLocalDeviceAudio(true)">${typeof isAndroidNativeEngine === 'function' && isAndroidNativeEngine() ? 'Cihazı Tara' : 'Bilgisayardan Müzik Seç'}</button></div>`;
+    return;
+  }
+
+  listEl.innerHTML = '';
+  const frag = document.createDocumentFragment();
+  filtered.forEach((track, idx) => {
+    const isPlayingCur = state.currentTrack && state.currentTrack.id === track.id;
+    const row = document.createElement('div');
+    row.className = `track-row flex items-center justify-between gap-2 p-2.5 rounded-xl cursor-pointer transition-colors ${isPlayingCur ? 'active' : ''}`;
+    row.innerHTML = `
+      <div class="flex items-center gap-2.5 min-w-0 flex-1">
+        <span class="w-5 text-center text-[11px] font-mono ${isPlayingCur ? 'text-primary font-extrabold' : 'text-on-surface-variant'}">${idx + 1}</span>
+        <div class="w-9 h-9 rounded-lg bg-surface-container-high flex items-center justify-center flex-shrink-0 text-primary">
+          <span class="material-symbols-outlined text-[18px]">${isPlayingCur && state.isPlaying ? 'graphic_eq' : 'music_note'}</span>
+        </div>
+        <div class="flex flex-col min-w-0 flex-1">
+          <span class="text-xs font-bold truncate ${isPlayingCur ? 'text-primary' : 'text-on-surface'}">${escapeHtml(track.title || 'Parça')}</span>
+          <span class="text-[11px] text-on-surface-variant truncate">${escapeHtml(track.artist || 'Cihaz Müziği')}</span>
+        </div>
+      </div>
+      <span class="text-[11px] text-on-surface-variant font-mono flex-shrink-0">${escapeHtml(track.duration || '3:30')}</span>
+    `;
+    row.onclick = () => {
+      state.queue = [...all];
+      const qIdx = state.queue.findIndex(x => x.id === track.id);
+      state.queueIndex = qIdx !== -1 ? qIdx : 0;
+      state.playingContextSub = 'CİHAZDAN ÇALINIYOR';
+      state.playingContextTitle = 'Cihazdaki Müzikler';
+      saveQueueState();
+      playTrackById(track.id, track);
+    };
+    frag.appendChild(row);
+  });
+  listEl.appendChild(frag);
+}
+window.renderDeviceAudioList = renderDeviceAudioList;
+
+function playAllDeviceAudio() {
+  const all = Array.isArray(state.deviceAudioTracks) ? state.deviceAudioTracks : [];
+  if (all.length === 0) {
+    scanLocalDeviceAudio(true);
+    return;
+  }
+  state.queue = [...all];
+  state.queueIndex = 0;
+  state.playingContextSub = 'CİHAZDAN ÇALINIYOR';
+  state.playingContextTitle = 'Cihazdaki Müzikler';
+  saveQueueState();
+  playTrackById(all[0].id, all[0]);
+}
+window.playAllDeviceAudio = playAllDeviceAudio;
 window.kurfaOnAndroidUpdateEvent = function(statusText, hasUpdate) {
   const lineEl = document.getElementById('settings-update-check-line');
   if (lineEl && statusText) {

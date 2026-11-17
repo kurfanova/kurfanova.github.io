@@ -309,9 +309,9 @@
             <span class="material-symbols-outlined text-[18px] md:text-[20px]" id="topbar-theme-icon" aria-hidden="true">dark_mode</span>
           </button>
           <!-- User Profile & Settings Hub Button -->
-          <button type="button" aria-label="Ayarlar & Profil" id="topbar-profile-btn" class="flex items-center gap-1.5 pl-1 pr-2.5 py-1 rounded-full bg-primary/10 hover:bg-primary/20 transition-all border border-primary/30 shadow-xs" onclick="openProfileModal()" title="Profil & Ayarlar">
-            <img id="topbar-user-avatar" src="./kurfamuzik_logo.png" alt="Kurfamüzik" class="w-7 h-7 rounded-full object-cover ring-1 ring-primary/40 shadow-sm" onerror="this.onerror=null; this.src='./assets/kurfamuzik_logo.png';">
-            <span id="topbar-user-name" class="text-xs font-extrabold text-on-surface max-w-[84px] sm:max-w-none truncate">Dinleyici</span>
+          <button type="button" aria-label="Ayarlar & Profil" id="topbar-profile-btn" class="flex items-center gap-1.5 pl-1 pr-2.5 py-1 rounded-full bg-surface-container-low hover:bg-surface-container transition-all border border-surface-container shadow-xs" onclick="openProfileModal()" title="Profil & Ayarlar">
+            <img id="topbar-user-avatar" src="./kurfamuzik_logo.png" alt="Kurfamüzik" class="w-7 h-7 rounded-full object-cover shadow-xs" onerror="this.onerror=null; this.src='./kurfamuzik_logo.png';">
+            <span id="topbar-user-name" class="text-xs font-bold text-on-surface max-w-[84px] sm:max-w-none truncate">Dinleyici</span>
           </button>
         </div>
       </div>
@@ -349,29 +349,37 @@
         
         <!-- Hero Section: Canlı Türkiye Trend Vitrini (Top 5 Interactive Showcase) -->
         <section class="relative w-full rounded-3xl overflow-hidden shadow-md bg-[#121622] border border-white/10" id="kesfet-hero-section">
-          <div class="relative w-full min-h-[230px] sm:min-h-[220px] flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-between gap-4 sm:gap-6 p-4 sm:p-6 md:p-7 overflow-hidden">
+          <div class="relative w-full min-h-[190px] sm:min-h-[210px] flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 sm:gap-6 p-4 sm:p-6 md:p-7 overflow-hidden">
             <!-- Vivid Blurred Background Art -->
             <div id="hero-bg" class="absolute inset-0 bg-cover bg-center transition-all duration-700 scale-110 blur-md opacity-75" style="background-image: linear-gradient(135deg, rgba(255,46,99,0.28), rgba(18,22,34,0.92));"></div>
-            <div class="absolute inset-0 bg-gradient-to-t sm:bg-gradient-to-r from-[#0d1118]/90 via-[#0d1118]/60 to-[#0d1118]/25"></div>
+            <div class="absolute inset-0 bg-gradient-to-t sm:bg-gradient-to-r from-[#0d1118]/92 via-[#0d1118]/65 to-[#0d1118]/30"></div>
 
             <!-- Hero Content (Left) -->
-            <div class="relative z-10 flex-1 min-w-0 max-w-xl flex flex-col items-start gap-2">
-              <div class="flex items-center gap-2">
-                <span id="hero-rank-badge" class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-white/15 backdrop-blur-md border border-white/20 text-white text-[10px] font-bold tracking-wide">
-                  <span class="w-1.5 h-1.5 rounded-full bg-primary"></span>
-                  <span>#1 TÜRKİYE TRENDİ</span>
-                </span>
-                <span id="hero-duration-pill" class="px-2 py-0.5 rounded-full bg-black/30 backdrop-blur-md text-white/90 text-[10px] font-mono font-medium"></span>
+            <div class="relative z-10 flex-1 min-w-0 max-w-xl flex flex-col items-start gap-2.5">
+              <!-- Mobile Top Row: Compact Cover + Meta side by side; Desktop: Meta only (Cover sits on right) -->
+              <div class="flex items-center gap-3.5 w-full">
+                <div class="sm:hidden w-16 h-16 rounded-2xl overflow-hidden shadow-xl border border-white/25 bg-black/40 flex-shrink-0 cursor-pointer" onclick="playHeroTrack()">
+                  <img id="hero-cover-img-mobile" src="./kurfamuzik_logo.png" alt="Trend Kapak" class="w-full h-full object-cover" onerror="this.onerror=null; this.src='./kurfamuzik_logo.png';">
+                </div>
+                <div class="flex flex-col min-w-0 flex-1 gap-1">
+                  <div class="flex items-center gap-2">
+                    <span id="hero-rank-badge" class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-white/15 backdrop-blur-md border border-white/20 text-white text-[10px] font-bold tracking-wide">
+                      <span class="w-1.5 h-1.5 rounded-full bg-primary"></span>
+                      <span>#1 TÜRKİYE TRENDİ</span>
+                    </span>
+                    <span id="hero-duration-pill" class="px-2 py-0.5 rounded-full bg-black/30 backdrop-blur-md text-white/90 text-[10px] font-mono font-medium"></span>
+                  </div>
+                  <h1 id="hero-title" class="text-base sm:text-2xl md:text-3xl text-white font-extrabold tracking-tight line-clamp-1 drop-shadow-sm">
+                    Günün En Popüler Şarkıları
+                  </h1>
+                  <p id="hero-artist" class="text-xs md:text-sm text-white/85 line-clamp-1 font-medium drop-shadow-sm">
+                    YouTube Müzik Türkiye Canlı Sıralaması
+                  </p>
+                </div>
               </div>
-              <h1 id="hero-title" class="text-lg sm:text-2xl md:text-3xl text-white font-extrabold tracking-tight line-clamp-1 drop-shadow-sm">
-                Günün En Popüler Şarkıları
-              </h1>
-              <p id="hero-artist" class="text-xs md:text-sm text-white/85 line-clamp-1 font-medium drop-shadow-sm">
-                YouTube Müzik Türkiye Canlı Sıralaması
-              </p>
 
               <!-- CTAs -->
-              <div class="flex flex-wrap items-center gap-2 pt-1">
+              <div class="flex flex-wrap items-center gap-2 pt-0.5">
                 <button type="button" id="hero-play-btn" aria-label="Parçayı Hemen Dinle" class="relative group flex items-center gap-1.5 px-4 sm:px-5 py-2 rounded-full bg-primary text-on-primary text-xs font-bold shadow-md hover:bg-primary-container active:scale-95 transition-all" onclick="playHeroTrack()">
                   <span class="material-symbols-outlined text-[18px] filled" aria-hidden="true">play_arrow</span>
                   <span>Hemen Dinle</span>
@@ -380,14 +388,14 @@
                   <span class="material-symbols-outlined text-[17px]" aria-hidden="true">playlist_add</span>
                   <span>Listeye Ekle</span>
                 </button>
-                <button type="button" id="hero-dl-btn" aria-label="Sesi İndir" class="hidden sm:flex items-center gap-1.5 px-3.5 py-2 rounded-full bg-white/15 hover:bg-white/25 backdrop-blur-md text-white text-xs font-semibold transition-all active:scale-95" onclick="downloadHeroTrack()">
+                <button type="button" id="hero-dl-btn" aria-label="Sesi İndir" class="flex items-center gap-1.5 px-3 py-2 rounded-full bg-white/15 hover:bg-white/25 backdrop-blur-md text-white text-xs font-semibold transition-all active:scale-95" onclick="downloadHeroTrack()">
                   <span class="material-symbols-outlined text-[16px]" aria-hidden="true">download</span>
-                  <span>İndir</span>
+                  <span class="hidden sm:inline">İndir</span>
                 </button>
               </div>
 
               <!-- Carousel Dots & Controls -->
-              <div class="flex items-center gap-2 pt-1" id="hero-carousel-controls">
+              <div class="flex items-center gap-2" id="hero-carousel-controls">
                 <button type="button" aria-label="Önceki Trend" class="w-6 h-6 rounded-full bg-white/15 hover:bg-white/25 text-white flex items-center justify-center transition-colors" onclick="stepHeroSlide(-1)">
                   <span class="material-symbols-outlined text-[15px]">chevron_left</span>
                 </button>
@@ -398,9 +406,9 @@
               </div>
             </div>
 
-            <!-- Cover Artwork Preview (Balanced on Mobile & Desktop) -->
-            <div class="relative z-10 flex items-center justify-start sm:justify-center flex-shrink-0">
-              <div class="w-20 h-20 sm:w-32 sm:h-32 md:w-40 md:h-40 rounded-2xl overflow-hidden shadow-2xl border border-white/25 bg-black/40 cursor-pointer group" onclick="playHeroTrack()" title="Hemen Dinle">
+            <!-- Cover Artwork Preview (Desktop/Tablet Right) -->
+            <div class="relative z-10 hidden sm:flex items-center justify-center flex-shrink-0">
+              <div class="w-32 h-32 md:w-40 md:h-40 rounded-2xl overflow-hidden shadow-2xl border border-white/25 bg-black/40 cursor-pointer group" onclick="playHeroTrack()" title="Hemen Dinle">
                 <img id="hero-cover-img" src="./kurfamuzik_logo.png" alt="Trend Kapak" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" onerror="this.onerror=null; this.src='./kurfamuzik_logo.png';">
               </div>
             </div>
@@ -785,19 +793,23 @@
             </div>
           </div>
 
-          <!-- Kütüphane Sub-Tab Pills (3 Sleek Pills) -->
+          <!-- Kütüphane Sub-Tab Pills -->
           <div class="flex items-center gap-2 border-b border-surface-container pb-3 overflow-x-auto whitespace-nowrap scrollbar-none max-w-full" id="kutuphane-subtabs">
-            <button type="button" id="kutuphane-btn-listelerim" class="sub-tab-pill active shrink-0 flex items-center gap-1.5 px-4 sm:px-5 py-2 rounded-full text-xs font-bold bg-primary text-on-primary shadow-sm hover:opacity-95" onclick="switchKutuphaneSubTab('listelerim')">
+            <button type="button" id="kutuphane-btn-cihaz" class="sub-tab-pill shrink-0 flex items-center gap-1.5 px-3.5 sm:px-4 py-2 rounded-full text-xs font-semibold bg-surface-container-low text-on-surface hover:bg-surface-container-high" onclick="switchKutuphaneSubTab('cihaz')">
+              <span class="material-symbols-outlined text-[16px] text-primary" aria-hidden="true">smartphone</span>
+              <span>Cihazdaki Müzikler (<span id="device-audio-badge-count">0</span>)</span>
+            </button>
+            <button type="button" id="kutuphane-btn-listelerim" class="sub-tab-pill active shrink-0 flex items-center gap-1.5 px-3.5 sm:px-4 py-2 rounded-full text-xs font-bold bg-primary text-on-primary shadow-sm hover:opacity-95" onclick="switchKutuphaneSubTab('listelerim')">
               <span class="material-symbols-outlined text-[16px]" aria-hidden="true">playlist_play</span>
-              <span>Çalma Listelerim (<span id="playlists-badge-count">0</span>)</span>
+              <span>Listelerim (<span id="playlists-badge-count">0</span>)</span>
             </button>
-            <button type="button" id="kutuphane-btn-spotify" class="sub-tab-pill shrink-0 flex items-center gap-1.5 px-4 sm:px-5 py-2 rounded-full text-xs font-semibold bg-surface-container-low text-on-surface hover:bg-surface-container-high" onclick="switchKutuphaneSubTab('spotify')">
+            <button type="button" id="kutuphane-btn-spotify" class="sub-tab-pill shrink-0 flex items-center gap-1.5 px-3.5 sm:px-4 py-2 rounded-full text-xs font-semibold bg-surface-container-low text-on-surface hover:bg-surface-container-high" onclick="switchKutuphaneSubTab('spotify')">
               <span class="material-symbols-outlined text-[16px] text-green-500" aria-hidden="true">album</span>
-              <span>Spotify Listeleri (<span id="spotify-badge-count">0</span>)</span>
+              <span>Spotify (<span id="spotify-badge-count">0</span>)</span>
             </button>
-            <button type="button" id="kutuphane-btn-favoriler" class="sub-tab-pill shrink-0 flex items-center gap-1.5 px-4 sm:px-5 py-2 rounded-full text-xs font-semibold bg-surface-container-low text-on-surface hover:bg-surface-container-high" onclick="switchKutuphaneSubTab('favoriler')">
+            <button type="button" id="kutuphane-btn-favoriler" class="sub-tab-pill shrink-0 flex items-center gap-1.5 px-3.5 sm:px-4 py-2 rounded-full text-xs font-semibold bg-surface-container-low text-on-surface hover:bg-surface-container-high" onclick="switchKutuphaneSubTab('favoriler')">
               <span class="material-symbols-outlined text-[16px] text-red-500" aria-hidden="true">favorite</span>
-              <span>Favorilerim (<span id="fav-badge-count">0</span>)</span>
+              <span>Favoriler (<span id="fav-badge-count">0</span>)</span>
             </button>
           </div>
         </section>
@@ -936,6 +948,31 @@
             <span class="text-xs text-on-surface-variant" id="fav-count-text">0 Şarkı Kaydedildi</span>
           </div>
           <div class="bg-surface-container-lowest rounded-2xl p-space-sm shadow-sm flex flex-col gap-1" id="favorites-list-table">
+            <!-- Injected by JavaScript -->
+          </div>
+        </div>
+
+        <!-- KÜTÜPHANE PANE 3: CİHAZDAKİ MÜZİKLERİM (MYT Tarzı Çevrimdışı Kütüphane) -->
+        <div id="kutuphane-pane-cihaz" class="flex flex-col gap-3 hidden">
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <div class="flex items-center gap-2 min-w-0">
+              <h2 class="text-sm font-bold text-on-surface whitespace-nowrap">Cihazdaki Müzikler</h2>
+              <span class="text-xs text-on-surface-variant whitespace-nowrap" id="device-audio-count-text">0 Parça</span>
+            </div>
+            <div class="flex items-center gap-1.5 flex-shrink-0">
+              <button type="button" class="px-3 py-1.5 rounded-full bg-surface-container-low hover:bg-surface-container text-on-surface text-xs font-semibold transition-all flex items-center gap-1 border border-surface-container" onclick="scanLocalDeviceAudio(true)">
+                <span class="material-symbols-outlined text-[15px]">refresh</span>
+                <span>Tara / Seç</span>
+              </button>
+              <button type="button" class="px-3.5 py-1.5 rounded-full bg-primary text-on-primary text-xs font-bold shadow-xs hover:bg-primary-container transition-all flex items-center gap-1" onclick="playAllDeviceAudio()">
+                <span class="material-symbols-outlined text-[15px] filled">play_arrow</span>
+                <span>Sırayla Çal</span>
+              </button>
+            </div>
+          </div>
+          <input type="text" id="device-audio-filter" placeholder="Cihazdaki şarkılarda ara..." aria-label="Cihazdaki şarkılarda ara" class="w-full h-9 px-3.5 rounded-xl bg-surface-container-lowest border border-surface-container text-xs text-on-surface placeholder:text-on-surface-variant focus:outline-none focus:border-primary" oninput="renderDeviceAudioList(this.value)">
+          <input type="file" id="device-audio-file-picker" accept="audio/*" multiple class="hidden" onchange="handleWebLocalAudioFiles(this.files)">
+          <div class="bg-surface-container-lowest rounded-2xl p-space-sm shadow-sm border border-surface-container/60 flex flex-col gap-1" id="device-audio-list">
             <!-- Injected by JavaScript -->
           </div>
         </div>
@@ -1219,11 +1256,11 @@
 
   <!-- MOBILE FLOATING MINI-PLAYER (Visible only on mobile screens) -->
   <div id="mobile-mini-player" class="md:hidden fixed bottom-16 left-2 right-2 h-14 bg-surface-container-lowest/95 backdrop-blur-md rounded-2xl shadow-[0_4px_25px_rgba(0,0,0,0.12)] border border-surface-container z-50 flex items-center justify-between px-2.5 select-none">
-    <!-- Interactive Touch-Scrub Progress Bar (expands cleanly on press/drag) -->
-    <div id="mobile-mini-seek-hit" class="absolute -top-2 left-3 right-3 h-5 flex items-center cursor-pointer z-20 touch-none">
-      <div id="mobile-mini-seek-track" class="relative w-full h-[3px] bg-surface-container-high rounded-full transition-all duration-150">
-        <div id="player-mobile-seek-fill" class="h-full bg-primary rounded-full relative" style="width: 0%;">
-          <span id="mobile-mini-seek-thumb" class="absolute -right-1.5 top-1/2 -translate-y-1/2 w-3 h-3 rounded-full bg-primary shadow-md scale-0 transition-transform duration-150"></span>
+    <!-- Interactive Touch-Scrub Progress Bar (5px curved track, expands to 9px on press/drag) -->
+    <div id="mobile-mini-seek-hit" class="absolute -top-2.5 left-3.5 right-3.5 h-6 flex items-center cursor-pointer z-20 touch-none">
+      <div id="mobile-mini-seek-track" class="relative w-full h-[5px] bg-surface-container-high rounded-full transition-all duration-150 overflow-visible">
+        <div id="player-mobile-seek-fill" class="h-full bg-primary rounded-full relative shadow-[0_0_8px_rgba(255,46,99,0.45)]" style="width: 0%;">
+          <span id="mobile-mini-seek-thumb" class="absolute -right-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 rounded-full bg-primary ring-2 ring-white shadow-md scale-0 transition-transform duration-150"></span>
         </div>
       </div>
       <div id="mobile-mini-seek-tooltip" class="hidden absolute -top-7 -translate-x-1/2 px-2 py-0.5 rounded-md bg-inverse-surface text-inverse-on-surface text-[10px] font-mono font-bold shadow-md pointer-events-none whitespace-nowrap">0:00 / 0:00</div>
