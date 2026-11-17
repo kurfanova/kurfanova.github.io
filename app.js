@@ -1702,9 +1702,11 @@ function stopAllPlayback(skipYtStop = false) {
         DOM.audioEngine.removeAttribute('src');
       } else {
         DOM.audioEngine.pause();
+        try { DOM.audioEngine.currentTime = 0; } catch(_) {}
       }
     } catch(e) {}
   }
+  state.currentPlayheadTime = 0;
 
   // 2. Stop YouTube player unless caller will immediately invoke loadVideoById
   if (!skipYtStop && state.ytPlayer && typeof state.ytPlayer.stopVideo === 'function') {
@@ -1952,9 +1954,23 @@ function onPlayerError(err) {
   clearTimeout(state._guardianResumeTimer);
   clearTimeout(state._stallWatchdogTimer);
   clearTimeout(state._errorSkipTimer);
-  state._playerInError = true;
+
+  const isLocalTrack = Boolean(state.currentTrack && (
+    state.currentTrack.isLocal ||
+    String(state.currentTrack.id).startsWith('local_') ||
+    state.currentTrack.source === 'local'
+  ));
 
   const playId = safeYtId(state.currentTrack?.ytId) || safeYtId(state.currentTrack?.id);
+
+  // Local device tracks must NEVER be interrupted or skipped by YouTube IFrame errors!
+  if (isLocalTrack || !playId) {
+    state._playerInError = false;
+    return;
+  }
+
+  state._playerInError = true;
+
   if (playId && state._lastErrorVideoId === playId) {
     return;
   }
@@ -2234,8 +2250,13 @@ async function resolveAndPlaySpotifyTrack(placeholderId, track, options = {}) {
   if (track?.isLocal || String(placeholderId || '').startsWith('local_')) return;
   stopAllPlayback(true);
   const resolveToken = currentPlaybackToken;
-  const title = track?.title || 'Şarkı';
-  const artist = track?.artist || 'Sanatçı';
+  const rawTitle = String(track?.title || 'Şarkı').trim();
+  const cleanTitle = rawTitle.replace(/\s*[\(\[](official\s*(video|audio|music\s*video|lyric\s*video|visualizer)|lyrics|video\s*klip|klip)[\)\]]/gi, '').trim();
+  const title = cleanTitle || rawTitle;
+
+  const rawArtist = String(track?.artist || '').trim();
+  const isGenericArtist = !rawArtist || /^(bilinmeyen\s*sanatçı|sanatçı|unknown\s*artist|various\s*artists)$/i.test(rawArtist);
+  const artist = isGenericArtist ? '' : rawArtist;
 
   try {
     // Open-catalog items try Audius direct ad-free stream first
@@ -2248,21 +2269,34 @@ async function resolveAndPlaySpotifyTrack(placeholderId, track, options = {}) {
       }
     }
 
-    const q = `${artist} ${title} audio`.trim();
-    let sData = await kurfaSearchTracks(q, { filterSingles: true });
-    if (resolveToken !== currentPlaybackToken) return;
     let best = null;
+    let sData = null;
+
+    // Stage 1: Clean search (Title + Artist or Title)
+    const q1 = (artist ? `${title} ${artist}` : title).trim();
+    sData = await kurfaSearchTracks(q1, { filterSingles: true });
+    if (resolveToken !== currentPlaybackToken) return;
     if (sData && sData.success && Array.isArray(sData.results) && sData.results.length > 0) {
       best = pickBestYouTubeMatch(track, sData.results);
     }
 
-    // Fallback if not found
-    if (!best || !safeYtId(best.id)) {
-      const fallbackQ = `${title} ${artist}`.trim();
-      sData = await kurfaSearchTracks(fallbackQ, { filterSingles: true });
+    // Stage 2: Fallback to Title only (e.g. folk songs like "Bu Gala Daşlı Gala" or mislabeled artists)
+    if ((!best || !safeYtId(best.id)) && artist) {
+      const q2 = title.trim();
+      sData = await kurfaSearchTracks(q2, { filterSingles: true });
       if (resolveToken !== currentPlaybackToken) return;
       if (sData && sData.success && Array.isArray(sData.results) && sData.results.length > 0) {
         best = pickBestYouTubeMatch(track, sData.results);
+      }
+    }
+
+    // Stage 3: Relaxed duration & singles filter
+    if (!best || !safeYtId(best.id)) {
+      const q3 = (artist ? `${title} ${artist}` : title).trim();
+      sData = await kurfaSearchTracks(q3, { filterSingles: false });
+      if (resolveToken !== currentPlaybackToken) return;
+      if (sData && sData.success && Array.isArray(sData.results) && sData.results.length > 0) {
+        best = pickBestYouTubeMatch(track, sData.results) || sData.results.find(c => c && safeYtId(c.id)) || sData.results[0];
       }
     }
 
@@ -2482,14 +2516,13 @@ function playTrackById(videoId, arg2, arg3, arg4, arg5, options = {}) {
     startSeekbarTicker();
   }
 
-  // Ensure HTML5 audio is silent without triggering spurious error events
+  // Ensure HTML5 audio is silent and playhead reset without triggering spurious error events
   if (DOM.audioEngine) {
     try {
+      DOM.audioEngine.pause();
+      DOM.audioEngine.currentTime = 0;
       if (DOM.audioEngine.getAttribute('src')) {
-        DOM.audioEngine.pause();
         DOM.audioEngine.removeAttribute('src');
-      } else {
-        DOM.audioEngine.pause();
       }
     } catch(e) {}
   }
@@ -2499,7 +2532,10 @@ function playTrackById(videoId, arg2, arg3, arg4, arg5, options = {}) {
     state.isPlaying = true;
     updatePlayPauseUI(true);
     if (state.ytPlayer && typeof state.ytPlayer.pauseVideo === 'function') {
-      try { state.ytPlayer.pauseVideo(); } catch(e) {}
+      try {
+        state.ytPlayer.pauseVideo();
+        if (typeof state.ytPlayer.seekTo === 'function') state.ytPlayer.seekTo(0, true);
+      } catch(e) {}
     }
     if (target.streamUrl) {
       loadDirectAudioStream(target.streamUrl, normalizedStart, token, null);
@@ -2650,13 +2686,15 @@ function loadDirectAudioStream(streamUrl, startSeconds, token, ytFallbackId) {
       try { state.ytPlayer.pauseVideo(); } catch(e) {}
     }
     DOM.audioEngine.volume = state.isMuted ? 0 : (state.volume ?? 0.8);
-    if (startSeconds > 0) {
-      const seekOnce = () => {
-        if (token !== currentPlaybackToken) return;
-        try { DOM.audioEngine.currentTime = startSeconds; } catch(e) {}
-      };
-      DOM.audioEngine.addEventListener('loadedmetadata', seekOnce, { once: true });
-    }
+    const targetStart = (typeof startSeconds === 'number' && !isNaN(startSeconds) && startSeconds > 0) ? startSeconds : 0;
+    try {
+      DOM.audioEngine.currentTime = targetStart;
+    } catch(e) {}
+    const seekOnce = () => {
+      if (token !== currentPlaybackToken) return;
+      try { DOM.audioEngine.currentTime = targetStart; } catch(e) {}
+    };
+    DOM.audioEngine.addEventListener('loadedmetadata', seekOnce, { once: true });
     DOM.audioEngine.src = streamUrl;
     state.isPlaying = true;
     updatePlayPauseUI(true);
@@ -2814,7 +2852,34 @@ function resumePlayback() {
   clearTimeout(state._stallWatchdogTimer);
   const curTime = state.currentPlayheadTime || 0;
 
-  // 1. If HTML5 Audio engine has a loaded source, resume it
+  const isLocalTrack = Boolean(state.currentTrack && (
+    state.currentTrack.isLocal ||
+    String(state.currentTrack.id).startsWith('local_') ||
+    state.currentTrack.source === 'local'
+  ));
+
+  // 1. Local track resume: NEVER touch YouTube Player!
+  if (isLocalTrack) {
+    if (DOM.audioEngine && DOM.audioEngine.getAttribute('src') && !DOM.audioEngine.ended) {
+      DOM.audioEngine.play().then(() => {
+        state.isPlaying = true;
+        updatePlayPauseUI(true);
+        if (typeof startSeekbarTicker === 'function') startSeekbarTicker();
+      }).catch(e => {
+        if (e.name === 'AbortError') return;
+        playTrackById(state.currentTrack.id, state.currentTrack, curTime);
+      });
+      state.isPlaying = true;
+      updatePlayPauseUI(true);
+      if (typeof startSeekbarTicker === 'function') startSeekbarTicker();
+      return;
+    }
+    // Audio engine has no src loaded yet (e.g. app freshly reopened) -> resolve local stream & play
+    playTrackById(state.currentTrack.id, state.currentTrack, curTime);
+    return;
+  }
+
+  // 2. If HTML5 Audio engine has a loaded source (Audius / direct stream), resume it
   if (DOM.audioEngine && DOM.audioEngine.getAttribute('src') && !DOM.audioEngine.ended && state.currentTrack) {
     DOM.audioEngine.play().then(() => {
       state.isPlaying = true;
@@ -2832,12 +2897,12 @@ function resumePlayback() {
     return;
   }
 
-  // 2. YouTube player (primary engine for both Video and Vinyl modes)
+  // 3. YouTube player (primary engine for both Video and Vinyl modes)
   if (state.ytReady && state.ytPlayer && typeof state.ytPlayer.playVideo === 'function' && state.currentTrack) {
     try {
       const targetVid = safeYtId(state.currentTrack.ytId || state.currentTrack.id);
       const loadedVid = typeof state.ytPlayer.getVideoData === 'function' ? state.ytPlayer.getVideoData()?.video_id : null;
-      if (!targetVid || loadedVid === targetVid) {
+      if (targetVid && loadedVid === targetVid) {
         state.ytPlayer.playVideo();
         state.isPlaying = true;
         updatePlayPauseUI(true);
@@ -2847,7 +2912,7 @@ function resumePlayback() {
     } catch(e) {}
   }
 
-  // 3. Fallback: reload current track or initialize clean Spotify-style starter queue
+  // 4. Fallback: reload current track or initialize clean Spotify-style starter queue
   if (state.currentTrack && state.currentTrack.id) {
     playTrackById(state.currentTrack.id, state.currentTrack, curTime);
   } else if (Array.isArray(state.userQueue) && state.userQueue.length > 0) {
@@ -3276,10 +3341,30 @@ function getActiveMediaDuration() {
 window.getActiveMediaDuration = getActiveMediaDuration;
 
 function getActiveMediaCurrentTime() {
+  const isLocal = Boolean(state.currentTrack && (
+    state.currentTrack.isLocal ||
+    String(state.currentTrack.id).startsWith('local_') ||
+    state.currentTrack.source === 'local'
+  ));
+
+  // 1. Local device tracks strictly use HTML5 audioEngine - NEVER query YouTube!
+  if (isLocal) {
+    if (DOM.audioEngine && DOM.audioEngine.src && !isNaN(DOM.audioEngine.currentTime)) {
+      return DOM.audioEngine.currentTime || 0;
+    }
+    return state.currentPlayheadTime || 0;
+  }
+
+  // 2. If transitioning to a new track from start (0), don't read stale time from previous track
+  const inTransition = (Date.now() - (state._trackSwitchStartedAt || 0)) < 1200;
+  if (inTransition && (!state.currentPlayheadTime || state.currentPlayheadTime === 0)) {
+    return 0;
+  }
+
   if (state.deckVisualMode === 'video' && state.ytReady && state.ytPlayer && typeof state.ytPlayer.getCurrentTime === 'function') {
     return state.ytPlayer.getCurrentTime() || 0;
   }
-  if (DOM.audioEngine && DOM.audioEngine.src && !isNaN(DOM.audioEngine.currentTime) && DOM.audioEngine.currentTime > 0) {
+  if (DOM.audioEngine && DOM.audioEngine.src && !isNaN(DOM.audioEngine.currentTime) && !DOM.audioEngine.paused) {
     return DOM.audioEngine.currentTime;
   }
   if (state.ytReady && state.ytPlayer && typeof state.ytPlayer.getCurrentTime === 'function') {
