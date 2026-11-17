@@ -2469,14 +2469,27 @@ function playTrackById(videoId, arg2, arg3, arg4, arg5, options = {}) {
     } catch(e) {}
   }
 
-  const isLocalDeviceTrack = Boolean(target && target.isLocal && target.streamUrl);
+  const isLocalDeviceTrack = Boolean(target && target.isLocal && (target.streamUrl || target.needsIdbBlob));
   if (isLocalDeviceTrack && DOM.audioEngine) {
     state.isPlaying = true;
     updatePlayPauseUI(true);
     if (state.ytPlayer && typeof state.ytPlayer.pauseVideo === 'function') {
       try { state.ytPlayer.pauseVideo(); } catch(e) {}
     }
-    loadDirectAudioStream(target.streamUrl, normalizedStart, token, null);
+    if (target.streamUrl) {
+      loadDirectAudioStream(target.streamUrl, normalizedStart, token, null);
+    } else if (typeof resolveLocalAudioStreamUrl === 'function') {
+      resolveLocalAudioStreamUrl(target.id).then((url) => {
+        if (token !== currentPlaybackToken || state.userPaused) return;
+        if (url) {
+          loadDirectAudioStream(url, normalizedStart, token, null);
+        } else {
+          showToast('Yerel ses dosyası okunamadı');
+          state.isPlaying = false;
+          updatePlayPauseUI(false);
+        }
+      });
+    }
     return;
   }
 
@@ -10781,47 +10794,79 @@ async function saveWebLocalAudioToDB(records) {
   }
 }
 
+let __kurfaActiveLocalBlobUrl = null;
+state.deviceAudioRenderLimit = state.deviceAudioRenderLimit || 80;
+
+async function resolveLocalAudioStreamUrl(trackId) {
+  if (!trackId) return null;
+  try {
+    const db = await openKurfaLocalAudioDB();
+    const rec = await new Promise((resolve, reject) => {
+      const tx = db.transaction('tracks', 'readonly');
+      const req = tx.objectStore('tracks').get(trackId);
+      req.onsuccess = () => resolve(req.result || null);
+      req.onerror = () => reject(req.error);
+    });
+    db.close();
+    if (!rec || !rec.file) return null;
+    if (__kurfaActiveLocalBlobUrl) {
+      try { URL.revokeObjectURL(__kurfaActiveLocalBlobUrl); } catch (_) {}
+      __kurfaActiveLocalBlobUrl = null;
+    }
+    const objUrl = URL.createObjectURL(rec.file);
+    __kurfaActiveLocalBlobUrl = objUrl;
+    return objUrl;
+  } catch (e) {
+    console.warn('resolveLocalAudioStreamUrl error:', e);
+    return null;
+  }
+}
+window.resolveLocalAudioStreamUrl = resolveLocalAudioStreamUrl;
+
 async function restoreWebLocalAudioFromDB() {
   if (typeof isAndroidNativeEngine === 'function' && isAndroidNativeEngine()) return;
   try {
     const db = await openKurfaLocalAudioDB();
-    const rows = await new Promise((resolve, reject) => {
+    const restored = [];
+    await new Promise((resolve, reject) => {
       const tx = db.transaction('tracks', 'readonly');
-      const req = tx.objectStore('tracks').getAll();
-      req.onsuccess = () => resolve(req.result || []);
+      const req = tx.objectStore('tracks').openCursor();
+      req.onsuccess = (e) => {
+        const cursor = e.target.result;
+        if (cursor) {
+          const rec = cursor.value;
+          if (rec && rec.id) {
+            restored.push({
+              id: rec.id,
+              isLocal: true,
+              needsIdbBlob: true,
+              fileName: rec.fileName || '',
+              fileSize: rec.fileSize || 0,
+              addedAt: rec.addedAt || 0,
+              title: rec.title || 'Yerel Parça',
+              artist: rec.artist || 'Yerel Dosya',
+              duration: rec.duration || '3:30',
+              streamUrl: null,
+              thumbnail: './kurfamuzik_logo.png'
+            });
+          }
+          cursor.continue();
+        } else {
+          resolve();
+        }
+      };
       req.onerror = () => reject(req.error);
     });
     db.close();
-    if (!Array.isArray(rows) || rows.length === 0) return;
-    rows.sort((a, b) => (b.addedAt || 0) - (a.addedAt || 0));
-    const restored = [];
-    for (const rec of rows) {
-      if (!rec || !rec.file) continue;
-      const objUrl = URL.createObjectURL(rec.file);
-      restored.push({
-        id: rec.id,
-        isLocal: true,
-        fileName: rec.fileName || rec.file.name || '',
-        fileSize: rec.fileSize || rec.file.size || 0,
-        title: rec.title || 'Yerel Parça',
-        artist: rec.artist || 'Yerel Dosya',
-        duration: rec.duration || '3:30',
-        streamUrl: objUrl,
-        thumbnail: './kurfamuzik_logo.png'
-      });
+    if (restored.length === 0) return;
+    restored.sort((a, b) => (b.addedAt || 0) - (a.addedAt || 0));
+    state.deviceAudioTracks = restored;
+    if (state.currentTrack && state.currentTrack.isLocal) {
+      state.currentTrack.needsIdbBlob = true;
+      state.currentTrack.streamUrl = null;
     }
-    if (restored.length > 0) {
-      state.deviceAudioTracks = restored;
-      // Refresh restored last-played local track streamUrl if it came from a closed session
-      if (state.currentTrack && state.currentTrack.isLocal) {
-        const match = restored.find(t => t.id === state.currentTrack.id || (t.title === state.currentTrack.title && t.artist === state.currentTrack.artist));
-        if (match) {
-          state.currentTrack.streamUrl = match.streamUrl;
-        }
-      }
-      renderDeviceAudioList(document.getElementById('device-audio-filter')?.value || '');
-      if (typeof updateKutuphaneBadges === 'function') updateKutuphaneBadges();
-    }
+    renderDeviceAudioList(document.getElementById('device-audio-filter')?.value || '');
+    if (typeof updateKutuphaneBadges === 'function') updateKutuphaneBadges();
   } catch (e) {
     console.warn('restoreWebLocalAudioFromDB error:', e);
   }
@@ -10843,7 +10888,6 @@ function handleWebLocalAudioFiles(fileList) {
     if (existingKeys.has(key)) continue;
     existingKeys.add(key);
 
-    const objUrl = URL.createObjectURL(file);
     const cleanName = file.name.replace(/\.(mp3|m4a|wav|flac|ogg|aac|opus|webm)$/i, '');
     const parts = cleanName.split(/\s+[–—-]\s+/);
     const id = 'local_web_' + now + '_' + (seq++) + '_' + Math.random().toString(36).slice(2, 6);
@@ -10853,12 +10897,14 @@ function handleWebLocalAudioFiles(fileList) {
     added.push({
       id,
       isLocal: true,
+      needsIdbBlob: true,
       fileName: file.name,
       fileSize: file.size || 0,
+      addedAt: now + seq,
       title,
       artist,
       duration: '3:30',
-      streamUrl: objUrl,
+      streamUrl: null,
       thumbnail: './kurfamuzik_logo.png'
     });
     dbRecords.push({
@@ -10882,6 +10928,7 @@ function handleWebLocalAudioFiles(fileList) {
   }
 
   state.deviceAudioTracks = [...added, ...existing];
+  state.deviceAudioRenderLimit = 80;
   saveWebLocalAudioToDB(dbRecords);
   renderDeviceAudioList(document.getElementById('device-audio-filter')?.value || '');
   if (typeof updateKutuphaneBadges === 'function') updateKutuphaneBadges();
@@ -10908,8 +10955,10 @@ function renderDeviceAudioList(filterText = '') {
   }
 
   listEl.innerHTML = '';
+  const limit = Math.max(80, Number(state.deviceAudioRenderLimit) || 80);
+  const visible = filtered.slice(0, limit);
   const frag = document.createDocumentFragment();
-  filtered.forEach((track, idx) => {
+  visible.forEach((track, idx) => {
     const isPlayingCur = state.currentTrack && state.currentTrack.id === track.id;
     const row = document.createElement('div');
     row.className = `track-row flex items-center justify-between gap-2 p-2.5 rounded-xl cursor-pointer transition-colors ${isPlayingCur ? 'active' : ''}`;
@@ -10937,6 +10986,17 @@ function renderDeviceAudioList(filterText = '') {
     };
     frag.appendChild(row);
   });
+  if (filtered.length > visible.length) {
+    const moreBtn = document.createElement('button');
+    moreBtn.type = 'button';
+    moreBtn.className = 'w-full mt-2 py-2 rounded-xl bg-surface-container-high hover:bg-surface-container-highest text-xs font-bold text-primary transition-colors';
+    moreBtn.textContent = `Daha Fazla Göster (${filtered.length - visible.length} Parça Kaldı)`;
+    moreBtn.onclick = () => {
+      state.deviceAudioRenderLimit = limit + 100;
+      renderDeviceAudioList(filterText);
+    };
+    frag.appendChild(moreBtn);
+  }
   listEl.appendChild(frag);
 }
 window.renderDeviceAudioList = renderDeviceAudioList;
