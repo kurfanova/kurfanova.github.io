@@ -10745,7 +10745,30 @@ async function scanLocalDeviceAudio(userInitiated = false) {
     return;
   }
 
-  // Web / Desktop EXE fallback: open local audio file picker when user clicks "Tara / Seç"
+  // Windows Desktop EXE native file picker & permanent path store (0 RAM copy, survives restarts)
+  if (typeof getBrowserExtensionMode === 'function' && getBrowserExtensionMode().startsWith('desktop')) {
+    if (userInitiated) {
+      try {
+        const res = await callExtensionBridge('PICK_LOCAL_AUDIO_FILES', {}, 120000);
+        if (res && res.success && Array.isArray(res.tracks)) {
+          state.deviceAudioTracks = res.tracks;
+          state.deviceAudioRenderLimit = 80;
+          renderDeviceAudioList(document.getElementById('device-audio-filter')?.value || '');
+          if (typeof updateKutuphaneBadges === 'function') updateKutuphaneBadges();
+          if (res.addedCount > 0) {
+            showToast(`${res.addedCount} yerel şarkı kalıcı olarak kaydedildi`, 'success');
+          }
+          return;
+        }
+      } catch (_) {}
+    } else {
+      await restoreWebLocalAudioFromDB();
+      renderDeviceAudioList(document.getElementById('device-audio-filter')?.value || '');
+      return;
+    }
+  }
+
+  // Web fallback: open local audio file picker when user clicks "Tara / Seç"
   if (userInitiated) {
     const picker = document.getElementById('device-audio-file-picker');
     if (picker) picker.click();
@@ -10825,6 +10848,23 @@ window.resolveLocalAudioStreamUrl = resolveLocalAudioStreamUrl;
 
 async function restoreWebLocalAudioFromDB() {
   if (typeof isAndroidNativeEngine === 'function' && isAndroidNativeEngine()) return;
+  if (typeof getBrowserExtensionMode === 'function' && getBrowserExtensionMode().startsWith('desktop')) {
+    try {
+      const res = await callExtensionBridge('GET_LOCAL_AUDIO_TRACKS', {}, 5000);
+      if (res && res.success && Array.isArray(res.tracks) && res.tracks.length > 0) {
+        state.deviceAudioTracks = res.tracks;
+        if (state.currentTrack && state.currentTrack.isLocal) {
+          const match = res.tracks.find(t => t.id === state.currentTrack.id || (t.title === state.currentTrack.title && t.artist === state.currentTrack.artist));
+          if (match && match.streamUrl) {
+            state.currentTrack.streamUrl = match.streamUrl;
+          }
+        }
+        renderDeviceAudioList(document.getElementById('device-audio-filter')?.value || '');
+        if (typeof updateKutuphaneBadges === 'function') updateKutuphaneBadges();
+        return;
+      }
+    } catch (_) {}
+  }
   try {
     const db = await openKurfaLocalAudioDB();
     const restored = [];
