@@ -1054,6 +1054,9 @@ const EMERGENCY_FALLBACK_TRACKS = [
 
 function getTrackThumbnail(track) {
   if (!track) return './kurfamuzik_logo.png';
+  if (track.isLocal || String(track.id || '').startsWith('local_')) {
+    return track.thumbnail ? safeUrl(track.thumbnail, './kurfamuzik_logo.png') : './kurfamuzik_logo.png';
+  }
   const vid = safeYtId(track.ytId) || safeYtId(track.id);
   if (vid) {
     return `https://i.ytimg.com/vi/${vid}/hqdefault.jpg`;
@@ -2205,6 +2208,7 @@ async function prefetchNextQueueTrack() {
   if (!state.queue || state.queueIndex >= state.queue.length - 1) return;
   const next = state.queue[state.queueIndex + 1];
   if (!next) return;
+  if (next.isLocal || String(next.id || '').startsWith('local_') || String(next.id || '').startsWith('audius_')) return;
   if (safeYtId(next.ytId)) return;
   if (safeYtId(next.id) && !String(next.id).startsWith('sp-')) return;
 
@@ -2227,6 +2231,7 @@ async function prefetchNextQueueTrack() {
 }
 
 async function resolveAndPlaySpotifyTrack(placeholderId, track, options = {}) {
+  if (track?.isLocal || String(placeholderId || '').startsWith('local_')) return;
   stopAllPlayback(true);
   const resolveToken = currentPlaybackToken;
   const title = track?.title || 'Şarkı';
