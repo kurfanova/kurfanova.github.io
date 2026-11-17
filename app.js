@@ -1783,42 +1783,21 @@ function checkAndHandleAdPlayback() {
 
   try {
     const p = state.ytPlayer;
-    let isAd = false;
-    let adDuration = 0;
-
-    const inTransitionGrace = (Date.now() - (state._trackSwitchStartedAt || 0)) < 900;
+    const inTransitionGrace = (Date.now() - (state._trackSwitchStartedAt || 0)) < 2500;
     const adSt = typeof p.getAdState === 'function' ? p.getAdState() : 0;
     const isOfficialAd = (adSt === 1 || adSt === true);
 
-    // Check 1: Official getAdState method (always valid immediately)
-    if (isOfficialAd) {
-      isAd = true;
+    if (inTransitionGrace && !isOfficialAd) {
+      return;
     }
 
-    const vData = typeof p.getVideoData === 'function' ? p.getVideoData() : null;
-    const expectedId = safeYtId(state.currentTrack.ytId) || safeYtId(state.currentTrack.id);
-    const matchesExpectedVideo = Boolean(vData && vData.video_id && expectedId && vData.video_id === expectedId);
-
-    // Check 2: Video metadata mismatch (only after 900ms transition grace window)
-    if (!isAd && !inTransitionGrace && vData && vData.video_id && expectedId) {
-      if (vData.video_id !== expectedId) {
-        isAd = true;
+    const isAd = isOfficialAd;
+    let adDuration = 0;
+    if (isAd) {
+      const curDur = (typeof p.getDuration === 'function') ? (p.getDuration() || 0) : 0;
+      if (curDur > 0 && curDur <= 60) {
+        adDuration = curDur;
       }
-    }
-
-    // Check 3: Duration discrepancy check (only after grace window and never if video_id matches unless getAdState === 1)
-    const curDur = (typeof p.getDuration === 'function') ? (p.getDuration() || 0) : 0;
-    if (!isAd && !inTransitionGrace && curDur > 0 && curDur <= 35 && (!matchesExpectedVideo || isOfficialAd)) {
-      const expectedParts = String(state.currentTrack.duration || '').split(':').map(x => parseInt(x, 10));
-      if (expectedParts.length === 2 && !isNaN(expectedParts[0]) && !isNaN(expectedParts[1])) {
-        const expDur = expectedParts[0] * 60 + expectedParts[1];
-        if (expDur > 45 && Math.abs(curDur - expDur) > 15) {
-          isAd = true;
-          adDuration = curDur;
-        }
-      }
-    } else if (isAd && adDuration === 0 && curDur > 0 && curDur <= 60 && (!matchesExpectedVideo || isOfficialAd)) {
-      adDuration = curDur;
     }
 
     if (isAd) {
@@ -1978,6 +1957,51 @@ function onPlayerError(err) {
 
   // Errors 101/150/100/2 mean embedding is forbidden by owner or unavailable
   if (err && (err.data === 150 || err.data === 101 || err.data === 100 || err.data === 2)) {
+    const errToken = currentPlaybackToken;
+    // Try direct audio / Audius stream fallback first before declaring copyright/embed skip
+    if (playId && DOM.audioEngine && state.deckVisualMode !== 'video' && state._attemptedFallbackForVideo !== playId && !state.userPaused) {
+      state._attemptedFallbackForVideo = playId;
+      state._playerInError = false;
+      state._lastErrorVideoId = null;
+      (async () => {
+        try {
+          if (typeof hasAdFreeLocalEngine === 'function' && hasAdFreeLocalEngine()) {
+            const directRes = await kurfaResolveDirectAudio(playId);
+            if (errToken !== currentPlaybackToken || state.userPaused) return;
+            if (directRes && directRes.success && directRes.streamUrl) {
+              loadDirectAudioStream(directRes.streamUrl, 0, errToken, null);
+              return;
+            }
+          }
+        } catch(_) {}
+        try {
+          if (state.currentTrack && typeof kurfaTryQuickAudiusMatch === 'function') {
+            const aud = await kurfaTryQuickAudiusMatch(state.currentTrack, 1800);
+            if (errToken !== currentPlaybackToken || state.userPaused) return;
+            if (aud && aud.success && aud.streamUrl) {
+              loadDirectAudioStream(aud.streamUrl, 0, errToken, null);
+              return;
+            }
+          }
+        } catch(_) {}
+        if (errToken !== currentPlaybackToken || state.userPaused) return;
+        failedVideoIds.add(playId);
+        state._consecutiveErrorSkips = (state._consecutiveErrorSkips || 0) + 1;
+        if (state._consecutiveErrorSkips >= 5) {
+          state.isPlaying = false;
+          updatePlayPauseUI(false);
+          showToast("Arka arkaya çok fazla oynatılamayan parça nedeniyle durduruldu");
+          return;
+        }
+        showToast("Bu şarkı telif nedeniyle yerleştirmeye kapalı, sıradakine geçiliyor");
+        state._errorSkipTimer = setTimeout(() => {
+          if (errToken !== currentPlaybackToken || state.userPaused) return;
+          playNextTrack({ isAutoErrorSkip: true });
+        }, 700);
+      })();
+      return;
+    }
+
     if (playId && (err.data === 150 || err.data === 101 || err.data === 100)) {
       failedVideoIds.add(playId);
     }
@@ -1988,7 +2012,6 @@ function onPlayerError(err) {
       showToast("Arka arkaya çok fazla oynatılamayan parça nedeniyle durduruldu");
       return;
     }
-    const errToken = currentPlaybackToken;
     showToast("Bu şarkı telif nedeniyle yerleştirmeye kapalı, sıradakine geçiliyor");
     state._errorSkipTimer = setTimeout(() => {
       if (errToken !== currentPlaybackToken || state.userPaused) return;
@@ -2372,10 +2395,15 @@ function playTrackById(videoId, arg2, arg3, arg4, arg5, options = {}) {
   state.currentTrack = target;
   safeSetStorage('kurfa_last_track', JSON.stringify({
     id: target.id,
+    ytId: target.ytId || cleanYtId || null,
     title: target.title,
     artist: target.artist,
     thumbnail: getTrackThumbnail(target),
-    duration: target.duration
+    duration: target.duration,
+    source: target.source || null,
+    audiusStreamUrl: target.audiusStreamUrl || null,
+    isLocal: Boolean(target.isLocal),
+    streamUrl: target.streamUrl || null
   }));
 
   const targetId = target?.id || cleanYtId;
@@ -10464,10 +10492,10 @@ function setupEventListeners() {
         if (snapToken !== currentPlaybackToken || state.userPaused || !state.isPlaying || state.deckVisualMode === 'video') return;
         if (!DOM.audioEngine || !DOM.audioEngine.getAttribute('src') || DOM.audioEngine.ended) return;
         const nowTime = DOM.audioEngine.currentTime || 0;
-        if (Math.abs(nowTime - snapTime) < 0.25) {
+        if (DOM.audioEngine.readyState < 3 && !DOM.audioEngine.paused && Math.abs(nowTime - snapTime) < 0.25) {
           handoffAudioErrorOrStall(Math.max(0, Math.floor(nowTime || state.currentPlayheadTime || 0)));
         }
-      }, 7500);
+      }, 12000);
     };
 
     DOM.audioEngine.addEventListener('ended', () => {
@@ -10569,9 +10597,8 @@ function initApp() {
   updatePlayerTrackUI(state.currentTrack);
   if (state.currentTrack) {
     const estDur = parseDurationToSec(state.currentTrack.duration) || 210;
-    const savedCur = Math.max(0, Math.min(estDur, Number(state.currentTrack.currentTime) || 0));
-    state.currentPlayheadTime = savedCur;
-    updateSeekbarUI(savedCur, estDur);
+    state.currentPlayheadTime = 0;
+    updateSeekbarUI(0, estDur);
   }
   setPlayerVolume(state.volume);
   updateLyricsDisplay();
@@ -10623,11 +10650,15 @@ function initApp() {
       if (state.currentTrack) {
         safeSetStorage('kurfa_last_track', JSON.stringify({
           id: state.currentTrack.id,
+          ytId: state.currentTrack.ytId || null,
           title: state.currentTrack.title,
           artist: state.currentTrack.artist,
           thumbnail: getTrackThumbnail(state.currentTrack),
           duration: state.currentTrack.duration,
-          currentTime: getActiveMediaCurrentTime() || state.currentPlayheadTime || 0
+          source: state.currentTrack.source || null,
+          audiusStreamUrl: state.currentTrack.audiusStreamUrl || null,
+          isLocal: Boolean(state.currentTrack.isLocal),
+          streamUrl: state.currentTrack.streamUrl || null
         }));
       }
       safeSetStorage('kurfa_queue_index', String(state.queueIndex || 0));
