@@ -1207,9 +1207,10 @@ function cleanDeduplicateQueueArray(arr) {
   for (const item of arr) {
     if (!item) continue;
     const id = item.id || item.ytId;
+    const isLocalItem = Boolean(item.isLocal) || String(id || '').startsWith('local_');
     const title = (item.title || '').trim().toLowerCase();
     const artist = (item.artist || '').trim().toLowerCase();
-    const metaKey = (title && artist) ? `${title}|${artist}` : null;
+    const metaKey = (!isLocalItem && title && artist) ? `${title}|${artist}` : null;
 
     let isDup = false;
     if (id && seenIds.has(id)) isDup = true;
@@ -1230,9 +1231,15 @@ function saveQueueState() {
   if (state.queueIndex >= state.queue.length) {
     state.queueIndex = Math.max(0, state.queue.length - 1);
   }
-  safeSetStorage('kurfa_queue', JSON.stringify(state.queue));
+  const qToStore = state.queue.length > 300
+    ? state.queue.slice(Math.max(0, state.queueIndex - 50), Math.min(state.queue.length, state.queueIndex + 250))
+    : state.queue;
+  const idxToStore = state.queue.length > 300
+    ? Math.min(50, state.queueIndex)
+    : (state.queueIndex || 0);
+  safeSetStorage('kurfa_queue', JSON.stringify(qToStore));
   safeSetStorage('kurfa_user_queue', JSON.stringify(state.userQueue));
-  safeSetStorage('kurfa_queue_index', String(state.queueIndex || 0));
+  safeSetStorage('kurfa_queue_index', String(idxToStore));
 }
 
 const failedVideoIds = new Set();
@@ -2417,16 +2424,20 @@ function playTrackById(videoId, arg2, arg3, arg4, arg5, options = {}) {
   const targetTitle = (target?.title || '').trim().toLowerCase();
   const targetArtist = (target?.artist || '').trim().toLowerCase();
 
-  const existingIdx = state.queue.findIndex(t => {
+  let existingIdx = state.queue.findIndex(t => {
     if (!t) return false;
-    if (cleanYtId && (t.id === cleanYtId || t.ytId === cleanYtId)) return true;
     if (targetId && (t.id === targetId || t.ytId === targetId)) return true;
+    if (cleanYtId && (t.id === cleanYtId || t.ytId === cleanYtId)) return true;
     if (targetYtId && (t.id === targetYtId || t.ytId === targetYtId)) return true;
-    if (targetTitle && targetArtist && t.title && t.artist) {
-      return t.title.trim().toLowerCase() === targetTitle && t.artist.trim().toLowerCase() === targetArtist;
-    }
     return false;
   });
+  if (existingIdx === -1 && !isLocalTrack && targetTitle && targetArtist) {
+    existingIdx = state.queue.findIndex(t =>
+      t && t.title && t.artist &&
+      t.title.trim().toLowerCase() === targetTitle &&
+      t.artist.trim().toLowerCase() === targetArtist
+    );
+  }
 
   if (existingIdx !== -1) {
     state.queueIndex = existingIdx;
@@ -5897,7 +5908,20 @@ function renderQueueDrawerList() {
     }
   }
 
-  state.queue.forEach((track, index) => {
+  const curIdx = Math.max(0, Math.min(state.queueIndex || 0, Math.max(0, state.queue.length - 1)));
+  const winStart = state.queue.length > 120 ? Math.max(0, curIdx - 20) : 0;
+  const winEnd = state.queue.length > 120 ? Math.min(state.queue.length, curIdx + 100) : state.queue.length;
+
+  if (winStart > 0) {
+    const prevInfo = document.createElement('div');
+    prevInfo.className = 'px-2 py-1 text-[10px] font-semibold text-on-surface-variant text-center';
+    prevInfo.textContent = `Önceki ${winStart} parça gizlendi (Toplam ${state.queue.length} parça)`;
+    DOM.queueDrawerList.appendChild(prevInfo);
+  }
+
+  for (let index = winStart; index < winEnd; index++) {
+    const track = state.queue[index];
+    if (!track) continue;
     const isCurrent = index === state.queueIndex;
     const safeTitle = escapeHtml(track.title || 'Şarkı');
     const safeArtist = escapeHtml(track.artist || 'Sanatçı');
@@ -6028,7 +6052,14 @@ function renderQueueDrawerList() {
     };
 
     DOM.queueDrawerList.appendChild(item);
-  });
+  }
+
+  if (winEnd < state.queue.length) {
+    const nextInfo = document.createElement('div');
+    nextInfo.className = 'px-2 py-1.5 text-[10px] font-semibold text-on-surface-variant text-center';
+    nextInfo.textContent = `Sırada +${state.queue.length - winEnd} parça daha var`;
+    DOM.queueDrawerList.appendChild(nextInfo);
+  }
 }
 
 function clearQueue() {
