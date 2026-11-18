@@ -275,7 +275,8 @@ body.kurfa-bg-idle .animate-spin-slow {
 /* ==========================================================================
    Z-INDEX STACKING ARCHITECTURE & OVERLAY POSITIONING
    Layer Order:
-   - Dormant persistent deck: 5 / Desktop video deck: 35
+   - Dormant persistent deck: 5 / Desktop video deck: 25 (strictly below z-30 header)
+   - Top header bar: 30 / Sidebar aside: 40
    - Active download pill: 45
    - Desktop player footer / mobile mini-player: 50
    - Floating PiP mini player: 55

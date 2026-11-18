@@ -1478,6 +1478,73 @@ window.dismissToast = dismissToast;
 // 5. NAVIGATION & TAB SWITCHING (DESKTOP & MOBILE - 4 CONSOLIDATED TABS)
 // =============================================================================
 
+function isTrackLocal(track) {
+  if (!track) return false;
+  const idStr = String(track.id || '');
+  return Boolean(track.isLocal || track.source === 'local' || idStr.startsWith('local_'));
+}
+window.isTrackLocal = isTrackLocal;
+
+function supportsDeckVideo(track) {
+  if (!track || isTrackLocal(track)) return false;
+  const idStr = String(track.id || '');
+  if (idStr.startsWith('audius_') || Boolean(track.audiusStreamUrl)) return false;
+  return Boolean(safeYtId(track.ytId || track.id));
+}
+
+function syncDeckVisualUIOnly(mode) {
+  const vinylBtn = document.getElementById('btn-deck-vinyl-mode');
+  const videoBtn = document.getElementById('btn-deck-video-mode');
+  const vinylWrap = document.getElementById('deck-vinyl-wrapper');
+  const videoWrap = document.getElementById('deck-video-wrapper');
+  const barVideoBtn = document.getElementById('btn-player-video-mode');
+
+  if (mode === 'video') {
+    if (vinylBtn) {
+      vinylBtn.classList.remove('bg-surface-container-highest', 'text-primary', 'shadow-xs');
+      vinylBtn.classList.add('text-on-surface-variant');
+    }
+    if (videoBtn) {
+      videoBtn.classList.add('bg-surface-container-highest', 'text-primary', 'shadow-xs');
+      videoBtn.classList.remove('text-on-surface-variant');
+    }
+    if (vinylWrap) {
+      vinylWrap.style.display = 'none';
+      vinylWrap.classList.add('hidden');
+    }
+    if (videoWrap) {
+      videoWrap.style.display = 'block';
+      videoWrap.classList.remove('hidden');
+    }
+    if (barVideoBtn) {
+      barVideoBtn.classList.add('text-primary');
+      barVideoBtn.classList.remove('text-on-surface-variant');
+    }
+  } else {
+    if (videoBtn) {
+      videoBtn.classList.remove('bg-surface-container-highest', 'text-primary', 'shadow-xs');
+      videoBtn.classList.add('text-on-surface-variant');
+    }
+    if (vinylBtn) {
+      vinylBtn.classList.add('bg-surface-container-highest', 'text-primary', 'shadow-xs');
+      vinylBtn.classList.remove('text-on-surface-variant');
+    }
+    if (vinylWrap) {
+      vinylWrap.style.display = '';
+      vinylWrap.classList.remove('hidden');
+    }
+    if (videoWrap) {
+      videoWrap.style.display = 'none';
+      videoWrap.classList.add('hidden');
+    }
+    if (barVideoBtn) {
+      barVideoBtn.classList.remove('text-primary');
+      barVideoBtn.classList.add('text-on-surface-variant');
+    }
+    dismissVideoAdNotice();
+  }
+}
+
 function switchTab(tabId, shouldScroll = true, opts = {}) {
   state.currentTab = tabId;
   if (tabId === "kesfet" && !(opts && opts.preserveArtist)) {
@@ -1558,8 +1625,12 @@ function switchTab(tabId, shouldScroll = true, opts = {}) {
     }
   }
 
-  // Handle Video Player visibility across tabs
+  // Handle Video Player visibility across tabs (re-sync after tabFadeIn/smooth scroll)
   syncPersistentPlayerPosition();
+  requestAnimationFrame(() => syncPersistentPlayerPosition());
+  setTimeout(() => {
+    if (state.currentTab === tabId) syncPersistentPlayerPosition();
+  }, 240);
 
   // Smooth scroll to top only when requested
   if (shouldScroll) {
@@ -2529,6 +2600,8 @@ function playTrackById(videoId, arg2, arg3, arg4, arg5, options = {}) {
 
   const isLocalDeviceTrack = isLocalTrack || Boolean(target && target.isLocal);
   if (isLocalDeviceTrack && DOM.audioEngine) {
+    syncDeckVisualUIOnly('vinyl');
+    syncPersistentPlayerPosition();
     state.isPlaying = true;
     updatePlayPauseUI(true);
     if (state.ytPlayer && typeof state.ytPlayer.pauseVideo === 'function') {
@@ -3226,6 +3299,17 @@ function updatePlayerTrackUI(track) {
   if (DOM.deckTitle) DOM.deckTitle.textContent = track.title || "Şarkı";
   if (DOM.deckArtist) DOM.deckArtist.textContent = track.artist || "Sanatçı";
 
+  // Disable Video mode toggle for local device tracks / audio-only Audius tracks
+  const videoModeBtn = document.getElementById('btn-deck-video-mode');
+  const allowVideo = supportsDeckVideo(track);
+  if (videoModeBtn) {
+    videoModeBtn.classList.toggle('hidden', !allowVideo);
+    videoModeBtn.disabled = !allowVideo;
+    videoModeBtn.setAttribute('aria-disabled', String(!allowVideo));
+  }
+  syncDeckVisualUIOnly(allowVideo && state.deckVisualMode === 'video' ? 'video' : 'vinyl');
+  syncPersistentPlayerPosition();
+
   updatePlayerFavBtn();
   updateMediaSession(track);
   syncFloatingPipUI();
@@ -3690,6 +3774,20 @@ function cleanLyricsQuery(title, artist) {
   return { cleanT: parsedTitle, cleanA: parsedArtist, firstA: firstArtist, rawT, rawA };
 }
 
+function setLyricsOffsetControlsVisible(visible) {
+  const el = document.getElementById('lyrics-offset-controls');
+  if (el) {
+    el.classList.toggle('hidden', !visible);
+  }
+  if (!visible) {
+    const hint = document.getElementById('lyrics-intro-diff-hint');
+    if (hint) {
+      hint.classList.add('hidden');
+      hint.classList.remove('flex');
+    }
+  }
+}
+
 function updateLyricsOffsetUI() {
   const display = document.getElementById('lyrics-offset-display');
   if (display) {
@@ -3699,7 +3797,7 @@ function updateLyricsOffsetUI() {
 }
 
 function setExactLyricsOffset(offset) {
-  if (!state.currentTrack) return;
+  if (!state.currentTrack || isTrackLocal(state.currentTrack)) return;
   state.lyricsOffset = Math.round(offset * 10) / 10;
   if (state.currentTrack.id) {
     safeSetStorage('kurfa_offset_' + state.currentTrack.id, state.lyricsOffset.toString());
@@ -3712,6 +3810,7 @@ function setExactLyricsOffset(offset) {
 window.setExactLyricsOffset = setExactLyricsOffset;
 
 function promptManualOffset() {
+  if (!state.currentTrack || isTrackLocal(state.currentTrack)) return;
   const current = state.lyricsOffset || 0;
   const val = prompt("Şarkı sözü senkron farkını girin (Örnek: -41 veya +2.5 saniye):", current.toFixed(1));
   if (val !== null) {
@@ -3724,13 +3823,9 @@ function promptManualOffset() {
 window.promptManualOffset = promptManualOffset;
 
 function syncLineToCurrentPlayback(line) {
+  if (!state.currentTrack || isTrackLocal(state.currentTrack)) return;
   if (!line || typeof line.time !== 'number') return;
-  let cur = 0;
-  if (state.ytPlayer && typeof state.ytPlayer.getCurrentTime === 'function') {
-    cur = state.ytPlayer.getCurrentTime();
-  } else if (DOM.audioEngine) {
-    cur = DOM.audioEngine.currentTime;
-  }
+  let cur = getActiveMediaCurrentTime();
   if (!cur) {
     showToast("Önce şarkıyı başlatın", "info");
     return;
@@ -3743,6 +3838,7 @@ function syncLineToCurrentPlayback(line) {
 window.syncLineToCurrentPlayback = syncLineToCurrentPlayback;
 
 function syncActiveLineToPlayback() {
+  if (!state.currentTrack || isTrackLocal(state.currentTrack)) return;
   if (!state.activeLyrics || state.activeLyrics.length === 0) {
     showToast("Senkronize söz bulunamadı", "info");
     return;
@@ -3761,7 +3857,7 @@ function syncActiveLineToPlayback() {
 window.syncActiveLineToPlayback = syncActiveLineToPlayback;
 
 function adjustLyricsOffset(delta) {
-  if (!state.currentTrack) return;
+  if (!state.currentTrack || isTrackLocal(state.currentTrack)) return;
   if (delta === 0) {
     setExactLyricsOffset(0);
   } else {
@@ -3810,6 +3906,30 @@ async function updateLyricsDisplay() {
     return;
   }
 
+  // Local device files do not use online lyrics matching or sync offset controls
+  if (isTrackLocal(track)) {
+    setLyricsOffsetControlsVisible(false);
+    lyricsLoadedTrackId = track.id || 'local';
+    if (DOM.lyricsStatusLabel) DOM.lyricsStatusLabel.textContent = "Yerel Dosya";
+    if (DOM.lyricsSourceBadge) DOM.lyricsSourceBadge.textContent = "Devre Dışı";
+    const mnpLyricLine = document.getElementById('mnp-lyric-line');
+    if (mnpLyricLine) mnpLyricLine.textContent = "Yerel parçalarda canlı sözler devre dışıdır.";
+    DOM.deckLyricsLines.innerHTML = `
+      <div class="py-8 px-4 flex flex-col items-center justify-center text-center gap-2.5 text-on-surface-variant rounded-2xl bg-surface-container-low/50 border border-surface-container/60">
+        <div class="w-11 h-11 rounded-2xl bg-primary/10 flex items-center justify-center text-primary">
+          <span class="material-symbols-outlined text-[24px]" aria-hidden="true">music_off</span>
+        </div>
+        <div>
+          <p class="text-sm font-bold text-on-surface">Yerel Dosyalarda Canlı Sözler Devre Dışıdır</p>
+          <p class="text-xs text-on-surface-variant mt-1 max-w-xs leading-relaxed">
+            Cihazınızdan çalınan yerel ses dosyaları için söz eşleştirme ve senkronizasyon kontrolleri kapatılmıştır.
+          </p>
+        </div>
+      </div>
+    `;
+    return;
+  }
+
   const cacheKey = `${track.id || ''}_${track.title || ''}_${track.artist || ''}`;
 
   // Restore track-specific offset from localStorage
@@ -3837,6 +3957,7 @@ async function updateLyricsDisplay() {
   }
 
   // Show loading skeleton in lyrics box
+  setLyricsOffsetControlsVisible(false);
   if (DOM.lyricsStatusLabel) DOM.lyricsStatusLabel.textContent = "Şarkı Sözleri Aranıyor...";
   if (DOM.lyricsSourceBadge) DOM.lyricsSourceBadge.textContent = "Bağlanıyor...";
   DOM.deckLyricsLines.innerHTML = `
@@ -4118,6 +4239,7 @@ function parseLyricsPayload(data, track) {
 function renderLyricsList(lines, sourceName) {
   state.activeLyrics = lines;
   state.currentLyricIndex = -1;
+  setLyricsOffsetControlsVisible(Array.isArray(lines) && lines.length > 0);
 
   if (DOM.lyricsStatusLabel) DOM.lyricsStatusLabel.textContent = "Canlı Senkronize Sözler";
   if (DOM.lyricsSourceBadge) DOM.lyricsSourceBadge.textContent = sourceName || "Senkronize LRC";
@@ -4161,6 +4283,7 @@ function renderLyricsList(lines, sourceName) {
 function renderPlainLyrics(plainText, sourceName) {
   state.activeLyrics = [];
   state.currentLyricIndex = -1;
+  setLyricsOffsetControlsVisible(false);
   if (DOM.lyricsStatusLabel) DOM.lyricsStatusLabel.textContent = "Düz Metin Şarkı Sözleri";
   if (DOM.lyricsSourceBadge) DOM.lyricsSourceBadge.textContent = sourceName || "LRCLIB";
 
@@ -4183,6 +4306,7 @@ function renderPlainLyrics(plainText, sourceName) {
 function renderLyricsEmpty(track) {
   state.activeLyrics = [];
   state.currentLyricIndex = -1;
+  setLyricsOffsetControlsVisible(false);
   if (DOM.lyricsStatusLabel) DOM.lyricsStatusLabel.textContent = track ? "Söz Bulunamadı" : "Bekleniyor";
   if (DOM.lyricsSourceBadge) DOM.lyricsSourceBadge.textContent = "Veritabanı";
 
@@ -9477,11 +9601,33 @@ function syncPersistentPlayerPosition() {
   const pDeck = document.getElementById('persistent-player-deck');
   if (!pDeck) return;
 
-  // Desktop Video Deck Mode (on Çalma Listeleri tab)
   const slot = document.getElementById('deck-video-slot');
-  if (state.currentTab === 'calma-listeleri' && state.deckVisualMode === 'video' && slot) {
+  const videoWrap = document.getElementById('deck-video-wrapper');
+  const videoAllowed = supportsDeckVideo(state.currentTrack) &&
+    state.currentTab === 'calma-listeleri' &&
+    state.deckVisualMode === 'video' &&
+    Boolean(slot) &&
+    Boolean(videoWrap && !videoWrap.classList.contains('hidden') && videoWrap.style.display !== 'none');
+
+  if (videoAllowed && slot) {
     const rect = slot.getBoundingClientRect();
-    if (rect.width > 20 && rect.height > 20) {
+    const headerEl = document.querySelector('header');
+    const headerBottom = headerEl ? Math.max(0, Math.ceil(headerEl.getBoundingClientRect().bottom)) : 0;
+
+    let barTop = window.innerHeight || 900;
+    const desktopBar = document.getElementById('desktop-player-bar');
+    const mobileBar = document.getElementById('mobile-mini-player');
+    if (desktopBar && desktopBar.offsetParent !== null) {
+      barTop = Math.min(barTop, Math.floor(desktopBar.getBoundingClientRect().top));
+    } else if (mobileBar && mobileBar.offsetParent !== null) {
+      barTop = Math.min(barTop, Math.floor(mobileBar.getBoundingClientRect().top));
+    }
+
+    const visibleHeight = Math.min(rect.bottom, barTop) - Math.max(rect.top, headerBottom);
+    if (rect.width > 20 && rect.height > 20 && visibleHeight > 20) {
+      const clipTop = Math.max(0, Math.ceil(headerBottom - rect.top));
+      const clipBottom = Math.max(0, Math.ceil(rect.bottom - barTop));
+
       pDeck.dataset.deckPosMode = 'desktop-video';
       pDeck.style.position = 'fixed';
       pDeck.style.left = Math.round(rect.left) + 'px';
@@ -9495,8 +9641,11 @@ function syncPersistentPlayerPosition() {
       pDeck.style.minHeight = '0';
       pDeck.style.opacity = '1';
       pDeck.style.pointerEvents = 'auto';
-      pDeck.style.zIndex = '35';
+      pDeck.style.zIndex = '25';
       pDeck.style.borderRadius = '1rem';
+      pDeck.style.clipPath = (clipTop > 0 || clipBottom > 0)
+        ? `inset(${clipTop}px 0px ${clipBottom}px 0px round 1rem)`
+        : 'none';
       return;
     }
   }
@@ -9518,6 +9667,7 @@ function syncPersistentPlayerPosition() {
   pDeck.style.pointerEvents = 'none';
   pDeck.style.zIndex = '5';
   pDeck.style.borderRadius = '0px';
+  pDeck.style.clipPath = 'none';
 }
 window.syncPersistentPlayerPosition = syncPersistentPlayerPosition;
 
@@ -9540,39 +9690,21 @@ function dismissVideoAdNotice() {
 window.dismissVideoAdNotice = dismissVideoAdNotice;
 
 function setDeckVisualMode(mode, silent = false) {
+  if (mode === 'video' && state.currentTrack && !supportsDeckVideo(state.currentTrack)) {
+    syncDeckVisualUIOnly('vinyl');
+    syncPersistentPlayerPosition();
+    if (!silent) showToast("Yerel ses dosyalarında video modu kullanılamaz", "info");
+    return;
+  }
+
   const curTime = getCurrentPlaybackTime();
   state.currentPlayheadTime = curTime;
   state.deckVisualMode = mode;
   safeSetStorage('kurfa_deck_mode', mode);
 
-  const vinylBtn = document.getElementById('btn-deck-vinyl-mode');
-  const videoBtn = document.getElementById('btn-deck-video-mode');
-  const vinylWrap = document.getElementById('deck-vinyl-wrapper');
-  const videoWrap = document.getElementById('deck-video-wrapper');
-  const barVideoBtn = document.getElementById('btn-player-video-mode');
+  syncDeckVisualUIOnly(mode);
 
   if (mode === 'video') {
-    if (vinylBtn) {
-      vinylBtn.classList.remove('bg-surface-container-highest', 'text-primary', 'shadow-xs');
-      vinylBtn.classList.add('text-on-surface-variant');
-    }
-    if (videoBtn) {
-      videoBtn.classList.add('bg-surface-container-highest', 'text-primary', 'shadow-xs');
-      videoBtn.classList.remove('text-on-surface-variant');
-    }
-    if (vinylWrap) {
-      vinylWrap.style.display = 'none';
-      vinylWrap.classList.add('hidden');
-    }
-    if (videoWrap) {
-      videoWrap.style.display = 'block';
-      videoWrap.classList.remove('hidden');
-    }
-    if (barVideoBtn) {
-      barVideoBtn.classList.add('text-primary');
-      barVideoBtn.classList.remove('text-on-surface-variant');
-    }
-
     if (!silent) {
       showVideoAdNotice();
     }
@@ -9640,29 +9772,6 @@ function setDeckVisualMode(mode, silent = false) {
     if (!silent) showToast("Canlı Video Klip Modu Açıldı");
   } else {
     // VINYL / PLAK MODE (100% Ad-Free Pure Audio)
-    if (videoBtn) {
-      videoBtn.classList.remove('bg-surface-container-highest', 'text-primary', 'shadow-xs');
-      videoBtn.classList.add('text-on-surface-variant');
-    }
-    if (vinylBtn) {
-      vinylBtn.classList.add('bg-surface-container-highest', 'text-primary', 'shadow-xs');
-      vinylBtn.classList.remove('text-on-surface-variant');
-    }
-    if (vinylWrap) {
-      vinylWrap.style.display = '';
-      vinylWrap.classList.remove('hidden');
-    }
-    if (videoWrap) {
-      videoWrap.style.display = 'none';
-      videoWrap.classList.add('hidden');
-    }
-    if (barVideoBtn) {
-      barVideoBtn.classList.remove('text-primary');
-      barVideoBtn.classList.add('text-on-surface-variant');
-    }
-
-    dismissVideoAdNotice();
-
     if (state.currentTrack && state.currentTrack.id) {
       if (DOM.audioEngine && DOM.audioEngine.getAttribute('src') && !DOM.audioEngine.paused && DOM.audioEngine.currentTime > 0) {
         // HTML5 audio continues playing
@@ -10821,7 +10930,7 @@ function initApp() {
   }
   syncPersistentPlayerPosition();
   window.addEventListener('resize', scheduleSyncPersistentPlayerPosition, { passive: true });
-  window.addEventListener('scroll', scheduleSyncPersistentPlayerPosition, { passive: true });
+  window.addEventListener('scroll', scheduleSyncPersistentPlayerPosition, { passive: true, capture: true });
   const persistPlaybackSession = () => {
     try {
       if (state.currentTrack) {
