@@ -91,14 +91,14 @@
   </script>
 
   <!-- Square Favicon Suite (Google Search Central Guidelines: min 48x48) -->
-  <link rel="shortcut icon" href="https://kurfanova.github.io/favicon.ico" />
-  <link rel="icon" type="image/x-icon" href="https://kurfanova.github.io/favicon.ico" />
-  <link rel="icon" type="image/png" sizes="48x48" href="https://kurfanova.github.io/favicon-48x48.png" />
-  <link rel="icon" type="image/png" sizes="96x96" href="https://kurfanova.github.io/favicon-96x96.png" />
-  <link rel="icon" type="image/png" sizes="192x192" href="https://kurfanova.github.io/icon-192.png" />
-  <link rel="icon" type="image/png" sizes="512x512" href="https://kurfanova.github.io/icon-512.png" />
-  <link rel="apple-touch-icon" sizes="180x180" href="https://kurfanova.github.io/apple-touch-icon.png" />
-  <link rel="manifest" href="https://kurfanova.github.io/manifest.json" />
+  <link rel="shortcut icon" href="./favicon.ico" />
+  <link rel="icon" type="image/x-icon" href="./favicon.ico" />
+  <link rel="icon" type="image/png" sizes="48x48" href="./favicon-48x48.png" />
+  <link rel="icon" type="image/png" sizes="96x96" href="./favicon-96x96.png" />
+  <link rel="icon" type="image/png" sizes="192x192" href="./icon-192.png" />
+  <link rel="icon" type="image/png" sizes="512x512" href="./icon-512.png" />
+  <link rel="apple-touch-icon" sizes="180x180" href="./apple-touch-icon.png" />
+  <link rel="manifest" href="./manifest.json" />
 
   <!-- Fonts & Icons (Non-Render-Blocking for Instant Mobile Boot) -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -138,7 +138,7 @@
     }
   </style>
   <link rel="stylesheet" href="./tailwind.min.css?v=20261116_v1">
-  <link rel="stylesheet" href="./style.css?v=20261118_v10">
+  <link rel="stylesheet" href="./style.css?v=20261118_v12">
 </head>
 <body class="bg-background font-sans text-on-surface antialiased min-h-screen">
   <script>
@@ -1360,6 +1360,15 @@
         </button>
       </div>
 
+      <!-- Desktop Download Folder Row (Visible only in Windows Desktop EXE) -->
+      <div id="modal-dl-folder-row" class="hidden items-center justify-between gap-2 px-3 py-2 rounded-2xl bg-surface-container-low border border-surface-container/60 text-xs">
+        <div class="flex items-center gap-2 min-w-0">
+          <span class="material-symbols-outlined text-[16px] text-primary flex-shrink-0" aria-hidden="true">folder</span>
+          <span id="modal-dl-folder-path" class="text-[11px] font-medium text-on-surface-variant truncate">İndirilenler</span>
+        </div>
+        <button type="button" class="px-2.5 py-1 rounded-full bg-surface-container hover:bg-surface-container-high text-[11px] font-bold text-primary flex-shrink-0 transition-colors active:scale-95" onclick="pickDesktopDownloadFolder()">Değiştir</button>
+      </div>
+
       <!-- Ongoing Download Alert -->
       <div id="modal-ongoing-download-box" class="hidden p-3 rounded-2xl bg-primary/10 border border-primary/25 items-center justify-between gap-2.5">
         <div class="flex items-center gap-2.5 min-w-0">
@@ -1496,6 +1505,16 @@
           <div class="flex items-center justify-between gap-2 text-[11px] text-on-surface-variant">
             <span class="truncate"><span class="font-semibold text-on-surface">Konum: </span><span id="desktop-install-path">Masaüstü Uygulaması</span></span>
             <span id="desktop-app-version" class="hidden"></span>
+          </div>
+
+          <div class="flex items-center justify-between gap-2 p-2.5 rounded-2xl bg-surface-container-low/70 border border-surface-container/60">
+            <div class="flex flex-col min-w-0">
+              <span class="text-xs font-semibold text-on-surface">İndirme Klasörü</span>
+              <span id="desktop-download-dir" class="text-[11px] text-on-surface-variant truncate">İndirilenler</span>
+            </div>
+            <button type="button" onclick="pickDesktopDownloadFolder()" class="px-3 py-1.5 rounded-full bg-surface-container hover:bg-surface-container-high text-primary text-[11px] font-bold flex-shrink-0 transition-colors active:scale-95">
+              Klasör Seç
+            </button>
           </div>
 
           <div class="flex flex-col gap-2">
@@ -2007,7 +2026,7 @@
     <div class="h-9 px-3 bg-[#181818] flex items-center justify-between text-xs text-zinc-300 border-b border-zinc-800">
       <div class="flex items-center gap-1.5 text-zinc-400">
         <span class="material-symbols-outlined text-[16px] text-cyan-400">tune</span>
-        <span class="text-[11px] font-mono tracking-tight text-zinc-200 truncate max-w-[150px]">kurfanova.github.io</span>
+        <span class="text-[11px] font-mono tracking-tight text-zinc-200 truncate max-w-[150px]">Kurfamüzik</span>
       </div>
       <div class="flex items-center gap-1">
         <button type="button" class="w-6 h-6 rounded flex items-center justify-center hover:bg-zinc-700 text-zinc-400 hover:text-white" onclick="expandFloatingPipToFull()" title="Tam Ekrana Genişlet">
@@ -2033,7 +2052,7 @@
           <button type="button" class="w-7 h-7 rounded-full flex items-center justify-center text-zinc-300 hover:text-white" onclick="toggleMute()" title="Sessiz">
             <span class="material-symbols-outlined text-[18px]">volume_up</span>
           </button>
-          <button type="button" class="w-7 h-7 rounded-full flex items-center justify-center text-zinc-300 hover:text-white" onclick="toggleShuffle()" title="Karıştır">
+          <button type="button" id="pip-btn-shuffle" class="w-7 h-7 rounded-full flex items-center justify-center text-zinc-300 hover:text-white" onclick="toggleShuffle()" title="Karıştır">
             <span class="material-symbols-outlined text-[18px]">shuffle</span>
           </button>
           <button type="button" class="w-7 h-7 rounded-full flex items-center justify-center text-zinc-200 hover:text-white" onclick="playPrevTrack()" title="Önceki">
@@ -2045,7 +2064,7 @@
           <button type="button" class="w-7 h-7 rounded-full flex items-center justify-center text-zinc-200 hover:text-white" onclick="playNextTrack()" title="Sonraki">
             <span class="material-symbols-outlined text-[20px]">skip_next</span>
           </button>
-          <button type="button" class="w-7 h-7 rounded-full flex items-center justify-center text-zinc-300 hover:text-white" onclick="toggleRepeat()" title="Tekrar">
+          <button type="button" id="pip-btn-repeat" class="w-7 h-7 rounded-full flex items-center justify-center text-zinc-300 hover:text-white" onclick="toggleRepeat()" title="Tekrar">
             <span class="material-symbols-outlined text-[18px]">repeat</span>
           </button>
           <button type="button" class="w-7 h-7 rounded-full flex items-center justify-center text-zinc-300 hover:text-white" onclick="openShareModal()" title="Paylaş">
@@ -2109,7 +2128,7 @@
   </div>
 
   <!-- Scripts (App loads immediately; YouTube IFrame API loads async after so phones never stall on boot) -->
-  <script src="./app.js?v=20261118_v11"></script>
+  <script src="./app.js?v=20261118_v12"></script>
   <script src="https://www.youtube.com/iframe_api" async defer></script>
 </body>
 </html>

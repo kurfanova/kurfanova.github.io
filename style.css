@@ -172,7 +172,11 @@ body.kurfa-bg-idle .animate-spin-slow {
 #home-tracklist-table > div,
 #search-results-list > div,
 #playlist-tracks-table > div,
-#favorites-list-table > div {
+#favorites-list-table > div,
+#custom-playlist-tracks-table > div,
+#spotify-playlist-tracks-table > div,
+#artist-tracks-container > div,
+#device-audio-list > div {
   content-visibility: auto;
   contain-intrinsic-size: auto 64px;
 }
@@ -290,18 +294,6 @@ body.kurfa-bg-idle .animate-spin-slow {
 
 #kurfa-floating-pip {
   z-index: 55 !important;
-}
-
-#mobile-now-playing-modal {
-  z-index: 65 !important;
-  background-color: #0c0e17;
-}
-#mobile-now-playing-modal.bg-black\/40 {
-  background-color: rgba(0, 0, 0, 0.4);
-}
-#mnp-bg-art {
-  filter: blur(40px);
-  transform: scale(1.1);
 }
 
 #mobile-download-banner {
@@ -591,8 +583,13 @@ body.dark-mode .hover\:bg-surface-container-low:hover {
 
 body.dark-mode .bg-surface-container-low\/50,
 body.dark-mode .bg-surface-container-low\/60,
+body.dark-mode .bg-surface-container-low\/70,
 body.dark-mode .bg-surface-container-low\/80 {
   background-color: rgba(22, 29, 45, 0.85) !important;
+}
+
+body.dark-mode .bg-primary-fixed\/40 {
+  background-color: rgba(255, 32, 86, 0.16) !important;
 }
 
 body.dark-mode .bg-surface-container {
@@ -812,16 +809,6 @@ body.dark-mode ::-webkit-scrollbar-track {
     bottom: calc(8.5rem + env(safe-area-inset-bottom, 0px)) !important;
   }
 
-  #mobile-now-playing-modal {
-    padding-top: env(safe-area-inset-top, 0px);
-    padding-bottom: env(safe-area-inset-bottom, 0px);
-    transform: translate3d(0, 100%, 0);
-    will-change: transform, opacity;
-  }
-  #mobile-now-playing-modal.translate-y-0 {
-    transform: translate3d(0, 0, 0) !important;
-  }
-
   main {
     padding-top: calc(4.25rem + env(safe-area-inset-top, 0px)) !important;
     padding-bottom: calc(9.5rem + env(safe-area-inset-bottom, 0px)) !important;
@@ -855,8 +842,8 @@ body.dark-mode ::-webkit-scrollbar-track {
     right: 0.5rem !important;
     left: 0.5rem !important;
     width: auto !important;
-    bottom: calc(4.25rem + env(safe-area-inset-bottom, 0px)) !important;
-    max-height: 65vh !important;
+    bottom: calc(8.25rem + env(safe-area-inset-bottom, 0px)) !important;
+    max-height: 58vh !important;
   }
 
   /* Scrollbars on phone */
@@ -1031,15 +1018,14 @@ body.dark-mode .btn-shelf-arrow:hover {
   #home-tracklist-table > div,
   #search-results-list > div,
   #favorites-list-table > div,
-  #playlist-tracks-table > div {
+  #playlist-tracks-table > div,
+  #custom-playlist-tracks-table > div,
+  #spotify-playlist-tracks-table > div,
+  #artist-tracks-container > div,
+  #device-audio-list > div {
     touch-action: pan-y pinch-zoom !important;
     padding-top: 0.65rem;
     padding-bottom: 0.65rem;
-  }
-
-  /* Top search input typography on mobile */
-  #top-search-input {
-    font-size: 13px !important;
   }
 
   /* Prevent auto-zoom on mobile form focus */
