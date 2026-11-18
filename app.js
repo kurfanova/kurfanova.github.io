@@ -4,7 +4,1071 @@
  * Real Synced LRC Karaoke Lyrics Engine, Full Mobile First-Class Navigation & Player Deck
  */
 
-const KURFA_WEB_VERSION = '4.4.0';
+const KURFA_WEB_VERSION = '4.5.0';
+
+// =============================================================================
+// 0.1 FULL TR / EN INTERNATIONALIZATION ENGINE (KURFA_I18N)
+// =============================================================================
+
+const KURFA_I18N = {
+  tr: {
+    'nav.brand_sub': 'Masaüstü & Web',
+    'nav.main_menu': 'Ana Menü',
+    'nav.explore': 'Keşfet',
+    'nav.library': 'Kütüphane',
+    'nav.search': 'Arama',
+    'nav.player_lyrics': 'Çalar & Canlı Sözler',
+    'nav.quick_actions': 'Hızlı İşlemler',
+    'nav.download_link': 'YouTube Linki İndir',
+    'nav.share_track': 'Şarkıyı Paylaş',
+    'nav.profile_settings': 'Profilim & Ayarlar',
+    'nav.developer': 'Geliştirici',
+    'nav.ad_free': '%0 Reklam',
+    'nav.active_badge': 'Aktif',
+    'nav.install_title': 'Kurfamüzik Masaüstü & Mobil Uygulamalar',
+    'nav.install_sub': 'Masaüstü (.exe) • Android (.apk)',
+
+    'topbar.search_placeholder': 'Şarkı veya sanatçı ara...',
+    'topbar.paste': 'Panodan Yapıştır',
+    'topbar.clear': 'Temizle',
+    'topbar.theme_to_light': 'Aydınlık Moda Geç',
+    'topbar.theme_to_dark': 'Karanlık Moda Geç',
+    'topbar.theme_toggle': 'Temayı Değiştir',
+    'topbar.lang_toggle': 'Dili Değiştir (TR / EN)',
+    'topbar.default_nick': 'Dinleyici',
+
+    'hero.trend_badge': '#{rank} TÜRKİYE TRENDİ',
+    'hero.default_title': 'Günün En Popüler Şarkıları',
+    'hero.default_artist': 'Türkiye Top Listesi',
+    'hero.listen_now': 'Hemen Dinle',
+    'hero.add_queue': 'Listeye Ekle',
+    'hero.download': 'İndir',
+    'hero.prev_trend': 'Önceki Trend',
+    'hero.next_trend': 'Sonraki Trend',
+
+    'explore.tab_trends': 'Trendler & Top 10',
+    'explore.tab_discover': 'Keşif & Karışımlar',
+    'explore.tab_new': 'Yeni Çıkanlar',
+    'explore.genre_label': 'Tür:',
+    'explore.genre_all': 'Tümü',
+    'explore.genre_tr_pop': 'Trend Türkçe',
+    'explore.genre_rap': 'Popüler Rap',
+    'explore.genre_acoustic': 'Akustik & Lo-Fi',
+    'explore.genre_chill': 'Gece & Chill',
+    'explore.genre_workout': 'Antrenman & Enerji',
+    'explore.genre_cinema': 'Dizi & Film',
+    'explore.yt_trends_title': 'Türkiye Müzik Trendleri',
+    'explore.show_all': 'Tümünü Göster',
+    'explore.show_all_count': 'Tümünü Göster ({count})',
+    'explore.show_less': 'Daha Az Göster',
+    'explore.play_all': 'Tümünü Oynat',
+    'explore.trend_tracklist_title': 'Trend Şarkı Listesi',
+    'explore.featured_artists_title': 'Öne Çıkan Sanatçılar',
+    'explore.popular_mixes_title': 'Popüler Karışımlar',
+    'explore.popular_artists_title': 'Popüler Sanatçılar',
+    'explore.featured_collections_title': 'Öne Çıkan Koleksiyonlar',
+    'explore.new_releases_title': 'Yeni Çıkanlar',
+    'explore.scroll_left': 'Sola Kaydır',
+    'explore.scroll_right': 'Sağa Kaydır',
+    'explore.trend_tag': '#{rank} Trend',
+
+    'mix.daily_1': 'Günlük Mix 1',
+    'mix.daily_1_upper': 'GÜNLÜK MİX 1',
+    'mix.acoustic': 'Akustik Sakinlik',
+    'mix.acoustic_upper': 'AKUSTİK SAKİNLİK',
+    'mix.rap': 'Türkçe Drill & Rap',
+    'mix.rap_upper': 'TÜRKÇE DRILL & RAP',
+    'mix.run': 'Koşu & Motivasyon',
+    'mix.run_upper': 'KOŞU & MOTİVASYON',
+    'mix.run_sub_short': 'High BPM Club Remixleri',
+    'mix.run_sub': 'Yüksek enerjili Türkçe club ve remixler',
+
+    'artist.back_explore': "Keşfet'e Dön",
+    'artist.back_search': "Arama'ya Dön",
+    'artist.back': 'Geri',
+    'artist.official_profile': 'Resmi Sanatçı Profili',
+    'artist.verified': 'Doğrulanmış Sanatçı',
+    'artist.play_all': 'Tüm Şarkıları Çal',
+    'artist.shuffle': 'Karışık',
+    'artist.popular_tracks': 'Popüler Şarkılar',
+    'artist.loading': 'Yükleniyor...',
+    'artist.loading_tracks': '{name} parçaları getiriliyor...',
+    'artist.track_count': '{count} Parça',
+    'artist.listeners_m': '{val}M dinleyici',
+    'artist.listeners_k': '{val}K dinleyici',
+    'artist.profile_label': 'Sanatçı Profili',
+    'artist.no_tracks': 'Parça listesi alınamadı.',
+    'artist.error': 'Hata',
+    'artist.conn_error': 'Bağlantı hatası oluştu.',
+
+    'search.filter_all': 'Tümü',
+    'search.filter_mv': 'Resmi Klipler',
+    'search.filter_live': 'Canlı',
+    'search.filter_remix': 'Remix',
+    'search.filter_acoustic': 'Akustik',
+    'search.filter_open': 'Reklamsız Açık Katalog',
+    'search.filter_open_title': 'Audius, Deezer ve Apple destekli reklamsız açık katalog',
+    'search.paste': 'Yapıştır',
+    'search.recent_searches': 'Son Aramalar',
+    'search.clear': 'Temizle',
+    'search.recent_played': 'Son Dinlenenler',
+    'search.browse_all': 'Tümüne Göz At',
+    'search.artists': 'Sanatçılar',
+    'search.artists_sub': 'Profil & tüm şarkıları gör',
+    'search.results_title': 'Arama Sonuçları',
+    'search.results_found': '"{query}" İçin {count} Sonuç Bulundu',
+    'search.searching': '"{query}" Aranıyor...',
+    'search.loading_msg': 'Sonuçlar ve sanatçılar getiriliyor...',
+    'search.sort_relevance': 'Alaka',
+    'search.sort_views': 'İzlenme',
+    'search.sort_newest': 'En Yeni',
+    'search.reset': 'Sıfırla',
+    'search.reset_title': 'Filtreleri Sıfırla',
+    'search.empty_prompt': 'Sanatçı adı, şarkı veya YouTube bağlantısı yazarak hemen arayın.',
+    'search.no_results': 'Sonuç Bulunamadı',
+    'search.no_results_title': '"{query}" için sonuç bulunamadı',
+    'search.no_results_hint': 'Farklı bir anahtar kelime deneyin veya doğrudan YouTube linki yapıştırın.',
+    'search.source_open': 'Reklamsız Açık Katalog',
+    'search.source_direct': 'Doğrudan Ses Akışı',
+    'search.yt_audio_suffix': 'Stüdyo Ses',
+    'search.cat_tr_pop': 'Türkçe Pop',
+    'search.cat_tr_rap': 'Türkçe Rap & Drill',
+    'search.cat_arabesk': 'Arabesk & Damar',
+    'search.cat_rock': 'Anadolu Rock',
+    'search.cat_acoustic': 'Akustik & Lo-Fi',
+    'search.cat_90s': "90'lar & Nostalji",
+    'search.cat_global': 'Yabancı Hit',
+    'search.cat_workout': 'Antrenman & Enerji',
+
+    'library.title': 'Kütüphane',
+    'library.subtitle': 'Listeleriniz, Spotify ve favorileriniz',
+    'library.play_all': 'Tümünü Çal',
+    'library.device_music': 'Cihazdaki Müzikler',
+    'library.my_playlists': 'Listelerim',
+    'library.spotify': 'Spotify',
+    'library.favorites': 'Favoriler',
+    'library.custom_title': 'Özel Listelerim',
+    'library.playlist_count': '{count} Liste',
+    'library.new_playlist': 'Yeni Liste',
+    'library.no_playlists_title': 'Henüz özel çalma listeniz yok',
+    'library.no_playlists_desc': 'Yukarıdaki "Yeni Liste" butonunu kullanarak listenizi oluşturabilirsiniz.',
+    'library.tracks_count': '{count} Şarkı',
+    'library.delete_list': 'Listeyi Sil',
+    'library.refresh_list': 'Listeyi Yenile',
+    'library.empty_custom_list': 'Bu liste henüz boş. Arama veya Trendler sekmesinden şarkıları bu listeye ekleyebilirsiniz.',
+    'library.spotify_placeholder': 'Spotify liste, albüm veya sanatçı bağlantısı yapıştır...',
+    'library.spotify_import': 'İçe Aktar',
+    'library.spotify_imported_title': 'İçe Aktarılan Spotify Listeleri',
+    'library.no_spotify_title': 'Henüz Spotify Listesi Eklenmedi',
+    'library.no_spotify_desc': 'Yukarıdaki kutucuğa herhangi bir Spotify çalma listesi bağlantısı yapıştırarak anında içe aktarabilirsiniz.',
+    'library.empty_spotify_list': 'Bu Spotify çalma listesinde gösterilecek şarkı bulunamadı.',
+    'library.fav_title': 'Favori Parçalarım',
+    'library.fav_saved_count': '{count} Şarkı Kaydedildi',
+    'library.fav_empty_title': 'Favori listeniz henüz boş',
+    'library.fav_empty_desc': 'Beğendiğiniz şarkıları kalp simgesine tıklayarak buraya ekleyebilirsiniz.',
+    'library.discover_music': 'Şarkı Keşfet',
+    'library.device_title': 'Cihazdaki Müzikler',
+    'library.device_track_count': '{count} Parça',
+    'library.device_scan': 'Tara / Seç',
+    'library.device_play_seq': 'Sırayla Çal',
+    'library.device_filter_placeholder': 'Cihazdaki şarkılarda ara...',
+    'library.device_empty_unscanned': 'Cihazdaki müzikler henüz taranmadı',
+    'library.device_empty_search': 'Aramayla eşleşen yerel parça yok',
+    'library.device_scan_btn': 'Cihazı Tara',
+    'library.device_pick_btn': 'Bilgisayardan Müzik Seç',
+    'library.downloads_empty_title': 'İndirilen şarkı bulunmuyor',
+    'library.downloads_empty_desc': 'Şarkıları çevrimdışı dinlemek için indir butonuna tıklayın.',
+    'library.offline_badge': 'Çevrimdışı',
+    'library.show_more_remaining': 'Daha Fazla Göster ({count} Parça Kaldı)',
+
+    'player.playlist_badge': 'Canlı Trend Seçkisi',
+    'player.yt_trends': 'Türkiye Müzik Trendleri',
+    'player.yt_trends_desc': 'Günün en çok dinlenen parçaları.',
+    'player.yt_live_hit': '#1 Canlı Hit ({dur})',
+    'player.play_shuffle': 'Tümünü Çal (Karışık)',
+    'player.tracklist': 'Şarkı Listesi',
+    'player.filter_in_list': 'Liste içinde filtrele...',
+    'player.now_playing': 'Şimdi Çalıyor',
+    'player.cover_mode': 'Kapak',
+    'player.video_mode': 'Video',
+    'player.video_ad_notice': "YouTube video modunda reklam görülebilir; reklamsız dinleme için Kapak Modu'na geçebilirsiniz.",
+    'player.dismiss_notice': 'Bildirimi Gizle',
+    'player.live_video_area': 'Canlı Video Alanı',
+    'player.fullscreen': 'Tam Ekran',
+    'player.select_song': 'Bir parça seçin',
+    'player.no_playing': 'Çalınan şarkı yok',
+    'player.lyrics_title': 'Şarkı Sözleri',
+    'player.lyrics_synced': 'Senkronize',
+    'player.lyrics_sync_title': 'Söz senkronizasyon ayarı',
+    'player.lyrics_sync_btn': 'Eşitle',
+    'player.show_more_tracks': 'Daha Fazla Göster ({count} Şarkı Daha)',
+    'player.show_less_tracks': 'Daha Az Göster (İlk 7 Şarkı)',
+    'player.no_matching_tracks': 'Aramanızla eşleşen şarkı bulunamadı.',
+    'player.prev_song': 'Önceki Şarkı',
+    'player.next_song': 'Sonraki Şarkı',
+    'player.play_pause': 'Oynat/Durdur',
+    'player.shuffle': 'Karıştır',
+    'player.repeat': 'Tekrarla',
+    'player.fav_add': 'Favorilere Ekle',
+    'player.lyrics': 'Şarkı Sözleri',
+    'player.pip': 'Mini Kayan Oynatıcı (PiP)',
+    'player.devices': 'Cihaza Bağlan (Bluetooth/Hoparlör)',
+    'player.download_audio': 'Sesi İndir',
+    'player.queue': 'Çalma Sırası',
+    'player.mute': 'Sessize Al',
+    'player.playing_badge': 'Çalıyor',
+    'player.nav_lyrics_eq': 'Sözler & EQ',
+    'player.play_btn': 'Çal',
+    'player.add_to_playlist': 'Çalma Listesine Ekle',
+    'player.add_to_queue': 'Sıraya Ekle',
+    'player.fav_remove': 'Favorilerden Çıkar',
+
+    'footer.toggle_theme': 'Temayı Değiştir',
+
+    'queue.title': 'Çalma Sırası',
+    'queue.clear_title': 'Çalma sırasını boşalt',
+    'queue.empty_title': 'Çalma Sıranız Boş',
+    'queue.empty_desc': 'Herhangi bir şarkıyı sıraya ekleyebilir veya trend listesini başlatabilirsiniz.',
+    'queue.play_trends': 'Trend Müzikleri Çal',
+    'queue.up_next': 'Sıradaki Şarkılar ({count})',
+    'queue.playlist_prefix': 'Liste: {name}',
+    'queue.playlist_default': 'Çalma Listesi',
+    'queue.hidden_prev': 'Önceki {count} parça gizlendi (Toplam {total} parça)',
+    'queue.more_in_queue': 'Sırada +{count} parça daha var',
+    'queue.move_up': 'Yukarı Taşı',
+    'queue.move_down': 'Aşağı Taşı',
+    'queue.remove': 'Sıradan Çıkar',
+
+    'dl.title': 'Medya İndirici',
+    'dl.url_placeholder': 'YouTube bağlantısı yapıştırın...',
+    'dl.folder_default': 'İndirilenler',
+    'dl.folder_default_win': 'Varsayılan İndirilenler',
+    'dl.change_folder': 'Değiştir',
+    'dl.downloading': 'İndiriliyor...',
+    'dl.bg_continuing': 'Arka planda devam ediyor.',
+    'dl.audio_m4a': 'Ses (M4A)',
+    'dl.video_mp4': 'Video (MP4)',
+    'dl.play_now': 'Hemen Oynat',
+    'dl.preparing': 'Hazırlanıyor...',
+    'dl.preparing_bg': 'Arka planda hazırlanıyor...',
+    'dl.connecting': 'Bağlantı kuruluyor...',
+    'dl.retry': 'Tekrar Dene',
+    'dl.get_app': 'Uygulamayı İndir',
+    'dl.open_folder': 'Klasörü Aç',
+    'dl.view_status': 'İndirme durumunu görüntüle',
+
+    'share.title': 'Şarkıyı Paylaş',
+    'share.copy': 'Kopyala',
+    'share.copied': 'Kopyalandı!',
+    'share.web_share': 'Uygulama veya Cihazda Paylaş',
+
+    'settings.title': 'Ayarlar',
+    'settings.version': 'Sürüm',
+    'settings.browser': 'Tarayıcı',
+    'settings.checking': 'Sürüm kontrol ediliyor...',
+    'settings.new_update': 'Yeni Güncelleme Mevcut',
+    'settings.location': 'Konum: ',
+    'settings.desktop_app': 'Masaüstü Uygulaması',
+    'settings.dl_folder': 'İndirme Klasörü',
+    'settings.pick_folder': 'Klasör Seç',
+    'settings.desktop_shortcut': 'Masaüstü Kısayolu',
+    'settings.start_menu': 'Başlat Menüsü',
+    'settings.win_startup': 'Windows Açılışında Başlat',
+    'settings.min_tray': 'Kapatınca Tepsiye Küçült',
+    'settings.on': 'Açık',
+    'settings.off': 'Kapalı',
+    'settings.open_folder': 'Klasörü Aç',
+    'settings.check_update': 'Güncelleme Denetle',
+    'settings.checking_update': 'Denetleniyor...',
+    'settings.adfree_apps': 'Reklamsız APK & EXE',
+    'settings.apps_btn': 'Uygulamalar',
+    'settings.nickname': 'Dinleyici Adı',
+    'settings.nickname_placeholder': 'Adınız...',
+    'settings.stat_listening': 'Dinleme',
+    'settings.stat_played': 'Çalınan',
+    'settings.stat_downloads': 'İndirilen',
+    'settings.min_unit': '{val} dk',
+    'settings.dark_theme': 'Karanlık Tema',
+    'settings.language': 'Dil',
+    'settings.ad_warning': 'Reklam Uyarısı',
+    'settings.backup_export': 'Yedek Al',
+    'settings.backup_import': 'Yedeği Yükle',
+    'settings.save_close': 'Kaydet & Kapat',
+    'settings.platform_web': 'Web',
+    'settings.platform_desktop': 'Masaüstü',
+    'settings.platform_android': 'Android',
+    'settings.platform_ext': 'Eklenti',
+    'settings.auto_update_web': 'Sayfa açılışında otomatik güncellenir.',
+    'settings.checking_remote': 'Son sürüm sunucudan kontrol ediliyor...',
+    'settings.installed_ver': 'Yüklü sürüm: v{ver}',
+    'settings.ver_verified': 'Sürüm bilgisi doğrulandı',
+    'settings.new_ver_available': 'Yeni sürüm var: v{remote} (Yüklü: v{installed})',
+    'settings.up_to_date': 'Güncel sürümdesiniz (Son sürüm: v{ver})',
+    'settings.latest_published': 'Son yayınlanan sürüm: v{ver}',
+    'settings.quick_update_avail': 'v{ver} Mevcut — Şimdi Güncelle',
+    'settings.quick_update_ready': 'v{ver} Hazır — Yeniden Başlat',
+
+    'engine.browser_mode': 'Tarayıcı Modu',
+    'engine.apk_active': 'APK Cihaz Motoru Aktif (%0 Reklam)',
+    'engine.desktop_active': 'Masaüstü Uygulaması Aktif (%0 Reklam)',
+    'engine.ext_active': 'Eklenti Motoru Aktif (%0 Reklam)',
+    'engine.adblock_active': 'Reklam Engelleyici Aktif (%0 Reklam)',
+    'engine.watching': 'Kurulum Algılanıyor...',
+    'engine.adblock_detected_btn': 'Reklam Engelleyici Aktif ({name})',
+    'engine.adblock_watching_btn': "{store} Açıldı — Ekle'ye Basın",
+    'engine.adblock_add_btn': '{name} İçin Engelleyici Ekle ({store})',
+    'engine.adblock_hint_active': 'Tarayıcınızda reklam engelleyici algılandı. Şarkılar uyarı ekranı olmadan doğrudan oynatılıyor.',
+    'engine.adblock_hint_watching': 'Açılan mağaza sekmesinde "Ekle" butonuna basın; Kurfamüzik arka planda otomatik algılayacak.',
+    'engine.adblock_hint_default': 'Tarayıcınız için önerilen reklam engelleyici mağaza sayfasını açar; eklediğiniz anda sistem arka planda otomatik algılar.',
+
+    'cpl.title': 'Yeni Çalma Listesi',
+    'cpl.name_label': 'Liste Adı',
+    'cpl.placeholder': 'Örn: Gece Yolculuğu, Spor Motivasyonu...',
+    'cpl.cancel': 'İptal',
+    'cpl.create': 'Oluştur',
+
+    'atp.title': 'Çalma Listesine Ekle',
+    'atp.new_list': 'Yeni Liste Oluştur',
+    'atp.no_lists': 'Henüz listeniz yok. Aşağıdan yeni bir liste oluşturabilirsiniz.',
+
+    'dp.title': 'Ses Çıkışı',
+    'dp.default_output': 'Sistem Varsayılan Çıkışı',
+    'dp.active_output': 'Aktif ses çıkışı',
+    'dp.devices': 'Cihazlar',
+    'dp.refresh': 'Yenile',
+    'dp.scanning': 'Kullanılabilir ses aygıtları taranıyor...',
+    'dp.unlock_title': 'Kulaklık İsimlerini Aç',
+    'dp.unlock_desc': 'Tarayıcı güvenliği nedeniyle Bluetooth veya kulaklık adlarını (AirPods, Buds vb.) görebilmek için izin gereklidir.',
+    'dp.unlock_btn': 'Cihaz İsimlerini Etkinleştir',
+    'dp.active_pill': 'Aktif',
+    'dp.bt_headset': 'Bluetooth / Kulaklık',
+    'dp.sys_default': 'Sistem Varsayılanı',
+    'dp.ext_speaker': 'Harici Hoparlör',
+    'dp.no_devices': 'Sistem varsayılan çıkışı etkin. Cihazınızın ses düğmelerinden veya Bluetooth menüsünden kulaklığınızı doğrudan dinleyebilirsiniz.',
+    'dp.fallback_msg': 'Ses doğrudan cihazınızın bağlı hoparlör veya kulaklığına aktarılmaktadır.',
+    'dp.unsupported': 'Tarayıcınız ses çıkış aygıtı seçimini desteklemiyor. Sistem varsayılan ses çıkışı aktif.',
+
+    'install.title': 'Kurfamüzik Uygulamaları',
+    'install.subtitle': 'Reklamsız masaüstü ve mobil kurulumlar',
+    'install.native_group': 'Cihaz Uygulamaları (EXE & APK)',
+    'install.apk_title': 'Android APK İndir',
+    'install.apk_sub': 'Arka plan çalma • %0 reklam • Yerel indirme',
+    'install.win_title': 'Windows Masaüstü (.exe)',
+    'install.win_sub': 'Sistem tepsisi • Otomatik güncelleme',
+    'install.web_group': 'Web Tarayıcı Seçenekleri',
+    'install.adblock_title': 'Tarayıcı Reklam Engelleyici',
+    'install.adblock_hint': 'Tarayıcınız için önerilen reklam engelleyici eklentiyi kurarak web üzerinde de reklamsız dinleyin.',
+    'install.adguard_add': 'Reklam Engelleyici Ekle',
+    'install.pwa_add': 'Ana Ekrana Ekle (Web Uygulaması)',
+
+    'dupd.available': 'Yeni Güncelleme Mevcut',
+    'dupd.subtitle_ready': 'Yeni sürüm hazır',
+    'dupd.downloading': 'Güncelleme İndiriliyor',
+    'dupd.ready': 'Güncelleme Kuruluma Hazır',
+    'dupd.error': 'Güncelleme Başarısız',
+    'dupd.consent': 'Yeni sürümün indirilip kurulmasını onaylıyor musunuz? İndirme sırasında müzik çalmaya kesintisiz devam eder.',
+    'dupd.later': 'Daha Sonra',
+    'dupd.download_update': 'İndir ve Güncelle',
+    'dupd.bg_hide': 'Arka Plana Al',
+    'dupd.close_apply': 'Kapatırken Kur',
+    'dupd.restart_update': 'Yeniden Başlat ve Güncelle',
+    'dupd.close': 'Kapat',
+    'dupd.retry': 'Tekrar Dene',
+    'dupd.sha_protected': 'SHA-256 Korumalı',
+    'dupd.integrity_check': 'Bütünlük Kontrolü',
+    'dupd.verifying_sha': 'SHA-256 Güvenlik Doğrulaması Yapılıyor...',
+    'dupd.downloading_pkg': 'Güncelleme paketi indiriliyor...',
+    'dupd.verifying_btn': 'Doğrulanıyor...',
+    'dupd.verified_ready': 'Doğrulandı ve Hazır',
+    'dupd.completed': '{size} Tamamlandı',
+    'dupd.packaged': 'Paketlendi',
+    'dupd.ready_badge': 'Hazır',
+    'dupd.restart_hint': 'Paket doğrulandı! Uygulama şimdi yeniden başlatılarak güncelleniyor...',
+    'dupd.manual_restart_hint': 'Güncelleme paketi doğrulandı. Şimdi yeniden başlatarak hemen uygulayabilirsiniz.',
+    'dupd.err_fallback': 'Güncelleme paketi indirilirken bir sorun oluştu.',
+
+    'adw.title': 'Reklam Uyarısı',
+    'adw.subtitle': '%0 Reklamlı Cihaz Motoru Önerisi',
+    'adw.body': 'Web tarayıcısında bu parçada YouTube reklamı çıkabilir. Cihazına uygun uygulamayı indirirsen tüm şarkılar %0 reklamlı çalar.',
+    'adw.welcome_title': 'Hoş Geldin! Reklamsız Koruma',
+    'adw.welcome_sub': 'İlk Ziyaret • Cihazına Özel Öneri',
+    'adw.welcome_body': 'Hoş geldin! Kurfamüzik ücretsiz ve reklamsız müzik deneyimi sunar. Tarayıcında reklam engelleyici algılanmadığı için YouTube parçalarında reklam çıkabilir; aşağıdan tek tıkla koruma kurabilirsin.',
+    'adw.continue_btn': 'Yine de Tarayıcıda Çal',
+    'adw.welcome_continue': 'Şimdilik Tarayıcıda Devam Et',
+    'adw.never_btn': 'Bir daha hatırlatma',
+    'adw.detected': 'Cihaz Algılandı',
+    'adw.win_cta': 'Windows Uygulamasını İndir (.exe • %0 Reklam)',
+    'adw.android_cta': 'Android APK İndir (%0 Reklam)',
+    'adw.adguard_cta': '{name} İçin Engelleyici Ekle (Resmi Mağaza)',
+    'adw.adguard_short': '{name} İçin Engelleyici Ekle',
+    'adw.ios_cta': 'Safari İçin Reklam Engelleyici Kur (App Store)',
+    'adw.all_install_opts': 'Tüm Kurulum Seçenekleri',
+    'adw.open_catalog': 'Reklamsız Açık Katalogda Ara',
+    'adw.webapk': 'Tarayıcı Kısayolu (WebAPK)',
+    'adw.android_detected': 'Android Algılandı',
+
+    'gauth.title': 'Google ile oturum açın',
+    'gauth.subtitle': "Kurfamüzik'e devam etmek için bir hesap seçin",
+    'gauth.add_title': 'Başka bir Google Hesabı ile Bağlan',
+    'gauth.name_placeholder': 'Adınız Soyadınız...',
+    'gauth.signin_btn': 'Bu Hesapla Giriş Yap',
+    'gauth.use_other': 'Başka bir Google hesabı kullan',
+    'gauth.privacy_note': 'Hesabınız ve çalma listeleriniz yerel tarayıcınızda ve bulut eşitleme alanınızda korunur.',
+
+    'pip.expand': 'Tam Ekrana Genişlet',
+    'pip.close': 'Kapat',
+
+    'toast.lang_changed': 'Dil Türkçe olarak değiştirildi',
+    'toast.dark_on': 'Karanlık Mod Açıldı',
+    'toast.dark_off': 'Aydınlık Mod Açıldı',
+    'toast.unmuted': 'Ses Açıldı',
+    'toast.muted': 'Sessize Alındı',
+    'toast.queue_empty': 'Çalma sırası boş',
+    'toast.shuffle_on': 'Karışık Çalma: Açık',
+    'toast.shuffle_off': 'Karışık Çalma: Kapalı',
+    'toast.repeat_off': 'Tekrarlama: Kapalı',
+    'toast.repeat_all': 'Tekrarlama: Tüm Liste',
+    'toast.repeat_one': 'Tekrarlama: Tek Şarkı',
+    'toast.queue_cleared': 'Çalma sırası temizlendi',
+    'toast.removed_from_queue': 'Sıradan çıkarıldı: {title}',
+    'toast.fav_added': 'Favorilere eklendi: {title}',
+    'toast.fav_removed': 'Favorilerden çıkarıldı: {title}',
+    'toast.select_track_first': 'Önce bir şarkı seçin',
+    'toast.profile_saved': 'Profil bilgileri kaydedildi',
+    'toast.share_copied': 'Şarkı linki panoya kopyalandı!',
+    'toast.all_songs_shown': 'Tüm şarkılar gösteriliyor',
+    'toast.category_loading': '{genre} kategorisi listeleniyor...',
+    'toast.trends_playing': 'YouTube Trendler çalınıyor',
+    'toast.search_enter_query': 'Lütfen bir şarkı, sanatçı veya link yazın',
+    'toast.filters_reset': 'Filtreler ve sıralama sıfırlandı',
+    'toast.sort_relevance': 'Alakaya göre sıralandı',
+    'toast.sort_views': 'Popülerlik ve süreye göre sıralandı',
+    'toast.sort_newest': 'En yeni parçalara göre sıralandı',
+    'toast.clipboard_error': 'Panoya erişilemedi, lütfen elle yapıştırın',
+    'toast.yt_direct_stream': 'YouTube linki doğrudan akışa alındı',
+    'toast.alt_source_trying': 'Alternatif kaynak deneniyor...',
+    'toast.copyright_skip': 'Bu şarkı telif nedeniyle yerleştirmeye kapalı, sıradakine geçiliyor',
+    'toast.too_many_errors': 'Arka arkaya çok fazla oynatılamayan parça nedeniyle durduruldu',
+    'toast.history_cleared': 'Arama geçmişi temizlendi',
+    'toast.dl_folder_updated': 'İndirme klasörü güncellendi: {dir}',
+    'toast.dl_folder_desktop_only': 'Klasör seçimi masaüstü uygulamasında desteklenir',
+    'toast.opening_folder': 'Uygulama klasörü açılıyor...',
+    'toast.ad_warn_off': 'Reklam uyarısı kapatıldı',
+    'toast.ad_warn_on': 'Reklam uyarısı açıldı',
+    'toast.ad_warn_never': 'Reklam uyarısı bir daha gösterilmeyecek',
+    'toast.playlist_created': '"{name}" çalma listesi oluşturuldu!',
+    'toast.playlist_created_added': '"{name}" oluşturuldu ve şarkı eklendi!',
+    'toast.playlist_deleted': 'Çalma listesi silindi',
+    'toast.track_removed_playlist': 'Şarkı listeden çıkarıldı',
+    'toast.enter_playlist_name': 'Lütfen bir liste adı girin',
+    'toast.track_added_playlist': '"{title}" -> "{name}" listesine eklendi',
+    'toast.track_already_playlist': '"{title}" zaten "{name}" listesinde var',
+    'toast.audio_routed': 'Ses aktarıldı: {label}',
+    'toast.video_mode_on': 'Canlı Video Klip Modu Açıldı',
+    'toast.audio_mode_on': 'Reklamsız Ses Modu Aktif',
+    'toast.local_no_video': 'Yerel ses dosyalarında video modu kullanılamaz'
+  },
+  en: {
+    'nav.brand_sub': 'Desktop & Web',
+    'nav.main_menu': 'Main Menu',
+    'nav.explore': 'Explore',
+    'nav.library': 'Library',
+    'nav.search': 'Search',
+    'nav.player_lyrics': 'Player & Lyrics',
+    'nav.quick_actions': 'Quick Actions',
+    'nav.download_link': 'Download YouTube Link',
+    'nav.share_track': 'Share Track',
+    'nav.profile_settings': 'Profile & Settings',
+    'nav.developer': 'Developer',
+    'nav.ad_free': 'Ad-Free',
+    'nav.active_badge': 'Active',
+    'nav.install_title': 'Kurfamüzik Desktop & Mobile Apps',
+    'nav.install_sub': 'Desktop (.exe) • Android (.apk)',
+
+    'topbar.search_placeholder': 'Search songs, artists or paste link...',
+    'topbar.paste': 'Paste from Clipboard',
+    'topbar.clear': 'Clear',
+    'topbar.theme_to_light': 'Switch to Light Mode',
+    'topbar.theme_to_dark': 'Switch to Dark Mode',
+    'topbar.theme_toggle': 'Toggle Theme',
+    'topbar.lang_toggle': 'Switch Language (TR / EN)',
+    'topbar.default_nick': 'Listener',
+
+    'hero.trend_badge': '#{rank} TURKEY TRENDING',
+    'hero.default_title': "Today's Top Trending Songs",
+    'hero.default_artist': 'Turkey Top Charts',
+    'hero.listen_now': 'Listen Now',
+    'hero.add_queue': 'Add to Queue',
+    'hero.download': 'Download',
+    'hero.prev_trend': 'Previous Trend',
+    'hero.next_trend': 'Next Trend',
+
+    'explore.tab_trends': 'Trends & Top 10',
+    'explore.tab_discover': 'Discover & Mixes',
+    'explore.tab_new': 'New Releases',
+    'explore.genre_label': 'Genre:',
+    'explore.genre_all': 'All',
+    'explore.genre_tr_pop': 'Trending Pop',
+    'explore.genre_rap': 'Popular Rap',
+    'explore.genre_acoustic': 'Acoustic & Lo-Fi',
+    'explore.genre_chill': 'Late Night & Chill',
+    'explore.genre_workout': 'Workout & Energy',
+    'explore.genre_cinema': 'Movies & Series',
+    'explore.yt_trends_title': 'Turkey Music Trends',
+    'explore.show_all': 'Show All',
+    'explore.show_all_count': 'Show All ({count})',
+    'explore.show_less': 'Show Less',
+    'explore.play_all': 'Play All',
+    'explore.trend_tracklist_title': 'Trending Tracklist',
+    'explore.featured_artists_title': 'Featured Artists',
+    'explore.popular_mixes_title': 'Popular Mixes',
+    'explore.popular_artists_title': 'Popular Artists',
+    'explore.featured_collections_title': 'Featured Collections',
+    'explore.new_releases_title': 'New Releases',
+    'explore.scroll_left': 'Scroll Left',
+    'explore.scroll_right': 'Scroll Right',
+    'explore.trend_tag': '#{rank} Trend',
+
+    'mix.daily_1': 'Daily Mix 1',
+    'mix.daily_1_upper': 'DAILY MIX 1',
+    'mix.acoustic': 'Acoustic Calm',
+    'mix.acoustic_upper': 'ACOUSTIC CALM',
+    'mix.rap': 'Turkish Drill & Rap',
+    'mix.rap_upper': 'TURKISH DRILL & RAP',
+    'mix.run': 'Run & Motivation',
+    'mix.run_upper': 'RUN & MOTIVATION',
+    'mix.run_sub_short': 'High BPM Club Remixes',
+    'mix.run_sub': 'High energy Turkish club & remixes',
+
+    'artist.back_explore': 'Back to Explore',
+    'artist.back_search': 'Back to Search',
+    'artist.back': 'Back',
+    'artist.official_profile': 'Official Artist Profile',
+    'artist.verified': 'Verified Artist',
+    'artist.play_all': 'Play All Tracks',
+    'artist.shuffle': 'Shuffle',
+    'artist.popular_tracks': 'Popular Tracks',
+    'artist.loading': 'Loading...',
+    'artist.loading_tracks': 'Loading {name} tracks...',
+    'artist.track_count': '{count} Tracks',
+    'artist.listeners_m': '{val}M listeners',
+    'artist.listeners_k': '{val}K listeners',
+    'artist.profile_label': 'Artist Profile',
+    'artist.no_tracks': 'Could not load tracklist.',
+    'artist.error': 'Error',
+    'artist.conn_error': 'Connection error occurred.',
+
+    'search.filter_all': 'All',
+    'search.filter_mv': 'Official Videos',
+    'search.filter_live': 'Live',
+    'search.filter_remix': 'Remix',
+    'search.filter_acoustic': 'Acoustic',
+    'search.filter_open': 'Ad-Free Open Catalog',
+    'search.filter_open_title': 'Ad-free open catalog powered by Audius, Deezer & Apple',
+    'search.paste': 'Paste',
+    'search.recent_searches': 'Recent Searches',
+    'search.clear': 'Clear',
+    'search.recent_played': 'Recently Played',
+    'search.browse_all': 'Browse All',
+    'search.artists': 'Artists',
+    'search.artists_sub': 'View profile & top tracks',
+    'search.results_title': 'Search Results',
+    'search.results_found': '{count} Results for "{query}"',
+    'search.searching': 'Searching "{query}"...',
+    'search.loading_msg': 'Fetching tracks and artists...',
+    'search.sort_relevance': 'Relevance',
+    'search.sort_views': 'Popularity',
+    'search.sort_newest': 'Newest',
+    'search.reset': 'Reset',
+    'search.reset_title': 'Reset Filters',
+    'search.empty_prompt': 'Type an artist, song title, or YouTube link to search.',
+    'search.no_results': 'No Results Found',
+    'search.no_results_title': 'No results found for "{query}"',
+    'search.no_results_hint': 'Try another keyword or paste a direct YouTube link.',
+    'search.source_open': 'Ad-Free Open Catalog',
+    'search.source_direct': 'Direct Audio Stream',
+    'search.yt_audio_suffix': 'Studio Audio',
+    'search.cat_tr_pop': 'Turkish Pop',
+    'search.cat_tr_rap': 'Turkish Rap & Drill',
+    'search.cat_arabesk': 'Arabesk & Soul',
+    'search.cat_rock': 'Anatolian Rock',
+    'search.cat_acoustic': 'Acoustic & Lo-Fi',
+    'search.cat_90s': "90s & Nostalgia",
+    'search.cat_global': 'Global Hits',
+    'search.cat_workout': 'Workout & Energy',
+
+    'library.title': 'Library',
+    'library.subtitle': 'Your playlists, Spotify & favorites',
+    'library.play_all': 'Play All',
+    'library.device_music': 'Device Music',
+    'library.my_playlists': 'My Playlists',
+    'library.spotify': 'Spotify',
+    'library.favorites': 'Favorites',
+    'library.custom_title': 'My Playlists',
+    'library.playlist_count': '{count} Playlists',
+    'library.new_playlist': 'New Playlist',
+    'library.no_playlists_title': 'No custom playlists yet',
+    'library.no_playlists_desc': 'Click "New Playlist" above to create your first playlist.',
+    'library.tracks_count': '{count} Tracks',
+    'library.delete_list': 'Delete Playlist',
+    'library.refresh_list': 'Refresh Playlist',
+    'library.empty_custom_list': 'This playlist is empty. Add tracks from Search or Explore.',
+    'library.spotify_placeholder': 'Paste Spotify playlist, album or artist link...',
+    'library.spotify_import': 'Import',
+    'library.spotify_imported_title': 'Imported Spotify Playlists',
+    'library.no_spotify_title': 'No Spotify Playlists Added Yet',
+    'library.no_spotify_desc': 'Paste any Spotify playlist link above to import it instantly.',
+    'library.empty_spotify_list': 'No tracks found in this Spotify playlist.',
+    'library.fav_title': 'Favorite Tracks',
+    'library.fav_saved_count': '{count} Saved Tracks',
+    'library.fav_empty_title': 'Your favorites list is empty',
+    'library.fav_empty_desc': 'Tap the heart icon next to any song to save it here.',
+    'library.discover_music': 'Discover Music',
+    'library.device_title': 'Device Music',
+    'library.device_track_count': '{count} Tracks',
+    'library.device_scan': 'Scan / Pick',
+    'library.device_play_seq': 'Play in Order',
+    'library.device_filter_placeholder': 'Search local tracks...',
+    'library.device_empty_unscanned': 'Device audio has not been scanned yet',
+    'library.device_empty_search': 'No local tracks match your filter',
+    'library.device_scan_btn': 'Scan Device',
+    'library.device_pick_btn': 'Select Music Files',
+    'library.downloads_empty_title': 'No downloaded tracks',
+    'library.downloads_empty_desc': 'Click the download button on any track for offline playback.',
+    'library.offline_badge': 'Offline',
+    'library.show_more_remaining': 'Show More ({count} Remaining)',
+
+    'player.playlist_badge': 'Live Trend Selection',
+    'player.yt_trends': 'Turkey Music Trends',
+    'player.yt_trends_desc': "Today's top trending tracks.",
+    'player.yt_live_hit': '#1 Live Hit ({dur})',
+    'player.play_shuffle': 'Play All (Shuffle)',
+    'player.tracklist': 'Tracklist',
+    'player.filter_in_list': 'Filter in playlist...',
+    'player.now_playing': 'Now Playing',
+    'player.cover_mode': 'Cover',
+    'player.video_mode': 'Video',
+    'player.video_ad_notice': 'YouTube video mode may display ads; switch to Cover Mode for ad-free audio.',
+    'player.dismiss_notice': 'Dismiss Notice',
+    'player.live_video_area': 'Live Video Area',
+    'player.fullscreen': 'Fullscreen',
+    'player.select_song': 'Select a track',
+    'player.no_playing': 'Nothing playing',
+    'player.lyrics_title': 'Lyrics',
+    'player.lyrics_synced': 'Synced',
+    'player.lyrics_sync_title': 'Lyrics sync offset',
+    'player.lyrics_sync_btn': 'Sync',
+    'player.show_more_tracks': 'Show More ({count} More)',
+    'player.show_less_tracks': 'Show Less (Top 7)',
+    'player.no_matching_tracks': 'No matching tracks found.',
+    'player.prev_song': 'Previous Track',
+    'player.next_song': 'Next Track',
+    'player.play_pause': 'Play/Pause',
+    'player.shuffle': 'Shuffle',
+    'player.repeat': 'Repeat',
+    'player.fav_add': 'Add to Favorites',
+    'player.lyrics': 'Lyrics',
+    'player.pip': 'Mini Floating Player (PiP)',
+    'player.devices': 'Connect Device (Bluetooth/Speaker)',
+    'player.download_audio': 'Download Audio',
+    'player.queue': 'Playback Queue',
+    'player.mute': 'Mute',
+    'player.playing_badge': 'Playing',
+    'player.nav_lyrics_eq': 'Lyrics & EQ',
+    'player.play_btn': 'Play',
+    'player.add_to_playlist': 'Add to Playlist',
+    'player.add_to_queue': 'Add to Queue',
+    'player.fav_remove': 'Remove from Favorites',
+
+    'footer.toggle_theme': 'Switch Theme',
+
+    'queue.title': 'Playback Queue',
+    'queue.clear_title': 'Clear playback queue',
+    'queue.empty_title': 'Your Queue is Empty',
+    'queue.empty_desc': 'Add any song to the queue or start playing trending hits.',
+    'queue.play_trends': 'Play Trending Hits',
+    'queue.up_next': 'Up Next ({count})',
+    'queue.playlist_prefix': 'Playlist: {name}',
+    'queue.playlist_default': 'Playlist',
+    'queue.hidden_prev': 'Previous {count} tracks hidden ({total} total)',
+    'queue.more_in_queue': '+{count} more in queue',
+    'queue.move_up': 'Move Up',
+    'queue.move_down': 'Move Down',
+    'queue.remove': 'Remove from Queue',
+
+    'dl.title': 'Media Downloader',
+    'dl.url_placeholder': 'Paste YouTube link...',
+    'dl.folder_default': 'Downloads',
+    'dl.folder_default_win': 'Default Downloads',
+    'dl.change_folder': 'Change',
+    'dl.downloading': 'Downloading...',
+    'dl.bg_continuing': 'Continuing in background.',
+    'dl.audio_m4a': 'Audio (M4A)',
+    'dl.video_mp4': 'Video (MP4)',
+    'dl.play_now': 'Play Now',
+    'dl.preparing': 'Preparing...',
+    'dl.preparing_bg': 'Preparing in background...',
+    'dl.connecting': 'Connecting...',
+    'dl.retry': 'Retry',
+    'dl.get_app': 'Get App',
+    'dl.open_folder': 'Open Folder',
+    'dl.view_status': 'View download status',
+
+    'share.title': 'Share Track',
+    'share.copy': 'Copy',
+    'share.copied': 'Copied!',
+    'share.web_share': 'Share via App or Device',
+
+    'settings.title': 'Settings',
+    'settings.version': 'Version',
+    'settings.browser': 'Browser',
+    'settings.checking': 'Checking version...',
+    'settings.new_update': 'New Update Available',
+    'settings.location': 'Location: ',
+    'settings.desktop_app': 'Desktop App',
+    'settings.dl_folder': 'Download Folder',
+    'settings.pick_folder': 'Choose Folder',
+    'settings.desktop_shortcut': 'Desktop Shortcut',
+    'settings.start_menu': 'Start Menu',
+    'settings.win_startup': 'Launch on Windows Startup',
+    'settings.min_tray': 'Minimize to Tray on Close',
+    'settings.on': 'On',
+    'settings.off': 'Off',
+    'settings.open_folder': 'Open Folder',
+    'settings.check_update': 'Check Updates',
+    'settings.checking_update': 'Checking...',
+    'settings.adfree_apps': 'Ad-Free APK & EXE',
+    'settings.apps_btn': 'Apps',
+    'settings.nickname': 'Listener Name',
+    'settings.nickname_placeholder': 'Your name...',
+    'settings.stat_listening': 'Listening',
+    'settings.stat_played': 'Played',
+    'settings.stat_downloads': 'Downloads',
+    'settings.min_unit': '{val} min',
+    'settings.dark_theme': 'Dark Theme',
+    'settings.language': 'Language',
+    'settings.ad_warning': 'Ad Warning',
+    'settings.backup_export': 'Export Backup',
+    'settings.backup_import': 'Import Backup',
+    'settings.save_close': 'Save & Close',
+    'settings.platform_web': 'Web',
+    'settings.platform_desktop': 'Desktop',
+    'settings.platform_android': 'Android',
+    'settings.platform_ext': 'Extension',
+    'settings.auto_update_web': 'Automatically updates on page load.',
+    'settings.checking_remote': 'Checking latest version...',
+    'settings.installed_ver': 'Installed version: v{ver}',
+    'settings.ver_verified': 'Version verified',
+    'settings.new_ver_available': 'New version available: v{remote} (Installed: v{installed})',
+    'settings.up_to_date': 'Up to date (Latest: v{ver})',
+    'settings.latest_published': 'Latest published version: v{ver}',
+    'settings.quick_update_avail': 'v{ver} Available — Update Now',
+    'settings.quick_update_ready': 'v{ver} Ready — Restart Now',
+
+    'engine.browser_mode': 'Browser Mode',
+    'engine.apk_active': 'APK Native Engine Active (Ad-Free)',
+    'engine.desktop_active': 'Desktop App Active (Ad-Free)',
+    'engine.ext_active': 'Extension Engine Active (Ad-Free)',
+    'engine.adblock_active': 'Ad Blocker Active (Ad-Free)',
+    'engine.watching': 'Detecting Installation...',
+    'engine.adblock_detected_btn': 'Ad Blocker Active ({name})',
+    'engine.adblock_watching_btn': '{store} Opened — Click Add',
+    'engine.adblock_add_btn': 'Add Ad Blocker for {name} ({store})',
+    'engine.adblock_hint_active': 'Ad blocker detected in your browser. Tracks play directly without warnings.',
+    'engine.adblock_hint_watching': 'Click "Add" in the opened store tab; Kurfamüzik will detect it automatically.',
+    'engine.adblock_hint_default': 'Opens the recommended ad blocker store page for your browser and auto-detects once installed.',
+
+    'cpl.title': 'New Playlist',
+    'cpl.name_label': 'Playlist Name',
+    'cpl.placeholder': 'e.g. Night Drive, Workout Energy...',
+    'cpl.cancel': 'Cancel',
+    'cpl.create': 'Create',
+
+    'atp.title': 'Add to Playlist',
+    'atp.new_list': 'Create New Playlist',
+    'atp.no_lists': 'No playlists yet. Create one below.',
+
+    'dp.title': 'Audio Output',
+    'dp.default_output': 'System Default Output',
+    'dp.active_output': 'Active audio output',
+    'dp.devices': 'Devices',
+    'dp.refresh': 'Refresh',
+    'dp.scanning': 'Scanning available audio devices...',
+    'dp.unlock_title': 'Show Device Names',
+    'dp.unlock_desc': 'Browser security requires permission to display Bluetooth or headphone names (AirPods, Buds, etc.).',
+    'dp.unlock_btn': 'Enable Device Names',
+    'dp.active_pill': 'Active',
+    'dp.bt_headset': 'Bluetooth / Headphones',
+    'dp.sys_default': 'System Default',
+    'dp.ext_speaker': 'External Speaker',
+    'dp.no_devices': 'System default output is active. Use your device audio controls or Bluetooth settings.',
+    'dp.fallback_msg': 'Audio is routed directly to your connected speaker or headphones.',
+    'dp.unsupported': 'Your browser does not support output device switching. System default is active.',
+
+    'install.title': 'Kurfamüzik Apps',
+    'install.subtitle': 'Ad-free desktop and mobile builds',
+    'install.native_group': 'Native Apps (EXE & APK)',
+    'install.apk_title': 'Download Android APK',
+    'install.apk_sub': 'Background play • Ad-free • Offline downloads',
+    'install.win_title': 'Windows Desktop (.exe)',
+    'install.win_sub': 'System tray • Auto-update',
+    'install.web_group': 'Web Browser Options',
+    'install.adblock_title': 'Browser Ad Blocker',
+    'install.adblock_hint': 'Install the recommended ad blocker extension for ad-free listening on the web.',
+    'install.adguard_add': 'Add Ad Blocker',
+    'install.pwa_add': 'Add to Home Screen (Web App)',
+
+    'dupd.available': 'New Update Available',
+    'dupd.subtitle_ready': 'New version ready',
+    'dupd.downloading': 'Downloading Update',
+    'dupd.ready': 'Update Ready to Install',
+    'dupd.error': 'Update Failed',
+    'dupd.consent': 'Do you want to download and install the new version? Music continues playing seamlessly.',
+    'dupd.later': 'Later',
+    'dupd.download_update': 'Download & Update',
+    'dupd.bg_hide': 'Minimize to Background',
+    'dupd.close_apply': 'Install on Exit',
+    'dupd.restart_update': 'Restart & Update',
+    'dupd.close': 'Close',
+    'dupd.retry': 'Retry',
+    'dupd.sha_protected': 'SHA-256 Protected',
+    'dupd.integrity_check': 'Integrity Check',
+    'dupd.verifying_sha': 'Verifying SHA-256 signature...',
+    'dupd.downloading_pkg': 'Downloading update package...',
+    'dupd.verifying_btn': 'Verifying...',
+    'dupd.verified_ready': 'Verified & Ready',
+    'dupd.completed': '{size} Completed',
+    'dupd.packaged': 'Packaged',
+    'dupd.ready_badge': 'Ready',
+    'dupd.restart_hint': 'Package verified! Restarting app to apply update...',
+    'dupd.manual_restart_hint': 'Update package verified. Restart now to apply immediately.',
+    'dupd.err_fallback': 'An error occurred while downloading the update package.',
+
+    'adw.title': 'Ad Notice',
+    'adw.subtitle': 'Ad-Free Native Engine Recommendation',
+    'adw.body': 'YouTube ads may appear on this track in web browsers. Install our native app for 100% ad-free playback.',
+    'adw.welcome_title': 'Welcome! Ad-Free Protection',
+    'adw.welcome_sub': 'First Visit • Device Recommendation',
+    'adw.welcome_body': 'Welcome! Kurfamüzik offers a free, ad-free music experience. No ad blocker was detected in your browser, so YouTube tracks may show ads; enable one-click protection below.',
+    'adw.continue_btn': 'Play in Browser Anyway',
+    'adw.welcome_continue': 'Continue in Browser for Now',
+    'adw.never_btn': "Don't remind me again",
+    'adw.detected': 'Device Detected',
+    'adw.win_cta': 'Download Windows App (.exe • Ad-Free)',
+    'adw.android_cta': 'Download Android APK (Ad-Free)',
+    'adw.adguard_cta': 'Add Ad Blocker for {name} (Official Store)',
+    'adw.adguard_short': 'Add Ad Blocker for {name}',
+    'adw.ios_cta': 'Get Ad Blocker for Safari (App Store)',
+    'adw.all_install_opts': 'All Install Options',
+    'adw.open_catalog': 'Search Ad-Free Open Catalog',
+    'adw.webapk': 'Browser Shortcut (WebAPK)',
+    'adw.android_detected': 'Android Detected',
+
+    'gauth.title': 'Sign in with Google',
+    'gauth.subtitle': 'Choose an account to continue to Kurfamüzik',
+    'gauth.add_title': 'Connect another Google Account',
+    'gauth.name_placeholder': 'Full Name...',
+    'gauth.signin_btn': 'Sign In with This Account',
+    'gauth.use_other': 'Use another Google account',
+    'gauth.privacy_note': 'Your account and playlists are kept safe in local storage and cloud sync.',
+
+    'pip.expand': 'Expand to Full View',
+    'pip.close': 'Close',
+
+    'toast.lang_changed': 'Language switched to English',
+    'toast.dark_on': 'Dark Mode Enabled',
+    'toast.dark_off': 'Light Mode Enabled',
+    'toast.unmuted': 'Unmuted',
+    'toast.muted': 'Muted',
+    'toast.queue_empty': 'Queue is empty',
+    'toast.shuffle_on': 'Shuffle: On',
+    'toast.shuffle_off': 'Shuffle: Off',
+    'toast.repeat_off': 'Repeat: Off',
+    'toast.repeat_all': 'Repeat: All',
+    'toast.repeat_one': 'Repeat: One Track',
+    'toast.queue_cleared': 'Playback queue cleared',
+    'toast.removed_from_queue': 'Removed from queue: {title}',
+    'toast.fav_added': 'Added to favorites: {title}',
+    'toast.fav_removed': 'Removed from favorites: {title}',
+    'toast.select_track_first': 'Select a track first',
+    'toast.profile_saved': 'Profile settings saved',
+    'toast.share_copied': 'Track link copied to clipboard!',
+    'toast.all_songs_shown': 'Showing all tracks',
+    'toast.category_loading': 'Loading {genre}...',
+    'toast.trends_playing': 'Playing YouTube Trends',
+    'toast.search_enter_query': 'Please enter a song, artist or link',
+    'toast.filters_reset': 'Filters and sorting reset',
+    'toast.sort_relevance': 'Sorted by relevance',
+    'toast.sort_views': 'Sorted by popularity & duration',
+    'toast.sort_newest': 'Sorted by newest tracks',
+    'toast.clipboard_error': 'Clipboard access denied, please paste manually',
+    'toast.yt_direct_stream': 'YouTube link loaded into stream',
+    'toast.alt_source_trying': 'Trying alternate stream source...',
+    'toast.copyright_skip': 'Track restricted by owner, skipping to next track',
+    'toast.too_many_errors': 'Stopped after too many unplayable tracks in a row',
+    'toast.history_cleared': 'Search history cleared',
+    'toast.dl_folder_updated': 'Download folder updated: {dir}',
+    'toast.dl_folder_desktop_only': 'Folder selection is supported in the desktop app',
+    'toast.opening_folder': 'Opening app folder...',
+    'toast.ad_warn_off': 'Ad warning disabled',
+    'toast.ad_warn_on': 'Ad warning enabled',
+    'toast.ad_warn_never': 'Ad warning will not be shown again',
+    'toast.playlist_created': 'Playlist "{name}" created!',
+    'toast.playlist_created_added': '"{name}" created and track added!',
+    'toast.playlist_deleted': 'Playlist deleted',
+    'toast.track_removed_playlist': 'Track removed from playlist',
+    'toast.enter_playlist_name': 'Please enter a playlist name',
+    'toast.track_added_playlist': '"{title}" added to "{name}"',
+    'toast.track_already_playlist': '"{title}" is already in "{name}"',
+    'toast.audio_routed': 'Audio routed to: {label}',
+    'toast.video_mode_on': 'Live Video Mode Enabled',
+    'toast.audio_mode_on': 'Ad-Free Audio Mode Active',
+    'toast.local_no_video': 'Video mode is not available for local audio files'
+  }
+};
+
+function getAppLanguage() {
+  try {
+    if (typeof state !== 'undefined' && state && (state.lang === 'tr' || state.lang === 'en')) {
+      return state.lang;
+    }
+    const stored = localStorage.getItem('kurfa_lang');
+    if (stored === 'en' || stored === 'tr') return stored;
+  } catch (_) {}
+  return 'tr';
+}
+
+function t(key, params) {
+  const lang = getAppLanguage();
+  const dict = KURFA_I18N[lang] || KURFA_I18N.tr;
+  let str = (dict && dict[key] !== undefined) ? dict[key] : (KURFA_I18N.tr[key] !== undefined ? KURFA_I18N.tr[key] : key);
+  if (params && typeof params === 'object') {
+    Object.keys(params).forEach((k) => {
+      str = str.replace(new RegExp(`\\{${k}\\}`, 'g'), String(params[k] ?? ''));
+    });
+  }
+  return str;
+}
+
+function applyAppLanguage(lang, persist = false) {
+  const cleanLang = (lang === 'en') ? 'en' : 'tr';
+  if (typeof state !== 'undefined' && state) {
+    state.lang = cleanLang;
+  }
+  if (typeof document !== 'undefined' && document.documentElement) {
+    document.documentElement.lang = cleanLang;
+  }
+  if (persist) {
+    try { localStorage.setItem('kurfa_lang', cleanLang); } catch (_) {}
+    if (typeof scheduleSaveUserDataToDesktop === 'function') {
+      scheduleSaveUserDataToDesktop();
+    }
+  }
+
+  if (typeof document !== 'undefined') {
+    document.querySelectorAll('[data-i18n]').forEach((el) => {
+      const k = el.getAttribute('data-i18n');
+      if (k) el.textContent = t(k);
+    });
+    document.querySelectorAll('[data-i18n-placeholder]').forEach((el) => {
+      const k = el.getAttribute('data-i18n-placeholder');
+      if (k) el.setAttribute('placeholder', t(k));
+    });
+    document.querySelectorAll('[data-i18n-title]').forEach((el) => {
+      const k = el.getAttribute('data-i18n-title');
+      if (k) el.setAttribute('title', t(k));
+    });
+    document.querySelectorAll('[data-i18n-aria]').forEach((el) => {
+      const k = el.getAttribute('data-i18n-aria');
+      if (k) el.setAttribute('aria-label', t(k));
+    });
+
+    const topLangBtn = document.getElementById('topbar-lang-btn');
+    if (topLangBtn) topLangBtn.textContent = cleanLang.toUpperCase();
+
+    const btnTr = document.getElementById('btn-lang-tr');
+    const btnEn = document.getElementById('btn-lang-en');
+    if (btnTr && btnEn) {
+      const activeCls = ['bg-primary', 'text-on-primary'];
+      const inactiveCls = ['text-on-surface-variant', 'hover:text-on-surface'];
+      if (cleanLang === 'tr') {
+        btnTr.classList.add(...activeCls);
+        btnTr.classList.remove(...inactiveCls);
+        btnEn.classList.remove(...activeCls);
+        btnEn.classList.add(...inactiveCls);
+      } else {
+        btnEn.classList.add(...activeCls);
+        btnEn.classList.remove(...inactiveCls);
+        btnTr.classList.remove(...activeCls);
+        btnTr.classList.add(...inactiveCls);
+      }
+    }
+  }
+
+  if (typeof getBrowserExtensionMode === 'function' && getBrowserExtensionMode().startsWith('desktop')) {
+    callExtensionBridge('SET_LANGUAGE', { lang: cleanLang }, 2000).catch(() => {});
+  }
+
+  if (typeof state !== 'undefined' && typeof DOM !== 'undefined') {
+    try {
+      updateProfileUI();
+      updateLocalEngineStatusUI();
+      refreshAppVersionAndUpdateStatus();
+      renderPopularArtistsGrid();
+      renderTrendlerCardsGrid();
+      renderHomeTracklistTable();
+      renderPlaylistTracksTable();
+      renderFavoritesTable();
+      renderDownloadsTable();
+      renderCustomPlaylistsGrid();
+      renderSpotifyPlaylistsGrid();
+      if (typeof renderDeviceAudioList === 'function') {
+        renderDeviceAudioList(document.getElementById('device-audio-filter')?.value || '');
+      }
+      if (typeof renderSearchDiscoveryHub === 'function') {
+        renderSearchDiscoveryHub();
+      }
+      renderQueueDrawerList();
+      updateKutuphaneBadges();
+      updateQuickFavCount();
+      updatePlaylistHeroUI();
+      if (typeof getCurrentHeroTrack === 'function') {
+        const slides = typeof getHeroTracks === 'function' ? getHeroTracks() : [];
+        const hTrk = getCurrentHeroTrack();
+        if (hTrk) renderHeroSlide(hTrk, heroSlideIndex, slides.length || 1);
+      }
+      syncShuffleRepeatUI();
+      if (state.currentSearchResults && state.currentSearchResults.length > 0 && state.currentSearchQuery) {
+        renderSearchResults(state.currentSearchResults, state.currentSearchQuery);
+      }
+      if (state.activeCustomPlaylistId) {
+        openCustomPlaylistDetail(state.activeCustomPlaylistId);
+      }
+      if (state.activeSpotifyPlaylistId) {
+        openSpotifyPlaylistDetail(state.activeSpotifyPlaylistId);
+      }
+      if (typeof renderDesktopUpdateModalContent === 'function' && typeof __kurfaDesktopUpdateState !== 'undefined' && __kurfaDesktopUpdateState.phase !== 'idle') {
+        renderDesktopUpdateModalContent();
+      }
+      if (!state.currentTrack) {
+        updatePlayerTrackUI(null);
+      }
+    } catch (_) {}
+  }
+}
+
+function toggleAppLanguage() {
+  const next = getAppLanguage() === 'tr' ? 'en' : 'tr';
+  applyAppLanguage(next, true);
+  if (typeof showToast === 'function') {
+    showToast(t('toast.lang_changed'));
+  }
+}
+
+window.t = t;
+window.getAppLanguage = getAppLanguage;
+window.applyAppLanguage = applyAppLanguage;
+window.toggleAppLanguage = toggleAppLanguage;
 
 // Base API endpoint resolver for cross-origin hosting (GitHub Pages / local preview -> Worker API)
 const __isLocalStaticPreview = typeof window !== 'undefined' &&
@@ -126,22 +1190,22 @@ function updateLocalEngineStatusUI() {
 
   const extMode = getBrowserExtensionMode();
   const adBlockerActive = isBrowserAdBlockerActive();
-  let label = 'Tarayıcı Modu';
+  let label = t('engine.browser_mode');
   let cls = 'px-2 py-0.5 rounded-full text-[10px] font-bold bg-surface-container text-on-surface-variant whitespace-nowrap flex-shrink-0';
   if (isAndroidNativeEngine()) {
-    label = 'APK Cihaz Motoru Aktif (%0 Reklam)';
+    label = t('engine.apk_active');
     cls = 'px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/15 text-emerald-500 whitespace-nowrap flex-shrink-0';
   } else if (extMode && extMode.startsWith('desktop')) {
-    label = 'Masaüstü Uygulaması Aktif (%0 Reklam)';
+    label = t('engine.desktop_active');
     cls = 'px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/15 text-emerald-500 whitespace-nowrap flex-shrink-0';
   } else if (extMode) {
-    label = 'Eklenti Motoru Aktif (%0 Reklam)';
+    label = t('engine.ext_active');
     cls = 'px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/15 text-emerald-500 whitespace-nowrap flex-shrink-0';
   } else if (adBlockerActive) {
-    label = 'AdGuard / Engelleyici Aktif (%0 Reklam)';
+    label = t('engine.adblock_active');
     cls = 'px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/15 text-emerald-500 whitespace-nowrap flex-shrink-0';
   } else if (__kurfaAdBlockerWatching) {
-    label = 'Kurulum Algılanıyor...';
+    label = t('engine.watching');
     cls = 'px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/10 text-amber-500 whitespace-nowrap flex-shrink-0';
   }
   targets.forEach((el) => {
@@ -149,10 +1213,25 @@ function updateLocalEngineStatusUI() {
     el.className = cls;
   });
 
+  const isNativeDesktop = Boolean(extMode && extMode.startsWith('desktop'));
+  const isNativeAndroid = isAndroidNativeEngine();
+  const hideInstallAndFooter = isNativeDesktop || isNativeAndroid;
+
+  const sidebarInstallBtn = document.getElementById('btn-sidebar-install-apk');
+  if (sidebarInstallBtn) {
+    const wrap = sidebarInstallBtn.parentElement;
+    if (wrap) wrap.classList.toggle('hidden', hideInstallAndFooter);
+    sidebarInstallBtn.classList.toggle('hidden', hideInstallAndFooter);
+  }
+  const siteFooter = document.getElementById('site-footer');
+  if (siteFooter) {
+    siteFooter.classList.toggle('hidden', hideInstallAndFooter);
+  }
+
   const isAdFreeEnv = hasAdFreePlaybackEnvironment();
   const sidebarPill = document.getElementById('sidebar-adfree-pill');
   if (sidebarPill) {
-    sidebarPill.textContent = isAdFreeEnv ? 'Aktif' : '%0 Reklam';
+    sidebarPill.textContent = isAdFreeEnv ? t('nav.active_badge') : t('nav.ad_free');
     sidebarPill.className = isAdFreeEnv
       ? 'px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-emerald-500/15 text-emerald-500 whitespace-nowrap flex-shrink-0 leading-none'
       : 'px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-primary/15 text-primary whitespace-nowrap flex-shrink-0 leading-none';
@@ -166,22 +1245,22 @@ function updateLocalEngineStatusUI() {
   const storeBtnLabel = document.getElementById('btn-install-store-adblock-label');
   if (storeBtnLabel) {
     if (adBlockerActive) {
-      storeBtnLabel.textContent = `AdGuard / Engelleyici Aktif (${detectedStore.name})`;
+      storeBtnLabel.textContent = t('engine.adblock_detected_btn', { name: detectedStore.name });
     } else if (__kurfaAdBlockerWatching) {
-      storeBtnLabel.textContent = `${detectedStore.storeName} Açıldı — Ekle'ye Basın`;
+      storeBtnLabel.textContent = t('engine.adblock_watching_btn', { store: detectedStore.storeName });
     } else {
-      storeBtnLabel.textContent = `${detectedStore.name} İçin AdGuard Ekle (${detectedStore.storeName})`;
+      storeBtnLabel.textContent = t('engine.adblock_add_btn', { name: detectedStore.name, store: detectedStore.storeName });
     }
   }
 
   const hintEl = document.getElementById('kurfa-store-install-hint');
   if (hintEl) {
     if (adBlockerActive) {
-      hintEl.textContent = 'Tarayıcınızda reklam engelleyici algılandı. Şarkılar uyarı ekranı olmadan doğrudan oynatılıyor.';
+      hintEl.textContent = t('engine.adblock_hint_active');
     } else if (__kurfaAdBlockerWatching) {
-      hintEl.textContent = 'Açılan mağaza sekmesinde "Ekle" butonuna basın; Kurfamüzik arka planda otomatik algılayacak.';
+      hintEl.textContent = t('engine.adblock_hint_watching');
     } else {
-      hintEl.textContent = 'Tarayıcınız için resmi AdGuard mağaza sayfasını açar; eklediğiniz anda sistem arka planda otomatik algılar.';
+      hintEl.textContent = t('engine.adblock_hint_default');
     }
   }
 
@@ -613,6 +1692,10 @@ if (typeof window !== 'undefined') {
     updateLocalEngineStatusUI();
     refreshDesktopBridgeSettings();
     refreshAppVersionAndUpdateStatus();
+    if (typeof loadUserDataFromDesktop === 'function') loadUserDataFromDesktop();
+    if (typeof getBrowserExtensionMode === 'function' && getBrowserExtensionMode().startsWith('desktop')) {
+      callExtensionBridge('SET_LANGUAGE', { lang: getAppLanguage() }, 2000).catch(() => {});
+    }
   });
   const onReturnAdCheck = async () => {
     if (typeof document !== 'undefined' && document.visibilityState === 'hidden') return;
@@ -1160,6 +2243,174 @@ function escapeHtml(str) {
     ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 }
 
+function formatCleanTrackTitle(rawTitle) {
+  const s = String(rawTitle || '').trim();
+  if (!s) return '';
+  const cleaned = s
+    .replace(/\s*[\(\[]\s*(?:official\s*(?:music\s*)?video|official\s*audio|video\s*klip|klip|visualizer|lyric\s*video|lyrics|hd|4k|8k|remastered)[^\)\]]*[\)\]]/gi, '')
+    .replace(/\s*\|\s*official\b.*$/gi, '')
+    .replace(/\s+[–—-]\s*(?:official\s*(?:music\s*)?video|official\s*audio|video\s*klip|klip)\s*$/gi, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+  return cleaned || s;
+}
+
+function cleanLocalTrackMeta(track) {
+  if (!track || typeof track !== 'object') return track;
+  const rawTitle = String(track.title || '').replace(/\.(mp3|m4a|wav|flac|ogg|aac|opus|webm)$/i, '');
+  const rawArtist = String(track.artist || '');
+  const cleanPart = (val) => String(val || '')
+    .replace(/\s*[\(\[]\s*(?=[A-Za-z0-9_-]*[0-9_-])[_-]{0,4}[A-Za-z0-9_-]{10,16}[_-]{0,4}\s*[\)\]]/g, '')
+    .replace(/[_]+/g, ' ')
+    .replace(/\b(?:high\s+quality\s+audio|official\s+music\s+video|official\s+audio|video\s+klip)\b/gi, '')
+    .replace(/\s+/g, ' ')
+    .replace(/^[\s\-–—]+|[\s\-–—]+$/g, '')
+    .trim();
+
+  let title = cleanPart(rawTitle);
+  let artist = cleanPart(rawArtist);
+  const isGenericArtist = !artist || /^(?:yerel\s*dosya|cihaz\s*m\u00fczi\u011fi|unknown|local\s*file)$/i.test(artist);
+  if (isGenericArtist && title) {
+    const parts = title.split(/\s+[–—-]\s+/).map(p => p.trim()).filter(Boolean);
+    if (parts.length >= 2) {
+      const left = cleanPart(parts[0]);
+      const right = cleanPart(parts.slice(1).join(' - '));
+      if (left && right) {
+        artist = left;
+        title = right;
+      }
+    }
+  }
+  track.title = title || rawTitle || (getAppLanguage() === 'en' ? 'Track' : 'Parça');
+  track.artist = artist || (getAppLanguage() === 'en' ? 'Local File' : 'Yerel Dosya');
+  return track;
+}
+
+function syncTopSearchClearBtn() {
+  const clearBtn = document.getElementById('btn-top-clear');
+  if (!clearBtn) return;
+  const hasText = Boolean(DOM.topSearchInput && DOM.topSearchInput.value && DOM.topSearchInput.value.trim().length > 0);
+  clearBtn.classList.toggle('hidden', !hasText);
+}
+
+const __localDurationProbeQueue = [];
+const __localDurationProbePending = new Set();
+let __localDurationProbeActive = 0;
+
+function formatProbeSeconds(sec) {
+  const total = Math.round(Number(sec) || 0);
+  if (!isFinite(total) || total <= 0) return null;
+  const h = Math.floor(total / 3600);
+  const m = Math.floor((total % 3600) / 60);
+  const s = total % 60;
+  if (h > 0) return `${h}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+  return `${m}:${String(s).padStart(2, '0')}`;
+}
+
+async function runNextLocalDurationProbe() {
+  if (__localDurationProbeActive >= 2 || __localDurationProbeQueue.length === 0) return;
+  const track = __localDurationProbeQueue.shift();
+  if (!track || !track.id) {
+    runNextLocalDurationProbe();
+    return;
+  }
+  __localDurationProbeActive++;
+  let tempObjUrl = null;
+  try {
+    let srcUrl = track.streamUrl || null;
+    if (!srcUrl && track.needsIdbBlob && typeof openKurfaLocalAudioDB === 'function') {
+      const db = await openKurfaLocalAudioDB();
+      const rec = await new Promise((resolve) => {
+        const tx = db.transaction('tracks', 'readonly');
+        const req = tx.objectStore('tracks').get(track.id);
+        req.onsuccess = () => resolve(req.result || null);
+        req.onerror = () => resolve(null);
+      });
+      db.close();
+      if (rec && rec.file) {
+        tempObjUrl = URL.createObjectURL(rec.file);
+        srcUrl = tempObjUrl;
+      }
+    }
+    if (srcUrl) {
+      const formatted = await new Promise((resolve) => {
+        const probe = new Audio();
+        probe.preload = 'metadata';
+        let done = false;
+        const finish = (val) => {
+          if (done) return;
+          done = true;
+          try { probe.removeAttribute('src'); probe.load(); } catch (_) {}
+          resolve(val);
+        };
+        const timer = setTimeout(() => finish(null), 3500);
+        probe.addEventListener('loadedmetadata', () => {
+          clearTimeout(timer);
+          finish(formatProbeSeconds(probe.duration));
+        }, { once: true });
+        probe.addEventListener('error', () => {
+          clearTimeout(timer);
+          finish(null);
+        }, { once: true });
+        probe.src = srcUrl;
+      });
+      if (formatted) {
+        track.duration = formatted;
+        const listEl = document.getElementById('device-audio-list');
+        if (listEl) {
+          listEl.querySelectorAll('.track-row').forEach((row) => {
+            if (row.dataset.trackId === track.id) {
+              const durSpan = row.querySelector('.track-duration-text');
+              if (durSpan) durSpan.textContent = formatted;
+            }
+          });
+        }
+        if (track.needsIdbBlob && typeof openKurfaLocalAudioDB === 'function') {
+          try {
+            const db = await openKurfaLocalAudioDB();
+            const tx = db.transaction('tracks', 'readwrite');
+            const store = tx.objectStore('tracks');
+            const getReq = store.get(track.id);
+            getReq.onsuccess = () => {
+              const r = getReq.result;
+              if (r) {
+                r.duration = formatted;
+                store.put(r);
+              }
+            };
+            tx.oncomplete = () => db.close();
+          } catch (_) {}
+        }
+      }
+    }
+  } catch (_) {
+  } finally {
+    if (tempObjUrl) {
+      try { URL.revokeObjectURL(tempObjUrl); } catch (_) {}
+    }
+    __localDurationProbePending.delete(track.id);
+    __localDurationProbeActive--;
+    runNextLocalDurationProbe();
+  }
+}
+
+function scheduleLocalDurationProbes(tracks) {
+  if (!Array.isArray(tracks) || tracks.length === 0) return;
+  let queued = 0;
+  for (const trk of tracks) {
+    if (queued >= 60) break;
+    if (!trk || !trk.id) continue;
+    const dur = String(trk.duration || '').trim();
+    if (dur && dur !== '3:30' && dur !== '0:00') continue;
+    if (!trk.streamUrl && !trk.needsIdbBlob) continue;
+    if (__localDurationProbePending.has(trk.id)) continue;
+    __localDurationProbePending.add(trk.id);
+    __localDurationProbeQueue.push(trk);
+    queued++;
+  }
+  runNextLocalDurationProbe();
+}
+
 function safeYtId(id) {
   if (id === null || id === undefined) return null;
   const s = String(id).trim();
@@ -1326,6 +2577,10 @@ const state = {
   _errorSkipTimer: null,
   _stallWatchdogTimer: null,
   _trackSwitchStartedAt: 0,
+  _activeMediaEngine: 'none', // 'none' | 'audio' | 'youtube'
+  _activeTrackConfirmedPlaying: false,
+  _activeTrackId: null,
+  _seekOnceHandler: null,
   _adSeekAttempts: 0,
   _guardianAttempts: 0,
   _consecutiveErrorSkips: 0,
@@ -1391,7 +2646,15 @@ const state = {
     return /Android|webOS|iPhone|iPad|iPod/i.test(navigator.userAgent) || (typeof window !== 'undefined' && window.innerWidth < 768);
   })(),
   firebaseUser: null,
-  googleUser: safeGetJSON('kurfa_google_user', null)
+  googleUser: safeGetJSON('kurfa_google_user', null),
+  lang: (function() {
+    try {
+      const l = localStorage.getItem('kurfa_lang');
+      return l === 'en' ? 'en' : 'tr';
+    } catch (_) { return 'tr'; }
+  })(),
+  searchHistory: safeGetJSON('kurfa_search_history', []),
+  recentlyPlayed: safeGetJSON('kurfa_recent_played', [])
 };
 
 // Fresh users start with legitimate empty downloads, favorites and playlists
@@ -1401,6 +2664,226 @@ if (!Array.isArray(state.customPlaylists)) state.customPlaylists = [];
 if (!Array.isArray(state.spotifyPlaylists)) state.spotifyPlaylists = [];
 if (!Array.isArray(state.queue)) state.queue = [];
 if (!Array.isArray(state.originalQueue)) state.originalQueue = [];
+if (!Array.isArray(state.searchHistory)) state.searchHistory = [];
+if (!Array.isArray(state.recentlyPlayed)) state.recentlyPlayed = [];
+
+// =============================================================================
+// 2.5 SHARED UI HELPERS, MULTI-YT FALLBACK & DESKTOP USER-DATA PERSISTENCE
+// =============================================================================
+
+function renderMiniEqBarsHtml(isPlaying) {
+  return `<span class="kurfa-eq-bars ${isPlaying ? '' : 'paused'}" aria-hidden="true"><span></span><span></span><span></span></span>`;
+}
+
+function renderPlayingPillHtml() {
+  return `<span class="kurfa-playing-pill">${escapeHtml(t('player.playing_badge'))}</span>`;
+}
+
+function syncActiveRowEqState() {
+  const playing = Boolean(state.isPlaying);
+  document.querySelectorAll('.kurfa-eq-bars').forEach((el) => {
+    el.classList.toggle('paused', !playing);
+  });
+}
+
+function collectAltYtIds(track, candidates, primaryId) {
+  const seen = new Set();
+  const out = [];
+  const pushId = (raw) => {
+    const id = safeYtId(raw);
+    if (!id || id === primaryId || failedVideoIds.has(id) || seen.has(id)) return;
+    seen.add(id);
+    out.push(id);
+  };
+  if (Array.isArray(candidates)) {
+    candidates.forEach((c) => pushId(c && (c.id || c.ytId)));
+  }
+  if (track && Array.isArray(track._altYtIds)) {
+    track._altYtIds.forEach(pushId);
+  }
+  if (track && Array.isArray(track.altYtIds)) {
+    track.altYtIds.forEach(pushId);
+  }
+  return out.slice(0, 4);
+}
+
+function getNextAltYtId(track, currentId) {
+  if (!track || !Array.isArray(track._altYtIds) || track._altYtIds.length === 0) return null;
+  const remaining = [];
+  let chosen = null;
+  for (const raw of track._altYtIds) {
+    const cid = safeYtId(raw);
+    if (!cid || cid === currentId || failedVideoIds.has(cid)) continue;
+    if (!chosen) {
+      chosen = cid;
+    } else {
+      remaining.push(cid);
+    }
+  }
+  track._altYtIds = remaining;
+  return chosen;
+}
+
+function recordRecentlyPlayed(track) {
+  if (!track || !track.id || !track.title) return;
+  const idStr = String(track.id);
+  if (idStr.startsWith('sp-')) return;
+  const entry = {
+    id: track.id,
+    ytId: safeYtId(track.ytId || track.id) || null,
+    title: String(track.title || '').slice(0, 140),
+    artist: String(track.artist || '').slice(0, 100),
+    thumbnail: safeUrl(track.thumbnail || getTrackThumbnail(track), './kurfamuzik_logo.png'),
+    duration: track.duration || '3:30',
+    source: track.source || null,
+    audiusStreamUrl: track.audiusStreamUrl || null,
+    isLocal: Boolean(track.isLocal),
+    streamUrl: track.streamUrl || null,
+    playedAt: Date.now()
+  };
+  if (!Array.isArray(state.recentlyPlayed)) state.recentlyPlayed = [];
+  const normId = entry.ytId || entry.id;
+  state.recentlyPlayed = [
+    entry,
+    ...state.recentlyPlayed.filter((t) => t && t.id !== entry.id && (!normId || (t.ytId || t.id) !== normId))
+  ].slice(0, 30);
+  safeSetStorage('kurfa_recent_played', JSON.stringify(state.recentlyPlayed));
+  if (typeof renderSearchDiscoveryHub === 'function') {
+    renderSearchDiscoveryHub();
+  }
+  scheduleSaveUserDataToDesktop();
+}
+
+let __saveUserDataTimer = null;
+let __desktopUserDataLoaded = false;
+
+function scheduleSaveUserDataToDesktop() {
+  if (typeof getBrowserExtensionMode !== 'function' || !getBrowserExtensionMode().startsWith('desktop')) return;
+  if (__saveUserDataTimer) clearTimeout(__saveUserDataTimer);
+  __saveUserDataTimer = setTimeout(() => {
+    __saveUserDataTimer = null;
+    try {
+      const payload = {
+        version: 1,
+        updatedAt: Date.now(),
+        lang: getAppLanguage(),
+        searchHistory: Array.isArray(state.searchHistory) ? state.searchHistory.slice(0, 12) : [],
+        recentlyPlayed: Array.isArray(state.recentlyPlayed) ? state.recentlyPlayed.slice(0, 30) : [],
+        favorites: Array.isArray(state.favorites) ? state.favorites : [],
+        customPlaylists: Array.isArray(state.customPlaylists) ? state.customPlaylists : [],
+        spotifyPlaylists: Array.isArray(state.spotifyPlaylists) ? state.spotifyPlaylists : []
+      };
+      callExtensionBridge('SAVE_USER_DATA', { dataJson: JSON.stringify(payload) }, 4000).catch(() => {});
+    } catch (_) {}
+  }, 400);
+}
+
+async function loadUserDataFromDesktop() {
+  if (__desktopUserDataLoaded) return;
+  if (typeof getBrowserExtensionMode !== 'function' || !getBrowserExtensionMode().startsWith('desktop')) return;
+  __desktopUserDataLoaded = true;
+  try {
+    const res = await callExtensionBridge('LOAD_USER_DATA', {}, 4000);
+    if (!res || !res.success) return;
+    let data = res.data && typeof res.data === 'object' ? res.data : null;
+    if (!data && typeof res.dataJson === 'string' && res.dataJson.trim()) {
+      data = JSON.parse(res.dataJson);
+    }
+    if (!data || typeof data !== 'object') return;
+
+    let changed = false;
+
+    if (Array.isArray(data.searchHistory) && data.searchHistory.length > 0) {
+      const seenQ = new Set();
+      const mergedQ = [];
+      [...(state.searchHistory || []), ...data.searchHistory].forEach((q) => {
+        const clean = String(q || '').trim();
+        const key = clean.toLowerCase();
+        if (clean && !seenQ.has(key)) {
+          seenQ.add(key);
+          mergedQ.push(clean);
+        }
+      });
+      state.searchHistory = mergedQ.slice(0, 12);
+      safeSetStorage('kurfa_search_history', JSON.stringify(state.searchHistory));
+      changed = true;
+    }
+
+    if (Array.isArray(data.recentlyPlayed) && data.recentlyPlayed.length > 0) {
+      const combinedRecent = [...(state.recentlyPlayed || []), ...data.recentlyPlayed]
+        .filter((t) => t && t.id && t.title)
+        .sort((a, b) => Number(b.playedAt || 0) - Number(a.playedAt || 0));
+      const seenR = new Set();
+      const mergedRecent = [];
+      for (const item of combinedRecent) {
+        const key = item.ytId || item.id;
+        if (!seenR.has(key)) {
+          seenR.add(key);
+          mergedRecent.push(item);
+          if (mergedRecent.length >= 30) break;
+        }
+      }
+      state.recentlyPlayed = mergedRecent;
+      safeSetStorage('kurfa_recent_played', JSON.stringify(state.recentlyPlayed));
+      changed = true;
+    }
+
+    if (Array.isArray(data.favorites) && data.favorites.length > 0) {
+      const seenF = new Set((state.favorites || []).map((t) => t && t.id).filter(Boolean));
+      const mergedFavs = [...(state.favorites || [])];
+      data.favorites.forEach((t) => {
+        if (t && t.id && !seenF.has(t.id)) {
+          seenF.add(t.id);
+          mergedFavs.push(t);
+        }
+      });
+      state.favorites = mergedFavs;
+      safeSetStorage('kurfa_favs', JSON.stringify(state.favorites));
+      changed = true;
+    }
+
+    if (Array.isArray(data.customPlaylists) && data.customPlaylists.length > 0) {
+      const plMap = new Map();
+      (state.customPlaylists || []).forEach((p) => p && p.id && plMap.set(p.id, p));
+      data.customPlaylists.forEach((p) => {
+        if (!p || !p.id) return;
+        const localPl = plMap.get(p.id);
+        if (!localPl || ((p.tracks || []).length > (localPl.tracks || []).length)) {
+          plMap.set(p.id, p);
+        }
+      });
+      state.customPlaylists = Array.from(plMap.values());
+      safeSetStorage('kurfa_custom_playlists', JSON.stringify(state.customPlaylists));
+      changed = true;
+    }
+
+    if (Array.isArray(data.spotifyPlaylists) && data.spotifyPlaylists.length > 0) {
+      const spMap = new Map();
+      (state.spotifyPlaylists || []).forEach((p) => p && p.id && spMap.set(p.id, p));
+      data.spotifyPlaylists.forEach((p) => {
+        if (p && p.id && !spMap.has(p.id)) {
+          spMap.set(p.id, p);
+        }
+      });
+      state.spotifyPlaylists = Array.from(spMap.values());
+      safeSetStorage('kurfa_spotify_playlists', JSON.stringify(state.spotifyPlaylists));
+      changed = true;
+    }
+
+    if ((data.lang === 'en' || data.lang === 'tr') && !localStorage.getItem('kurfa_lang')) {
+      applyAppLanguage(data.lang, true);
+    }
+
+    if (changed) {
+      renderFavoritesTable();
+      renderCustomPlaylistsGrid();
+      renderSpotifyPlaylistsGrid();
+      updateKutuphaneBadges();
+      updateQuickFavCount();
+      if (typeof renderSearchDiscoveryHub === 'function') renderSearchDiscoveryHub();
+    }
+  } catch (_) {}
+}
 
 
 // =============================================================================
@@ -1839,10 +3322,16 @@ function stopAllPlayback(skipYtStop = false) {
   clearTimeout(state._stallWatchdogTimer);
   state._isAdMuted = false;
   state._adSeekAttempts = 0;
+  state._activeMediaEngine = 'none';
+  state._activeTrackConfirmedPlaying = false;
 
   // 1. Immediately pause and clear HTML5 audio element without spurious error events
   if (DOM.audioEngine) {
     try {
+      if (state._seekOnceHandler) {
+        DOM.audioEngine.removeEventListener('loadedmetadata', state._seekOnceHandler);
+        state._seekOnceHandler = null;
+      }
       if (DOM.audioEngine.getAttribute('src')) {
         DOM.audioEngine.pause();
         DOM.audioEngine.currentTime = 0;
@@ -1855,10 +3344,15 @@ function stopAllPlayback(skipYtStop = false) {
   }
   state.currentPlayheadTime = 0;
 
-  // 2. Stop YouTube player unless caller will immediately invoke loadVideoById
-  if (!skipYtStop && state.ytPlayer && typeof state.ytPlayer.stopVideo === 'function') {
+  // 2. Stop & reset YouTube player unless caller will immediately invoke loadVideoById
+  if (!skipYtStop && state.ytPlayer) {
     try {
-      state.ytPlayer.stopVideo();
+      if (typeof state.ytPlayer.seekTo === 'function') {
+        state.ytPlayer.seekTo(0, true);
+      }
+      if (typeof state.ytPlayer.stopVideo === 'function') {
+        state.ytPlayer.stopVideo();
+      }
     } catch(e) {}
   }
 
@@ -2008,6 +3502,17 @@ function onPlayerStateChange(event) {
     state._consecutiveErrorSkips = 0;
     state._playerInError = false;
 
+    const currentYtId = safeYtId(state.currentTrack?.ytId || state.currentTrack?.id);
+    const loadedYtId = (state.ytPlayer && typeof state.ytPlayer.getVideoData === 'function')
+      ? safeYtId(state.ytPlayer.getVideoData()?.video_id)
+      : null;
+    if (loadedYtId && (!currentYtId || loadedYtId !== currentYtId)) {
+      try {
+        if (typeof state.ytPlayer.pauseVideo === 'function') state.ytPlayer.pauseVideo();
+      } catch(e) {}
+      return;
+    }
+
     // If HTML5 audio engine is already playing an active stream, keep it and silence YouTube
     if (DOM.audioEngine && !DOM.audioEngine.paused && DOM.audioEngine.currentTime > 0 && DOM.audioEngine.getAttribute('src')) {
       if (state.deckVisualMode !== 'video') {
@@ -2027,6 +3532,8 @@ function onPlayerStateChange(event) {
         DOM.audioEngine.removeAttribute('src');
       } catch(e) {}
     }
+    state._activeMediaEngine = 'youtube';
+    state._activeTrackConfirmedPlaying = true;
     state.isPlaying = true;
     state.userPaused = false;
     updatePlayPauseUI(true);
@@ -2131,6 +3638,46 @@ function onPlayerError(err) {
   // Errors 101/150/100/2 mean embedding is forbidden by owner or unavailable
   if (err && (err.data === 150 || err.data === 101 || err.data === 100 || err.data === 2)) {
     const errToken = currentPlaybackToken;
+    const tryAltYtOrSkip = () => {
+      if (errToken !== currentPlaybackToken || state.userPaused) return;
+      if (playId && (err.data === 150 || err.data === 101 || err.data === 100 || err.data === 2)) {
+        failedVideoIds.add(playId);
+      }
+      const nextAltId = getNextAltYtId(state.currentTrack, playId);
+      if (nextAltId) {
+        state._playerInError = false;
+        state._lastErrorVideoId = null;
+        state._attemptedFallbackForVideo = null;
+        const altTrack = {
+          ...state.currentTrack,
+          id: nextAltId,
+          ytId: nextAltId
+        };
+        const qMatch = (state.queue || []).find((t) => t && (t.id === playId || t.ytId === playId));
+        if (qMatch) {
+          qMatch.id = nextAltId;
+          qMatch.ytId = nextAltId;
+          qMatch._altYtIds = altTrack._altYtIds;
+          saveQueueState();
+        }
+        showToast(t('toast.alt_source_trying'));
+        playTrackById(nextAltId, altTrack, 0, undefined, undefined, { isAutoErrorSkip: true, bypassAdWarning: true });
+        return;
+      }
+      state._consecutiveErrorSkips = (state._consecutiveErrorSkips || 0) + 1;
+      if (state._consecutiveErrorSkips >= 5) {
+        state.isPlaying = false;
+        updatePlayPauseUI(false);
+        showToast(t('toast.too_many_errors'));
+        return;
+      }
+      showToast(t('toast.copyright_skip'));
+      state._errorSkipTimer = setTimeout(() => {
+        if (errToken !== currentPlaybackToken || state.userPaused) return;
+        playNextTrack({ isAutoErrorSkip: true });
+      }, 700);
+    };
+
     // Try direct audio / Audius stream fallback first before declaring copyright/embed skip
     if (playId && DOM.audioEngine && state.deckVisualMode !== 'video' && state._attemptedFallbackForVideo !== playId && !state.userPaused) {
       state._attemptedFallbackForVideo = playId;
@@ -2157,39 +3704,12 @@ function onPlayerError(err) {
             }
           }
         } catch(_) {}
-        if (errToken !== currentPlaybackToken || state.userPaused) return;
-        failedVideoIds.add(playId);
-        state._consecutiveErrorSkips = (state._consecutiveErrorSkips || 0) + 1;
-        if (state._consecutiveErrorSkips >= 5) {
-          state.isPlaying = false;
-          updatePlayPauseUI(false);
-          showToast("Arka arkaya çok fazla oynatılamayan parça nedeniyle durduruldu");
-          return;
-        }
-        showToast("Bu şarkı telif nedeniyle yerleştirmeye kapalı, sıradakine geçiliyor");
-        state._errorSkipTimer = setTimeout(() => {
-          if (errToken !== currentPlaybackToken || state.userPaused) return;
-          playNextTrack({ isAutoErrorSkip: true });
-        }, 700);
+        tryAltYtOrSkip();
       })();
       return;
     }
 
-    if (playId && (err.data === 150 || err.data === 101 || err.data === 100)) {
-      failedVideoIds.add(playId);
-    }
-    state._consecutiveErrorSkips = (state._consecutiveErrorSkips || 0) + 1;
-    if (state._consecutiveErrorSkips >= 5) {
-      state.isPlaying = false;
-      updatePlayPauseUI(false);
-      showToast("Arka arkaya çok fazla oynatılamayan parça nedeniyle durduruldu");
-      return;
-    }
-    showToast("Bu şarkı telif nedeniyle yerleştirmeye kapalı, sıradakine geçiliyor");
-    state._errorSkipTimer = setTimeout(() => {
-      if (errToken !== currentPlaybackToken || state.userPaused) return;
-      playNextTrack({ isAutoErrorSkip: true });
-    }, 700);
+    tryAltYtOrSkip();
   } else {
     state.isPlaying = false;
     updatePlayPauseUI(false);
@@ -2197,29 +3717,38 @@ function onPlayerError(err) {
 }
 
 function getCurrentPlaybackTime() {
-  // 1. If HTML5 audio is actively playing, use its currentTime
-  if (DOM.audioEngine && DOM.audioEngine.src && !DOM.audioEngine.paused && typeof DOM.audioEngine.currentTime === 'number' && DOM.audioEngine.currentTime > 0) {
-    return DOM.audioEngine.currentTime;
+  if (state._activeMediaEngine === 'none') {
+    return Math.max(0, state.currentPlayheadTime || 0);
   }
-  // 2. If YouTube player is actively playing, use its currentTime
-  if (state.ytPlayer && typeof state.ytPlayer.getPlayerState === 'function' && state.ytPlayer.getPlayerState() === 1) {
+  const isLocal = Boolean(state.currentTrack && (
+    state.currentTrack.isLocal ||
+    String(state.currentTrack.id).startsWith('local_') ||
+    state.currentTrack.source === 'local'
+  ));
+  if (isLocal) {
+    if (state._activeMediaEngine === 'audio' && DOM.audioEngine && DOM.audioEngine.getAttribute('src') && !isNaN(DOM.audioEngine.currentTime)) {
+      return Math.max(0, DOM.audioEngine.currentTime || 0);
+    }
+    return Math.max(0, state.currentPlayheadTime || 0);
+  }
+  if (state._activeMediaEngine === 'audio') {
+    if (DOM.audioEngine && DOM.audioEngine.getAttribute('src') && !isNaN(DOM.audioEngine.currentTime)) {
+      return Math.max(0, DOM.audioEngine.currentTime || 0);
+    }
+    return Math.max(0, state.currentPlayheadTime || 0);
+  }
+  if ((state._activeMediaEngine === 'youtube' || state.deckVisualMode === 'video') && state.ytPlayer && typeof state.ytPlayer.getCurrentTime === 'function') {
     try {
-      const ytT = state.ytPlayer.getCurrentTime() || 0;
-      if (ytT > 0) return ytT;
+      const currentYtId = safeYtId(state.currentTrack?.ytId || state.currentTrack?.id);
+      const loadedYtId = typeof state.ytPlayer.getVideoData === 'function'
+        ? safeYtId(state.ytPlayer.getVideoData()?.video_id)
+        : null;
+      if (currentYtId && loadedYtId === currentYtId) {
+        return Math.max(0, state.ytPlayer.getCurrentTime() || 0);
+      }
     } catch(e) {}
   }
-  // 3. Fallback: check either engine for positive currentTime
-  let t = 0;
-  if (DOM.audioEngine && typeof DOM.audioEngine.currentTime === 'number' && DOM.audioEngine.currentTime > 0) {
-    t = DOM.audioEngine.currentTime;
-  }
-  if (!t && state.ytPlayer && typeof state.ytPlayer.getCurrentTime === 'function') {
-    try { t = state.ytPlayer.getCurrentTime() || 0; } catch(e) {}
-  }
-  if (!t && typeof state.currentPlayheadTime === 'number' && state.currentPlayheadTime > 0) {
-    t = state.currentPlayheadTime;
-  }
-  return Math.max(0, t || 0);
+  return Math.max(0, state.currentPlayheadTime || 0);
 }
 window.getCurrentPlaybackTime = getCurrentPlaybackTime;
 
@@ -2242,6 +3771,9 @@ function seekPlaybackToSeconds(targetSec) {
     const dur = getActiveMediaDuration();
     if (dur > 0 && typeof updateSeekbarUI === 'function') {
       updateSeekbarUI(targetSec, dur);
+    }
+    if (window.__kurfaDesktopMiniPlayerOpen && typeof syncDesktopMiniPlayerState === 'function') {
+      syncDesktopMiniPlayerState(targetSec, dur || 0);
     }
   }
   if (typeof syncLyricsWithTime === 'function') {
@@ -2450,10 +3982,12 @@ async function resolveAndPlaySpotifyTrack(placeholderId, track, options = {}) {
     const realYtId = safeYtId(best?.id);
     if (realYtId) {
       const realThumb = safeUrl(best.thumbnail, `https://i.ytimg.com/vi/${realYtId}/hqdefault.jpg`);
+      const mergedAltIds = collectAltYtIds(track, sData && Array.isArray(sData.results) ? sData.results.slice(0, 4) : [], realYtId);
 
       if (track) {
         track.id = realYtId;
         track.ytId = realYtId;
+        track._altYtIds = mergedAltIds;
         if (!track.thumbnail || track.thumbnail.includes('kurfamuzik_logo')) {
           track.thumbnail = realThumb;
         }
@@ -2463,6 +3997,7 @@ async function resolveAndPlaySpotifyTrack(placeholderId, track, options = {}) {
       if (qItem) {
         qItem.id = realYtId;
         qItem.ytId = realYtId;
+        qItem._altYtIds = mergedAltIds;
         if (!qItem.thumbnail || qItem.thumbnail.includes('kurfamuzik_logo')) {
           qItem.thumbnail = realThumb;
         }
@@ -2571,6 +4106,9 @@ function playTrackById(videoId, arg2, arg3, arg4, arg5, options = {}) {
   state._adSeekAttempts = 0;
   state._guardianAttempts = 0;
   state._trackSwitchStartedAt = Date.now();
+  state._activeMediaEngine = 'none';
+  state._activeTrackConfirmedPlaying = false;
+  state._activeTrackId = target?.id || cleanYtId || rawId;
   state._playerInError = false;
   state._lastErrorVideoId = null;
   state._attemptedFallbackForVideo = null;
@@ -2591,7 +4129,12 @@ function playTrackById(videoId, arg2, arg3, arg4, arg5, options = {}) {
     };
   }
 
+  if (cleanYtId && target) {
+    target._altYtIds = collectAltYtIds(target, [], cleanYtId);
+  }
+
   state.currentTrack = target;
+  recordRecentlyPlayed(target);
   safeSetStorage('kurfa_last_track', JSON.stringify({
     id: target.id,
     ytId: target.ytId || cleanYtId || null,
@@ -2742,21 +4285,25 @@ function playTrackById(videoId, arg2, arg3, arg4, arg5, options = {}) {
   if (preferDirectAudio && cleanYtId && DOM.audioEngine) {
     state.isPlaying = true;
     updatePlayPauseUI(true);
-    if (state.ytPlayer && typeof state.ytPlayer.pauseVideo === 'function') {
-      try { state.ytPlayer.pauseVideo(); } catch(e) {}
+    if (state.ytPlayer) {
+      try {
+        if (normalizedStart === 0 && typeof state.ytPlayer.seekTo === 'function') state.ytPlayer.seekTo(0, true);
+        if (typeof state.ytPlayer.pauseVideo === 'function') state.ytPlayer.pauseVideo();
+      } catch(e) {}
     }
     const fallbackFromDirectAudio = async () => {
       if (token !== currentPlaybackToken || state.userPaused || state.deckVisualMode === 'video') return;
+      const safeStart = (!state._activeTrackConfirmedPlaying || (Date.now() - (state._trackSwitchStartedAt || 0)) < 4000) ? 0 : normalizedStart;
       try {
         const aud = await kurfaTryQuickAudiusMatch(target, 1600);
         if (token !== currentPlaybackToken || state.userPaused || state.deckVisualMode === 'video') return;
         if (aud && aud.success && aud.streamUrl) {
-          loadDirectAudioStream(aud.streamUrl, normalizedStart, token, null);
+          loadDirectAudioStream(aud.streamUrl, safeStart, token, null);
           return;
         }
       } catch(e) {}
       if (token !== currentPlaybackToken || state.userPaused) return;
-      loadYouTubePlayback(cleanYtId, target, normalizedStart, token, Boolean(state.ytReady && state.ytPlayer && typeof state.ytPlayer.loadVideoById === 'function'));
+      loadYouTubePlayback(cleanYtId, target, safeStart, token, Boolean(state.ytReady && state.ytPlayer && typeof state.ytPlayer.loadVideoById === 'function'));
     };
     kurfaResolveDirectAudio(cleanYtId).then((res) => {
       if (token !== currentPlaybackToken || state.userPaused || state.deckVisualMode === 'video') return;
@@ -2841,20 +4388,35 @@ function playTrackById(videoId, arg2, arg3, arg4, arg5, options = {}) {
 
 function loadDirectAudioStream(streamUrl, startSeconds, token, ytFallbackId) {
   if (!DOM.audioEngine || token !== currentPlaybackToken || state.userPaused) return;
+  const targetStart = (typeof startSeconds === 'number' && !isNaN(startSeconds) && startSeconds > 0) ? startSeconds : 0;
   try {
-    if (state.ytPlayer && typeof state.ytPlayer.pauseVideo === 'function') {
-      try { state.ytPlayer.pauseVideo(); } catch(e) {}
+    if (state.ytPlayer) {
+      try {
+        if (typeof state.ytPlayer.pauseVideo === 'function') state.ytPlayer.pauseVideo();
+        if (targetStart === 0 && typeof state.ytPlayer.seekTo === 'function') state.ytPlayer.seekTo(0, true);
+      } catch(e) {}
+    }
+    if (state._seekOnceHandler) {
+      DOM.audioEngine.removeEventListener('loadedmetadata', state._seekOnceHandler);
+      state._seekOnceHandler = null;
     }
     DOM.audioEngine.volume = state.isMuted ? 0 : (state.volume ?? 0.8);
-    const targetStart = (typeof startSeconds === 'number' && !isNaN(startSeconds) && startSeconds > 0) ? startSeconds : 0;
+    state.currentPlayheadTime = targetStart;
     try {
       DOM.audioEngine.currentTime = targetStart;
     } catch(e) {}
-    const seekOnce = () => {
+    state._seekOnceHandler = () => {
+      state._seekOnceHandler = null;
       if (token !== currentPlaybackToken) return;
-      try { DOM.audioEngine.currentTime = targetStart; } catch(e) {}
+      try {
+        if (targetStart > 0) {
+          DOM.audioEngine.currentTime = targetStart;
+        } else {
+          DOM.audioEngine.currentTime = 0;
+        }
+      } catch(e) {}
     };
-    DOM.audioEngine.addEventListener('loadedmetadata', seekOnce, { once: true });
+    DOM.audioEngine.addEventListener('loadedmetadata', state._seekOnceHandler, { once: true });
     DOM.audioEngine.src = streamUrl;
     state.isPlaying = true;
     updatePlayPauseUI(true);
@@ -2862,6 +4424,8 @@ function loadDirectAudioStream(streamUrl, startSeconds, token, ytFallbackId) {
     if (playPromise && typeof playPromise.then === 'function') {
       playPromise.then(() => {
         if (token !== currentPlaybackToken) return;
+        state._activeMediaEngine = 'audio';
+        state._activeTrackConfirmedPlaying = true;
         try {
           if (window.KurfaAndroidBridge && typeof window.KurfaAndroidBridge.setNativePlaybackState === 'function') {
             window.KurfaAndroidBridge.setNativePlaybackState(true);
@@ -2869,17 +4433,21 @@ function loadDirectAudioStream(streamUrl, startSeconds, token, ytFallbackId) {
         } catch(e) {}
       }).catch((err) => {
         if (token !== currentPlaybackToken || (err && err.name === 'AbortError')) return;
+        const safeFallbackStart = (!state._activeTrackConfirmedPlaying || (Date.now() - (state._trackSwitchStartedAt || 0)) < 4000) ? 0 : targetStart;
         if (ytFallbackId) {
-          loadYouTubePlayback(ytFallbackId, state.currentTrack, startSeconds, token, Boolean(state.ytReady && state.ytPlayer && typeof state.ytPlayer.loadVideoById === 'function'));
+          loadYouTubePlayback(ytFallbackId, state.currentTrack, safeFallbackStart, token, Boolean(state.ytReady && state.ytPlayer && typeof state.ytPlayer.loadVideoById === 'function'));
         } else {
+          state._activeMediaEngine = 'none';
+          state._activeTrackConfirmedPlaying = false;
           state.isPlaying = false;
           updatePlayPauseUI(false);
         }
       });
     }
   } catch(err) {
+    const safeFallbackStart = (!state._activeTrackConfirmedPlaying || (Date.now() - (state._trackSwitchStartedAt || 0)) < 4000) ? 0 : targetStart;
     if (ytFallbackId) {
-      loadYouTubePlayback(ytFallbackId, state.currentTrack, startSeconds, token, Boolean(state.ytReady && state.ytPlayer && typeof state.ytPlayer.loadVideoById === 'function'));
+      loadYouTubePlayback(ytFallbackId, state.currentTrack, safeFallbackStart, token, Boolean(state.ytReady && state.ytPlayer && typeof state.ytPlayer.loadVideoById === 'function'));
     }
   }
 }
@@ -3283,7 +4851,7 @@ window.syncShuffleRepeatUI = syncShuffleRepeatUI;
 
 function toggleShuffle() {
   if (!state.queue || state.queue.length === 0) {
-    showToast("Çalma sırası boş");
+    showToast(t('toast.queue_empty'));
     return;
   }
   state.isShuffle = !state.isShuffle;
@@ -3301,7 +4869,7 @@ function toggleShuffle() {
     state.queue = current ? [current, ...remaining] : remaining;
     state.queueIndex = 0;
     saveQueueState();
-    showToast("Karışık Çalma: Açık");
+    showToast(t('toast.shuffle_on'));
   } else {
     if (state.originalQueue && state.originalQueue.length > 0) {
       state.queue = [...state.originalQueue];
@@ -3313,7 +4881,7 @@ function toggleShuffle() {
       : -1;
     state.queueIndex = matchedIdx !== -1 ? matchedIdx : 0;
     saveQueueState();
-    showToast("Karışık Çalma: Kapalı");
+    showToast(t('toast.shuffle_off'));
   }
   syncShuffleRepeatUI();
   renderQueueDrawerList();
@@ -3324,11 +4892,11 @@ function toggleRepeat() {
   safeSetStorage('kurfa_repeat', state.repeatMode.toString());
   syncShuffleRepeatUI();
   if (state.repeatMode === 0) {
-    showToast("Tekrarlama: Kapalı");
+    showToast(t('toast.repeat_off'));
   } else if (state.repeatMode === 1) {
-    showToast("Tekrarlama: Tüm Liste");
+    showToast(t('toast.repeat_all'));
   } else if (state.repeatMode === 2) {
-    showToast("Tekrarlama: Tek Şarkı");
+    showToast(t('toast.repeat_one'));
   }
 }
 
@@ -3368,28 +4936,30 @@ function updatePlayerTrackUI(track) {
   if (!track) {
     if (DOM.playerThumb) DOM.playerThumb.src = defaultPlaceholder;
     if (DOM.playerTitle) DOM.playerTitle.textContent = "Kurfa Müzik";
-    if (DOM.playerArtist) DOM.playerArtist.textContent = "Bir parça seçin";
+    if (DOM.playerArtist) DOM.playerArtist.textContent = t('player.select_song');
     if (DOM.playerTimeDur) DOM.playerTimeDur.textContent = "0:00";
     if (DOM.playerTimeCur) DOM.playerTimeCur.textContent = "0:00";
 
     if (DOM.playerThumbMobile) DOM.playerThumbMobile.src = defaultPlaceholder;
     if (DOM.playerTitleMobile) DOM.playerTitleMobile.textContent = "Kurfa Müzik";
-    if (DOM.playerArtistMobile) DOM.playerArtistMobile.textContent = "Bir parça seçin";
+    if (DOM.playerArtistMobile) DOM.playerArtistMobile.textContent = t('player.select_song');
 
     if (DOM.deckCoverImg) DOM.deckCoverImg.src = defaultPlaceholder;
     if (DOM.deckTitle) DOM.deckTitle.textContent = "Kurfa Müzik";
-    if (DOM.deckArtist) DOM.deckArtist.textContent = "Çalınan şarkı yok";
+    if (DOM.deckArtist) DOM.deckArtist.textContent = t('player.no_playing');
 
     updatePlayerFavBtn();
     return;
   }
 
   const safeThumb = safeUrl(track.thumbnail || getTrackThumbnail(track), defaultPlaceholder);
+  const cleanTitle = formatCleanTrackTitle(track.title) || (getAppLanguage() === 'en' ? 'Track' : 'Şarkı');
+  const cleanArtist = track.artist || (getAppLanguage() === 'en' ? 'Artist' : 'Sanatçı');
 
   // Desktop elements
   if (DOM.playerThumb) DOM.playerThumb.src = safeThumb;
-  if (DOM.playerTitle) DOM.playerTitle.textContent = track.title || "Şarkı";
-  if (DOM.playerArtist) DOM.playerArtist.textContent = track.artist || "Sanatçı";
+  if (DOM.playerTitle) DOM.playerTitle.textContent = cleanTitle;
+  if (DOM.playerArtist) DOM.playerArtist.textContent = cleanArtist;
   if (DOM.playerTimeDur) DOM.playerTimeDur.textContent = track.duration || "3:30";
 
   if (typeof syncDesktopMiniPlayerState === 'function' && window.__kurfaDesktopMiniPlayerOpen) {
@@ -3398,20 +4968,24 @@ function updatePlayerTrackUI(track) {
 
   // Mobile mini elements
   if (DOM.playerThumbMobile) DOM.playerThumbMobile.src = safeThumb;
-  if (DOM.playerTitleMobile) DOM.playerTitleMobile.textContent = track.title || "Şarkı";
-  if (DOM.playerArtistMobile) DOM.playerArtistMobile.textContent = track.artist || "Sanatçı";
+  if (DOM.playerTitleMobile) DOM.playerTitleMobile.textContent = cleanTitle;
+  if (DOM.playerArtistMobile) DOM.playerArtistMobile.textContent = cleanArtist;
 
   // Native Android Foreground MediaService & Lockscreen Sync
   try {
     if (window.KurfaAndroidBridge && typeof window.KurfaAndroidBridge.updateNowPlayingMetadata === 'function') {
-      window.KurfaAndroidBridge.updateNowPlayingMetadata(track.title || "Kurfa Müzik", track.artist || "Sanatçı", safeThumb);
+      window.KurfaAndroidBridge.updateNowPlayingMetadata(cleanTitle || "Kurfamüzik", cleanArtist, safeThumb);
     }
   } catch (e) {}
 
   // Visualizer / Lyrics tab sync
   if (DOM.deckCoverImg) DOM.deckCoverImg.src = safeThumb;
-  if (DOM.deckTitle) DOM.deckTitle.textContent = track.title || "Şarkı";
-  if (DOM.deckArtist) DOM.deckArtist.textContent = track.artist || "Sanatçı";
+  if (DOM.deckTitle) DOM.deckTitle.textContent = cleanTitle;
+  if (DOM.deckArtist) DOM.deckArtist.textContent = cleanArtist;
+
+  if (typeof updatePlaylistHeroUI === 'function') {
+    updatePlaylistHeroUI(track);
+  }
 
   // Disable Video mode toggle for local device tracks / audio-only Audius tracks
   const videoModeBtn = document.getElementById('btn-deck-video-mode');
@@ -3458,14 +5032,35 @@ function updatePlayPauseUI(playing) {
   }
 
   syncFloatingPipUI();
+  syncActiveRowEqState();
+
+  if (window.__kurfaDesktopMiniPlayerOpen && typeof syncDesktopMiniPlayerState === 'function') {
+    syncDesktopMiniPlayerState(getActiveMediaCurrentTime() || 0, getActiveMediaDuration() || 0);
+  }
+
   const activeId = state.currentTrack ? state.currentTrack.id : null;
   if (state._lastRenderedActiveId !== activeId) {
     state._lastRenderedActiveId = activeId;
     if (state.currentTab === 'kesfet') {
-      state._lastHomeActiveId = activeId;
-      renderHomeTracklistTable();
+      const artistCont = document.getElementById('kesfet-artist-container');
+      if (artistCont && !artistCont.classList.contains('hidden') && Array.isArray(currentArtistTracks) && currentArtistTracks.length > 0) {
+        const artistName = document.getElementById('artist-profile-name')?.textContent || '';
+        renderArtistTracks(currentArtistTracks, artistName);
+      } else {
+        state._lastHomeActiveId = activeId;
+        renderHomeTracklistTable();
+      }
     } else if (state.currentTab === 'calma-listeleri') {
       renderPlaylistTracksTable();
+    } else if (state.currentTab === 'kutuphanem') {
+      if (state.currentKutuphaneSubTab === 'favoriler') renderFavoritesTable();
+      else if (state.currentKutuphaneSubTab === 'listelerim' && state.activeCustomPlaylistId) openCustomPlaylistDetail(state.activeCustomPlaylistId);
+      else if (state.currentKutuphaneSubTab === 'spotify' && state.activeSpotifyPlaylistId) openSpotifyPlaylistDetail(state.activeSpotifyPlaylistId);
+    } else if (state.currentTab === 'arama' && Array.isArray(state.currentSearchResults) && state.currentSearchResults.length > 0) {
+      renderSearchResults(state.currentSearchResults, state.currentSearchQuery || '');
+    }
+    if (state.queueDrawerOpen) {
+      renderQueueDrawerList();
     }
   }
   if (typeof syncActiveTrackRowInDeviceAudio === 'function' && state.currentTab === 'kutuphanem' && state.currentKutuphaneSubTab === 'cihaz') {
@@ -3542,36 +5137,46 @@ function getActiveMediaDuration() {
 window.getActiveMediaDuration = getActiveMediaDuration;
 
 function getActiveMediaCurrentTime() {
+  if (state._activeMediaEngine === 'none') {
+    return Math.max(0, state.currentPlayheadTime || 0);
+  }
+
   const isLocal = Boolean(state.currentTrack && (
     state.currentTrack.isLocal ||
     String(state.currentTrack.id).startsWith('local_') ||
     state.currentTrack.source === 'local'
   ));
 
-  // 1. Local device tracks strictly use HTML5 audioEngine - NEVER query YouTube!
+  // 1. Local device tracks strictly use HTML5 audioEngine when engine is locked to 'audio'
   if (isLocal) {
-    if (DOM.audioEngine && DOM.audioEngine.src && !isNaN(DOM.audioEngine.currentTime)) {
-      return DOM.audioEngine.currentTime || 0;
+    if (state._activeMediaEngine === 'audio' && DOM.audioEngine && DOM.audioEngine.getAttribute('src') && !isNaN(DOM.audioEngine.currentTime)) {
+      return Math.max(0, DOM.audioEngine.currentTime || 0);
     }
-    return state.currentPlayheadTime || 0;
+    return Math.max(0, state.currentPlayheadTime || 0);
   }
 
-  // 2. If transitioning to a new track from start (0), don't read stale time from previous track
-  const inTransition = (Date.now() - (state._trackSwitchStartedAt || 0)) < 1200;
-  if (inTransition && (!state.currentPlayheadTime || state.currentPlayheadTime === 0)) {
-    return 0;
+  // 2. HTML5 direct stream locked to 'audio'
+  if (state._activeMediaEngine === 'audio') {
+    if (DOM.audioEngine && DOM.audioEngine.getAttribute('src') && !isNaN(DOM.audioEngine.currentTime)) {
+      return Math.max(0, DOM.audioEngine.currentTime || 0);
+    }
+    return Math.max(0, state.currentPlayheadTime || 0);
   }
 
-  if (state.deckVisualMode === 'video' && state.ytReady && state.ytPlayer && typeof state.ytPlayer.getCurrentTime === 'function') {
-    return state.ytPlayer.getCurrentTime() || 0;
+  // 3. YouTube player locked to 'youtube' or video mode — verify loaded video_id matches!
+  if ((state._activeMediaEngine === 'youtube' || state.deckVisualMode === 'video') && state.ytReady && state.ytPlayer && typeof state.ytPlayer.getCurrentTime === 'function') {
+    try {
+      const currentYtId = safeYtId(state.currentTrack?.ytId || state.currentTrack?.id);
+      const loadedYtId = typeof state.ytPlayer.getVideoData === 'function'
+        ? safeYtId(state.ytPlayer.getVideoData()?.video_id)
+        : null;
+      if (currentYtId && loadedYtId === currentYtId) {
+        return Math.max(0, state.ytPlayer.getCurrentTime() || 0);
+      }
+    } catch(e) {}
   }
-  if (DOM.audioEngine && DOM.audioEngine.src && !isNaN(DOM.audioEngine.currentTime) && !DOM.audioEngine.paused) {
-    return DOM.audioEngine.currentTime;
-  }
-  if (state.ytReady && state.ytPlayer && typeof state.ytPlayer.getCurrentTime === 'function') {
-    return state.ytPlayer.getCurrentTime() || 0;
-  }
-  return state.currentPlayheadTime || 0;
+
+  return Math.max(0, state.currentPlayheadTime || 0);
 }
 window.getActiveMediaCurrentTime = getActiveMediaCurrentTime;
 
@@ -3843,11 +5448,11 @@ function toggleMute() {
   if (state.isMuted) {
     const prev = safeGetFloat('kurfa_prev_vol', 0.8);
     setPlayerVolume(prev > 0 ? prev : 0.8);
-    showToast("Ses Açıldı");
+    showToast(t('toast.unmuted'));
   } else {
     safeSetStorage('kurfa_prev_vol', state.volume.toString());
     setPlayerVolume(0);
-    showToast("Sessize Alındı");
+    showToast(t('toast.muted'));
   }
 }
 
@@ -3857,13 +5462,16 @@ function toggleMute() {
 
 function cleanLyricsQuery(title, artist) {
   let rawT = (title || '')
-    .replace(/\s*[\(\[](official\s*(music)?\s*video|video\s*klip|klip|audio|lyric\s*video|visualizer|canlı|live|hd|4k|prod\.[^\)\]]*)[^\)\]]*[\)\]]/gi, '')
-    .replace(/\s*[–—-]\s*(official|klip|video|audio).*/gi, '')
+    .replace(/\s*[\(\[]\s*(?:dedub\s*sessions?|sessions?|akustik|acoustic|live|canl\u0131|official(?:\s*(?:music)?\s*(?:video|audio))?|video\s*klip|klip|lyric\s*video|lyrics|visualizer|hd|4k|8k|feat\.?|ft\.?|with\b|prod\.?)[^\)\]]*[\)\]]/gi, '')
+    .replace(/\s*\[[^\]]*\]/g, '')
+    .replace(/\s*[–—-]\s*(?:official|klip|video|audio|live|akustik|acoustic|sessions?|remix).*$/gi, '')
+    .replace(/\s+\|\s*.*$/g, '')
     .replace(/["'"]/g, '')
+    .replace(/\s+/g, ' ')
     .trim();
   let rawA = (artist || '')
     .replace(/\s*-\s*topic/gi, '')
-    .replace(/\b(netd\s*müzik|vevo|official|music|records|production)\b/gi, '')
+    .replace(/\b(netd\s*m\u00fczik|vevo|official|music|records|production)\b/gi, '')
     .replace(/["'"]/g, '')
     .replace(/\s+/g, ' ')
     .trim();
@@ -3876,7 +5484,7 @@ function cleanLyricsQuery(title, artist) {
     parsedTitle = dashSplit.slice(1).join(' - ');
   }
 
-  const firstArtist = parsedArtist.split(/\s+(?:ve|&|,|feat\.?|ft\.?)\s+/i)[0]?.trim() || parsedArtist;
+  const firstArtist = parsedArtist.split(/\s+(?:x|X|ve|&|,|feat\.?|ft\.?|with)\s+|,\s*/)[0]?.trim() || parsedArtist;
   return { cleanT: parsedTitle, cleanA: parsedArtist, firstA: firstArtist, rawT, rawA };
 }
 
@@ -4061,12 +5669,12 @@ async function updateLyricsDisplay() {
 
   // Show loading skeleton in lyrics box
   setLyricsOffsetControlsVisible(false);
-  if (DOM.lyricsStatusLabel) DOM.lyricsStatusLabel.textContent = "Şarkı Sözleri Aranıyor...";
-  if (DOM.lyricsSourceBadge) DOM.lyricsSourceBadge.textContent = "Bağlanıyor...";
+  if (DOM.lyricsStatusLabel) DOM.lyricsStatusLabel.textContent = getAppLanguage() === 'en' ? 'Searching Lyrics...' : 'Şarkı Sözleri Aranıyor...';
+  if (DOM.lyricsSourceBadge) DOM.lyricsSourceBadge.textContent = '';
   DOM.deckLyricsLines.innerHTML = `
     <div class="py-8 flex flex-col items-center justify-center gap-2 text-on-surface-variant">
       <span class="material-symbols-outlined text-[32px] animate-spin text-primary">progress_activity</span>
-      <p class="text-xs font-semibold">Senkronize şarkı sözleri veritabanından çekiliyor...</p>
+      <p class="text-xs font-semibold">${escapeHtml(getAppLanguage() === 'en' ? 'Fetching synced lyrics...' : 'Senkronize şarkı sözleri getiriliyor...')}</p>
     </div>
   `;
 
@@ -4406,8 +6014,9 @@ function renderLyricsEmpty(track) {
   state.activeLyrics = [];
   state.currentLyricIndex = -1;
   setLyricsOffsetControlsVisible(false);
-  if (DOM.lyricsStatusLabel) DOM.lyricsStatusLabel.textContent = track ? "Söz Bulunamadı" : "Bekleniyor";
-  if (DOM.lyricsSourceBadge) DOM.lyricsSourceBadge.textContent = "Veritabanı";
+  const isEn = getAppLanguage() === 'en';
+  if (DOM.lyricsStatusLabel) DOM.lyricsStatusLabel.textContent = track ? (isEn ? 'Lyrics Not Found' : 'Söz Bulunamadı') : (isEn ? 'Waiting' : 'Bekleniyor');
+  if (DOM.lyricsSourceBadge) DOM.lyricsSourceBadge.textContent = '';
 
   if (!DOM.deckLyricsLines) return;
 
@@ -4543,8 +6152,189 @@ function debouncedSearch(query) {
   }, 400);
 }
 
+const BROWSE_CATEGORIES = [
+  { key: 'search.cat_tr_pop', query: 'Türkçe Pop 2026 en çok dinlenenler', icon: 'music_note', bg: 'linear-gradient(135deg, #ff2056 0%, #be123c 100%)' },
+  { key: 'search.cat_tr_rap', query: 'Türkçe Rap Drill 2026 hit şarkılar', icon: 'bolt', bg: 'linear-gradient(135deg, #4f46e5 0%, #312e81 100%)' },
+  { key: 'search.cat_arabesk', query: 'Arabesk Damar en sevilen şarkılar', icon: 'favorite', bg: 'linear-gradient(135deg, #d97706 0%, #92400e 100%)' },
+  { key: 'search.cat_rock', query: 'Anadolu Rock Türkçe Rock klasikler', icon: 'electric_bolt', bg: 'linear-gradient(135deg, #059669 0%, #064e3b 100%)' },
+  { key: 'search.cat_acoustic', query: 'Akustik Lo-Fi Türkçe sakin şarkılar', icon: 'coffee', bg: 'linear-gradient(135deg, #0891b2 0%, #164e63 100%)' },
+  { key: 'search.cat_90s', query: "90'lar Türkçe Pop nostalji şarkılar", icon: 'album', bg: 'linear-gradient(135deg, #9333ea 0%, #581c87 100%)' },
+  { key: 'search.cat_global', query: 'Global Top Hits Pop 2026', icon: 'public', bg: 'linear-gradient(135deg, #2563eb 0%, #1e3a8a 100%)' },
+  { key: 'search.cat_workout', query: 'Workout High Energy Bass Remix 2026', icon: 'fitness_center', bg: 'linear-gradient(135deg, #e11d48 0%, #7c2d12 100%)' }
+];
+
+function recordSearchHistory(query) {
+  const clean = String(query || '').trim();
+  if (!clean || clean.length < 2) return;
+  if (/^(https?:\/\/|youtu\.be\/)/i.test(clean)) return;
+  if (!Array.isArray(state.searchHistory)) state.searchHistory = [];
+  const lower = clean.toLowerCase();
+  state.searchHistory = [
+    clean,
+    ...state.searchHistory.filter((q) => String(q || '').trim().toLowerCase() !== lower)
+  ].slice(0, 12);
+  safeSetStorage('kurfa_search_history', JSON.stringify(state.searchHistory));
+  renderSearchDiscoveryHub();
+  scheduleSaveUserDataToDesktop();
+}
+
+function removeSearchHistoryItem(query) {
+  const lower = String(query || '').trim().toLowerCase();
+  state.searchHistory = (state.searchHistory || []).filter((q) => String(q || '').trim().toLowerCase() !== lower);
+  safeSetStorage('kurfa_search_history', JSON.stringify(state.searchHistory));
+  renderSearchDiscoveryHub();
+  scheduleSaveUserDataToDesktop();
+}
+window.removeSearchHistoryItem = removeSearchHistoryItem;
+
+function clearSearchHistory() {
+  state.searchHistory = [];
+  safeSetStorage('kurfa_search_history', '[]');
+  renderSearchDiscoveryHub();
+  scheduleSaveUserDataToDesktop();
+  showToast(t('toast.history_cleared'));
+}
+window.clearSearchHistory = clearSearchHistory;
+
+function showSearchDiscoveryHub() {
+  const hub = document.getElementById('search-discovery-hub');
+  const wrapper = document.getElementById('search-results-wrapper');
+  const sortRow = document.getElementById('search-sort-buttons-row');
+  const countEl = document.getElementById('search-results-count');
+  const artistsSection = document.getElementById('search-artists-section');
+  if (hub) {
+    hub.classList.remove('hidden');
+    hub.classList.add('flex');
+  }
+  if (wrapper) {
+    wrapper.classList.add('hidden');
+    wrapper.classList.remove('flex');
+  }
+  if (sortRow) sortRow.classList.add('hidden');
+  if (countEl) countEl.classList.add('hidden');
+  if (artistsSection) {
+    artistsSection.classList.add('hidden');
+    artistsSection.classList.remove('flex');
+  }
+  if (DOM.searchSpotlightBox) DOM.searchSpotlightBox.style.display = 'none';
+  if (typeof syncTopSearchClearBtn === 'function') syncTopSearchClearBtn();
+  renderSearchDiscoveryHub();
+}
+
+function hideSearchDiscoveryHub() {
+  const hub = document.getElementById('search-discovery-hub');
+  const wrapper = document.getElementById('search-results-wrapper');
+  const sortRow = document.getElementById('search-sort-buttons-row');
+  const countEl = document.getElementById('search-results-count');
+  if (hub) {
+    hub.classList.add('hidden');
+    hub.classList.remove('flex');
+  }
+  if (wrapper) {
+    wrapper.classList.remove('hidden');
+    wrapper.classList.add('flex');
+  }
+  if (sortRow) sortRow.classList.remove('hidden');
+  if (countEl) countEl.classList.remove('hidden');
+  if (typeof syncTopSearchClearBtn === 'function') syncTopSearchClearBtn();
+}
+
+function renderSearchDiscoveryHub() {
+  const recSection = document.getElementById('recent-searches-section');
+  const recChips = document.getElementById('recent-searches-chips');
+  if (recSection && recChips) {
+    const history = Array.isArray(state.searchHistory) ? state.searchHistory.filter(Boolean) : [];
+    recChips.innerHTML = '';
+    if (history.length === 0) {
+      recSection.classList.add('hidden');
+      recSection.classList.remove('flex');
+    } else {
+      recSection.classList.remove('hidden');
+      recSection.classList.add('flex');
+      history.slice(0, 12).forEach((q) => {
+        const chip = document.createElement('div');
+        chip.className = 'inline-flex items-center gap-1.5 pl-3 pr-1.5 py-1.5 rounded-full bg-surface-container-lowest border border-surface-container hover:border-primary/40 text-xs font-semibold text-on-surface shadow-xs transition-all cursor-pointer';
+        chip.innerHTML = `
+          <span class="material-symbols-outlined text-[15px] text-primary">history</span>
+          <span class="truncate max-w-[160px]">${escapeHtml(q)}</span>
+          <button type="button" class="btn-del-chip w-5 h-5 rounded-full flex items-center justify-center text-on-surface-variant hover:text-error hover:bg-surface-container transition-colors" title="${escapeHtml(t('topbar.clear'))}">
+            <span class="material-symbols-outlined text-[13px]">close</span>
+          </button>
+        `;
+        chip.onclick = () => executeSearchImmediate(q, true);
+        const delBtn = chip.querySelector('.btn-del-chip');
+        if (delBtn) {
+          delBtn.onclick = (e) => {
+            e.stopPropagation();
+            removeSearchHistoryItem(q);
+          };
+        }
+        recChips.appendChild(chip);
+      });
+    }
+  }
+
+  const playedSection = document.getElementById('recent-played-search-section');
+  const playedGrid = document.getElementById('recent-played-search-grid');
+  if (playedSection && playedGrid) {
+    const recentList = Array.isArray(state.recentlyPlayed) ? state.recentlyPlayed.slice(0, 8) : [];
+    playedGrid.innerHTML = '';
+    if (recentList.length === 0) {
+      playedSection.classList.add('hidden');
+      playedSection.classList.remove('flex');
+    } else {
+      playedSection.classList.remove('hidden');
+      playedSection.classList.add('flex');
+      recentList.forEach((trk, idx) => {
+        const safeTitle = escapeHtml(formatCleanTrackTitle(trk.title) || 'Şarkı');
+        const safeArtist = escapeHtml(trk.artist || '');
+        const safeThumb = escapeHtml(safeUrl(trk.thumbnail || getTrackThumbnail(trk), './kurfamuzik_logo.png'));
+        const card = document.createElement('div');
+        card.className = 'group w-36 sm:w-40 flex-shrink-0 p-2.5 rounded-2xl bg-surface-container-lowest hover:bg-surface-container-low border border-surface-container/60 hover:border-primary/40 transition-all cursor-pointer flex flex-col gap-2 shadow-xs';
+        card.innerHTML = `
+          <div class="relative w-full aspect-square rounded-xl overflow-hidden bg-surface-container-high">
+            <img src="${safeThumb}" alt="${safeTitle}" loading="lazy" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" onerror="this.onerror=null; this.src='./kurfamuzik_logo.png'">
+            <button type="button" class="absolute right-2 bottom-2 w-8 h-8 rounded-full bg-primary text-on-primary flex items-center justify-center shadow-md opacity-0 translate-y-1 group-hover:opacity-100 group-hover:translate-y-0 transition-all">
+              <span class="material-symbols-outlined text-[18px] filled">play_arrow</span>
+            </button>
+          </div>
+          <div class="min-w-0">
+            <p class="text-xs font-bold text-on-surface truncate group-hover:text-primary transition-colors">${safeTitle}</p>
+            <p class="text-[11px] text-on-surface-variant truncate">${safeArtist}</p>
+          </div>
+        `;
+        card.onclick = () => {
+          setPlaybackQueueContext(recentList, idx, t('search.recent_played'), 'RECENT');
+          playTrackById(trk.id, trk);
+        };
+        playedGrid.appendChild(card);
+      });
+    }
+  }
+
+  const catGrid = document.getElementById('browse-categories-grid');
+  if (catGrid) {
+    catGrid.innerHTML = '';
+    BROWSE_CATEGORIES.forEach((cat) => {
+      const tile = document.createElement('button');
+      tile.type = 'button';
+      tile.className = 'kurfa-cat-tile';
+      tile.style.background = cat.bg;
+      tile.innerHTML = `
+        <span class="text-sm sm:text-base font-extrabold leading-snug relative z-10">${escapeHtml(t(cat.key))}</span>
+        <span class="material-symbols-outlined kurfa-cat-icon" aria-hidden="true">${cat.icon}</span>
+      `;
+      tile.onclick = () => executeSearchImmediate(cat.query, true);
+      catGrid.appendChild(tile);
+    });
+  }
+}
+
 async function executeSearchImmediate(query, autoSwitchTab = true, options = {}) {
-  if (!query || query.trim().length === 0) return;
+  if (!query || query.trim().length === 0) {
+    showSearchDiscoveryHub();
+    return;
+  }
   const cleanQ = query.trim();
   const preserveBaseQuery = Boolean(options && options.preserveBaseQuery);
 
@@ -4560,22 +6350,25 @@ async function executeSearchImmediate(query, autoSwitchTab = true, options = {})
     if (DOM.topSearchInput && DOM.topSearchInput.value !== cleanQ) {
       DOM.topSearchInput.value = cleanQ;
     }
+    recordSearchHistory(cleanQ);
   }
+
+  hideSearchDiscoveryHub();
 
   const urlMatch = cleanQ.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=|shorts\/))([\w-]{11})/);
   const matchedYtId = urlMatch ? safeYtId(urlMatch[1]) : null;
   if (matchedYtId) {
     const directTrack = {
       id: matchedYtId,
-      title: "YouTube Parçası (" + matchedYtId + ")",
-      artist: "Doğrudan Akış",
+      title: "YouTube (" + matchedYtId + ")",
+      artist: t('search.source_direct'),
       duration: "3:30",
       thumbnail: `https://i.ytimg.com/vi/${matchedYtId}/hqdefault.jpg`
     };
     playTrackById(matchedYtId, directTrack);
     switchTab('arama', true);
     renderSpotlightCard(directTrack);
-    showToast("YouTube linki doğrudan akışa alındı");
+    showToast(t('toast.yt_direct_stream'));
     return;
   }
 
@@ -4584,7 +6377,7 @@ async function executeSearchImmediate(query, autoSwitchTab = true, options = {})
   }
 
   if (DOM.searchResultsCount) {
-    DOM.searchResultsCount.textContent = `"${cleanQ}" Aranıyor...`;
+    DOM.searchResultsCount.textContent = t('search.searching', { query: cleanQ });
   }
   const artistsSection = document.getElementById('search-artists-section');
   const artistsGrid = document.getElementById('search-artists-grid');
@@ -4598,7 +6391,7 @@ async function executeSearchImmediate(query, autoSwitchTab = true, options = {})
     DOM.searchResultsList.innerHTML = `
       <div class="col-span-full py-12 flex flex-col items-center justify-center gap-3 text-on-surface-variant">
         <span class="material-symbols-outlined text-[36px] animate-spin text-primary">progress_activity</span>
-        <p class="text-sm font-semibold">Sonuçlar ve sanatçılar getiriliyor...</p>
+        <p class="text-sm font-semibold">${escapeHtml(t('search.loading_msg'))}</p>
       </div>
     `;
   }
@@ -4659,7 +6452,7 @@ async function executeSearchImmediate(query, autoSwitchTab = true, options = {})
 
 function renderSearchResults(results, query) {
   if (DOM.searchResultsCount) {
-    DOM.searchResultsCount.textContent = `"${query}" İçin ${results.length} Sonuç Bulundu`;
+    DOM.searchResultsCount.textContent = t('search.results_found', { query, count: results.length });
   }
 
   if (results.length > 0) {
@@ -4669,45 +6462,52 @@ function renderSearchResults(results, query) {
   if (!DOM.searchResultsList) return;
   DOM.searchResultsList.innerHTML = '';
   const searchFrag = document.createDocumentFragment();
+  const activeId = state.currentTrack ? state.currentTrack.id : null;
 
   results.forEach((track) => {
+    const isCurrentRow = Boolean(activeId && activeId === track.id);
+    const isPlayingCurrent = isCurrentRow && state.isPlaying;
     const card = document.createElement('div');
-    card.className = "flex items-center justify-between p-3 rounded-xl bg-surface-container-lowest hover:bg-surface-container-low transition-colors shadow-sm group border border-transparent hover:border-surface-container";
+    card.className = `track-row flex items-center justify-between gap-2 p-3 rounded-xl transition-colors group cursor-pointer ${isCurrentRow ? 'active' : 'bg-surface-container-lowest'}`;
 
-    const safeTitle = escapeHtml(track.title || "Şarkı");
+    const safeTitle = escapeHtml(formatCleanTrackTitle(track.title) || "Şarkı");
     const safeArtist = escapeHtml(track.artist || "Sanatçı");
     const safeDur = escapeHtml(track.duration || "3:30");
     const safeThumb = escapeHtml(safeUrl(track.thumbnail || getTrackThumbnail(track), './kurfamuzik_logo.png'));
 
     card.innerHTML = `
-      <div class="flex items-center gap-3 min-w-0 flex-1 cursor-pointer track-info-click">
+      <div class="flex items-center gap-3 min-w-0 flex-1 pr-3 overflow-hidden cursor-pointer track-info-click">
         <div class="relative w-12 h-12 rounded-lg overflow-hidden bg-surface-container-high flex-shrink-0">
           <img src="${safeThumb}" alt="${safeTitle}" loading="lazy" decoding="async" class="w-full h-full object-cover" onerror="this.onerror=null; this.src='./kurfamuzik_logo.png'">
           <div class="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-            <span class="material-symbols-outlined text-white text-[24px]">play_arrow</span>
+            <span class="material-symbols-outlined text-white text-[24px]">${isPlayingCurrent ? 'pause' : 'play_arrow'}</span>
           </div>
         </div>
-        <div class="flex flex-col min-w-0">
-          <h4 class="text-xs md:text-sm font-bold text-on-surface truncate group-hover:text-primary transition-colors">${safeTitle}</h4>
-          <p class="text-[11px] text-on-surface-variant truncate">${safeArtist} - YouTube Ses</p>
+        <div class="flex flex-col min-w-0 flex-1 overflow-hidden">
+          <div class="flex items-center gap-2 min-w-0">
+            ${isCurrentRow ? renderMiniEqBarsHtml(isPlayingCurrent) : ''}
+            <h4 class="text-xs md:text-sm font-bold truncate block group-hover:text-primary transition-colors ${isCurrentRow ? 'text-primary' : 'text-on-surface'}">${safeTitle}</h4>
+            ${isCurrentRow ? renderPlayingPillHtml() : ''}
+          </div>
+          <p class="text-[11px] text-on-surface-variant truncate block">${safeArtist} - ${escapeHtml(t('search.yt_audio_suffix'))}</p>
         </div>
       </div>
-      <div class="flex items-center gap-1.5 sm:gap-2">
+      <div class="flex items-center gap-1.5 sm:gap-2 flex-shrink-0 pl-2">
         <span class="text-xs text-on-surface-variant font-mono hidden sm:inline">${safeDur}</span>
-        <button type="button" class="btn-queue-track w-8 h-8 rounded-full flex items-center justify-center text-on-surface-variant hover:text-secondary transition-colors" title="Sıraya Ekle">
+        <button type="button" class="btn-queue-track w-8 h-8 rounded-full flex items-center justify-center text-on-surface-variant hover:text-secondary transition-colors" title="${escapeHtml(t('player.add_to_queue'))}">
           <span class="material-symbols-outlined text-[18px]">queue_music</span>
         </button>
-        <button type="button" class="btn-add-pl-track w-8 h-8 rounded-full flex items-center justify-center text-on-surface-variant hover:text-primary transition-colors" title="Çalma Listesine Ekle">
+        <button type="button" class="btn-add-pl-track w-8 h-8 rounded-full flex items-center justify-center text-on-surface-variant hover:text-primary transition-colors" title="${escapeHtml(t('player.add_to_playlist'))}">
           <span class="material-symbols-outlined text-[18px]">add_circle</span>
         </button>
-        <button type="button" class="btn-fav-track w-8 h-8 rounded-full flex items-center justify-center text-on-surface-variant hover:text-primary transition-colors" title="Favorilere Ekle">
+        <button type="button" class="btn-fav-track w-8 h-8 rounded-full flex items-center justify-center text-on-surface-variant hover:text-primary transition-colors" title="${escapeHtml(t('player.fav_add'))}">
           <span class="material-symbols-outlined text-[18px]">${state.favorites.some(f => f.id === track.id) ? 'favorite' : 'favorite_border'}</span>
         </button>
-        <button type="button" class="btn-dl-track w-8 h-8 rounded-full flex items-center justify-center text-on-surface-variant hover:text-secondary transition-colors" title="İndir">
+        <button type="button" class="btn-dl-track w-8 h-8 rounded-full flex items-center justify-center text-on-surface-variant hover:text-secondary transition-colors" title="${escapeHtml(t('hero.download'))}">
           <span class="material-symbols-outlined text-[18px]">download</span>
         </button>
-        <button type="button" class="btn-play-track w-8 h-8 rounded-full bg-primary text-on-primary flex items-center justify-center shadow-sm hover:scale-105 active:scale-95 transition-all" title="Çal">
-          <span class="material-symbols-outlined text-[18px]">play_arrow</span>
+        <button type="button" class="btn-play-track w-8 h-8 rounded-full bg-primary text-on-primary flex items-center justify-center shadow-sm hover:scale-105 active:scale-95 transition-all" title="${escapeHtml(t('player.play_btn'))}">
+          <span class="material-symbols-outlined text-[18px]">${isPlayingCurrent ? 'pause' : 'play_arrow'}</span>
         </button>
       </div>
     `;
@@ -4785,8 +6585,8 @@ function renderSearchArtistsShelf(artists, query) {
     const safeGenre = escapeHtml(artist.genre || 'Sanatçı');
     const fansNum = Number(artist.fans || 0);
     const fansLabel = fansNum >= 1000000
-      ? `${(fansNum / 1000000).toFixed(1)}M dinleyici`
-      : (fansNum >= 1000 ? `${Math.round(fansNum / 1000)}K dinleyici` : safeGenre);
+      ? t('artist.listeners_m', { val: (fansNum / 1000000).toFixed(1) })
+      : (fansNum >= 1000 ? t('artist.listeners_k', { val: Math.round(fansNum / 1000) }) : safeGenre);
     const safeImg = escapeHtml(safeUrl(artist.image || artist.img, './kurfamuzik_logo.png'));
 
     const card = document.createElement('button');
@@ -4828,11 +6628,11 @@ function renderSpotlightCard(track) {
   if (!DOM.searchSpotlightBox || !track) return;
   DOM.searchSpotlightBox.style.display = 'block';
 
-  const safeTitle = escapeHtml(track.title || "Şarkı");
+  const safeTitle = escapeHtml(formatCleanTrackTitle(track.title) || "Şarkı");
   const safeArtist = escapeHtml(track.artist || "Sanatçı");
   const safeThumb = escapeHtml(safeUrl(track.thumbnail || getTrackThumbnail(track), './kurfamuzik_logo.png'));
   const isOpenCatalog = track.source === 'audius' || track.source === 'open-catalog';
-  const sourceLabel = isOpenCatalog ? 'Reklamsız Açık Katalog' : 'Doğrudan Ses Akışı';
+  const sourceLabel = isOpenCatalog ? t('search.source_open') : t('search.source_direct');
 
   DOM.searchSpotlightBox.innerHTML = `
     <div class="flex flex-col sm:flex-row items-center gap-4">
@@ -4843,21 +6643,21 @@ function renderSpotlightCard(track) {
         </div>
       </div>
       <div class="flex-1 text-center sm:text-left min-w-0">
-        <span class="text-[11px] font-semibold ${isOpenCatalog ? 'text-emerald-500' : 'text-on-surface-variant'}">${sourceLabel}</span>
+        <span class="text-[11px] font-semibold ${isOpenCatalog ? 'text-emerald-500' : 'text-on-surface-variant'}">${escapeHtml(sourceLabel)}</span>
         <h3 class="text-base sm:text-lg font-extrabold text-on-surface truncate mt-0.5">${safeTitle}</h3>
         <p class="text-xs text-on-surface-variant font-medium mb-3 truncate">${safeArtist}</p>
         <div class="flex flex-wrap items-center justify-center sm:justify-start gap-2">
           <button type="button" id="spotlight-play-btn" class="flex items-center gap-1.5 px-4 py-2 rounded-full bg-primary text-on-primary text-xs font-bold shadow-sm hover:bg-primary-container transition-all">
             <span class="material-symbols-outlined text-[18px]">play_arrow</span>
-            <span>Hemen Dinle</span>
+            <span>${escapeHtml(t('hero.listen_now'))}</span>
           </button>
           <button type="button" id="spotlight-dl-btn" class="flex items-center gap-1.5 px-3 py-2 rounded-full bg-surface-container text-on-surface text-xs font-bold hover:bg-surface-container-high transition-colors">
             <span class="material-symbols-outlined text-[16px]">download</span>
-            <span>İndir</span>
+            <span>${escapeHtml(t('hero.download'))}</span>
           </button>
           <button type="button" id="spotlight-queue-btn" class="flex items-center gap-1.5 px-3 py-2 rounded-full bg-surface-container text-on-surface text-xs font-bold hover:bg-surface-container-high transition-colors">
             <span class="material-symbols-outlined text-[16px]">playlist_add</span>
-            <span>Sıraya Ekle</span>
+            <span>${escapeHtml(t('player.add_to_queue'))}</span>
           </button>
         </div>
       </div>
@@ -4887,15 +6687,15 @@ function renderSpotlightCard(track) {
 }
 
 function renderSearchEmpty(query) {
-  if (DOM.searchResultsCount) DOM.searchResultsCount.textContent = "Sonuç Bulunamadı";
+  if (DOM.searchResultsCount) DOM.searchResultsCount.textContent = t('search.no_results');
   if (DOM.searchSpotlightBox) DOM.searchSpotlightBox.style.display = 'none';
   if (DOM.searchResultsList) {
     const safeQuery = escapeHtml(query || '');
     DOM.searchResultsList.innerHTML = `
       <div class="col-span-full py-12 flex flex-col items-center justify-center gap-2 text-on-surface-variant text-center">
         <span class="material-symbols-outlined text-[40px] text-surface-variant">search_off</span>
-        <p class="text-sm font-semibold">"${safeQuery}" için sonuç bulunamadı</p>
-        <p class="text-xs">Farklı bir anahtar kelime deneyin veya doğrudan YouTube linki yapıştırın.</p>
+        <p class="text-sm font-semibold">${escapeHtml(t('search.no_results_title', { query: safeQuery }))}</p>
+        <p class="text-xs">${escapeHtml(t('search.no_results_hint'))}</p>
       </div>
     `;
   }
@@ -4906,7 +6706,7 @@ function executeSearchFromInput() {
   if (query && query.trim()) {
     executeSearchImmediate(query.trim(), true);
   } else {
-    showToast("Lütfen bir şarkı, sanatçı veya link yazın");
+    showToast(t('toast.search_enter_query'));
   }
 }
 
@@ -4922,20 +6722,14 @@ function clearSearchInput() {
   state.baseSearchQuery = '';
 
   if (DOM.topSearchInput) DOM.topSearchInput.value = '';
-  const artistsSection = document.getElementById('search-artists-section');
-  if (artistsSection) {
-    artistsSection.classList.add('hidden');
-    artistsSection.classList.remove('flex');
-  }
-  if (DOM.searchResultsCount) DOM.searchResultsCount.textContent = 'Arama Sonuçları';
-  if (DOM.searchSpotlightBox) DOM.searchSpotlightBox.style.display = 'none';
+  if (typeof syncTopSearchClearBtn === 'function') syncTopSearchClearBtn();
+  if (DOM.searchResultsCount) DOM.searchResultsCount.textContent = t('search.results_title');
   if (DOM.searchResultsList) {
     DOM.searchResultsList.innerHTML = `
-      <div class="p-8 text-center text-on-surface-variant text-sm">
-        Aramak istediğin şarkı veya sanatçı adını yazıp <strong>Enter</strong>'a bas.
-      </div>
+      <div class="p-8 text-center text-on-surface-variant text-sm">${escapeHtml(t('search.empty_prompt'))}</div>
     `;
   }
+  showSearchDiscoveryHub();
 }
 
 async function pasteFromClipboard() {
@@ -4943,10 +6737,11 @@ async function pasteFromClipboard() {
     const text = await navigator.clipboard.readText();
     if (text) {
       if (DOM.topSearchInput) DOM.topSearchInput.value = text;
+      if (typeof syncTopSearchClearBtn === 'function') syncTopSearchClearBtn();
       executeSearchImmediate(text, true);
     }
   } catch (err) {
-    showToast("Panoya erişilemedi, lütfen elle yapıştırın");
+    showToast(t('toast.clipboard_error'));
   }
 }
 
@@ -5029,12 +6824,12 @@ function setSearchSort(criteria, opts = {}) {
     } else {
       sorted.sort((a, b) => parseDurationToSec(b.duration || '0:00') - parseDurationToSec(a.duration || '0:00'));
     }
-    if (!silent) showToast("Popülerlik ve süreye göre sıralandı");
+    if (!silent) showToast(t('toast.sort_views'));
   } else if (criteria === 'en-yeni') {
     sorted.reverse();
-    if (!silent) showToast("En yeni parçalara göre sıralandı");
+    if (!silent) showToast(t('toast.sort_newest'));
   } else {
-    if (!silent) showToast("Alakaya göre sıralandı");
+    if (!silent) showToast(t('toast.sort_relevance'));
   }
 
   state.currentSearchResults = sorted;
@@ -5060,7 +6855,7 @@ function resetSearchFilters() {
     renderSearchResults(state.currentSearchResults, state.currentSearchQuery || '');
   }
 
-  showToast("Filtreler ve sıralama sıfırlandı");
+  showToast(t('toast.filters_reset'));
 }
 window.resetSearchFilters = resetSearchFilters;
 
@@ -5077,9 +6872,9 @@ function filterGenre(el, genre) {
 
   if (genre === 'all') {
     renderHomeTracklistTable();
-    showToast("Tüm şarkılar gösteriliyor");
+    showToast(t('toast.all_songs_shown'));
   } else {
-    showToast(`${genre} kategorisi listeleniyor...`);
+    showToast(t('toast.category_loading', { genre }));
     executeSearchImmediate(`${genre} 2026 dinle`, true);
   }
 }
@@ -5119,9 +6914,9 @@ function quickSearchAndPlay(query) {
 function playAllTrends() {
   const allTracks = getCuratedTracks();
   if (!allTracks || allTracks.length === 0) return;
-  const chosen = setPlaybackQueueContext(allTracks, 0, 'YouTube Türkiye Trendleri', 'TRENDLERDEN ÇALINIYOR');
+  const chosen = setPlaybackQueueContext(allTracks, 0, t('player.yt_trends'), 'TRENDLERDEN ÇALINIYOR');
   if (chosen) playTrackById(chosen.id, chosen);
-  showToast("YouTube Trendler çalınıyor");
+  showToast(t('toast.trends_playing'));
 }
 
 function addAllResultsToQueue() {
@@ -5152,7 +6947,7 @@ function renderPopularCardsGrid() {
   const displayList = getCuratedTracks().slice(0, 8);
   displayList.forEach(track => {
     const isPlayingCurrent = state.currentTrack && state.currentTrack.id === track.id && state.isPlaying;
-    const safeTitle = escapeHtml(track.title || 'Şarkı');
+    const safeTitle = escapeHtml(formatCleanTrackTitle(track.title) || 'Şarkı');
     const safeArtist = escapeHtml(track.artist || 'Sanatçı');
     const safeThumb = escapeHtml(safeUrl(getTrackThumbnail(track), './kurfamuzik_logo.png'));
 
@@ -5161,15 +6956,15 @@ function renderPopularCardsGrid() {
     card.innerHTML = `
       <div class="relative w-full aspect-square rounded-xl overflow-hidden mb-space-sm bg-surface-container-high">
         <img src="${safeThumb}" alt="${safeTitle}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" onerror="this.onerror=null; this.src='./kurfamuzik_logo.png';">
-        <button type="button" class="btn-card-add-pl absolute left-2.5 top-2.5 w-8 h-8 rounded-full bg-black/60 backdrop-blur-sm text-white flex items-center justify-center shadow-md opacity-0 group-hover:opacity-100 hover:scale-110 hover:text-primary transition-all duration-200 z-10" title="Çalma Listesine Ekle">
+        <button type="button" class="btn-card-add-pl absolute left-2.5 top-2.5 w-8 h-8 rounded-full bg-black/60 backdrop-blur-sm text-white flex items-center justify-center shadow-md opacity-0 group-hover:opacity-100 hover:scale-110 hover:text-primary transition-all duration-200 z-10" title="${escapeHtml(t('player.add_to_playlist'))}">
           <span class="material-symbols-outlined text-[18px]">add</span>
         </button>
-        <button type="button" class="absolute right-2.5 bottom-2.5 w-10 h-10 rounded-full bg-primary text-on-primary flex items-center justify-center shadow-lg opacity-0 translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300 hover:scale-110 active:scale-95" title="Çal">
+        <button type="button" class="absolute right-2.5 bottom-2.5 w-10 h-10 rounded-full bg-primary text-on-primary flex items-center justify-center shadow-lg opacity-0 translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300 hover:scale-110 active:scale-95" title="${escapeHtml(t('player.play_btn'))}">
           <span class="material-symbols-outlined text-[24px]">${isPlayingCurrent ? 'pause' : 'play_arrow'}</span>
         </button>
       </div>
       <h3 class="text-xs md:text-sm font-bold text-on-surface truncate group-hover:text-primary transition-colors">${safeTitle}</h3>
-      <p class="text-[11px] text-on-surface-variant truncate font-medium mt-0.5">${safeArtist} - YouTube</p>
+      <p class="text-[11px] text-on-surface-variant truncate font-medium mt-0.5">${safeArtist}</p>
     `;
     const playCardTrack = () => {
       setPlaybackQueueContext(getCuratedTracks(), track, 'Popüler Parçalar', 'TRENDLERDEN ÇALINIYOR');
@@ -5196,47 +6991,48 @@ function renderHomeTracklistTable() {
   tracks.forEach((track, index) => {
     const isPlayingCurrent = state.currentTrack && state.currentTrack.id === track.id && state.isPlaying;
     const isFav = state.favorites.some(f => f.id === track.id);
-    const safeTitle = escapeHtml(track.title || 'Şarkı');
+    const safeTitle = escapeHtml(formatCleanTrackTitle(track.title) || 'Şarkı');
     const safeArtist = escapeHtml(track.artist || 'Sanatçı');
     const safeDur = escapeHtml(track.duration || '3:30');
     const safeThumb = escapeHtml(safeUrl(getTrackThumbnail(track), './kurfamuzik_logo.png'));
 
     const isCurrentRow = state.currentTrack && state.currentTrack.id === track.id;
     const row = document.createElement('div');
-    row.className = `track-row flex items-center justify-between p-2.5 rounded-xl transition-colors group cursor-pointer ${isCurrentRow ? 'active' : ''}`;
+    row.className = `track-row flex items-center justify-between gap-2 p-2.5 rounded-xl transition-colors group cursor-pointer ${isCurrentRow ? 'active' : ''}`;
     row.innerHTML = `
-      <div class="flex items-center gap-2.5 min-w-0 flex-1">
-        <span class="w-4 text-center text-xs font-bold font-mono group-hover:hidden ${isCurrentRow ? 'text-primary font-extrabold' : 'text-on-surface-variant'}">${index + 1}</span>
-        <button type="button" class="btn-play-row w-4 text-center hidden group-hover:flex items-center justify-center text-primary" title="Çal">
+      <div class="flex items-center gap-2.5 min-w-0 flex-1 pr-3 overflow-hidden">
+        <span class="w-5 flex items-center justify-center flex-shrink-0 text-xs font-bold font-mono group-hover:hidden ${isCurrentRow ? 'text-primary font-extrabold' : 'text-on-surface-variant'}">${isCurrentRow ? renderMiniEqBarsHtml(isPlayingCurrent) : (index + 1)}</span>
+        <button type="button" class="btn-play-row w-5 text-center hidden group-hover:flex items-center justify-center flex-shrink-0 text-primary" title="${escapeHtml(t('player.play_btn'))}">
           <span class="material-symbols-outlined text-[18px]">${isPlayingCurrent ? 'pause' : 'play_arrow'}</span>
         </button>
         <img src="${safeThumb}" alt="${safeTitle}" loading="lazy" decoding="async" class="w-10 h-10 rounded-lg object-cover flex-shrink-0" onerror="this.onerror=null; this.src='./kurfamuzik_logo.png';">
-        <div class="flex flex-col min-w-0">
-          <span class="text-xs md:text-sm font-bold truncate ${isCurrentRow ? 'text-primary' : 'text-on-surface'}">${safeTitle}</span>
-          <span class="text-[11px] text-on-surface-variant truncate">${safeArtist}</span>
+        <div class="flex flex-col min-w-0 flex-1 overflow-hidden">
+          <div class="flex items-center gap-2 min-w-0">
+            <span class="text-xs md:text-sm font-bold truncate block ${isCurrentRow ? 'text-primary' : 'text-on-surface'}">${safeTitle}</span>
+            ${isCurrentRow ? renderPlayingPillHtml() : ''}
+          </div>
+          <span class="text-[11px] text-on-surface-variant truncate block">${safeArtist}</span>
         </div>
       </div>
-      <div class="hidden md:flex items-center gap-3 text-xs text-on-surface-variant font-medium">
-        <span class="w-12 text-right font-mono">${safeDur}</span>
-      </div>
-      <div class="flex items-center gap-1 ml-2">
-        <button type="button" class="w-8 h-8 rounded-full flex items-center justify-center text-on-surface-variant hover:text-primary transition-colors btn-add-pl-row" title="Çalma Listesine Ekle">
+      <div class="flex items-center gap-1.5 sm:gap-2 flex-shrink-0 pl-2">
+        <span class="hidden md:inline w-12 text-right font-mono text-xs text-on-surface-variant font-medium">${safeDur}</span>
+        <button type="button" class="w-8 h-8 rounded-full flex items-center justify-center text-on-surface-variant hover:text-primary transition-colors btn-add-pl-row" title="${escapeHtml(t('player.add_to_playlist'))}">
           <span class="material-symbols-outlined text-[18px]">add_circle</span>
         </button>
-        <button type="button" class="w-8 h-8 rounded-full flex items-center justify-center text-on-surface-variant hover:text-primary transition-colors btn-fav-row" title="Favori">
+        <button type="button" class="w-8 h-8 rounded-full flex items-center justify-center text-on-surface-variant hover:text-primary transition-colors btn-fav-row" title="${escapeHtml(t('player.fav_add'))}">
           <span class="material-symbols-outlined text-[18px] ${isFav ? 'text-primary filled' : ''}">${isFav ? 'favorite' : 'favorite_border'}</span>
         </button>
-        <button type="button" class="w-8 h-8 rounded-full flex items-center justify-center text-on-surface-variant hover:text-secondary transition-colors btn-queue-row" title="Sıraya Ekle">
+        <button type="button" class="w-8 h-8 rounded-full flex items-center justify-center text-on-surface-variant hover:text-secondary transition-colors btn-queue-row" title="${escapeHtml(t('player.add_to_queue'))}">
           <span class="material-symbols-outlined text-[18px]">playlist_add</span>
         </button>
-        <button type="button" class="w-8 h-8 rounded-full flex items-center justify-center text-on-surface-variant hover:text-tertiary transition-colors btn-dl-row" title="İndir">
+        <button type="button" class="w-8 h-8 rounded-full flex items-center justify-center text-on-surface-variant hover:text-tertiary transition-colors btn-dl-row" title="${escapeHtml(t('hero.download'))}">
           <span class="material-symbols-outlined text-[18px]">download</span>
         </button>
       </div>
     `;
 
     const playRowTrack = () => {
-      setPlaybackQueueContext(getCuratedTracks(), track, 'YouTube Türkiye Trendleri', 'TREND LİSTESİNDEN ÇALINIYOR');
+      setPlaybackQueueContext(getCuratedTracks(), track, t('explore.yt_trends_title'), t('explore.yt_trends_title').toUpperCase());
       playTrackById(track.id, track);
     };
 
@@ -5311,37 +7107,37 @@ function renderTrendlerCardsGrid() {
   tracksToShow.forEach((track, index) => {
     const isPlayingCurrent = state.currentTrack && state.currentTrack.id === track.id && state.isPlaying;
     const isFav = state.favorites.some(f => f.id === track.id);
-    const safeTitle = escapeHtml(track.title || 'Şarkı');
+    const safeTitle = escapeHtml(formatCleanTrackTitle(track.title) || 'Şarkı');
     const safeArtist = escapeHtml(track.artist || 'Sanatçı');
     const safeThumb = escapeHtml(safeUrl(getTrackThumbnail(track), './kurfamuzik_logo.png'));
 
     const card = document.createElement('div');
-    card.className = "group relative w-44 sm:w-52 flex-shrink-0 p-2.5 rounded-2xl bg-surface-container-lowest hover:bg-surface-container-low transition-all duration-200 cursor-pointer border border-surface-container/50 hover:border-primary/40 flex flex-col shadow-sm";
+    card.className = "group relative kurfa-trend-card w-56 sm:w-64 flex-shrink-0 p-2.5 rounded-2xl bg-surface-container-lowest hover:bg-surface-container-low transition-all duration-200 cursor-pointer border border-surface-container/50 hover:border-primary/40 flex flex-col shadow-sm";
     card.innerHTML = `
       <div class="relative w-full aspect-video rounded-xl overflow-hidden mb-2 bg-surface-container-high">
         <img src="${safeThumb}" alt="${safeTitle}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" onerror="this.onerror=null; this.src='./kurfamuzik_logo.png';">
         <div class="absolute top-2 left-2 px-2 py-0.5 rounded-md bg-black/75 backdrop-blur-md text-white text-[10px] font-black border border-white/10 shadow-sm">
           #${index + 1} Trend
         </div>
-        <button type="button" aria-label="Oynat" class="btn-trend-play-overlay absolute right-2 bottom-2 w-9 h-9 rounded-full bg-primary text-on-primary flex items-center justify-center shadow-lg opacity-0 translate-y-1 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-200 hover:scale-105">
+        <button type="button" aria-label="${escapeHtml(t('player.play_btn'))}" class="btn-trend-play-overlay absolute right-2 bottom-2 w-9 h-9 rounded-full bg-primary text-on-primary flex items-center justify-center shadow-lg opacity-0 translate-y-1 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-200 hover:scale-105">
           <span class="material-symbols-outlined text-[20px] filled">${isPlayingCurrent ? 'pause' : 'play_arrow'}</span>
         </button>
       </div>
       <div class="flex items-start justify-between gap-1.5 min-w-0">
-        <div class="flex flex-col min-w-0 flex-1">
-          <h3 class="text-xs sm:text-sm font-bold text-on-surface truncate group-hover:text-primary transition-colors" title="${safeTitle}">${safeTitle}</h3>
-          <p class="text-[11px] text-on-surface-variant truncate font-medium mt-0.5">${safeArtist}</p>
+        <div class="flex flex-col min-w-0 flex-1 overflow-hidden">
+          <h3 class="text-xs sm:text-sm font-bold text-on-surface truncate block group-hover:text-primary transition-colors" title="${safeTitle}">${safeTitle}</h3>
+          <p class="text-[11px] text-on-surface-variant truncate block font-medium mt-0.5">${safeArtist}</p>
         </div>
-        <button type="button" class="w-7 h-7 rounded-full flex items-center justify-center text-on-surface-variant hover:text-primary btn-trend-add-pl flex-shrink-0" title="Çalma Listesine Ekle">
+        <button type="button" class="w-7 h-7 rounded-full flex items-center justify-center text-on-surface-variant hover:text-primary btn-trend-add-pl flex-shrink-0" title="${escapeHtml(t('player.add_to_playlist'))}">
           <span class="material-symbols-outlined text-[17px]">add_circle</span>
         </button>
-        <button type="button" class="w-7 h-7 rounded-full flex items-center justify-center text-on-surface-variant hover:text-primary btn-trend-fav flex-shrink-0" title="Favorilere Ekle">
+        <button type="button" class="w-7 h-7 rounded-full flex items-center justify-center text-on-surface-variant hover:text-primary btn-trend-fav flex-shrink-0" title="${escapeHtml(t('player.fav_add'))}">
           <span class="material-symbols-outlined text-[17px] ${isFav ? 'text-primary filled' : ''}">${isFav ? 'favorite' : 'favorite_border'}</span>
         </button>
       </div>
     `;
     card.onclick = () => {
-      setPlaybackQueueContext(getCuratedTracks(), track, 'YouTube Türkiye Trendleri', 'TRENDLERDEN ÇALINIYOR');
+      setPlaybackQueueContext(getCuratedTracks(), track, t('explore.yt_trends_title'), t('explore.yt_trends_title').toUpperCase());
       playTrackById(track.id, track);
     };
     const addPlBtn = card.querySelector('.btn-trend-add-pl');
@@ -5370,74 +7166,127 @@ function renderTrendlerCardsGrid() {
 
   if (!trendsShowAll) {
     initDragToScroll(DOM.trendlerCardsGrid);
+    bindShelfArrows(DOM.trendlerCardsGrid);
   }
 
   const leftBtn = document.getElementById('btn-trendler-scroll-left');
   const rightBtn = document.getElementById('btn-trendler-scroll-right');
+  const headArrows = document.getElementById('trendler-head-arrows');
   if (leftBtn && rightBtn) {
     leftBtn.style.display = trendsShowAll ? 'none' : '';
     rightBtn.style.display = trendsShowAll ? 'none' : '';
+  }
+  if (headArrows) {
+    headArrows.style.display = trendsShowAll ? 'none' : '';
+  }
+  if (!trendsShowAll) {
+    requestAnimationFrame(() => updateShelfArrowsState(DOM.trendlerCardsGrid));
   }
 
   const toggleBtn = document.getElementById('btn-toggle-trends');
   if (toggleBtn) {
     toggleBtn.innerHTML = trendsShowAll
-      ? `<span class="material-symbols-outlined text-[16px]">expand_less</span><span>Daha Az Göster</span>`
-      : `<span class="material-symbols-outlined text-[16px]">expand_more</span><span>Tümünü Göster (${allTracks.length})</span>`;
+      ? `<span class="material-symbols-outlined text-[16px]">expand_less</span><span>${escapeHtml(t('explore.show_less'))}</span>`
+      : `<span class="material-symbols-outlined text-[16px]">expand_more</span><span>${escapeHtml(t('explore.show_all_count', { count: allTracks.length }))}</span>`;
   }
 }
 
-// 100% Authentic Verified High-Resolution CDN Artworks
+// 100% Authentic Verified High-Resolution CDN Artworks + Live Deezer Hydration (24+ Artists)
 const POPULAR_ARTISTS = [
-  {
-    name: "Semicenk",
-    genre: "Pop & Arabesk",
-    img: "https://is1-ssl.mzstatic.com/image/thumb/Music112/v4/fb/31/11/fb3111cb-4251-ab93-eb37-75e752050237/cover.jpg/300x300bb.jpg"
-  },
-  {
-    name: "Simge",
-    genre: "Türkçe Pop",
-    img: "https://is1-ssl.mzstatic.com/image/thumb/Music211/v4/05/81/0b/05810b21-3c0c-b3b7-d2b2-2050baab2de0/cover.jpg/300x300bb.jpg"
-  },
-  {
-    name: "Mert Demir",
-    genre: "Indie Pop & R&B",
-    img: "https://is1-ssl.mzstatic.com/image/thumb/Music116/v4/43/39/bb/4339bbf7-d2c3-22ed-90e7-9a14416780c8/196922638558_Cover.jpg/300x300bb.jpg"
-  },
-  {
-    name: "BLOK3",
-    genre: "Drill & Trap",
-    img: "https://is1-ssl.mzstatic.com/image/thumb/Music211/v4/a8/92/b9/a892b962-b6e9-b027-d2f2-6192290b4dea/199350105050.jpg/300x300bb.jpg"
-  },
-  {
-    name: "Mabel Matiz",
-    genre: "Türkçe Pop & Indie",
-    img: "https://is1-ssl.mzstatic.com/image/thumb/Music221/v4/14/9b/07/149b0748-da05-c2b8-fe06-f8edf97b6006/820233718745.jpg/300x300bb.jpg"
-  },
-  {
-    name: "Dedublüman",
-    genre: "Alternatif Rock",
-    img: "https://is1-ssl.mzstatic.com/image/thumb/Music112/v4/15/19/83/151983a9-0c68-ee9d-0350-a6940b795054/cover.jpg/300x300bb.jpg"
-  },
-  {
-    name: "Melike Şahin",
-    genre: "Akustik & Pop",
-    img: "https://is1-ssl.mzstatic.com/image/thumb/Music221/v4/7d/da/4c/7dda4c8a-5549-8be3-fe3f-2803b683234d/8683242226951.jpg/300x300bb.jpg"
-  },
-  {
-    name: "Hande Ünsal",
-    genre: "Canlı Pop Hit",
-    img: "https://is1-ssl.mzstatic.com/image/thumb/Music112/v4/9a/3c/bb/9a3cbb7d-1584-f189-5520-e5f1e8fb16f9/cover.jpg/300x300bb.jpg"
-  }
+  { name: "Semicenk", genre: "Pop & Arabesk", fans: 0, img: "https://is1-ssl.mzstatic.com/image/thumb/Music112/v4/fb/31/11/fb3111cb-4251-ab93-eb37-75e752050237/cover.jpg/300x300bb.jpg" },
+  { name: "Sezen Aksu", genre: "Türkçe Pop", fans: 0, img: "./kurfamuzik_logo.png" },
+  { name: "Tarkan", genre: "Türkçe Pop", fans: 0, img: "./kurfamuzik_logo.png" },
+  { name: "Ahmet Kaya", genre: "Özgün & Halk", fans: 0, img: "./kurfamuzik_logo.png" },
+  { name: "Müslüm Gürses", genre: "Arabesk", fans: 0, img: "./kurfamuzik_logo.png" },
+  { name: "Mabel Matiz", genre: "Türkçe Pop & Indie", fans: 0, img: "https://is1-ssl.mzstatic.com/image/thumb/Music221/v4/14/9b/07/149b0748-da05-c2b8-fe06-f8edf97b6006/820233718745.jpg/300x300bb.jpg" },
+  { name: "Simge", genre: "Türkçe Pop", fans: 0, img: "https://is1-ssl.mzstatic.com/image/thumb/Music211/v4/05/81/0b/05810b21-3c0c-b3b7-d2b2-2050baab2de0/cover.jpg/300x300bb.jpg" },
+  { name: "Mert Demir", genre: "Indie Pop & R&B", fans: 0, img: "https://is1-ssl.mzstatic.com/image/thumb/Music116/v4/43/39/bb/4339bbf7-d2c3-22ed-90e7-9a14416780c8/196922638558_Cover.jpg/300x300bb.jpg" },
+  { name: "BLOK3", genre: "Drill & Trap", fans: 0, img: "https://is1-ssl.mzstatic.com/image/thumb/Music211/v4/a8/92/b9/a892b962-b6e9-b027-d2f2-6192290b4dea/199350105050.jpg/300x300bb.jpg" },
+  { name: "Dedublüman", genre: "Alternatif Rock", fans: 0, img: "https://is1-ssl.mzstatic.com/image/thumb/Music112/v4/15/19/83/151983a9-0c68-ee9d-0350-a6940b795054/cover.jpg/300x300bb.jpg" },
+  { name: "Melike Şahin", genre: "Akustik & Pop", fans: 0, img: "https://is1-ssl.mzstatic.com/image/thumb/Music221/v4/7d/da/4c/7dda4c8a-5549-8be3-fe3f-2803b683234d/8683242226951.jpg/300x300bb.jpg" },
+  { name: "Hande Ünsal", genre: "Canlı Pop Hit", fans: 0, img: "https://is1-ssl.mzstatic.com/image/thumb/Music112/v4/9a/3c/bb/9a3cbb7d-1584-f189-5520-e5f1e8fb16f9/cover.jpg/300x300bb.jpg" },
+  { name: "Emir Can İğrek", genre: "Alternatif Pop", fans: 0, img: "./kurfamuzik_logo.png" },
+  { name: "Duman", genre: "Türkçe Rock", fans: 0, img: "./kurfamuzik_logo.png" },
+  { name: "maNga", genre: "Rock & Nu-Metal", fans: 0, img: "./kurfamuzik_logo.png" },
+  { name: "Motive", genre: "Türkçe Rap", fans: 0, img: "./kurfamuzik_logo.png" },
+  { name: "Lvbel C5", genre: "Drill & Trap", fans: 0, img: "./kurfamuzik_logo.png" },
+  { name: "Zeynep Bastık", genre: "Akustik & Pop", fans: 0, img: "./kurfamuzik_logo.png" },
+  { name: "Hadise", genre: "Pop & Dance", fans: 0, img: "./kurfamuzik_logo.png" },
+  { name: "Yalın", genre: "Pop & Akustik", fans: 0, img: "./kurfamuzik_logo.png" },
+  { name: "Sıla", genre: "Türkçe Pop", fans: 0, img: "./kurfamuzik_logo.png" },
+  { name: "Kenan Doğulu", genre: "Türkçe Pop", fans: 0, img: "./kurfamuzik_logo.png" },
+  { name: "Barış Manço", genre: "Anadolu Rock", fans: 0, img: "./kurfamuzik_logo.png" },
+  { name: "Cem Karaca", genre: "Anadolu Rock", fans: 0, img: "./kurfamuzik_logo.png" }
 ];
+
+const FEATURED_ARTISTS_CACHE_KEY = 'kurfa_featured_artists_v2';
+const FEATURED_ARTISTS_TTL_MS = 24 * 60 * 60 * 1000;
+
+function formatListenerCount(fans) {
+  const num = Number(fans || 0);
+  if (!Number.isFinite(num) || num < 1000) return '';
+  if (num >= 1000000) return t('artist.listeners_m', { val: (num / 1000000).toFixed(1) });
+  return t('artist.listeners_k', { val: Math.round(num / 1000) });
+}
+
+function mergeHydratedFeaturedArtists(apiArtists) {
+  if (!Array.isArray(apiArtists) || apiArtists.length === 0) return;
+  const norm = (s) => String(s || '').toLowerCase().normalize('NFKD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]/g, '');
+  const byName = new Map();
+  apiArtists.forEach((a) => {
+    if (a && a.name) byName.set(norm(a.name), a);
+  });
+  let changed = false;
+  POPULAR_ARTISTS.forEach((entry) => {
+    const match = byName.get(norm(entry.name));
+    if (match) {
+      if (match.image && String(match.image).startsWith('http')) {
+        entry.img = match.image;
+        changed = true;
+      }
+      if (Number(match.fans) > 0) {
+        entry.fans = Number(match.fans);
+        changed = true;
+      }
+      if (match.genre) {
+        entry.genre = match.genre;
+      }
+      if (match.id) entry.id = match.id;
+    }
+  });
+  if (changed) {
+    renderPopularArtistsGrid();
+  }
+}
+
+async function hydrateFeaturedArtistsFromApi() {
+  try {
+    const rawCache = safeGetJSON(FEATURED_ARTISTS_CACHE_KEY, null);
+    if (rawCache && Array.isArray(rawCache.artists) && rawCache.artists.length > 0 && (Date.now() - Number(rawCache.ts || 0)) < FEATURED_ARTISTS_TTL_MS) {
+      mergeHydratedFeaturedArtists(rawCache.artists);
+      return;
+    }
+  } catch (_) {}
+
+  try {
+    const res = await fetch(`${API_BASE}/api/featured-artists`);
+    if (!res.ok) return;
+    const data = await res.json();
+    if (data && data.success && Array.isArray(data.artists) && data.artists.length > 0) {
+      mergeHydratedFeaturedArtists(data.artists);
+      safeSetStorage(FEATURED_ARTISTS_CACHE_KEY, JSON.stringify({ ts: Date.now(), artists: data.artists }));
+    }
+  } catch (_) {}
+}
 
 function createArtistCard(artist) {
   const safeName = escapeHtml(artist.name || 'Sanatçı');
-  const safeGenre = escapeHtml(artist.genre || 'Müzik');
-  const safeImg = escapeHtml(safeUrl(artist.img, './kurfamuzik_logo.png'));
+  const listenerText = formatListenerCount(artist.fans);
+  const subLabel = escapeHtml(listenerText || artist.genre || 'Müzik');
+  const safeImg = escapeHtml(safeUrl(artist.img || artist.image, './kurfamuzik_logo.png'));
 
   const card = document.createElement('div');
-  card.className = "group flex flex-col items-center text-center p-2.5 rounded-2xl hover:bg-surface-container-low transition-all duration-300 cursor-pointer flex-shrink-0";
+  card.className = "group flex flex-col items-center text-center p-2.5 rounded-2xl hover:bg-surface-container-low transition-all duration-300 cursor-pointer flex-shrink-0 w-28 sm:w-32";
   card.innerHTML = `
     <div class="artist-avatar-wrap relative w-20 h-20 sm:w-24 sm:h-24 rounded-full overflow-hidden mb-2 shadow-md ring-2 ring-surface-container group-hover:ring-primary/60 transition-all bg-surface-container-high">
       <img src="${safeImg}" alt="${safeName}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" loading="lazy">
@@ -5448,7 +7297,7 @@ function createArtistCard(artist) {
       </div>
     </div>
     <h3 class="font-bold text-xs sm:text-sm text-on-surface truncate w-full group-hover:text-primary transition-colors">${safeName}</h3>
-    <span class="text-[10px] text-on-surface-variant truncate w-full mt-0.5">${safeGenre}</span>
+    <span class="text-[10px] text-on-surface-variant truncate w-full mt-0.5">${subLabel}</span>
   `;
 
   const imgEl = card.querySelector('img');
@@ -5473,6 +7322,8 @@ function renderPopularArtistsGrid() {
       shelfContainer.appendChild(createArtistCard(artist));
     });
     initDragToScroll(shelfContainer);
+    bindShelfArrows(shelfContainer);
+    requestAnimationFrame(() => updateShelfArrowsState(shelfContainer));
   }
 
   const kesifContainer = document.getElementById('kesif-artists-grid');
@@ -5522,11 +7373,11 @@ function openArtistDetail(artist) {
   const backLabel = document.getElementById('artist-detail-back-label');
   if (prevTab !== 'kesfet') {
     state._artistReturnTab = prevTab;
-    if (backLabel) backLabel.textContent = prevTab === 'arama' ? "Arama'ya Dön" : "Geri Dön";
+    if (backLabel) backLabel.textContent = prevTab === 'arama' ? t('artist.back_search') : t('artist.back');
     switchTab('kesfet', false, { preserveArtist: true });
   } else {
     state._artistReturnTab = null;
-    if (backLabel) backLabel.textContent = "Keşfet'e Dön";
+    if (backLabel) backLabel.textContent = t('artist.back_explore');
   }
 
   const mainCont = document.getElementById('kesfet-main-container');
@@ -5551,17 +7402,14 @@ function openArtistDetail(artist) {
 
   if (avatarEl) avatarEl.src = safeUrl(artist.img || artist.image, './kurfamuzik_logo.png');
   if (nameEl) nameEl.textContent = artist.name;
-  const fansNum = Number(artist.fans || 0);
-  const metaSuffix = fansNum >= 1000
-    ? `${fansNum >= 1000000 ? (fansNum / 1000000).toFixed(1) + 'M' : Math.round(fansNum / 1000) + 'K'} dinleyici`
-    : 'Sanatçı Profili';
-  if (genreEl) genreEl.textContent = `${artist.genre || 'Müzik'} • ${metaSuffix}`;
-  if (countEl) countEl.textContent = "Şarkılar yükleniyor...";
+  const listenerMeta = formatListenerCount(artist.fans) || t('artist.profile_label');
+  if (genreEl) genreEl.textContent = `${artist.genre || 'Müzik'} • ${listenerMeta}`;
+  if (countEl) countEl.textContent = t('artist.loading');
   if (listEl) {
     listEl.innerHTML = `
       <div class="flex items-center justify-center py-12 gap-3 text-on-surface-variant text-xs">
         <div class="w-5 h-5 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
-        <span>${escapeHtml(artist.name)} parçaları getiriliyor...</span>
+        <span>${escapeHtml(t('artist.loading_tracks', { name: artist.name }))}</span>
       </div>
     `;
   }
@@ -5583,14 +7431,13 @@ function openArtistDetail(artist) {
             avatarEl.src = safeUrl(apiData.artist.image, './kurfamuzik_logo.png');
           }
           if (genreEl && apiData.artist.fans) {
-            const fNum = Number(apiData.artist.fans || 0);
-            const fLabel = fNum >= 1000000 ? `${(fNum / 1000000).toFixed(1)}M` : `${Math.round(fNum / 1000)}K`;
-            genreEl.textContent = `${apiData.artist.genre || artist.genre || 'Müzik'} • ${fLabel} dinleyici`;
+            const fLabel = formatListenerCount(apiData.artist.fans) || t('artist.profile_label');
+            genreEl.textContent = `${apiData.artist.genre || artist.genre || 'Müzik'} • ${fLabel}`;
           }
         }
         if (apiData && apiData.success && Array.isArray(apiData.tracks) && apiData.tracks.length > 0) {
           currentArtistTracks = apiData.tracks;
-          if (countEl) countEl.textContent = `${apiData.tracks.length} Parça`;
+          if (countEl) countEl.textContent = t('artist.track_count', { count: apiData.tracks.length });
           renderArtistTracks(apiData.tracks, artist.name);
           return;
         }
@@ -5603,12 +7450,12 @@ function openArtistDetail(artist) {
     if (seq !== artistSeqToken) return;
     if (data.success && data.results && data.results.length > 0) {
       currentArtistTracks = data.results;
-      if (countEl) countEl.textContent = `${data.results.length} Parça`;
+      if (countEl) countEl.textContent = t('artist.track_count', { count: data.results.length });
       renderArtistTracks(data.results, artist.name);
     } else {
-      if (countEl) countEl.textContent = "0 Parça";
+      if (countEl) countEl.textContent = t('artist.track_count', { count: 0 });
       if (listEl) {
-        listEl.innerHTML = `<div class="text-center py-8 text-xs text-on-surface-variant">Parça listesi alınamadı.</div>`;
+        listEl.innerHTML = `<div class="text-center py-8 text-xs text-on-surface-variant">${escapeHtml(t('artist.no_tracks'))}</div>`;
       }
     }
   };
@@ -5616,9 +7463,9 @@ function openArtistDetail(artist) {
   loadArtistTracks().catch((err) => {
     if (err && err.name === 'AbortError') return;
     if (seq !== artistSeqToken) return;
-    if (countEl) countEl.textContent = "Hata";
+    if (countEl) countEl.textContent = t('artist.error');
     if (listEl) {
-      listEl.innerHTML = `<div class="text-center py-8 text-xs text-on-surface-variant">Bağlantı hatası oluştu.</div>`;
+      listEl.innerHTML = `<div class="text-center py-8 text-xs text-on-surface-variant">${escapeHtml(t('artist.conn_error'))}</div>`;
     }
   });
 
@@ -5641,9 +7488,9 @@ function openArtistDetail(artist) {
         safeSetStorage('kurfa_shuffle', 'true');
         syncShuffleRepeatUI();
         const randIdx = Math.floor(Math.random() * currentArtistTracks.length);
-        const chosen = setPlaybackQueueContext(currentArtistTracks, randIdx, artist.name, 'SANATÇIDAN ÇALINIYOR');
+        const chosen = setPlaybackQueueContext(currentArtistTracks, randIdx, artist.name, t('artist.official_profile').toUpperCase());
         if (chosen) playTrackById(chosen.id, chosen);
-        showToast(`${artist.name} karışık çalınıyor`);
+        showToast(getAppLanguage() === 'en' ? `Shuffling ${artist.name}` : `${artist.name} karışık çalınıyor`);
       }
     };
   }
@@ -5654,37 +7501,41 @@ function renderArtistTracks(tracks, artistName) {
   if (!listEl) return;
   listEl.innerHTML = '';
 
+  const isEn = getAppLanguage() === 'en';
   tracks.forEach((track, idx) => {
-    const isPlayingCurrent = state.currentTrack && state.currentTrack.id === track.id && state.isPlaying;
     const isFav = state.favorites.some(f => f.id === track.id);
-    const safeTitle = escapeHtml(track.title || 'Şarkı');
-    const safeArtist = escapeHtml(track.artist || artistName || 'Sanatçı');
+    const safeTitle = escapeHtml(formatCleanTrackTitle(track.title) || (isEn ? 'Track' : 'Şarkı'));
+    const safeArtist = escapeHtml(track.artist || artistName || (isEn ? 'Artist' : 'Sanatçı'));
     const safeDur = escapeHtml(track.duration || '3:30');
     const safeThumb = escapeHtml(safeUrl(track.thumbnail || getTrackThumbnail(track), './kurfamuzik_logo.png'));
 
-    const isCurrentRow = state.currentTrack && state.currentTrack.id === track.id;
+    const isCurrentRow = state.currentTrack && (state.currentTrack.id === track.id || (track.ytId && state.currentTrack.ytId === track.ytId));
+    const isPlayingCurrent = isCurrentRow && state.isPlaying;
     const row = document.createElement('div');
-    row.className = `track-row flex items-center justify-between p-2 sm:p-2.5 rounded-xl transition-colors group cursor-pointer ${isCurrentRow ? 'active' : ''}`;
+    row.className = `track-row flex items-center justify-between gap-2 p-2 sm:p-2.5 rounded-xl transition-colors group cursor-pointer ${isCurrentRow ? 'active' : ''}`;
     row.innerHTML = `
-      <div class="flex items-center gap-3 min-w-0 flex-1">
-        <span class="w-6 text-center text-xs font-bold font-mono group-hover:hidden ${isCurrentRow ? 'text-primary font-extrabold' : 'text-on-surface-variant'}">${idx + 1}</span>
-        <button type="button" class="w-6 h-6 rounded-full items-center justify-center text-primary hidden group-hover:flex flex-shrink-0" title="Çal">
+      <div class="flex items-center gap-3 min-w-0 flex-1 pr-3 overflow-hidden">
+        <span class="w-6 flex items-center justify-center flex-shrink-0 text-xs font-bold font-mono group-hover:hidden ${isCurrentRow ? 'text-primary font-extrabold' : 'text-on-surface-variant'}">${isCurrentRow ? renderMiniEqBarsHtml(isPlayingCurrent) : (idx + 1)}</span>
+        <button type="button" class="w-6 h-6 rounded-full items-center justify-center text-primary hidden group-hover:flex flex-shrink-0" title="${escapeHtml(t('player.play_btn'))}">
           <span class="material-symbols-outlined text-[18px] filled">${isPlayingCurrent ? 'pause' : 'play_arrow'}</span>
         </button>
 
         <img src="${safeThumb}" alt="${safeTitle}" class="w-10 h-10 sm:w-11 sm:h-11 rounded-lg object-cover flex-shrink-0 shadow-sm bg-surface-container-high" loading="lazy" onerror="this.onerror=null; this.src='./kurfamuzik_logo.png';">
-        <div class="flex flex-col min-w-0 flex-1 pr-2">
-          <span class="text-xs sm:text-sm font-bold truncate ${isCurrentRow ? 'text-primary' : 'text-on-surface'}">${safeTitle}</span>
-          <span class="text-[11px] text-on-surface-variant truncate font-medium">${safeArtist}</span>
+        <div class="flex flex-col min-w-0 flex-1 overflow-hidden">
+          <div class="flex items-center gap-2 min-w-0">
+            <span class="text-xs sm:text-sm font-bold truncate block ${isCurrentRow ? 'text-primary' : 'text-on-surface'}">${safeTitle}</span>
+            ${isCurrentRow ? renderPlayingPillHtml() : ''}
+          </div>
+          <span class="text-[11px] text-on-surface-variant truncate block font-medium">${safeArtist}</span>
         </div>
       </div>
 
-      <div class="flex items-center gap-1 sm:gap-2 flex-shrink-0">
+      <div class="flex items-center gap-1.5 sm:gap-2 flex-shrink-0 pl-2">
         <span class="text-xs text-on-surface-variant font-mono hidden sm:inline mr-2">${safeDur}</span>
-        <button type="button" class="w-8 h-8 rounded-full flex items-center justify-center text-on-surface-variant hover:text-primary transition-colors btn-artist-fav" title="Favorilere Ekle">
+        <button type="button" class="w-8 h-8 rounded-full flex items-center justify-center text-on-surface-variant hover:text-primary transition-colors btn-artist-fav" title="${escapeHtml(t('player.fav_add'))}">
           <span class="material-symbols-outlined text-[17px] ${isFav ? 'text-primary filled' : ''}">${isFav ? 'favorite' : 'favorite_border'}</span>
         </button>
-        <button type="button" class="w-8 h-8 rounded-full flex items-center justify-center text-on-surface-variant hover:text-primary transition-colors btn-artist-dl" title="İndir">
+        <button type="button" class="w-8 h-8 rounded-full flex items-center justify-center text-on-surface-variant hover:text-primary transition-colors btn-artist-dl" title="${escapeHtml(t('hero.download'))}">
           <span class="material-symbols-outlined text-[17px]">download</span>
         </button>
       </div>
@@ -5762,17 +7613,17 @@ function renderFavoritesTable() {
   DOM.favoritesListTable.innerHTML = '';
 
   if (DOM.favCountText) {
-    DOM.favCountText.textContent = `${state.favorites.length} Şarkı Kaydedildi`;
+    DOM.favCountText.textContent = t('library.fav_saved_count', { count: state.favorites.length });
   }
 
   if (state.favorites.length === 0) {
     DOM.favoritesListTable.innerHTML = `
       <div class="py-12 flex flex-col items-center justify-center gap-2 text-on-surface-variant text-center">
         <span class="material-symbols-outlined text-[48px] text-primary/40">favorite</span>
-        <p class="text-sm font-bold text-on-surface">Favori listeniz henüz boş</p>
-        <p class="text-xs">Beğendiğiniz şarkıları kalp simgesine tıklayarak buraya ekleyebilirsiniz.</p>
+        <p class="text-sm font-bold text-on-surface">${escapeHtml(t('library.fav_empty_title'))}</p>
+        <p class="text-xs">${escapeHtml(t('library.fav_empty_desc'))}</p>
         <button type="button" class="mt-2 px-4 py-2 rounded-full bg-primary text-on-primary text-xs font-bold" onclick="switchTab('kesfet')">
-          Şarkı Keşfet
+          ${escapeHtml(t('library.discover_music'))}
         </button>
       </div>
     `;
@@ -5780,38 +7631,43 @@ function renderFavoritesTable() {
   }
 
   state.favorites.forEach((track, index) => {
-    const safeTitle = escapeHtml(track.title || 'Şarkı');
+    const isCurrentRow = Boolean(state.currentTrack && state.currentTrack.id === track.id);
+    const isPlayingCurrent = isCurrentRow && state.isPlaying;
+    const safeTitle = escapeHtml(formatCleanTrackTitle(track.title) || 'Şarkı');
     const safeArtist = escapeHtml(track.artist || 'Sanatçı');
     const safeDur = escapeHtml(track.duration || '3:30');
     const safeThumb = escapeHtml(safeUrl(track.thumbnail || getTrackThumbnail(track), './kurfamuzik_logo.png'));
 
     const row = document.createElement('div');
-    row.className = "flex items-center justify-between p-2.5 rounded-xl hover:bg-surface-container-low transition-colors group cursor-pointer";
+    row.className = `track-row flex items-center justify-between gap-2 p-2.5 rounded-xl transition-colors group cursor-pointer ${isCurrentRow ? 'active' : ''}`;
     row.innerHTML = `
-      <div class="flex items-center gap-3 min-w-0 flex-1">
-        <span class="w-5 text-center text-xs font-bold text-on-surface-variant font-mono">${index + 1}</span>
+      <div class="flex items-center gap-3 min-w-0 flex-1 pr-3 overflow-hidden">
+        <span class="w-5 flex items-center justify-center flex-shrink-0 text-xs font-bold font-mono ${isCurrentRow ? 'text-primary font-extrabold' : 'text-on-surface-variant'}">${isCurrentRow ? renderMiniEqBarsHtml(isPlayingCurrent) : (index + 1)}</span>
         <img src="${safeThumb}" alt="${safeTitle}" class="w-10 h-10 rounded-lg object-cover flex-shrink-0" onerror="this.onerror=null; this.src='./kurfamuzik_logo.png'">
-        <div class="flex flex-col min-w-0">
-          <span class="text-xs md:text-sm font-bold text-on-surface truncate group-hover:text-primary transition-colors">${safeTitle}</span>
-          <span class="text-[11px] text-on-surface-variant truncate">${safeArtist}</span>
+        <div class="flex flex-col min-w-0 flex-1 overflow-hidden">
+          <div class="flex items-center gap-2 min-w-0">
+            <span class="text-xs md:text-sm font-bold truncate block group-hover:text-primary transition-colors ${isCurrentRow ? 'text-primary' : 'text-on-surface'}">${safeTitle}</span>
+            ${isCurrentRow ? renderPlayingPillHtml() : ''}
+          </div>
+          <span class="text-[11px] text-on-surface-variant truncate block">${safeArtist}</span>
         </div>
       </div>
-      <div class="flex items-center gap-2">
+      <div class="flex items-center gap-1.5 sm:gap-2 flex-shrink-0 pl-2">
         <span class="text-xs text-on-surface-variant font-mono hidden sm:inline">${safeDur}</span>
-        <button type="button" class="btn-fav-queue w-8 h-8 rounded-full flex items-center justify-center text-on-surface-variant hover:text-secondary transition-colors" title="Sıraya Ekle">
+        <button type="button" class="btn-fav-queue w-8 h-8 rounded-full flex items-center justify-center text-on-surface-variant hover:text-secondary transition-colors" title="${escapeHtml(t('player.add_to_queue'))}">
           <span class="material-symbols-outlined text-[18px]">queue_music</span>
         </button>
-        <button type="button" class="btn-fav-add-pl w-8 h-8 rounded-full flex items-center justify-center text-on-surface-variant hover:text-primary transition-colors" title="Çalma Listesine Ekle">
+        <button type="button" class="btn-fav-add-pl w-8 h-8 rounded-full flex items-center justify-center text-on-surface-variant hover:text-primary transition-colors" title="${escapeHtml(t('player.add_to_playlist'))}">
           <span class="material-symbols-outlined text-[18px]">playlist_add</span>
         </button>
-        <button type="button" class="btn-fav-remove w-8 h-8 rounded-full flex items-center justify-center text-primary" title="Favorilerden Çıkar">
+        <button type="button" class="btn-fav-remove w-8 h-8 rounded-full flex items-center justify-center text-primary" title="${escapeHtml(t('player.fav_remove'))}">
           <span class="material-symbols-outlined text-[18px] filled">favorite</span>
         </button>
-        <button type="button" class="btn-fav-dl w-8 h-8 rounded-full flex items-center justify-center text-on-surface-variant hover:text-secondary" title="İndir">
+        <button type="button" class="btn-fav-dl w-8 h-8 rounded-full flex items-center justify-center text-on-surface-variant hover:text-secondary" title="${escapeHtml(t('hero.download'))}">
           <span class="material-symbols-outlined text-[18px]">download</span>
         </button>
-        <button type="button" class="btn-fav-play w-8 h-8 rounded-full bg-primary text-on-primary flex items-center justify-center shadow-sm hover:scale-105 active:scale-95 transition-all">
-          <span class="material-symbols-outlined text-[18px]">play_arrow</span>
+        <button type="button" class="btn-fav-play w-8 h-8 rounded-full bg-primary text-on-primary flex items-center justify-center shadow-sm hover:scale-105 active:scale-95 transition-all" title="${escapeHtml(t('player.play_btn'))}">
+          <span class="material-symbols-outlined text-[18px]">${isPlayingCurrent ? 'pause' : 'play_arrow'}</span>
         </button>
       </div>
     `;
@@ -5862,45 +7718,53 @@ function renderDownloadsTable() {
     DOM.downloadsListTable.innerHTML = `
       <div class="py-12 flex flex-col items-center justify-center gap-2 text-on-surface-variant text-center">
         <span class="material-symbols-outlined text-[48px] text-secondary/40">cloud_download</span>
-        <p class="text-sm font-bold text-on-surface">İndirilen şarkı bulunmuyor</p>
-        <p class="text-xs">Şarkıları çevrimdışı dinlemek için indir butonuna tıklayın.</p>
+        <p class="text-sm font-bold text-on-surface">${escapeHtml(t('library.downloads_empty_title'))}</p>
+        <p class="text-xs">${escapeHtml(t('library.downloads_empty_desc'))}</p>
       </div>
     `;
     return;
   }
 
+  const currentId = (state.currentTrack && state.currentTrack.id) ? state.currentTrack.id : null;
   state.downloads.forEach((track, index) => {
-    const safeTitle = escapeHtml(track.title || 'Şarkı');
-    const safeArtist = escapeHtml(track.artist || 'Sanatçı');
+    const isCurrent = Boolean(currentId && currentId === track.id);
+    const isPlayingCurrent = isCurrent && state.isPlaying;
+    const safeTitle = escapeHtml(formatCleanTrackTitle(track.title) || (getAppLanguage() === 'en' ? 'Track' : 'Şarkı'));
+    const safeArtist = escapeHtml(track.artist || (getAppLanguage() === 'en' ? 'Artist' : 'Sanatçı'));
     const safeSize = escapeHtml(track.size || '7.5 MB');
     const safeThumb = escapeHtml(safeUrl(track.thumbnail || getTrackThumbnail(track), './kurfamuzik_logo.png'));
 
     const row = document.createElement('div');
-    row.className = "flex items-center justify-between p-2.5 rounded-xl hover:bg-surface-container-low transition-colors group cursor-pointer";
+    row.className = `track-row flex items-center justify-between gap-2 p-2.5 rounded-xl hover:bg-surface-container-low transition-colors group cursor-pointer ${isCurrent ? 'active' : ''}`;
+    row.dataset.trackId = track.id || '';
+    row.dataset.trackIdx = String(index + 1);
     row.innerHTML = `
-      <div class="flex items-center gap-3 min-w-0 flex-1">
-        <span class="w-5 text-center text-xs font-bold text-on-surface-variant font-mono">${index + 1}</span>
+      <div class="flex items-center gap-3 min-w-0 flex-1 pr-3 overflow-hidden">
+        <span class="w-5 text-center text-xs font-bold text-on-surface-variant font-mono track-idx-num flex items-center justify-center flex-shrink-0">${isCurrent ? renderMiniEqBarsHtml(isPlayingCurrent) : (index + 1)}</span>
         <img src="${safeThumb}" alt="${safeTitle}" class="w-10 h-10 rounded-lg object-cover flex-shrink-0" onerror="this.onerror=null; this.src='./kurfamuzik_logo.png'">
-        <div class="flex flex-col min-w-0">
-          <span class="text-xs md:text-sm font-bold text-on-surface truncate group-hover:text-primary transition-colors">${safeTitle}</span>
-          <span class="text-[11px] text-on-surface-variant truncate">${safeArtist} - ${safeSize}</span>
+        <div class="flex flex-col min-w-0 flex-1 overflow-hidden">
+          <div class="flex items-center gap-1.5 min-w-0">
+            <span class="text-xs md:text-sm font-bold text-on-surface truncate block group-hover:text-primary transition-colors">${safeTitle}</span>
+            ${isCurrent ? renderPlayingPillHtml() : ''}
+          </div>
+          <span class="text-[11px] text-on-surface-variant truncate block">${safeArtist} - ${safeSize}</span>
         </div>
       </div>
-      <div class="flex items-center gap-2">
-        <button type="button" class="btn-dl-add-pl w-8 h-8 rounded-full flex items-center justify-center text-on-surface-variant hover:text-primary transition-colors" title="Çalma Listesine Ekle">
+      <div class="flex items-center gap-1.5 sm:gap-2 flex-shrink-0 pl-2">
+        <button type="button" class="btn-dl-add-pl w-8 h-8 rounded-full flex items-center justify-center text-on-surface-variant hover:text-primary transition-colors" title="${escapeHtml(t('player.add_to_playlist'))}">
           <span class="material-symbols-outlined text-[18px]">add_circle</span>
         </button>
         <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-secondary-fixed text-on-secondary-fixed text-[10px] font-bold">
           <span class="material-symbols-outlined text-[12px]">offline_pin</span>
-          Çevrimdışı
+          ${escapeHtml(t('library.offline_badge'))}
         </span>
-        <button type="button" class="btn-dl-play w-8 h-8 rounded-full bg-primary text-on-primary flex items-center justify-center shadow-sm hover:scale-105 active:scale-95 transition-all" title="Çal">
+        <button type="button" class="btn-dl-play w-8 h-8 rounded-full bg-primary text-on-primary flex items-center justify-center shadow-sm hover:scale-105 active:scale-95 transition-all" title="${escapeHtml(t('player.play_btn'))}">
           <span class="material-symbols-outlined text-[18px]">play_arrow</span>
         </button>
       </div>
     `;
     const playDl = () => {
-      setPlaybackQueueContext(state.downloads, index, 'İndirilen Şarkılar', 'İNDİRİLENLERDEN ÇALINIYOR');
+      setPlaybackQueueContext(state.downloads, index, t('library.offline_badge'), 'OFFLINE');
       playTrackById(track.id, track);
     };
     row.onclick = playDl;
@@ -5949,7 +7813,7 @@ function renderPlaylistTracksTable() {
     DOM.playlistTracksTable.innerHTML = `
       <div class="py-8 text-center text-xs text-on-surface-variant flex flex-col items-center gap-2">
         <span class="material-symbols-outlined text-2xl text-on-surface-variant/50">search_off</span>
-        <span>Aramanızla eşleşen şarkı bulunamadı.</span>
+        <span>${escapeHtml(t('player.no_matching_tracks'))}</span>
       </div>
     `;
     return;
@@ -5960,40 +7824,42 @@ function renderPlaylistTracksTable() {
   const visibleTracks = (isFiltering || playlistTracksExpanded) ? list : list.slice(0, 7);
 
   visibleTracks.forEach((track, index) => {
-    const isCurrent = currentId && currentId === track.id;
+    const isCurrent = Boolean(currentId && currentId === track.id);
+    const isPlayingCurrent = isCurrent && state.isPlaying;
     const isFav = state.favorites.some(f => f.id === track.id);
-    const safeTitle = escapeHtml(track.title || 'Şarkı');
+    const safeTitle = escapeHtml(formatCleanTrackTitle(track.title) || 'Şarkı');
     const safeArtist = escapeHtml(track.artist || 'Sanatçı');
     const safeDur = escapeHtml(track.duration || '3:30');
     const safeThumb = escapeHtml(safeUrl(getTrackThumbnail(track), './kurfamuzik_logo.png'));
 
     const row = document.createElement('div');
-    row.className = `flex items-center justify-between p-2.5 rounded-xl transition-all group cursor-pointer ${isCurrent ? 'bg-primary/10 border-l-4 border-primary pl-2 shadow-xs' : 'hover:bg-surface-container-low'}`;
+    row.className = `track-row flex items-center justify-between gap-2 p-2.5 rounded-xl transition-all group cursor-pointer ${isCurrent ? 'active' : ''}`;
     row.innerHTML = `
-      <div class="flex items-center gap-3 min-w-0 flex-1">
+      <div class="flex items-center gap-3 min-w-0 flex-1 pr-3 overflow-hidden">
         <span class="w-6 text-center text-xs font-bold font-mono flex items-center justify-center flex-shrink-0 ${isCurrent ? 'text-primary font-extrabold' : 'text-on-surface-variant'}">
-          ${isCurrent && state.isPlaying
-            ? '<span class="material-symbols-outlined text-[18px] text-primary animate-pulse">equalizer</span>'
-            : (isCurrent ? '<span class="material-symbols-outlined text-[18px] text-primary">play_arrow</span>' : (index + 1))}
+          ${isCurrent ? renderMiniEqBarsHtml(isPlayingCurrent) : (index + 1)}
         </span>
-        <img src="${safeThumb}" alt="${safeTitle}" class="w-10 h-10 rounded-lg object-cover flex-shrink-0 ${isCurrent ? 'ring-2 ring-primary ring-offset-1 ring-offset-surface' : ''}" onerror="this.onerror=null; this.src='./kurfamuzik_logo.png';">
-        <div class="flex flex-col min-w-0">
-          <span class="text-xs md:text-sm font-bold truncate ${isCurrent ? 'text-primary font-extrabold' : 'text-on-surface'}">${safeTitle}</span>
-          <span class="text-[11px] text-on-surface-variant truncate font-medium">${safeArtist}</span>
+        <img src="${safeThumb}" alt="${safeTitle}" class="w-10 h-10 rounded-lg object-cover flex-shrink-0 ${isCurrent ? 'ring-2 ring-primary/50' : ''}" onerror="this.onerror=null; this.src='./kurfamuzik_logo.png';">
+        <div class="flex flex-col min-w-0 flex-1 overflow-hidden">
+          <div class="flex items-center gap-2 min-w-0">
+            <span class="text-xs md:text-sm font-bold truncate block ${isCurrent ? 'text-primary font-extrabold' : 'text-on-surface'}">${safeTitle}</span>
+            ${isCurrent ? renderPlayingPillHtml() : ''}
+          </div>
+          <span class="text-[11px] text-on-surface-variant truncate block font-medium">${safeArtist}</span>
         </div>
       </div>
-      <div class="flex items-center gap-1.5 text-xs text-on-surface-variant flex-shrink-0">
+      <div class="flex items-center gap-1.5 sm:gap-2 text-xs text-on-surface-variant flex-shrink-0 pl-2">
         <span class="font-mono text-[11px] hidden sm:inline mr-1">${safeDur}</span>
-        <button type="button" class="w-8 h-8 rounded-full flex items-center justify-center text-on-surface-variant hover:text-secondary hover:bg-surface-container-high transition-colors btn-playlist-queue" title="Sıraya Ekle">
+        <button type="button" class="w-8 h-8 rounded-full flex items-center justify-center text-on-surface-variant hover:text-secondary hover:bg-surface-container-high transition-colors btn-playlist-queue" title="${escapeHtml(t('player.add_to_queue'))}">
           <span class="material-symbols-outlined text-[18px]">queue_music</span>
         </button>
-        <button type="button" class="w-8 h-8 rounded-full flex items-center justify-center text-on-surface-variant hover:text-primary hover:bg-surface-container-high transition-colors btn-playlist-add" title="Çalma Listesine Ekle">
+        <button type="button" class="w-8 h-8 rounded-full flex items-center justify-center text-on-surface-variant hover:text-primary hover:bg-surface-container-high transition-colors btn-playlist-add" title="${escapeHtml(t('player.add_to_playlist'))}">
           <span class="material-symbols-outlined text-[18px]">playlist_add</span>
         </button>
-        <button type="button" class="w-8 h-8 rounded-full flex items-center justify-center text-on-surface-variant hover:text-primary hover:bg-surface-container-high transition-colors btn-playlist-fav" title="Favorilere Ekle">
+        <button type="button" class="w-8 h-8 rounded-full flex items-center justify-center text-on-surface-variant hover:text-primary hover:bg-surface-container-high transition-colors btn-playlist-fav" title="${escapeHtml(t('player.fav_add'))}">
           <span class="material-symbols-outlined text-[18px] ${isFav ? 'text-primary filled' : ''}">${isFav ? 'favorite' : 'favorite_border'}</span>
         </button>
-        <button type="button" class="w-8 h-8 rounded-full flex items-center justify-center text-on-surface-variant hover:text-tertiary hover:bg-surface-container-high transition-colors btn-playlist-dl" title="İndir">
+        <button type="button" class="w-8 h-8 rounded-full flex items-center justify-center text-on-surface-variant hover:text-tertiary hover:bg-surface-container-high transition-colors btn-playlist-dl" title="${escapeHtml(t('hero.download'))}">
           <span class="material-symbols-outlined text-[18px]">download</span>
         </button>
       </div>
@@ -6044,7 +7910,7 @@ function renderPlaylistTracksTable() {
     expandContainer.innerHTML = `
       <button type="button" class="w-full py-2.5 rounded-xl bg-surface-container hover:bg-surface-container-high text-xs font-bold text-primary flex items-center justify-center gap-2 transition-all shadow-xs border border-surface-container" onclick="togglePlaylistTracksExpand()">
         <span class="material-symbols-outlined text-[18px]">${playlistTracksExpanded ? 'expand_less' : 'expand_more'}</span>
-        <span>${playlistTracksExpanded ? 'Daha Az Göster (İlk 7 Şarkı)' : `Daha Fazla Göster (${list.length - 7} Şarkı Daha)`}</span>
+        <span>${escapeHtml(playlistTracksExpanded ? t('player.show_less_tracks') : t('player.show_more_tracks', { count: list.length - 7 }))}</span>
       </button>
     `;
     DOM.playlistTracksTable.appendChild(expandContainer);
@@ -6107,13 +7973,13 @@ function renderQueueDrawerList() {
         <div class="w-12 h-12 rounded-full bg-surface-container-low flex items-center justify-center text-on-surface-variant/60 mb-1">
           <span class="material-symbols-outlined text-2xl">queue_music</span>
         </div>
-        <h4 class="text-sm font-bold text-on-surface">Çalma Sıranız Boş</h4>
+        <h4 class="text-sm font-bold text-on-surface">${escapeHtml(t('queue.empty_title'))}</h4>
         <p class="text-[11px] text-on-surface-variant max-w-[220px]">
-          Herhangi bir şarkıyı sıraya ekleyebilir veya trend listesini başlatabilirsiniz.
+          ${escapeHtml(t('queue.empty_desc'))}
         </p>
         <button type="button" class="mt-1 px-4 py-2 rounded-full bg-primary text-on-primary text-xs font-bold hover:bg-primary-container transition-all shadow-sm flex items-center gap-1.5" onclick="playAllTrends()">
           <span class="material-symbols-outlined text-[16px]">local_fire_department</span>
-          <span>Trend Müzikleri Çal</span>
+          <span>${escapeHtml(t('queue.play_trends'))}</span>
         </button>
       </div>
     `;
@@ -6123,7 +7989,7 @@ function renderQueueDrawerList() {
   if (userQueueCount > 0) {
     const upHeader = document.createElement('div');
     upHeader.className = 'px-2 pt-1 pb-1 text-[10px] font-bold uppercase tracking-wider text-primary flex items-center justify-between';
-    upHeader.innerHTML = `<span>Sıradaki Şarkılar (${userQueueCount})</span>`;
+    upHeader.innerHTML = `<span>${escapeHtml(t('queue.up_next', { count: userQueueCount }))}</span>`;
     DOM.queueDrawerList.appendChild(upHeader);
 
     state.userQueue.forEach((uTrack, uIdx) => {
@@ -6141,7 +8007,7 @@ function renderQueueDrawerList() {
             <span class="text-[10px] text-on-surface-variant truncate">${safeArtist}</span>
           </div>
         </div>
-        <button type="button" class="w-6 h-6 rounded-full flex items-center justify-center text-on-surface-variant hover:text-error transition-colors btn-uq-remove" title="Sıradan Çıkar">
+        <button type="button" class="w-6 h-6 rounded-full flex items-center justify-center text-on-surface-variant hover:text-error transition-colors btn-uq-remove" title="${escapeHtml(t('queue.remove'))}">
           <span class="material-symbols-outlined text-[15px]">close</span>
         </button>
       `;
@@ -6164,7 +8030,7 @@ function renderQueueDrawerList() {
     if (queueCount > 0) {
       const ctxHeader = document.createElement('div');
       ctxHeader.className = 'px-2 pt-2 pb-1 text-[10px] font-bold uppercase tracking-wider text-on-surface-variant';
-      ctxHeader.textContent = state.playingContextTitle ? `Liste: ${state.playingContextTitle}` : 'Çalma Listesi';
+      ctxHeader.textContent = state.playingContextTitle ? t('queue.playlist_prefix', { name: state.playingContextTitle }) : t('queue.playlist_default');
       DOM.queueDrawerList.appendChild(ctxHeader);
     }
   }
@@ -6176,7 +8042,7 @@ function renderQueueDrawerList() {
   if (winStart > 0) {
     const prevInfo = document.createElement('div');
     prevInfo.className = 'px-2 py-1 text-[10px] font-semibold text-on-surface-variant text-center';
-    prevInfo.textContent = `Önceki ${winStart} parça gizlendi (Toplam ${state.queue.length} parça)`;
+    prevInfo.textContent = t('queue.hidden_prev', { count: winStart, total: state.queue.length });
     DOM.queueDrawerList.appendChild(prevInfo);
   }
 
@@ -6184,43 +8050,46 @@ function renderQueueDrawerList() {
     const track = state.queue[index];
     if (!track) continue;
     const isCurrent = index === state.queueIndex;
-    const safeTitle = escapeHtml(track.title || 'Şarkı');
+    const safeTitle = escapeHtml(formatCleanTrackTitle(track.title) || 'Şarkı');
     const safeArtist = escapeHtml(track.artist || 'Sanatçı');
     const safeDur = escapeHtml(track.duration || '3:30');
     const safeThumb = escapeHtml(safeUrl(track.thumbnail || getTrackThumbnail(track), './kurfamuzik_logo.png'));
 
     const item = document.createElement('div');
-    item.className = `flex items-center justify-between gap-2 p-2 rounded-xl transition-all cursor-pointer group select-none border border-transparent ${isCurrent ? 'bg-primary/15 font-bold border-primary/30' : 'hover:bg-surface-container-low hover:border-surface-container'}`;
+    item.className = `track-row flex items-center justify-between gap-2 p-2 rounded-xl transition-all cursor-pointer group select-none ${isCurrent ? 'active font-bold' : ''}`;
     item.setAttribute('draggable', 'true');
     item.dataset.index = index;
     if (isCurrent) item.dataset.current = '1';
 
     item.innerHTML = `
-      <div class="flex items-center gap-2 min-w-0 flex-1 pr-1">
+      <div class="flex items-center gap-2 min-w-0 flex-1 pr-3 overflow-hidden">
         <div class="flex flex-col items-center justify-center flex-shrink-0 -mr-0.5">
-          <button type="button" class="w-4 h-3.5 flex items-center justify-center text-on-surface-variant hover:text-primary transition-colors btn-queue-up ${index === 0 ? 'opacity-20 cursor-not-allowed pointer-events-none' : ''}" title="Yukarı Taşı">
+          <button type="button" class="w-4 h-3.5 flex items-center justify-center text-on-surface-variant hover:text-primary transition-colors btn-queue-up ${index === 0 ? 'opacity-20 cursor-not-allowed pointer-events-none' : ''}" title="${escapeHtml(t('queue.move_up'))}">
             <span class="material-symbols-outlined text-[14px]">keyboard_arrow_up</span>
           </button>
-          <button type="button" class="w-4 h-3.5 flex items-center justify-center text-on-surface-variant hover:text-primary transition-colors btn-queue-down ${index === queueCount - 1 ? 'opacity-20 cursor-not-allowed pointer-events-none' : ''}" title="Aşağı Taşı">
+          <button type="button" class="w-4 h-3.5 flex items-center justify-center text-on-surface-variant hover:text-primary transition-colors btn-queue-down ${index === queueCount - 1 ? 'opacity-20 cursor-not-allowed pointer-events-none' : ''}" title="${escapeHtml(t('queue.move_down'))}">
             <span class="material-symbols-outlined text-[14px]">keyboard_arrow_down</span>
           </button>
         </div>
-        <span class="w-4 text-center text-[11px] flex-shrink-0 ${isCurrent ? 'text-primary font-extrabold' : 'text-on-surface-variant'}">${index + 1}</span>
+        <span class="w-4 flex items-center justify-center text-[11px] flex-shrink-0 ${isCurrent ? 'text-primary font-extrabold' : 'text-on-surface-variant'}">${isCurrent ? renderMiniEqBarsHtml(state.isPlaying) : (index + 1)}</span>
         <img src="${safeThumb}" alt="${safeTitle}" class="w-8 h-8 rounded-md object-cover flex-shrink-0" loading="lazy" onerror="this.onerror=null; this.src='./kurfamuzik_logo.png'">
-        <div class="flex flex-col min-w-0 flex-1">
-          <span class="text-xs text-on-surface truncate ${isCurrent ? 'text-primary font-extrabold' : ''}">${safeTitle}</span>
-          <span class="text-[10px] text-on-surface-variant truncate">${safeArtist}</span>
+        <div class="flex flex-col min-w-0 flex-1 overflow-hidden">
+          <div class="flex items-center gap-1.5 min-w-0">
+            <span class="text-xs truncate block ${isCurrent ? 'text-primary font-extrabold' : 'text-on-surface'}">${safeTitle}</span>
+            ${isCurrent ? renderPlayingPillHtml() : ''}
+          </div>
+          <span class="text-[10px] text-on-surface-variant truncate block">${safeArtist}</span>
         </div>
       </div>
-      <div class="flex items-center gap-1 flex-shrink-0">
+      <div class="flex items-center gap-1 flex-shrink-0 pl-2">
         <span class="text-[11px] text-on-surface-variant font-mono whitespace-nowrap">${safeDur}</span>
-        <button type="button" class="hidden sm:flex w-6 h-6 rounded-full items-center justify-center text-on-surface-variant hover:text-primary opacity-0 group-hover:opacity-100 transition-opacity btn-queue-add-pl" title="Çalma Listesine Ekle">
+        <button type="button" class="hidden sm:flex w-6 h-6 rounded-full items-center justify-center text-on-surface-variant hover:text-primary opacity-0 group-hover:opacity-100 transition-opacity btn-queue-add-pl" title="${escapeHtml(t('player.add_to_playlist'))}">
           <span class="material-symbols-outlined text-[15px]">playlist_add</span>
         </button>
-        <button type="button" class="hidden sm:flex w-6 h-6 rounded-full items-center justify-center text-on-surface-variant hover:text-tertiary opacity-0 group-hover:opacity-100 transition-opacity btn-queue-dl" title="İndir">
+        <button type="button" class="hidden sm:flex w-6 h-6 rounded-full items-center justify-center text-on-surface-variant hover:text-tertiary opacity-0 group-hover:opacity-100 transition-opacity btn-queue-dl" title="${escapeHtml(t('hero.download'))}">
           <span class="material-symbols-outlined text-[15px]">download</span>
         </button>
-        <button type="button" class="w-6 h-6 rounded-full flex items-center justify-center text-on-surface-variant hover:text-error sm:opacity-0 sm:group-hover:opacity-100 transition-opacity btn-queue-remove" title="Sıradan Çıkar">
+        <button type="button" class="w-6 h-6 rounded-full flex items-center justify-center text-on-surface-variant hover:text-error sm:opacity-0 sm:group-hover:opacity-100 transition-opacity btn-queue-remove" title="${escapeHtml(t('queue.remove'))}">
           <span class="material-symbols-outlined text-[15px]">close</span>
         </button>
       </div>
@@ -6318,7 +8187,7 @@ function renderQueueDrawerList() {
   if (winEnd < state.queue.length) {
     const nextInfo = document.createElement('div');
     nextInfo.className = 'px-2 py-1.5 text-[10px] font-semibold text-on-surface-variant text-center';
-    nextInfo.textContent = `Sırada +${state.queue.length - winEnd} parça daha var`;
+    nextInfo.textContent = t('queue.more_in_queue', { count: state.queue.length - winEnd });
     DOM.queueDrawerList.appendChild(nextInfo);
   }
 }
@@ -6334,7 +8203,7 @@ function clearQueue() {
     localStorage.removeItem('kurfa_user_queue');
   } catch(e) {}
   renderQueueDrawerList();
-  showToast("Çalma sırası temizlendi");
+  showToast(t('toast.queue_cleared'));
 }
 
 function removeFromQueue(index) {
@@ -6349,7 +8218,7 @@ function removeFromQueue(index) {
   }
   saveQueueState();
   renderQueueDrawerList();
-  showToast(`Sıradan çıkarıldı: ${removed ? removed.title : 'Şarkı'}`);
+  showToast(t('toast.removed_from_queue', { title: removed ? removed.title : 'Şarkı' }));
 }
 
 // =============================================================================
@@ -6426,14 +8295,59 @@ function initDragToScroll(el) {
   }, true);
 }
 
+const SHELF_ARROW_IDS = {
+  'trendler-cards-grid': {
+    floatLeft: 'btn-trendler-scroll-left',
+    floatRight: 'btn-trendler-scroll-right',
+    headLeft: 'btn-trendler-head-left',
+    headRight: 'btn-trendler-head-right'
+  },
+  'popular-artists-grid': {
+    floatLeft: 'btn-artists-scroll-left',
+    floatRight: 'btn-artists-scroll-right',
+    headLeft: 'btn-artists-head-left',
+    headRight: 'btn-artists-head-right'
+  }
+};
+
+function updateShelfArrowsState(el) {
+  if (!el || !el.id) return;
+  const map = SHELF_ARROW_IDS[el.id];
+  if (!map) return;
+
+  const atStart = el.scrollLeft <= 8;
+  const hasOverflow = el.scrollWidth > el.clientWidth + 8;
+  const atEnd = !hasOverflow || (el.scrollLeft + el.clientWidth >= el.scrollWidth - 8);
+
+  const fl = document.getElementById(map.floatLeft);
+  const fr = document.getElementById(map.floatRight);
+  const hl = document.getElementById(map.headLeft);
+  const hr = document.getElementById(map.headRight);
+
+  if (fl) fl.classList.toggle('shelf-arrow-hidden', atStart);
+  if (fr) fr.classList.toggle('shelf-arrow-hidden', atEnd);
+  if (hl) hl.disabled = atStart;
+  if (hr) hr.disabled = atEnd;
+}
+window.updateShelfArrowsState = updateShelfArrowsState;
+
+function bindShelfArrows(el) {
+  if (!el || el._shelfArrowsBound) return;
+  el._shelfArrowsBound = true;
+  el.addEventListener('scroll', () => updateShelfArrowsState(el), { passive: true });
+}
+
 function scrollShelf(containerId, direction) {
   const container = document.getElementById(containerId);
   if (!container) return;
   const scrollAmount = (container.clientWidth || 300) * 0.75;
-  container.scrollBy({
-    left: direction * scrollAmount,
+  const targetLeft = Math.max(0, Math.min(container.scrollWidth - container.clientWidth, container.scrollLeft + direction * scrollAmount));
+  container.scrollTo({
+    left: targetLeft,
     behavior: 'smooth'
   });
+  setTimeout(() => updateShelfArrowsState(container), 180);
+  setTimeout(() => updateShelfArrowsState(container), 420);
 }
 
 let heroSlideIndex = 0;
@@ -6479,13 +8393,13 @@ function renderHeroSlide(track, rankIdx, totalSlides) {
   const coverImgMobile = document.getElementById('hero-cover-img-mobile');
 
   if (rankBadge) {
-    rankBadge.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-white animate-pulse"></span><span>#${rankIdx + 1} TÜRKİYE TRENDİ</span>`;
+    rankBadge.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-white animate-pulse"></span><span>${escapeHtml(t('hero.trend_badge', { rank: rankIdx + 1 }))}</span>`;
   }
   if (durPill) {
     durPill.textContent = track.duration || '3:15';
   }
-  if (DOM.heroTitle) DOM.heroTitle.textContent = track.title || "Günün En Popüler Şarkıları";
-  if (DOM.heroArtist) DOM.heroArtist.textContent = `${track.artist || 'Sanatçı'} • YouTube Müzik Türkiye`;
+  if (DOM.heroTitle) DOM.heroTitle.textContent = formatCleanTrackTitle(track.title) || t('hero.default_title');
+  if (DOM.heroArtist) DOM.heroArtist.textContent = track.artist || (getAppLanguage() === 'en' ? 'Artist' : 'Sanatçı');
   if (coverImg) {
     coverImg.src = thumb;
     coverImg.alt = track.title || 'Trend Kapak';
@@ -6542,30 +8456,36 @@ function updateHeroUI(track) {
 }
 
 function updatePlaylistHeroUI(track) {
-  const topTrack = track || (exploreData && (exploreData.hero || (exploreData.trends && exploreData.trends[0]))) || (CURATED_TRACKS && CURATED_TRACKS[0]);
-  if (!topTrack) return;
+  const activeTrack = state.currentTrack || track || (exploreData && (exploreData.hero || (exploreData.trends && exploreData.trends[0]))) || (CURATED_TRACKS && CURATED_TRACKS[0]);
+  if (!activeTrack) return;
   const thumbEl = document.getElementById('playlist-hero-thumb');
   const titleEl = document.getElementById('playlist-hero-title');
   const descEl = document.getElementById('playlist-hero-desc');
   const subEl = document.getElementById('playlist-hero-sub');
   const badgeEl = document.getElementById('playlist-hero-badge');
 
-  const thumbUrl = safeUrl(getTrackThumbnail(topTrack), './kurfamuzik_logo.png');
+  const thumbUrl = safeUrl(getTrackThumbnail(activeTrack), './kurfamuzik_logo.png');
+  const cleanTitle = formatCleanTrackTitle(activeTrack.title) || t('player.playlist_badge');
+  const cleanArtist = activeTrack.artist || (getAppLanguage() === 'en' ? 'Artist' : 'Sanatçı');
+  const ctxTitle = state.playingContextTitle || t('explore.yt_trends_title');
+
   if (thumbEl) {
     thumbEl.src = thumbUrl;
-    thumbEl.alt = topTrack.title || "Canlı Trend Müzik";
+    thumbEl.alt = cleanTitle;
   }
   if (titleEl) {
-    titleEl.textContent = topTrack.title || "Canlı Trend Seçkisi";
+    titleEl.textContent = cleanTitle;
   }
   if (descEl) {
-    descEl.textContent = `${topTrack.artist || 'Sanatçı'} - YouTube Müzik Türkiye canlı trendlerinden anlık senkronize edildi.`;
+    descEl.textContent = state.currentTrack
+      ? `${cleanArtist} • ${ctxTitle}`
+      : `${cleanArtist} • ${t('player.yt_trends_desc')}`;
   }
   if (subEl) {
-    subEl.textContent = `#1 Canlı Hit (${topTrack.duration || '3:30'})`;
+    subEl.textContent = activeTrack.duration || '3:30';
   }
   if (badgeEl) {
-    badgeEl.textContent = "Canlı Trend Seçkisi";
+    badgeEl.textContent = state.currentTrack ? t('player.now_playing') : t('player.playlist_badge');
   }
 }
 
@@ -6701,7 +8621,7 @@ async function fetchExploreData(force = false) {
 
 function toggleCurrentFavorite() {
   if (!state.currentTrack) {
-    showToast("Önce bir şarkı seçin");
+    showToast(t('toast.select_track_first'));
     return;
   }
   toggleFavorite(state.currentTrack);
@@ -6717,15 +8637,17 @@ function toggleFavoriteById(trackId) {
 
 function toggleFavorite(track) {
   if (!track || !track.id) return;
+  const fallbackTitle = getAppLanguage() === 'en' ? 'Track' : 'Şarkı';
   const idx = state.favorites.findIndex(t => t.id === track.id);
   if (idx !== -1) {
     state.favorites.splice(idx, 1);
-    showToast(`Favorilerden çıkarıldı: ${track.title || 'Şarkı'}`);
+    showToast(t('toast.fav_removed', { title: track.title || fallbackTitle }));
   } else {
     state.favorites.push(track);
-    showToast(`Favorilere eklendi: ${track.title || 'Şarkı'}`);
+    showToast(t('toast.fav_added', { title: track.title || fallbackTitle }));
   }
   safeSetStorage('kurfa_favs', JSON.stringify(state.favorites));
+  if (typeof scheduleSaveUserDataToDesktop === 'function') scheduleSaveUserDataToDesktop();
   updatePlayerFavBtn();
   renderFavoritesTable();
   renderHomeTracklistTable();
@@ -6734,7 +8656,7 @@ function toggleFavorite(track) {
 
 function downloadCurrentMP3() {
   if (!state.currentTrack) {
-    showToast("Önce bir şarkı seçin");
+    showToast(t('toast.select_track_first'));
     return;
   }
   downloadTrack(state.currentTrack);
@@ -7403,9 +9325,9 @@ async function startDirectDownload(videoId, format, trackMeta) {
   if (btnMp4) btnMp4.disabled = true;
 
   state._lastDownloadArgs = { videoId, format, trackMeta };
-  const displayTitle = trackMeta?.title || validVideoId || 'Kurfanova Parçası';
-  const displayArtist = trackMeta?.artist || 'Kurfanova';
-  const combinedTitle = (displayArtist && displayArtist !== 'Kurfanova' && !displayTitle.toLowerCase().includes(displayArtist.toLowerCase()))
+  const displayTitle = trackMeta?.title || validVideoId || 'Kurfamüzik Parçası';
+  const displayArtist = trackMeta?.artist || 'Kurfamüzik';
+  const combinedTitle = (displayArtist && displayArtist !== 'Kurfamüzik' && !displayTitle.toLowerCase().includes(displayArtist.toLowerCase()))
     ? `${displayArtist} - ${displayTitle}`
     : displayTitle;
 
@@ -7638,7 +9560,7 @@ function processModalDownload(action) {
       ? ((typeof CURATED_TRACKS !== 'undefined' ? CURATED_TRACKS.find(t => (t.id === matchedYt || t.ytId === matchedYt)) : null) ||
          state.queue.find(t => (t.id === matchedYt || t.ytId === matchedYt)) ||
          state.currentSearchResults.find(t => (t.id === matchedYt || t.ytId === matchedYt)) ||
-         { id: matchedYt, ytId: matchedYt, title: "YouTube Parçası", artist: "Kurfanova" })
+         { id: matchedYt, ytId: matchedYt, title: "YouTube Parçası", artist: "Kurfamüzik" })
       : pendingTrack);
 
   if (action === 'play') {
@@ -7810,7 +9732,7 @@ function setEqualizerPreset(preset, silent = true) {
 function openShareModal(track = null) {
   const target = track || state.currentTrack;
   if (!target || !target.id) {
-    showToast("Önce bir şarkı seçin");
+    showToast(t('toast.select_track_first'));
     return;
   }
   const modal = document.getElementById('share-modal');
@@ -7826,13 +9748,13 @@ function openShareModal(track = null) {
   const validYt = safeYtId(target.ytId || target.id);
   const fallbackThumb = validYt ? `https://i.ytimg.com/vi/${validYt}/hqdefault.jpg` : './kurfamuzik_logo.png';
   if (thumb) thumb.src = safeUrl(target.thumbnail, fallbackThumb);
-  if (title) title.textContent = target.title || 'Şarkı';
-  if (artist) artist.textContent = target.artist || 'Sanatçı';
+  if (title) title.textContent = target.title || (getAppLanguage() === 'en' ? 'Track' : 'Şarkı');
+  if (artist) artist.textContent = target.artist || (getAppLanguage() === 'en' ? 'Artist' : 'Sanatçı');
 
   const shareId = validYt || encodeURIComponent(String(target.id));
   const shareUrl = `${window.location.origin}${window.location.pathname}?song=${shareId}`;
   if (input) input.value = shareUrl;
-  if (copyBtnText) copyBtnText.textContent = "Kopyala";
+  if (copyBtnText) copyBtnText.textContent = t('share.copy');
 
   modal.classList.remove('opacity-0', 'pointer-events-none');
   modal.classList.add('opacity-100', 'pointer-events-auto');
@@ -7857,23 +9779,23 @@ async function copyShareUrl() {
 
   try {
     await navigator.clipboard.writeText(input.value);
-    if (copyBtnText) copyBtnText.textContent = "Kopyalandı!";
-    showToast("Şarkı linki panoya kopyalandı!");
+    if (copyBtnText) copyBtnText.textContent = t('share.copied');
+    showToast(t('toast.share_copied'));
     setTimeout(() => {
-      if (copyBtnText) copyBtnText.textContent = "Kopyala";
+      if (copyBtnText) copyBtnText.textContent = t('share.copy');
     }, 2500);
   } catch (e) {
     input.select();
     document.execCommand('copy');
-    if (copyBtnText) copyBtnText.textContent = "Kopyalandı!";
-    showToast("Şarkı linki kopyalandı!");
+    if (copyBtnText) copyBtnText.textContent = t('share.copied');
+    showToast(t('toast.share_copied'));
   }
 }
 
 async function triggerWebShare() {
   const target = state.currentTrack;
   if (!target || !target.id) {
-    showToast("Önce bir şarkı seçin");
+    showToast(t('toast.select_track_first'));
     return;
   }
   const validYt = safeYtId(target.ytId || target.id);
@@ -7884,7 +9806,9 @@ async function triggerWebShare() {
     try {
       await navigator.share({
         title: `${target.title} - Kurfamüzik`,
-        text: `${target.artist} - ${target.title} şarkısını Kurfamüzik'te reklamsız dinle!`,
+        text: getAppLanguage() === 'en'
+          ? `Listen to ${target.artist} - ${target.title} ad-free on Kurfamüzik!`
+          : `${target.artist} - ${target.title} şarkısını Kurfamüzik'te reklamsız dinle!`,
         url: shareUrl
       });
       closeShareModal();
@@ -7904,10 +9828,10 @@ function openProfileModal() {
   if (!modal || !card) return;
 
   const nickInput = document.getElementById('profile-nickname-input');
-  if (nickInput) nickInput.value = state.profile.nickname || "Dinleyici";
+  if (nickInput) nickInput.value = state.profile.nickname || t('topbar.default_nick');
 
   const minEl = document.getElementById('stat-listening-minutes');
-  if (minEl) minEl.textContent = `${Math.floor((state.profile.listeningSeconds || 0) / 60)} dk`;
+  if (minEl) minEl.textContent = t('settings.min_unit', { val: Math.floor((state.profile.listeningSeconds || 0) / 60) });
 
   const playedEl = document.getElementById('stat-tracks-played');
   if (playedEl) playedEl.textContent = (state.profile.tracksPlayed || 0).toString();
@@ -8012,7 +9936,7 @@ function saveProfileData() {
   safeSetStorage('kurfa_profile', JSON.stringify(state.profile));
   updateProfileUI();
   closeProfileModal();
-  showToast("Profil bilgileri kaydedildi");
+  showToast(t('toast.profile_saved'));
 }
 
 function updateProfileUI() {
@@ -8025,7 +9949,7 @@ function updateProfileUI() {
   }
   const nameEl = document.getElementById('topbar-user-name');
   if (nameEl) {
-    nameEl.textContent = state.profile.nickname || "Dinleyici";
+    nameEl.textContent = state.profile.nickname || t('topbar.default_nick');
   }
   const isDark = !!state.profile.darkMode;
   if (document.documentElement) {
@@ -8038,7 +9962,7 @@ function updateProfileUI() {
   }
   const metaTheme = document.querySelector('meta[name="theme-color"]');
   if (metaTheme) {
-    metaTheme.setAttribute('content', isDark ? '#0c1017' : '#faf8ff');
+    metaTheme.setAttribute('content', isDark ? '#0c101a' : '#faf8ff');
   }
 
   const topbarThemeIcon = document.getElementById('topbar-theme-icon');
@@ -8047,12 +9971,12 @@ function updateProfileUI() {
   }
   const topbarThemeBtn = document.getElementById('topbar-theme-btn');
   if (topbarThemeBtn) {
-    topbarThemeBtn.title = isDark ? 'Aydınlık Moda Geç' : 'Karanlık Moda Geç';
+    topbarThemeBtn.title = isDark ? t('topbar.theme_to_light') : t('topbar.theme_to_dark');
   }
 
   const btnThemeToggle = document.getElementById('btn-theme-toggle');
   if (btnThemeToggle) {
-    btnThemeToggle.textContent = isDark ? 'Açık' : 'Kapalı';
+    btnThemeToggle.textContent = isDark ? t('settings.on') : t('settings.off');
     if (isDark) {
       btnThemeToggle.classList.add('bg-primary', 'text-on-primary');
       btnThemeToggle.classList.remove('bg-surface-container', 'text-on-surface');
@@ -8071,7 +9995,7 @@ function toggleDarkMode() {
   if (typeof getBrowserExtensionMode === 'function' && getBrowserExtensionMode().startsWith('desktop')) {
     callExtensionBridge('SET_THEME_MODE', { dark: Boolean(state.profile.darkMode) }, 1500).catch(() => {});
   }
-  showToast(state.profile.darkMode ? "Karanlık Mod Açıldı" : "Aydınlık Mod Açıldı");
+  showToast(state.profile.darkMode ? t('toast.dark_on') : t('toast.dark_off'));
 }
 
 // =============================================================================
@@ -8113,7 +10037,7 @@ function renderFreshReleasesGrid() {
       </div>
     `;
     card.onclick = () => {
-      setPlaybackQueueContext(FRESH_RELEASES, track, 'Yeni Çıkanlar', 'YENİ ÇIKANLARDAN ÇALINIYOR');
+      setPlaybackQueueContext(FRESH_RELEASES, track, t('explore.new_releases_title'), t('explore.new_releases_title').toUpperCase());
       playTrackById(track.id, track);
     };
     const favBtn = card.querySelector('.btn-fresh-fav');
@@ -8196,6 +10120,7 @@ function saveCustomPlaylists() {
   safeSetStorage('kurfa_custom_playlists', JSON.stringify(state.customPlaylists));
   updateKutuphaneBadges();
   scheduleFirebaseCloudSync();
+  if (typeof scheduleSaveUserDataToDesktop === 'function') scheduleSaveUserDataToDesktop();
 }
 
 function renderCustomPlaylistsGrid() {
@@ -8211,14 +10136,15 @@ function renderCustomPlaylistsGrid() {
           <span class="material-symbols-outlined text-[20px]">playlist_add</span>
         </div>
         <div class="min-w-0 flex-1">
-          <h3 class="text-xs sm:text-sm font-bold text-on-surface truncate">Henüz özel çalma listeniz yok</h3>
-          <p class="text-[11px] text-on-surface-variant truncate">Yukarıdaki "Yeni Liste" butonunu kullanarak listenizi oluşturabilirsiniz.</p>
+          <h3 class="text-xs sm:text-sm font-bold text-on-surface truncate">${escapeHtml(t('library.no_playlists_title'))}</h3>
+          <p class="text-[11px] text-on-surface-variant truncate">${escapeHtml(t('library.no_playlists_desc'))}</p>
         </div>
       </div>
     `;
     return;
   }
 
+  const defaultPlName = getAppLanguage() === 'en' ? 'Playlist' : 'Çalma Listesi';
   playlists.forEach(pl => {
     const card = document.createElement('div');
     card.className = "group relative rounded-2xl bg-surface-container-lowest p-3 shadow-sm hover:shadow-md transition-all flex flex-col cursor-pointer border border-transparent hover:border-surface-container";
@@ -8227,19 +10153,19 @@ function renderCustomPlaylistsGrid() {
       ? pl.tracks[0].thumbnail
       : './kurfamuzik_logo.png';
     const thumb = safeUrl(rawThumb, './kurfamuzik_logo.png');
-    const safeName = escapeHtml(pl.name || 'Çalma Listesi');
+    const safeName = escapeHtml(pl.name || defaultPlName);
     const trackCount = (pl.tracks && pl.tracks.length) || 0;
 
     card.innerHTML = `
       <div class="relative w-full aspect-square rounded-xl overflow-hidden mb-2.5 bg-surface-container-high">
         <img src="${thumb}" alt="${safeName}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy" onerror="this.onerror=null; this.src='./kurfamuzik_logo.png';">
         <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
-        <button type="button" class="btn-play-custom-pl absolute right-2.5 bottom-2.5 w-10 h-10 rounded-full bg-primary text-on-primary flex items-center justify-center shadow-lg opacity-0 translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300 hover:scale-110 active:scale-95" title="Tümünü Çal">
+        <button type="button" class="btn-play-custom-pl absolute right-2.5 bottom-2.5 w-10 h-10 rounded-full bg-primary text-on-primary flex items-center justify-center shadow-lg opacity-0 translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300 hover:scale-110 active:scale-95" title="${escapeHtml(t('library.play_all'))}">
           <span class="material-symbols-outlined text-[24px] filled">play_arrow</span>
         </button>
       </div>
       <h3 class="text-xs sm:text-sm font-bold text-on-surface truncate group-hover:text-primary transition-colors">${safeName}</h3>
-      <p class="text-[11px] text-on-surface-variant truncate font-medium mt-0.5">${trackCount} Şarkı</p>
+      <p class="text-[11px] text-on-surface-variant truncate font-medium mt-0.5">${escapeHtml(t('library.tracks_count', { count: trackCount }))}</p>
     `;
 
     card.onclick = () => openCustomPlaylistDetail(pl.id);
@@ -8294,7 +10220,7 @@ function submitCreatePlaylist() {
   const input = document.getElementById('create-playlist-name-input');
   const name = input ? input.value.trim() : '';
   if (!name) {
-    showToast("Lütfen bir liste adı girin");
+    showToast(t('toast.enter_playlist_name'));
     return;
   }
 
@@ -8314,10 +10240,10 @@ function submitCreatePlaylist() {
       thumbnail: safeUrl(pendingAddPlaylistTrack.thumbnail, './kurfamuzik_logo.png'),
       duration: pendingAddPlaylistTrack.duration || "3:30"
     });
-    showToast(`"${name}" oluşturuldu ve şarkı eklendi!`);
+    showToast(t('toast.playlist_created_added', { name }));
     pendingAddPlaylistTrack = null;
   } else {
-    showToast(`"${name}" çalma listesi oluşturuldu!`);
+    showToast(t('toast.playlist_created', { name }));
   }
 
   state.customPlaylists.push(newPl);
@@ -8341,7 +10267,7 @@ function openAddToPlaylistModal(trackOrId) {
   if (!target) target = state.currentTrack;
 
   if (!target) {
-    showToast("Önce bir şarkı seçin");
+    showToast(t('toast.select_track_first'));
     return;
   }
   pendingAddPlaylistTrack = target;
@@ -8354,9 +10280,12 @@ function openAddToPlaylistModal(trackOrId) {
   const titleEl = document.getElementById('atp-track-title');
   const artistEl = document.getElementById('atp-track-artist');
 
+  const fallbackTitle = getAppLanguage() === 'en' ? 'Track' : 'Şarkı';
+  const fallbackArtist = getAppLanguage() === 'en' ? 'Artist' : 'Sanatçı';
+  const defaultPlName = getAppLanguage() === 'en' ? 'Playlist' : 'Çalma Listesi';
   if (thumbEl) thumbEl.src = safeUrl(target.thumbnail, './kurfamuzik_logo.png');
-  if (titleEl) titleEl.textContent = target.title || "Şarkı";
-  if (artistEl) artistEl.textContent = target.artist || "Sanatçı";
+  if (titleEl) titleEl.textContent = target.title || fallbackTitle;
+  if (artistEl) artistEl.textContent = target.artist || fallbackArtist;
 
   const listContainer = document.getElementById('atp-playlists-list');
   if (listContainer) {
@@ -8366,7 +10295,7 @@ function openAddToPlaylistModal(trackOrId) {
     if (playlists.length === 0) {
       listContainer.innerHTML = `
         <div class="py-4 text-center text-xs text-on-surface-variant">
-          Henüz listeniz yok. Aşağıdan yeni bir liste oluşturabilirsiniz.
+          ${escapeHtml(t('atp.no_lists'))}
         </div>
       `;
     } else {
@@ -8378,8 +10307,8 @@ function openAddToPlaylistModal(trackOrId) {
           <div class="flex items-center gap-2.5 min-w-0">
             <span class="material-symbols-outlined text-[20px] text-primary">queue_music</span>
             <div class="flex flex-col min-w-0">
-              <span class="text-xs font-bold text-on-surface truncate">${escapeHtml(pl.name || 'Çalma Listesi')}</span>
-              <span class="text-[10px] text-on-surface-variant font-medium">${(pl.tracks || []).length} Şarkı</span>
+              <span class="text-xs font-bold text-on-surface truncate">${escapeHtml(pl.name || defaultPlName)}</span>
+              <span class="text-[10px] text-on-surface-variant font-medium">${escapeHtml(t('library.tracks_count', { count: (pl.tracks || []).length }))}</span>
             </div>
           </div>
           <span class="material-symbols-outlined text-[18px] ${hasTrack ? 'text-primary' : 'text-on-surface-variant'}">${hasTrack ? 'check_circle' : 'add'}</span>
@@ -8416,7 +10345,7 @@ function addTrackToPlaylist(playlistId, track) {
 
   const existingIdx = pl.tracks.findIndex(t => t.id === track.id);
   if (existingIdx !== -1) {
-    showToast(`"${track.title}" zaten "${pl.name}" listesinde var`);
+    showToast(t('toast.track_already_playlist', { title: track.title, name: pl.name }));
     return;
   }
 
@@ -8430,7 +10359,7 @@ function addTrackToPlaylist(playlistId, track) {
   });
 
   saveCustomPlaylists();
-  showToast(`"${track.title}" -> "${pl.name}" listesine eklendi`);
+  showToast(t('toast.track_added_playlist', { title: track.title, name: pl.name }));
   renderCustomPlaylistsGrid();
 }
 
@@ -8450,14 +10379,17 @@ function openCustomPlaylistDetail(playlistId) {
   const tracksTable = document.getElementById('custom-playlist-tracks-table');
 
   if (titleEl) titleEl.textContent = pl.name;
-  if (metaEl) metaEl.textContent = `${(pl.tracks || []).length} Şarkı`;
+  if (metaEl) metaEl.textContent = t('library.tracks_count', { count: (pl.tracks || []).length });
 
   if (playAllBtn) {
     playAllBtn.onclick = () => playCustomPlaylist(playlistId, false);
   }
   if (deleteBtn) {
     deleteBtn.onclick = () => {
-      if (confirm(`"${pl.name}" çalma listesini silmek istediğinize emin misiniz?`)) {
+      const msg = getAppLanguage() === 'en'
+        ? `Are you sure you want to delete "${pl.name}" playlist?`
+        : `"${pl.name}" çalma listesini silmek istediğinize emin misiniz?`;
+      if (confirm(msg)) {
         deleteCustomPlaylist(playlistId);
       }
     };
@@ -8466,40 +10398,49 @@ function openCustomPlaylistDetail(playlistId) {
   if (tracksTable) {
     tracksTable.innerHTML = '';
     const tracks = pl.tracks || [];
+    const currentId = (state.currentTrack && state.currentTrack.id) ? state.currentTrack.id : null;
+    const isEn = getAppLanguage() === 'en';
 
     if (tracks.length === 0) {
       tracksTable.innerHTML = `
         <div class="py-8 text-center text-xs text-on-surface-variant">
-          Bu liste henüz boş. Arama veya Trendler sekmesinden şarkıları bu listeye ekleyebilirsiniz.
+          ${escapeHtml(t('library.empty_custom_list'))}
         </div>
       `;
     } else {
       tracks.forEach((track, index) => {
+        const isCurrent = Boolean(currentId && currentId === track.id);
+        const isPlayingCurrent = isCurrent && state.isPlaying;
         const thumb = safeUrl(track.thumbnail, './kurfamuzik_logo.png');
-        const safeTitle = escapeHtml(track.title || 'Şarkı');
-        const safeArtist = escapeHtml(track.artist || 'Sanatçı');
+        const safeTitle = escapeHtml(formatCleanTrackTitle(track.title) || (isEn ? 'Track' : 'Şarkı'));
+        const safeArtist = escapeHtml(track.artist || (isEn ? 'Artist' : 'Sanatçı'));
         const safeDur = escapeHtml(track.duration || '3:30');
         const row = document.createElement('div');
-        row.className = "flex items-center justify-between p-2 rounded-xl hover:bg-surface-container transition-colors group cursor-pointer";
+        row.className = `track-row flex items-center justify-between gap-2 p-2 rounded-xl hover:bg-surface-container transition-colors group cursor-pointer ${isCurrent ? 'active' : ''}`;
+        row.dataset.trackId = track.id || '';
+        row.dataset.trackIdx = String(index + 1);
         row.innerHTML = `
-          <div class="flex items-center gap-3 min-w-0 flex-1">
-            <span class="w-5 text-center text-xs font-bold text-on-surface-variant font-mono">${index + 1}</span>
+          <div class="flex items-center gap-3 min-w-0 flex-1 pr-3 overflow-hidden">
+            <span class="w-5 text-center text-xs font-bold text-on-surface-variant font-mono track-idx-num flex items-center justify-center flex-shrink-0">${isCurrent ? renderMiniEqBarsHtml(isPlayingCurrent) : (index + 1)}</span>
             <img src="${thumb}" alt="${safeTitle}" class="w-9 h-9 rounded-lg object-cover flex-shrink-0" loading="lazy" onerror="this.onerror=null; this.src='./kurfamuzik_logo.png';">
-            <div class="flex flex-col min-w-0">
-              <span class="text-xs font-bold text-on-surface truncate group-hover:text-primary transition-colors">${safeTitle}</span>
-              <span class="text-[11px] text-on-surface-variant truncate">${safeArtist}</span>
+            <div class="flex flex-col min-w-0 flex-1 overflow-hidden">
+              <div class="flex items-center gap-1.5 min-w-0">
+                <span class="text-xs font-bold text-on-surface truncate block group-hover:text-primary transition-colors">${safeTitle}</span>
+                ${isCurrent ? renderPlayingPillHtml() : ''}
+              </div>
+              <span class="text-[11px] text-on-surface-variant truncate block">${safeArtist}</span>
             </div>
           </div>
-          <div class="flex items-center gap-2">
+          <div class="flex items-center gap-1.5 sm:gap-2 flex-shrink-0 pl-2">
             <span class="text-xs text-on-surface-variant font-mono">${safeDur}</span>
-            <button type="button" class="btn-remove-track w-8 h-8 rounded-full flex items-center justify-center text-on-surface-variant hover:text-error opacity-0 group-hover:opacity-100 transition-opacity" title="Listeden Çıkar">
+            <button type="button" class="btn-remove-track w-8 h-8 rounded-full flex items-center justify-center text-on-surface-variant hover:text-error opacity-0 group-hover:opacity-100 transition-opacity" title="${escapeHtml(t('queue.remove'))}">
               <span class="material-symbols-outlined text-[18px]">close</span>
             </button>
           </div>
         `;
 
         row.onclick = () => {
-          setPlaybackQueueContext(tracks, track, pl.name, 'ÖZEL ÇALMA LİSTESİ');
+          setPlaybackQueueContext(tracks, track, pl.name, isEn ? 'CUSTOM PLAYLIST' : 'ÖZEL ÇALMA LİSTESİ');
           playTrackById(track.id, track);
         };
 
@@ -8533,7 +10474,7 @@ function deleteCustomPlaylist(playlistId) {
   saveCustomPlaylists();
   closeCustomPlaylistDetail();
   renderCustomPlaylistsGrid();
-  showToast("Çalma listesi silindi");
+  showToast(t('toast.playlist_deleted'));
 }
 
 function removeTrackFromCustomPlaylist(playlistId, trackId) {
@@ -8543,13 +10484,13 @@ function removeTrackFromCustomPlaylist(playlistId, trackId) {
   saveCustomPlaylists();
   openCustomPlaylistDetail(playlistId);
   renderCustomPlaylistsGrid();
-  showToast("Şarkı listeden çıkarıldı");
+  showToast(t('toast.track_removed_playlist'));
 }
 
 function playCustomPlaylist(playlistId, shuffle = false) {
   const pl = state.customPlaylists.find(p => p.id === playlistId);
   if (!pl || !pl.tracks || pl.tracks.length === 0) {
-    showToast("Bu çalma listesinde henüz şarkı yok");
+    showToast(getAppLanguage() === 'en' ? 'This playlist has no tracks yet' : 'Bu çalma listesinde henüz şarkı yok');
     return;
   }
 
@@ -8558,12 +10499,12 @@ function playCustomPlaylist(playlistId, shuffle = false) {
     syncShuffleRepeatUI();
   }
   const startIdx = shuffle ? Math.floor(Math.random() * pl.tracks.length) : 0;
-  setPlaybackQueueContext(pl.tracks, startIdx, pl.name, 'ÖZEL ÇALMA LİSTESİ');
+  setPlaybackQueueContext(pl.tracks, startIdx, pl.name, getAppLanguage() === 'en' ? 'CUSTOM PLAYLIST' : 'ÖZEL ÇALMA LİSTESİ');
 
   const firstTrack = state.queue[state.queueIndex] || state.queue[0];
   if (firstTrack) {
     playTrackById(firstTrack.id, firstTrack);
-    showToast(`Çalınıyor: ${pl.name} (${state.queue.length} Şarkı)`);
+    showToast(`${pl.name} (${t('library.tracks_count', { count: state.queue.length })})`);
   }
 }
 
@@ -8573,25 +10514,27 @@ function playCustomPlaylist(playlistId, shuffle = false) {
 
 function saveSpotifyPlaylists() {
   safeSetStorage('kurfa_spotify_playlists', JSON.stringify(state.spotifyPlaylists || []));
+  if (typeof scheduleSaveUserDataToDesktop === 'function') scheduleSaveUserDataToDesktop();
 }
 
 async function importSpotifyPlaylist(explicitUrl) {
   const input = document.getElementById('spotify-import-input');
   const statusEl = document.getElementById('spotify-import-status');
   const importBtn = document.getElementById('btn-spotify-import');
+  const isEn = getAppLanguage() === 'en';
 
   const rawUrl = (explicitUrl || (input ? input.value : '')).trim();
   if (!rawUrl) {
     if (statusEl) {
-      statusEl.textContent = 'Lütfen geçerli bir Spotify bağlantısı girin.';
+      statusEl.textContent = isEn ? 'Please enter a valid Spotify link.' : 'Lütfen geçerli bir Spotify bağlantısı girin.';
       statusEl.className = 'text-xs font-semibold text-error block';
     }
-    showToast('Lütfen bir Spotify bağlantısı girin');
+    showToast(isEn ? 'Please enter a Spotify link' : 'Lütfen bir Spotify bağlantısı girin');
     return;
   }
 
   if (statusEl) {
-    statusEl.textContent = 'Spotify çalma listesi ayrıştırılıyor, lütfen bekleyin...';
+    statusEl.textContent = isEn ? 'Parsing Spotify playlist, please wait...' : 'Spotify çalma listesi ayrıştırılıyor, lütfen bekleyin...';
     statusEl.className = 'text-xs font-semibold text-primary block';
   }
   if (importBtn) {
@@ -8604,7 +10547,7 @@ async function importSpotifyPlaylist(explicitUrl) {
     const data = await res.json();
 
     if (!res.ok || !data.success) {
-      throw new Error(data.error || 'Çalma listesi yüklenemedi');
+      throw new Error(data.error || (isEn ? 'Failed to load playlist' : 'Çalma listesi yüklenemedi'));
     }
 
     const existingIdx = (state.spotifyPlaylists || []).findIndex(p => p.id === data.id);
@@ -8623,17 +10566,19 @@ async function importSpotifyPlaylist(explicitUrl) {
 
     if (existingIdx !== -1) {
       state.spotifyPlaylists[existingIdx] = newEntry;
-      showToast(`"${data.title}" listesi güncellendi!`);
+      showToast(isEn ? `"${data.title}" playlist updated!` : `"${data.title}" listesi güncellendi!`);
     } else {
       if (!Array.isArray(state.spotifyPlaylists)) state.spotifyPlaylists = [];
       state.spotifyPlaylists.unshift(newEntry);
-      showToast(`"${data.title}" Spotify kütüphanenize eklendi!`);
+      showToast(isEn ? `"${data.title}" added to your Spotify library!` : `"${data.title}" Spotify kütüphanenize eklendi!`);
     }
 
     saveSpotifyPlaylists();
     if (input) input.value = '';
     if (statusEl) {
-      statusEl.textContent = `"${data.title}" (${newEntry.trackCount} şarkı) başarıyla eklendi!`;
+      statusEl.textContent = isEn
+        ? `"${data.title}" (${t('library.tracks_count', { count: newEntry.trackCount })}) imported!`
+        : `"${data.title}" (${newEntry.trackCount} şarkı) başarıyla eklendi!`;
       statusEl.className = 'text-xs font-semibold text-green-500 block';
       setTimeout(() => { if (statusEl) statusEl.classList.add('hidden'); }, 4000);
     }
@@ -8644,10 +10589,10 @@ async function importSpotifyPlaylist(explicitUrl) {
   } catch (err) {
     console.error('Spotify import error:', err);
     if (statusEl) {
-      statusEl.textContent = `Hata: ${err.message || 'Spotify bağlantısı okunamadı'}`;
+      statusEl.textContent = `${isEn ? 'Error' : 'Hata'}: ${err.message || (isEn ? 'Could not read Spotify link' : 'Spotify bağlantısı okunamadı')}`;
       statusEl.className = 'text-xs font-semibold text-error block';
     }
-    showToast(`Spotify Hatası: ${err.message || 'Okunamadı'}`);
+    showToast(`${isEn ? 'Spotify Error' : 'Spotify Hatası'}: ${err.message || (isEn ? 'Failed' : 'Okunamadı')}`);
   } finally {
     if (importBtn) {
       importBtn.disabled = false;
@@ -8668,9 +10613,9 @@ function renderSpotifyPlaylistsGrid() {
         <div class="w-14 h-14 rounded-2xl bg-green-500/10 text-green-500 flex items-center justify-center mb-3">
           <span class="material-symbols-outlined text-[28px]">album</span>
         </div>
-        <h3 class="text-sm font-bold text-on-surface">Henüz Spotify Listesi Eklenmedi</h3>
+        <h3 class="text-sm font-bold text-on-surface">${escapeHtml(t('library.no_spotify_title'))}</h3>
         <p class="text-xs text-on-surface-variant max-w-sm mt-1">
-          Yukarıdaki kutucuğa herhangi bir Spotify çalma listesi bağlantısı yapıştırarak anında içe aktarabilirsiniz.
+          ${escapeHtml(t('library.no_spotify_desc'))}
         </p>
       </div>
     `;
@@ -8683,20 +10628,20 @@ function renderSpotifyPlaylistsGrid() {
     card.onclick = () => openSpotifyPlaylistDetail(pl.id);
 
     const coverUrl = safeUrl(pl.cover, './kurfamuzik_logo.png');
-    const safePlTitle = escapeHtml(pl.title || 'Spotify Listesi');
+    const safePlTitle = escapeHtml(pl.title || 'Spotify');
     const count = pl.trackCount || (pl.tracks ? pl.tracks.length : 0);
 
     card.innerHTML = `
       <div class="relative w-full aspect-square rounded-xl overflow-hidden bg-surface-container-high">
         <img src="${coverUrl}" alt="${safePlTitle}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" loading="lazy" onerror="this.onerror=null; this.src='./kurfamuzik_logo.png';">
         <div class="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity"></div>
-        <button type="button" aria-label="Tümünü Çal" class="btn-play-card absolute bottom-2 right-2 w-10 h-10 rounded-full bg-green-600 text-white flex items-center justify-center shadow-lg transform translate-y-2 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all hover:scale-105 active:scale-95" title="Listeyi Çal">
+        <button type="button" aria-label="${escapeHtml(t('library.play_all'))}" class="btn-play-card absolute bottom-2 right-2 w-10 h-10 rounded-full bg-green-600 text-white flex items-center justify-center shadow-lg transform translate-y-2 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all hover:scale-105 active:scale-95" title="${escapeHtml(t('library.play_all'))}">
           <span class="material-symbols-outlined text-[22px] filled">play_arrow</span>
         </button>
       </div>
       <div class="flex flex-col min-w-0">
         <h3 class="text-xs font-bold text-on-surface truncate group-hover:text-green-500 transition-colors">${safePlTitle}</h3>
-        <p class="text-[11px] text-on-surface-variant truncate">${count} Şarkı • Spotify</p>
+        <p class="text-[11px] text-on-surface-variant truncate">${escapeHtml(t('library.tracks_count', { count }))} • Spotify</p>
       </div>
     `;
 
@@ -8719,6 +10664,7 @@ function openSpotifyPlaylistDetail(playlistId) {
   const pl = (state.spotifyPlaylists || []).find(p => p.id === playlistId);
   if (!pl) return;
   state.activeSpotifyPlaylistId = playlistId;
+  const isEn = getAppLanguage() === 'en';
 
   const detailView = document.getElementById('spotify-playlist-detail-view');
   const grid = document.getElementById('spotify-playlists-grid');
@@ -8735,7 +10681,7 @@ function openSpotifyPlaylistDetail(playlistId) {
   const safeCover = safeUrl(pl.cover, './kurfamuzik_logo.png');
   if (titleEl) titleEl.textContent = pl.title;
   if (subtitleEl) subtitleEl.textContent = pl.subtitle || '';
-  if (metaEl) metaEl.textContent = `${(pl.tracks || []).length} Şarkı`;
+  if (metaEl) metaEl.textContent = t('library.tracks_count', { count: (pl.tracks || []).length });
   if (coverEl) coverEl.src = safeCover;
 
   if (playAllBtn) {
@@ -8747,14 +10693,17 @@ function openSpotifyPlaylistDetail(playlistId) {
   }
   if (deleteBtn) {
     deleteBtn.onclick = () => {
-      if (confirm(`"${pl.title}" Spotify listesini kütüphanenizden kaldırmak istediğinize emin misiniz?`)) {
+      const msg = isEn
+        ? `Are you sure you want to remove "${pl.title}" from your library?`
+        : `"${pl.title}" Spotify listesini kütüphanenizden kaldırmak istediğinize emin misiniz?`;
+      if (confirm(msg)) {
         deleteSpotifyPlaylist(playlistId);
       }
     };
   }
 
   // Auto-heal old cached playlists that contain random YouTube mix videos
-  if (Array.isArray(pl.tracks) && pl.tracks.some(t => /karışık|tüm şarkılar|1 saat/i.test(t.title)) && !pl._autoHealed) {
+  if (Array.isArray(pl.tracks) && pl.tracks.some(t => /kar\u0131\u015f\u0131k|t\u00fcm \u015fark\u0131lar|1 saat/i.test(t.title)) && !pl._autoHealed) {
     pl._autoHealed = true;
     setTimeout(() => refreshSpotifyPlaylist(playlistId), 400);
   }
@@ -8762,35 +10711,47 @@ function openSpotifyPlaylistDetail(playlistId) {
   if (tracksTable) {
     tracksTable.innerHTML = '';
     const tracks = pl.tracks || [];
+    const currentId = (state.currentTrack && state.currentTrack.id) ? state.currentTrack.id : null;
+    const currentYt = (state.currentTrack && state.currentTrack.ytId) ? state.currentTrack.ytId : null;
 
     if (tracks.length === 0) {
       tracksTable.innerHTML = `
         <div class="py-8 text-center text-xs text-on-surface-variant">
-          Bu Spotify çalma listesinde gösterilecek şarkı bulunamadı.
+          ${escapeHtml(t('library.empty_spotify_list'))}
         </div>
       `;
     } else {
       tracks.forEach((track, index) => {
+        const isCurrent = Boolean(
+          (currentId && (currentId === track.id || (track.ytId && currentId === track.ytId))) ||
+          (currentYt && track.ytId && currentYt === track.ytId)
+        );
+        const isPlayingCurrent = isCurrent && state.isPlaying;
         const safeThumb = safeUrl(track.thumbnail || safeCover, safeCover);
         const safeSpId = escapeHtml(String(track.id || ''));
-        const safeTrackTitle = escapeHtml(track.title || 'Şarkı');
-        const safeTrackArtist = escapeHtml(track.artist || 'Sanatçı');
+        const safeTrackTitle = escapeHtml(formatCleanTrackTitle(track.title) || (isEn ? 'Track' : 'Şarkı'));
+        const safeTrackArtist = escapeHtml(track.artist || (isEn ? 'Artist' : 'Sanatçı'));
         const safeTrackDur = escapeHtml(track.duration || '3:30');
 
         const row = document.createElement('div');
-        row.className = "flex items-center justify-between p-2 rounded-xl hover:bg-surface-container transition-colors group cursor-pointer";
+        row.className = `track-row flex items-center justify-between gap-2 p-2 rounded-xl hover:bg-surface-container transition-colors group cursor-pointer ${isCurrent ? 'active' : ''}`;
+        row.dataset.trackId = track.ytId || track.id || '';
+        row.dataset.trackIdx = String(index + 1);
         row.innerHTML = `
-          <div class="flex items-center gap-3 min-w-0 flex-1">
-            <span class="w-5 text-center text-xs font-bold text-on-surface-variant font-mono">${index + 1}</span>
+          <div class="flex items-center gap-3 min-w-0 flex-1 pr-3 overflow-hidden">
+            <span class="w-5 text-center text-xs font-bold text-on-surface-variant font-mono track-idx-num flex items-center justify-center flex-shrink-0">${isCurrent ? renderMiniEqBarsHtml(isPlayingCurrent) : (index + 1)}</span>
             <img data-sp-id="${safeSpId}" src="${safeThumb}" alt="${safeTrackTitle}" class="w-9 h-9 rounded-lg object-cover flex-shrink-0" loading="lazy">
-            <div class="flex flex-col min-w-0">
-              <span class="text-xs font-bold text-on-surface truncate group-hover:text-green-500 transition-colors">${safeTrackTitle}</span>
-              <span class="text-[11px] text-on-surface-variant truncate">${safeTrackArtist}</span>
+            <div class="flex flex-col min-w-0 flex-1 overflow-hidden">
+              <div class="flex items-center gap-1.5 min-w-0">
+                <span class="text-xs font-bold text-on-surface truncate block group-hover:text-green-500 transition-colors">${safeTrackTitle}</span>
+                ${isCurrent ? renderPlayingPillHtml() : ''}
+              </div>
+              <span class="text-[11px] text-on-surface-variant truncate block">${safeTrackArtist}</span>
             </div>
           </div>
-          <div class="flex items-center gap-2">
+          <div class="flex items-center gap-1.5 sm:gap-2 flex-shrink-0 pl-2">
             <span class="text-xs text-on-surface-variant font-mono">${safeTrackDur}</span>
-            <button type="button" class="btn-play-single w-8 h-8 rounded-full flex items-center justify-center text-on-surface-variant hover:text-green-500 opacity-0 group-hover:opacity-100 transition-opacity" title="Çal">
+            <button type="button" class="btn-play-single w-8 h-8 rounded-full flex items-center justify-center text-on-surface-variant hover:text-green-500 opacity-0 group-hover:opacity-100 transition-opacity" title="${escapeHtml(t('player.play_btn'))}">
               <span class="material-symbols-outlined text-[18px]">play_arrow</span>
             </button>
           </div>
@@ -8889,20 +10850,21 @@ async function refreshSpotifyPlaylist(playlistId) {
   const targetId = playlistId || state.activeSpotifyPlaylistId;
   const pl = (state.spotifyPlaylists || []).find(p => p.id === targetId);
   if (!pl) return;
+  const isEn = getAppLanguage() === 'en';
 
   const refreshBtn = document.getElementById('spd-btn-refresh');
   if (refreshBtn) {
     refreshBtn.classList.add('animate-spin');
     refreshBtn.disabled = true;
   }
-  showToast(`"${pl.title}" güncelleniyor...`);
+  showToast(isEn ? `Updating "${pl.title}"...` : `"${pl.title}" güncelleniyor...`);
 
   try {
     const isArtist = pl.type === 'artist' || (pl.id && pl.id.length === 22 && !pl.id.startsWith('37i'));
     const queryUrl = isArtist ? `https://open.spotify.com/artist/${pl.id}` : `https://open.spotify.com/playlist/${pl.id}`;
     const res = await fetch(`${API_BASE}/api/spotify?url=${encodeURIComponent(queryUrl)}&refresh=1&_t=${Date.now()}`);
     const data = await res.json();
-    if (!res.ok || !data.success) throw new Error(data.error || 'Güncellenemedi');
+    if (!res.ok || !data.success) throw new Error(data.error || (isEn ? 'Failed to update' : 'Güncellenemedi'));
 
     const cleanCover = safeUrl(data.cover, './kurfamuzik_logo.png');
     pl.title = data.title;
@@ -8915,14 +10877,14 @@ async function refreshSpotifyPlaylist(playlistId) {
     pl.importedAt = new Date().toISOString();
 
     saveSpotifyPlaylists();
-    showToast(`"${pl.title}" başarıyla güncellendi! (${pl.trackCount} şarkı)`);
+    showToast(isEn ? `"${pl.title}" updated! (${t('library.tracks_count', { count: pl.trackCount })})` : `"${pl.title}" başarıyla güncellendi! (${pl.trackCount} şarkı)`);
     renderSpotifyPlaylistsGrid();
     if (state.activeSpotifyPlaylistId === targetId) {
       openSpotifyPlaylistDetail(targetId);
     }
   } catch (err) {
     console.error('Refresh spotify error:', err);
-    showToast(`Güncelleme hatası: ${err.message || 'Okunamadı'}`);
+    showToast(`${isEn ? 'Update error' : 'Güncelleme hatası'}: ${err.message || (isEn ? 'Failed' : 'Okunamadı')}`);
   } finally {
     if (refreshBtn) {
       refreshBtn.classList.remove('animate-spin');
@@ -8951,13 +10913,13 @@ function deleteSpotifyPlaylist(playlistId) {
   closeSpotifyPlaylistDetail();
   renderSpotifyPlaylistsGrid();
   updateKutuphaneBadges();
-  showToast("Spotify listesi kütüphanenizden kaldırıldı");
+  showToast(getAppLanguage() === 'en' ? 'Spotify playlist removed from library' : 'Spotify listesi kütüphanenizden kaldırıldı');
 }
 
 function playSpotifyPlaylist(playlistId, shuffle = false) {
   const pl = (state.spotifyPlaylists || []).find(p => p.id === playlistId);
   if (!pl || !pl.tracks || pl.tracks.length === 0) {
-    showToast("Bu çalma listesinde henüz şarkı yok");
+    showToast(getAppLanguage() === 'en' ? 'This playlist has no tracks yet' : 'Bu çalma listesinde henüz şarkı yok');
     return;
   }
 
@@ -8971,7 +10933,7 @@ function playSpotifyPlaylist(playlistId, shuffle = false) {
 
 async function playSpotifyTrack(track, playlistTracks, index, playlistName) {
   if (!track) return;
-  setPlaybackQueueContext(playlistTracks, track, playlistName || 'Spotify', 'SPOTIFY ÇALMA LİSTESİ');
+  setPlaybackQueueContext(playlistTracks, track, playlistName || 'Spotify', getAppLanguage() === 'en' ? 'SPOTIFY PLAYLIST' : 'SPOTIFY ÇALMA LİSTESİ');
   renderQueueDrawerList();
 
   const playId = (track.ytId && safeYtId(track.ytId)) ? track.ytId : track.id;
@@ -9637,12 +11599,17 @@ function setDeckVisualMode(mode, silent = false) {
   if (mode === 'video' && state.currentTrack && !supportsDeckVideo(state.currentTrack)) {
     syncDeckVisualUIOnly('vinyl');
     syncPersistentPlayerPosition();
-    if (!silent) showToast("Yerel ses dosyalarında video modu kullanılamaz", "info");
+    if (!silent) showToast(t('toast.local_no_video'), "info");
     return;
   }
 
-  const curTime = getCurrentPlaybackTime();
-  state.currentPlayheadTime = curTime;
+  if (state._switchingDeckMode && state.deckVisualMode === mode) {
+    return;
+  }
+
+  const curTime = state._activeTrackConfirmedPlaying ? getActiveMediaCurrentTime() : 0;
+  const safeCurSec = Math.max(0, Math.floor(curTime || 0));
+  state.currentPlayheadTime = safeCurSec;
   state.deckVisualMode = mode;
   safeSetStorage('kurfa_deck_mode', mode);
 
@@ -9660,11 +11627,18 @@ function setDeckVisualMode(mode, silent = false) {
         state._switchingDeckMode = false;
       }, 1500);
 
-      // Silence HTML5 audio engine only if it actually holds a loaded source
-      if (DOM.audioEngine && DOM.audioEngine.getAttribute('src')) {
+      // Silence HTML5 audio engine cleanly before transferring time to YouTube
+      if (DOM.audioEngine) {
         try {
-          DOM.audioEngine.pause();
-          DOM.audioEngine.removeAttribute('src');
+          if (state._seekOnceHandler) {
+            DOM.audioEngine.removeEventListener('loadedmetadata', state._seekOnceHandler);
+            state._seekOnceHandler = null;
+          }
+          if (DOM.audioEngine.getAttribute('src')) {
+            DOM.audioEngine.pause();
+            DOM.audioEngine.currentTime = 0;
+            DOM.audioEngine.removeAttribute('src');
+          }
         } catch(e) {}
       }
 
@@ -9672,14 +11646,20 @@ function setDeckVisualMode(mode, silent = false) {
         try {
           const targetVid = safeYtId(state.currentTrack?.ytId || state.currentTrack?.id);
           const loadedVid = typeof state.ytPlayer.getVideoData === 'function'
-            ? state.ytPlayer.getVideoData()?.video_id
+            ? safeYtId(state.ytPlayer.getVideoData()?.video_id)
             : null;
           const pState = typeof state.ytPlayer.getPlayerState === 'function'
             ? state.ytPlayer.getPlayerState()
             : -1;
 
-          // If this exact video is already loaded and playing/paused/buffering, NEVER reload!
+          state._activeMediaEngine = 'youtube';
+
+          // If this exact video is already loaded and playing/paused/buffering, seek if drifted and play cleanly
           if (targetVid && loadedVid === targetVid && [1, 2, 3].includes(pState)) {
+            const ytCur = typeof state.ytPlayer.getCurrentTime === 'function' ? (state.ytPlayer.getCurrentTime() || 0) : 0;
+            if (Math.abs(ytCur - safeCurSec) > 2 && typeof state.ytPlayer.seekTo === 'function') {
+              state.ytPlayer.seekTo(safeCurSec, true);
+            }
             if (!state.userPaused && pState !== 1 && typeof state.ytPlayer.playVideo === 'function') {
               state.ytPlayer.playVideo();
             }
@@ -9689,15 +11669,15 @@ function setDeckVisualMode(mode, silent = false) {
               if (typeof startSeekbarTicker === 'function') startSeekbarTicker();
             }
           } else if (targetVid) {
-            const startSec = Math.max(0, Math.floor(curTime));
+            state._activeTrackConfirmedPlaying = false;
             if (state.userPaused && typeof state.ytPlayer.cueVideoById === 'function') {
-              state.ytPlayer.cueVideoById({ videoId: targetVid, startSeconds: startSec });
+              state.ytPlayer.cueVideoById({ videoId: targetVid, startSeconds: safeCurSec });
               state.isPlaying = false;
               updatePlayPauseUI(false);
             } else if (typeof state.ytPlayer.loadVideoById === 'function') {
               state.ytPlayer.loadVideoById({
                 videoId: targetVid,
-                startSeconds: startSec
+                startSeconds: safeCurSec
               });
               state.isPlaying = !state.userPaused;
               updatePlayPauseUI(!state.userPaused);
@@ -9713,29 +11693,42 @@ function setDeckVisualMode(mode, silent = false) {
     requestAnimationFrame(() => {
       syncPersistentPlayerPosition();
     });
-    if (!silent) showToast("Canlı Video Klip Modu Açıldı");
+    if (!silent) showToast(t('toast.video_mode_on'));
   } else {
     // VINYL / PLAK MODE (100% Ad-Free Pure Audio)
     if (state.currentTrack && state.currentTrack.id) {
+      state._switchingDeckMode = true;
+      clearTimeout(state._switchingDeckTimer);
+      state._switchingDeckTimer = setTimeout(() => {
+        state._switchingDeckMode = false;
+      }, 1500);
+
       if (DOM.audioEngine && DOM.audioEngine.getAttribute('src') && !DOM.audioEngine.paused && DOM.audioEngine.currentTime > 0) {
-        // HTML5 audio continues playing
+        state._activeMediaEngine = 'audio';
       } else if ((isAndroidNativeEngine() || Boolean(getBrowserExtensionMode())) && safeYtId(state.currentTrack.ytId || state.currentTrack.id)) {
         const directVid = safeYtId(state.currentTrack.ytId || state.currentTrack.id);
-        const resumeAt = Math.max(0, Math.floor(curTime || 0));
+        const resumeAt = safeCurSec;
+        const switchToken = currentPlaybackToken;
+        if (state.ytPlayer && typeof state.ytPlayer.pauseVideo === 'function') {
+          try { state.ytPlayer.pauseVideo(); } catch(e) {}
+        }
+        state._activeMediaEngine = 'none';
+        state._activeTrackConfirmedPlaying = false;
         kurfaResolveDirectAudio(directVid).then((res) => {
-          if (state.deckVisualMode === 'vinyl' && !state.userPaused && res && res.success && res.streamUrl && safeYtId(state.currentTrack?.ytId || state.currentTrack?.id) === directVid) {
+          if (switchToken === currentPlaybackToken && state.deckVisualMode === 'vinyl' && !state.userPaused && res && res.success && res.streamUrl && safeYtId(state.currentTrack?.ytId || state.currentTrack?.id) === directVid) {
             loadDirectAudioStream(res.streamUrl, resumeAt, currentPlaybackToken, directVid);
           }
         }).catch(() => {});
       } else if (state.ytPlayer && typeof state.ytPlayer.getPlayerState === 'function' && state.ytPlayer.getPlayerState() === 1) {
         // YouTube continues playing cleanly in the background behind the spinning vinyl deck
+        state._activeMediaEngine = 'youtube';
       } else if (state.isPlaying && !state.userPaused) {
         resumePlayback();
       }
     }
 
     syncPersistentPlayerPosition();
-    if (!silent) showToast("Reklamsız Ses Modu Aktif");
+    if (!silent) showToast(t('toast.audio_mode_on'));
   }
 }
 
@@ -10140,7 +12133,7 @@ async function openDocumentPipPlayer() {
       const safeTitle = escapeHtml(track.title || 'Kurfa Müzik');
       const safeArtist = escapeHtml(track.artist || 'Bir şarkı seçin');
       const safeDur = escapeHtml(track.duration || '3:30');
-      const safeHost = escapeHtml(window.location.hostname || 'Kurfanova');
+      const safeHost = escapeHtml(window.location.hostname || 'Kurfamüzik');
       const initCur = getActiveMediaCurrentTime();
       const initDur = getActiveMediaDuration() || parseDurationToSec(track.duration) || 210;
       const initPct = initDur > 0 ? Math.max(0, Math.min(100, (initCur / initDur) * 100)) : 0;
@@ -10306,14 +12299,15 @@ function initPipSeekbar() {
 // =============================================================================
 
 async function requestAudioDeviceAccess() {
+  const isEn = getAppLanguage() === 'en';
   if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       stream.getTracks().forEach(t => t.stop());
-      showToast("Cihaz izni onaylandı. Kulaklık isimleri listeleniyor.");
+      showToast(isEn ? 'Device permission granted. Listing audio outputs.' : 'Cihaz izni onaylandı. Kulaklık isimleri listeleniyor.');
       await openDevicePickerModal();
     } catch(e) {
-      showToast("Cihaz izni reddedildi. Sistem standart ses çıkışı devrede.");
+      showToast(isEn ? 'Device permission denied. Using system default output.' : 'Cihaz izni reddedildi. Sistem standart ses çıkışı devrede.');
     }
   }
 }
@@ -10322,6 +12316,7 @@ async function openDevicePickerModal() {
   const modal = document.getElementById('device-picker-modal');
   const card = document.getElementById('device-picker-modal-card');
   if (!modal || !card) return;
+  const isEn = getAppLanguage() === 'en';
 
   modal.classList.remove('opacity-0', 'pointer-events-none');
   modal.classList.add('opacity-100', 'pointer-events-auto');
@@ -10334,7 +12329,7 @@ async function openDevicePickerModal() {
   listEl.innerHTML = `
     <div class="py-3 text-center text-xs text-on-surface-variant flex items-center justify-center gap-1.5">
       <span class="material-symbols-outlined text-[16px] animate-spin text-primary">refresh</span>
-      <span>Kullanılabilir ses aygıtları taranıyor...</span>
+      <span>${escapeHtml(t('dp.scanning'))}</span>
     </div>
   `;
 
@@ -10352,14 +12347,14 @@ async function openDevicePickerModal() {
         unlockBanner.innerHTML = `
           <div class="flex items-center gap-2 text-xs font-bold text-on-surface">
             <span class="material-symbols-outlined text-primary text-[18px]">bluetooth</span>
-            <span>Kulaklık İsimlerini Aç</span>
+            <span>${escapeHtml(t('dp.unlock_title'))}</span>
           </div>
           <p class="text-[10px] text-on-surface-variant leading-tight">
-            Tarayıcı güvenliği nedeniyle Bluetooth veya kulaklık adlarını (AirPods, Buds vb.) görebilmek için izin gereklidir.
+            ${escapeHtml(t('dp.unlock_desc'))}
           </p>
           <button type="button" class="py-1.5 px-3 rounded-lg bg-primary text-on-primary text-[11px] font-bold hover:bg-primary-container transition-all flex items-center justify-center gap-1 shadow-xs" onclick="requestAudioDeviceAccess()">
             <span class="material-symbols-outlined text-[14px]">lock_open</span>
-            <span>Cihaz İsimlerini Etkinleştir</span>
+            <span>${escapeHtml(t('dp.unlock_btn'))}</span>
           </button>
         `;
         listEl.appendChild(unlockBanner);
@@ -10379,7 +12374,7 @@ async function openDevicePickerModal() {
           const isCurrent = (state.currentAudioSinkId && state.currentAudioSinkId === dev.deviceId) ||
                             (!state.currentAudioSinkId && (dev.deviceId === 'default' || idx === 0));
 
-          const displayLabel = dev.label || `Ses Çıkış Aygıtı #${idx + 1}`;
+          const displayLabel = dev.label || `${isEn ? 'Audio Output Device' : 'Ses Çıkış Aygıtı'} #${idx + 1}`;
           const safeDevLabel = escapeHtml(displayLabel);
 
           const item = document.createElement('div');
@@ -10392,9 +12387,9 @@ async function openDevicePickerModal() {
               <div class="flex flex-col min-w-0">
                 <div class="flex items-center gap-1.5">
                   <span class="text-xs font-bold text-on-surface truncate">${safeDevLabel}</span>
-                  ${isCurrent ? '<span class="px-1.5 py-0.2 rounded-full text-[9px] font-bold bg-primary text-on-primary">Aktif</span>' : ''}
+                  ${isCurrent ? `<span class="px-1.5 py-0.2 rounded-full text-[9px] font-bold bg-primary text-on-primary">${escapeHtml(t('dp.active_pill'))}</span>` : ''}
                 </div>
-                <span class="text-[10px] text-on-surface-variant">${isBluetooth ? 'Bluetooth / Kulaklık' : (dev.deviceId === 'default' ? 'Sistem Varsayılanı' : 'Harici Hoparlör')}</span>
+                <span class="text-[10px] text-on-surface-variant">${escapeHtml(isBluetooth ? t('dp.bt_headset') : (dev.deviceId === 'default' ? t('dp.sys_default') : t('dp.ext_speaker')))}</span>
               </div>
             </div>
             <span class="material-symbols-outlined text-[18px] ${isCurrent ? 'text-primary' : 'text-on-surface-variant'}">
@@ -10407,21 +12402,21 @@ async function openDevicePickerModal() {
       } else {
         listEl.innerHTML = `
           <div class="py-3 text-center text-xs text-on-surface-variant">
-            Sistem varsayılan çıkışı etkin. Cihazınızın ses düğmelerinden veya Bluetooth menüsünden kulaklığınızı doğrudan dinleyebilirsiniz.
+            ${escapeHtml(t('dp.no_devices'))}
           </div>
         `;
       }
     } catch(e) {
       listEl.innerHTML = `
         <div class="py-3 text-center text-xs text-on-surface-variant">
-          Ses doğrudan cihazınızın bağlı hoparlör veya kulaklığına aktarılmaktadır.
+          ${escapeHtml(t('dp.fallback_msg'))}
         </div>
       `;
     }
   } else {
     listEl.innerHTML = `
       <div class="py-3 text-center text-xs text-on-surface-variant">
-        Tarayıcınız ses çıkış aygıtı seçimini desteklemiyor. Sistem varsayılan ses çıkışı aktif.
+        ${escapeHtml(t('dp.unsupported'))}
       </div>
     `;
   }
@@ -10450,7 +12445,7 @@ async function switchAudioOutputDevice(deviceId, label) {
   }
 
   const curEl = document.getElementById('dp-current-device-name');
-  if (curEl) curEl.textContent = label || "Bağlı Cihaz";
+  if (curEl) curEl.textContent = label || t('dp.default_output');
 
   const isBluetooth = (label || '').toLowerCase().includes('bluetooth') || 
                       (label || '').toLowerCase().includes('kulaklık') || 
@@ -10460,28 +12455,29 @@ async function switchAudioOutputDevice(deviceId, label) {
   const iconEl = document.getElementById('dp-current-device-icon');
   if (iconEl) iconEl.textContent = isBluetooth ? 'headphones' : 'speaker';
 
-  showToast(`Ses aktarıldı: ${label || 'Harici Cihaz'}`);
+  showToast(t('toast.audio_routed', { label: label || t('dp.ext_speaker') }));
   closeDevicePickerModal();
 }
 
 async function scanBluetoothDevices() {
+  const isEn = getAppLanguage() === 'en';
   if (navigator.bluetooth && navigator.bluetooth.requestDevice) {
     try {
       const dev = await navigator.bluetooth.requestDevice({
         acceptAllDevices: true
       });
-      showToast(`Bluetooth cihazı seçildi: ${dev.name || 'Cihaz'}`);
+      showToast(isEn ? `Bluetooth device selected: ${dev.name || 'Device'}` : `Bluetooth cihazı seçildi: ${dev.name || 'Cihaz'}`);
       openDevicePickerModal();
       return;
     } catch(e) {
       if (e && (e.name === 'NotAllowedError' || e.name === 'SecurityError')) {
-        showToast("Bluetooth cihaz seçimi izin verilmediği veya iptal edildiği için açılamadı.");
+        showToast(isEn ? 'Bluetooth device picker was denied or canceled.' : 'Bluetooth cihaz seçimi izin verilmediği veya iptal edildiği için açılamadı.');
         openDevicePickerModal();
         return;
       }
     }
   }
-  showToast("Bluetooth kulaklığınızı telefon/PC Bluetooth ayarlarınızdan bağladığınızda ses otomatik olarak oraya aktarılır.");
+  showToast(isEn ? 'Connect your Bluetooth headphones in OS settings and audio will route automatically.' : 'Bluetooth kulaklığınızı telefon/PC Bluetooth ayarlarınızdan bağladığınızda ses otomatik olarak oraya aktarılır.');
   openDevicePickerModal();
 }
 
@@ -10500,7 +12496,16 @@ function setupEventListeners() {
       }
     });
     DOM.topSearchInput.addEventListener('input', (e) => {
+      if (typeof syncTopSearchClearBtn === 'function') syncTopSearchClearBtn();
       const val = e.target.value.trim();
+      if (!val) {
+        if (!e.target.value) {
+          clearSearchInput();
+        } else if (typeof showSearchDiscoveryHub === 'function') {
+          showSearchDiscoveryHub();
+        }
+        return;
+      }
       if (val.length >= 2) debouncedSearch(val);
     });
   }
@@ -10642,6 +12647,9 @@ function setupEventListeners() {
 
     const handoffAudioErrorOrStall = async (curTimeSec) => {
       if (state._playerInError || state._lastErrorVideoId || state._switchingDeckMode) return;
+      const safeTimeSec = (!state._activeTrackConfirmedPlaying || (Date.now() - (state._trackSwitchStartedAt || 0)) < 4000)
+        ? 0
+        : Math.max(0, Math.floor(curTimeSec || 0));
       const isLocalCur = Boolean(state.currentTrack?.isLocal) || String(state.currentTrack?.id || '').startsWith('local_');
       if (isLocalCur) {
         if (state.isPlaying && !state.userPaused) {
@@ -10674,7 +12682,7 @@ function setupEventListeners() {
               const sep = nextUrl.includes('?') ? '&' : '?';
               nextUrl = `${nextUrl.split('?')[0]}${sep}cb=${Date.now()}`;
             }
-            loadDirectAudioStream(nextUrl, curTimeSec, errToken, playId);
+            loadDirectAudioStream(nextUrl, safeTimeSec, errToken, playId);
             return;
           }
         } catch (_) {}
@@ -10682,7 +12690,7 @@ function setupEventListeners() {
           const aud = await kurfaTryQuickAudiusMatch(state.currentTrack, 1600);
           if (errToken !== currentPlaybackToken || state.userPaused || state.deckVisualMode === 'video') return;
           if (aud && aud.success && aud.streamUrl && aud.streamUrl !== prevSrc) {
-            loadDirectAudioStream(aud.streamUrl, curTimeSec, errToken, null);
+            loadDirectAudioStream(aud.streamUrl, safeTimeSec, errToken, null);
             return;
           }
         } catch (_) {}
@@ -10696,7 +12704,7 @@ function setupEventListeners() {
         loadYouTubePlayback(
           playId,
           state.currentTrack,
-          curTimeSec,
+          safeTimeSec,
           errToken,
           Boolean(state.ytReady && state.ytPlayer && typeof state.ytPlayer.loadVideoById === 'function')
         );
@@ -10725,7 +12733,13 @@ function setupEventListeners() {
       clearAudioStallWatchdog();
       handleTrackEnd();
     });
-    DOM.audioEngine.addEventListener('playing', clearAudioStallWatchdog);
+    DOM.audioEngine.addEventListener('playing', () => {
+      clearAudioStallWatchdog();
+      if (DOM.audioEngine && DOM.audioEngine.getAttribute('src')) {
+        state._activeMediaEngine = 'audio';
+        state._activeTrackConfirmedPlaying = true;
+      }
+    });
     DOM.audioEngine.addEventListener('timeupdate', clearAudioStallWatchdog);
     DOM.audioEngine.addEventListener('waiting', scheduleStallWatchdog);
     DOM.audioEngine.addEventListener('stalled', scheduleStallWatchdog);
@@ -10740,6 +12754,9 @@ function setupEventListeners() {
     DOM.audioEngine.addEventListener('play', () => {
       _bgPauseRecoverCount = 0;
       clearAudioStallWatchdog();
+      if (DOM.audioEngine && DOM.audioEngine.getAttribute('src')) {
+        state._activeMediaEngine = 'audio';
+      }
       if (state.ytPlayer && typeof state.ytPlayer.pauseVideo === 'function') {
         try { state.ytPlayer.pauseVideo(); } catch (e) {}
       }
@@ -10791,8 +12808,19 @@ function initApp() {
 
   try { localStorage.removeItem('kurfa_tahta_mode'); } catch (_) {}
   updateProfileUI();
+  if (typeof applyAppLanguage === 'function') {
+    applyAppLanguage(getAppLanguage(), false);
+  }
   if (typeof getBrowserExtensionMode === 'function' && getBrowserExtensionMode().startsWith('desktop')) {
     callExtensionBridge('SET_THEME_MODE', { dark: Boolean(state.profile.darkMode) }, 1500).catch(() => {});
+    if (typeof loadUserDataFromDesktop === 'function') {
+      loadUserDataFromDesktop();
+    }
+    if (localStorage.getItem('kurfa_lang')) {
+      callExtensionBridge('SET_LANGUAGE', { lang: getAppLanguage() }, 1500).catch(() => {});
+    } else if (typeof refreshDesktopBridgeSettings === 'function') {
+      refreshDesktopBridgeSettings().catch(() => {});
+    }
   }
 
   // Sync queueIndex with locally restored last played track (0 server load)
@@ -10804,6 +12832,9 @@ function initApp() {
   renderHomeTracklistTable();
   renderTrendlerCardsGrid();
   renderPopularArtistsGrid();
+  if (typeof renderSearchDiscoveryHub === 'function') {
+    renderSearchDiscoveryHub();
+  }
   updateQuickFavCount();
   renderFreshReleasesGrid();
   renderFavoritesTable();
@@ -10826,7 +12857,9 @@ function initApp() {
   setPlayerVolume(state.volume);
   updateLyricsDisplay();
   setEqualizerPreset(state.activeEqPreset || 'standart', true);
-  setDeckVisualMode('vinyl', true);
+  state.deckVisualMode = 'vinyl';
+  syncDeckVisualUIOnly('vinyl');
+  if (typeof syncTopSearchClearBtn === 'function') syncTopSearchClearBtn();
   initFirebaseSync();
 
   // Restore Intelligent Persistent Navigation & Sub-Tabs
@@ -10850,6 +12883,9 @@ function initApp() {
   handleUrlParameters();
   renderQueueDrawerList();
   fetchExploreData();
+  if (typeof hydrateFeaturedArtistsFromApi === 'function') {
+    hydrateFeaturedArtistsFromApi();
+  }
 
   KurfaDSP.init(DOM.audioEngine);
   updateLocalEngineStatusUI();
@@ -10859,8 +12895,27 @@ function initApp() {
     restoreWebLocalAudioFromDB();
   }
   syncPersistentPlayerPosition();
-  window.addEventListener('resize', scheduleSyncPersistentPlayerPosition, { passive: true });
+  window.addEventListener('resize', () => {
+    scheduleSyncPersistentPlayerPosition();
+    if (typeof updateShelfArrowsState === 'function') {
+      updateShelfArrowsState(document.getElementById('trendler-cards-grid'));
+      updateShelfArrowsState(document.getElementById('popular-artists-grid'));
+    }
+  }, { passive: true });
   window.addEventListener('scroll', scheduleSyncPersistentPlayerPosition, { passive: true, capture: true });
+
+  // Part E: Background-resilient 500ms mini-player sync heartbeat (does not check document.hidden)
+  if (!window.__kurfaDesktopMiniHeartbeatTimer) {
+    window.__kurfaDesktopMiniHeartbeatTimer = setInterval(() => {
+      try {
+        if (typeof getBrowserExtensionMode === 'function' && getBrowserExtensionMode().startsWith('desktop')) {
+          if (window.__kurfaDesktopMiniPlayerOpen || state.isPlaying) {
+            syncDesktopMiniPlayerState(getActiveMediaCurrentTime() || 0, getActiveMediaDuration() || 0);
+          }
+        }
+      } catch (_) {}
+    }, 500);
+  }
   const persistPlaybackSession = () => {
     try {
       if (state.currentTrack) {
@@ -10979,7 +13034,7 @@ async function scanLocalDeviceAudio(userInitiated = false) {
       return;
     }
 
-    state.deviceAudioTracks = Array.isArray(res?.tracks) ? res.tracks : [];
+    state.deviceAudioTracks = (Array.isArray(res?.tracks) ? res.tracks : []).map(cleanLocalTrackMeta);
     renderDeviceAudioList(document.getElementById('device-audio-filter')?.value || '');
     return;
   }
@@ -10990,7 +13045,7 @@ async function scanLocalDeviceAudio(userInitiated = false) {
       try {
         const res = await callExtensionBridge('PICK_LOCAL_AUDIO_FILES', {}, 120000);
         if (res && res.success && Array.isArray(res.tracks)) {
-          state.deviceAudioTracks = res.tracks;
+          state.deviceAudioTracks = res.tracks.map(cleanLocalTrackMeta);
           state.deviceAudioRenderLimit = 80;
           renderDeviceAudioList(document.getElementById('device-audio-filter')?.value || '');
           if (typeof updateKutuphaneBadges === 'function') updateKutuphaneBadges();
@@ -11091,7 +13146,7 @@ async function restoreWebLocalAudioFromDB() {
     try {
       const res = await callExtensionBridge('GET_LOCAL_AUDIO_TRACKS', {}, 5000);
       if (res && res.success && Array.isArray(res.tracks) && res.tracks.length > 0) {
-        state.deviceAudioTracks = res.tracks;
+        state.deviceAudioTracks = res.tracks.map(cleanLocalTrackMeta);
         if (state.currentTrack && state.currentTrack.isLocal) {
           const match = res.tracks.find(t => t.id === state.currentTrack.id || (t.title === state.currentTrack.title && t.artist === state.currentTrack.artist));
           if (match && match.streamUrl) {
@@ -11139,7 +13194,7 @@ async function restoreWebLocalAudioFromDB() {
     db.close();
     if (restored.length === 0) return;
     restored.sort((a, b) => (b.addedAt || 0) - (a.addedAt || 0));
-    state.deviceAudioTracks = restored;
+    state.deviceAudioTracks = restored.map(cleanLocalTrackMeta);
     if (state.currentTrack && state.currentTrack.isLocal) {
       state.currentTrack.needsIdbBlob = true;
       state.currentTrack.streamUrl = null;
@@ -11167,11 +13222,13 @@ function handleWebLocalAudioFiles(fileList) {
     if (existingKeys.has(key)) continue;
     existingKeys.add(key);
 
-    const cleanName = file.name.replace(/\.(mp3|m4a|wav|flac|ogg|aac|opus|webm)$/i, '');
-    const parts = cleanName.split(/\s+[–—-]\s+/);
+    const cleanMeta = cleanLocalTrackMeta({
+      title: parts.length >= 2 ? parts.slice(1).join(' - ') : cleanName,
+      artist: parts.length >= 2 ? parts[0] : 'Yerel Dosya'
+    });
+    const title = cleanMeta.title;
+    const artist = cleanMeta.artist;
     const id = 'local_web_' + now + '_' + (seq++) + '_' + Math.random().toString(36).slice(2, 6);
-    const title = parts.length >= 2 ? parts.slice(1).join(' - ') : cleanName;
-    const artist = parts.length >= 2 ? parts[0] : 'Yerel Dosya';
 
     added.push({
       id,
@@ -11220,16 +13277,17 @@ function renderDeviceAudioList(filterText = '') {
   const countEl = document.getElementById('device-audio-count-text');
   const badgeEl = document.getElementById('device-audio-badge-count');
   const all = Array.isArray(state.deviceAudioTracks) ? state.deviceAudioTracks : [];
+  const isEn = getAppLanguage() === 'en';
 
   if (badgeEl) badgeEl.textContent = String(all.length);
-  if (countEl) countEl.textContent = `${all.length} Parça`;
+  if (countEl) countEl.textContent = t('library.device_track_count', { count: all.length });
   if (!listEl) return;
 
   const q = String(filterText || '').trim().toLowerCase();
   const filtered = q ? all.filter(t => (t.title || '').toLowerCase().includes(q) || (t.artist || '').toLowerCase().includes(q)) : all;
 
   if (filtered.length === 0) {
-    listEl.innerHTML = `<div class="py-8 px-4 text-center flex flex-col items-center gap-2"><span class="material-symbols-outlined text-3xl text-on-surface-variant/60">library_music</span><p class="text-xs font-semibold text-on-surface">${all.length === 0 ? 'Cihazdaki müzikler henüz taranmadı' : 'Aramayla eşleşen yerel parça yok'}</p><button type="button" class="px-4 py-1.5 rounded-full bg-primary text-on-primary text-xs font-bold" onclick="scanLocalDeviceAudio(true)">${typeof isAndroidNativeEngine === 'function' && isAndroidNativeEngine() ? 'Cihazı Tara' : 'Bilgisayardan Müzik Seç'}</button></div>`;
+    listEl.innerHTML = `<div class="py-8 px-4 text-center flex flex-col items-center gap-2"><span class="material-symbols-outlined text-3xl text-on-surface-variant/60">library_music</span><p class="text-xs font-semibold text-on-surface">${escapeHtml(all.length === 0 ? t('library.device_empty_unscanned') : t('library.device_empty_search'))}</p><button type="button" class="px-4 py-1.5 rounded-full bg-primary text-on-primary text-xs font-bold" onclick="scanLocalDeviceAudio(true)">${escapeHtml(typeof isAndroidNativeEngine === 'function' && isAndroidNativeEngine() ? t('library.device_scan_btn') : t('library.device_pick_btn'))}</button></div>`;
     return;
   }
 
@@ -11239,24 +13297,29 @@ function renderDeviceAudioList(filterText = '') {
   const frag = document.createDocumentFragment();
   visible.forEach((track, idx) => {
     const isPlayingCur = state.currentTrack && state.currentTrack.id === track.id;
+    const isAnimating = isPlayingCur && state.isPlaying;
     const row = document.createElement('div');
     row.className = `track-row flex items-center justify-between gap-2 p-2.5 rounded-xl cursor-pointer transition-colors ${isPlayingCur ? 'active' : ''}`;
     row.dataset.trackId = track.id;
+    row.dataset.trackIdx = String(idx + 1);
     row.innerHTML = `
-      <div class="flex items-center gap-2.5 min-w-0 flex-1">
-        <span class="w-5 text-center text-[11px] font-mono track-idx-num ${isPlayingCur ? 'text-primary font-extrabold' : 'text-on-surface-variant'}">${idx + 1}</span>
+      <div class="flex items-center gap-2.5 min-w-0 flex-1 pr-3 overflow-hidden">
+        <span class="w-5 text-center text-[11px] font-mono track-idx-num flex items-center justify-center flex-shrink-0 ${isPlayingCur ? 'text-primary font-extrabold' : 'text-on-surface-variant'}">${isPlayingCur ? renderMiniEqBarsHtml(isAnimating) : (idx + 1)}</span>
         <div class="w-9 h-9 rounded-lg bg-surface-container-high flex items-center justify-center flex-shrink-0 text-primary">
-          <span class="material-symbols-outlined text-[18px] track-icon">${isPlayingCur && state.isPlaying ? 'graphic_eq' : 'music_note'}</span>
+          <span class="material-symbols-outlined text-[18px] track-icon">${isAnimating ? 'graphic_eq' : 'music_note'}</span>
         </div>
-        <div class="flex flex-col min-w-0 flex-1">
-          <span class="text-xs font-bold truncate track-title-text ${isPlayingCur ? 'text-primary' : 'text-on-surface'}">${escapeHtml(track.title || 'Parça')}</span>
-          <span class="text-[11px] text-on-surface-variant truncate">${escapeHtml(track.artist || 'Cihaz Müziği')}</span>
+        <div class="flex flex-col min-w-0 flex-1 overflow-hidden">
+          <div class="flex items-center gap-1.5 min-w-0 track-title-wrap">
+            <span class="text-xs font-bold truncate block track-title-text ${isPlayingCur ? 'text-primary' : 'text-on-surface'}">${escapeHtml(cleanLocalTrackMeta(track).title || (isEn ? 'Track' : 'Parça'))}</span>
+            ${isPlayingCur ? renderPlayingPillHtml() : ''}
+          </div>
+          <span class="text-[11px] text-on-surface-variant truncate block">${escapeHtml(track.artist || t('library.device_title'))}</span>
         </div>
       </div>
-      <span class="text-[11px] text-on-surface-variant font-mono flex-shrink-0">${escapeHtml(track.duration || '3:30')}</span>
+      <span class="text-[11px] text-on-surface-variant font-mono flex-shrink-0 pl-2 track-duration-text">${escapeHtml(track.duration || '3:30')}</span>
     `;
     row.onclick = () => {
-      setPlaybackQueueContext(all, track, 'Cihazdaki Müzikler', 'CİHAZDAN ÇALINIYOR');
+      setPlaybackQueueContext(all, track, t('library.device_title'), t('library.device_title').toUpperCase());
       playTrackById(track.id, track);
     };
     frag.appendChild(row);
@@ -11265,7 +13328,7 @@ function renderDeviceAudioList(filterText = '') {
     const moreBtn = document.createElement('button');
     moreBtn.type = 'button';
     moreBtn.className = 'w-full mt-2 py-2 rounded-xl bg-surface-container-high hover:bg-surface-container-highest text-xs font-bold text-primary transition-colors';
-    moreBtn.textContent = `Daha Fazla Göster (${filtered.length - visible.length} Parça Kaldı)`;
+    moreBtn.textContent = t('library.show_more_remaining', { count: filtered.length - visible.length });
     moreBtn.onclick = () => {
       state.deviceAudioRenderLimit = limit + 100;
       renderDeviceAudioList(filterText);
@@ -11273,6 +13336,9 @@ function renderDeviceAudioList(filterText = '') {
     frag.appendChild(moreBtn);
   }
   listEl.appendChild(frag);
+  if (typeof scheduleLocalDurationProbes === 'function') {
+    scheduleLocalDurationProbes(visible);
+  }
 }
 window.renderDeviceAudioList = renderDeviceAudioList;
 
@@ -11303,6 +13369,7 @@ function syncActiveTrackRowInDeviceAudio() {
       numEl.classList.toggle('text-primary', isCur);
       numEl.classList.toggle('font-extrabold', isCur);
       numEl.classList.toggle('text-on-surface-variant', !isCur);
+      numEl.innerHTML = isCur ? renderMiniEqBarsHtml(isPlaying) : escapeHtml(row.dataset.trackIdx || '');
     }
     const iconEl = row.querySelector('.track-icon');
     if (iconEl) {
@@ -11312,6 +13379,15 @@ function syncActiveTrackRowInDeviceAudio() {
     if (titleEl) {
       titleEl.classList.toggle('text-primary', isCur);
       titleEl.classList.toggle('text-on-surface', !isCur);
+    }
+    const titleWrap = row.querySelector('.track-title-wrap');
+    if (titleWrap) {
+      const existingPill = titleWrap.querySelector('.kurfa-playing-pill');
+      if (isCur && !existingPill) {
+        titleWrap.insertAdjacentHTML('beforeend', renderPlayingPillHtml());
+      } else if (!isCur && existingPill) {
+        existingPill.remove();
+      }
     }
   });
 }
@@ -11323,7 +13399,7 @@ function playAllDeviceAudio() {
     scanLocalDeviceAudio(true);
     return;
   }
-  setPlaybackQueueContext(all, 0, 'Cihazdaki Müzikler', 'CİHAZDAN ÇALINIYOR');
+  setPlaybackQueueContext(all, 0, t('library.device_title'), t('library.device_title').toUpperCase());
   const firstTrack = state.queue[state.queueIndex] || state.queue[0];
   if (firstTrack) playTrackById(firstTrack.id, firstTrack);
 }
@@ -11524,7 +13600,7 @@ async function triggerPwaInstall() {
       window.deferredPwaPrompt.prompt();
       const choice = await window.deferredPwaPrompt.userChoice;
       if (choice && choice.outcome === 'accepted') {
-        if (typeof showToast === 'function') showToast('Kurfanova ana ekranınıza eklendi.');
+        if (typeof showToast === 'function') showToast(getAppLanguage() === 'en' ? 'Kurfamüzik added to your home screen.' : 'Kurfamüzik ana ekranınıza eklendi.');
         closeAppInstallModal();
       }
       window.deferredPwaPrompt = null;
@@ -11571,7 +13647,7 @@ function updateAdWarningToggleUI() {
   const btn = typeof document !== 'undefined' ? document.getElementById('btn-ad-warn-toggle') : null;
   if (!btn) return;
   const enabled = !isAdWarningDisabledByPref();
-  btn.textContent = enabled ? 'Açık' : 'Kapalı';
+  btn.textContent = enabled ? t('settings.on') : t('settings.off');
   if (enabled) {
     btn.classList.add('bg-primary', 'text-on-primary');
     btn.classList.remove('bg-surface-container', 'text-on-surface');
@@ -11595,7 +13671,7 @@ function toggleAdWarningPreference() {
     }
   } catch (e) {}
   updateAdWarningToggleUI();
-  showToast(nextDisabled ? 'Reklam uyarısı kapatıldı' : 'Reklam uyarısı açıldı');
+  showToast(nextDisabled ? t('toast.ad_warn_off') : t('toast.ad_warn_on'));
 }
 window.toggleAdWarningPreference = toggleAdWarningPreference;
 
@@ -11632,7 +13708,7 @@ function suppressAdWarningPermanently() {
   updateAdWarningToggleUI();
   continueFromAdWarningModal();
   if (typeof showToast === 'function') {
-    showToast('Reklam uyarısı bir daha gösterilmeyecek');
+    showToast(t('toast.ad_warn_never'));
   }
 }
 window.suppressAdWarningPermanently = suppressAdWarningPermanently;
@@ -11650,7 +13726,7 @@ let __desktopSettingsState = {
 function updateDesktopTogglePill(btnEl, active) {
   if (!btnEl) return;
   btnEl.dataset.active = active ? 'true' : 'false';
-  btnEl.textContent = active ? 'Açık' : 'Kapalı';
+  btnEl.textContent = active ? t('settings.on') : t('settings.off');
   if (active) {
     btnEl.classList.add('bg-primary', 'text-on-primary');
     btnEl.classList.remove('bg-surface-container', 'text-on-surface-variant');
@@ -11683,19 +13759,23 @@ async function refreshDesktopBridgeSettings() {
         version: res.version || ''
       };
 
+      if ((res.language === 'tr' || res.language === 'en') && !localStorage.getItem('kurfa_lang')) {
+        if (typeof applyAppLanguage === 'function') applyAppLanguage(res.language, true);
+      }
+
       const pathEl = document.getElementById('desktop-install-path');
-      if (pathEl) pathEl.textContent = __desktopSettingsState.installPath || 'Masaüstü Uygulaması';
+      if (pathEl) pathEl.textContent = __desktopSettingsState.installPath || t('settings.desktop_app');
       const dlDirEl = document.getElementById('desktop-download-dir');
-      if (dlDirEl) dlDirEl.textContent = __desktopSettingsState.downloadDir || 'Varsayılan İndirilenler';
+      if (dlDirEl) dlDirEl.textContent = __desktopSettingsState.downloadDir || t('dl.folder_default');
       const modalDlPathEl = document.getElementById('modal-dl-folder-path');
-      if (modalDlPathEl) modalDlPathEl.textContent = __desktopSettingsState.downloadDir || 'Varsayılan İndirilenler';
+      if (modalDlPathEl) modalDlPathEl.textContent = __desktopSettingsState.downloadDir || t('dl.folder_default');
       const modalDlRowEl = document.getElementById('modal-dl-folder-row');
       if (modalDlRowEl) {
         modalDlRowEl.classList.remove('hidden');
         modalDlRowEl.classList.add('flex');
       }
       const verEl = document.getElementById('desktop-app-version');
-      if (verEl) verEl.textContent = __desktopSettingsState.version ? `v${__desktopSettingsState.version}` : 'Aktif';
+      if (verEl) verEl.textContent = __desktopSettingsState.version ? `v${__desktopSettingsState.version}` : t('dp.active_pill');
 
       updateDesktopTogglePill(document.getElementById('btn-desktop-shortcut-toggle'), __desktopSettingsState.createDesktopShortcut);
       updateDesktopTogglePill(document.getElementById('btn-desktop-startmenu-toggle'), __desktopSettingsState.createStartMenuShortcut);
@@ -11783,20 +13863,20 @@ async function refreshAppVersionAndUpdateStatus() {
     await refreshDesktopBridgeSettings();
   }
 
-  let platformLabel = 'Web';
+  let platformLabel = t('settings.platform_web');
   let installedVer = KURFA_WEB_VERSION;
   let installedCode = 0;
 
   if (isDesktop) {
-    platformLabel = 'Masaüstü';
+    platformLabel = t('settings.platform_desktop');
     installedVer = String(__desktopSettingsState.version || '').replace(/^v/i, '');
   } else if (isAndroid) {
-    platformLabel = 'Android';
+    platformLabel = t('settings.platform_android');
     const aInfo = getAndroidBridgeVersionInfo();
     installedVer = aInfo.versionName;
     installedCode = aInfo.versionCode;
   } else if (extMode) {
-    platformLabel = 'Eklenti';
+    platformLabel = t('settings.platform_ext');
   }
 
   if (pillEl) {
@@ -11805,29 +13885,29 @@ async function refreshAppVersionAndUpdateStatus() {
 
   if (engineEl) {
     if (isNativeApp || extMode || isBrowserAdBlockerActive()) {
-      engineEl.textContent = '%0 Reklam';
+      engineEl.textContent = t('nav.ad_free');
       engineEl.className = 'px-2.5 py-1 rounded-full text-[11px] font-bold bg-emerald-500/15 text-emerald-500 flex-shrink-0';
     } else {
-      engineEl.textContent = 'Tarayıcı';
+      engineEl.textContent = t('settings.browser');
       engineEl.className = 'px-2.5 py-1 rounded-full text-[11px] font-bold bg-surface-container text-on-surface-variant flex-shrink-0';
     }
   }
 
   if (!lineEl) return;
   if (!isNativeApp) {
-    lineEl.textContent = 'Sayfa açılışında otomatik güncellenir.';
+    lineEl.textContent = t('settings.auto_update_web');
     lineEl.className = 'text-[11px] text-on-surface-variant mt-0.5';
     return;
   }
 
-  lineEl.textContent = 'Son sürüm sunucudan kontrol ediliyor...';
+  lineEl.textContent = t('settings.checking_remote');
   lineEl.className = 'text-xs text-on-surface-variant mt-0.5';
 
   const latest = await fetchLatestPublishedAppVersions();
   if (!latest) {
     lineEl.textContent = installedVer
-      ? `Yüklü sürüm: v${installedVer}`
-      : 'Sürüm bilgisi doğrulandı';
+      ? t('settings.installed_ver', { ver: installedVer })
+      : t('settings.ver_verified');
     return;
   }
 
@@ -11838,15 +13918,15 @@ async function refreshAppVersionAndUpdateStatus() {
     if (remoteVer && installedVer) {
       const cmp = compareSemverStrings(remoteVer, installedVer);
       if (cmp > 0) {
-        lineEl.textContent = `Yeni sürüm var: v${remoteVer} (Yüklü: v${installedVer})`;
+        lineEl.textContent = t('settings.new_ver_available', { remote: remoteVer, installed: installedVer });
         lineEl.className = 'text-xs font-semibold text-amber-500 mt-0.5';
         if (quickBtn) {
           quickBtn.classList.remove('hidden');
           quickBtn.classList.add('flex');
-          if (quickLbl) quickLbl.textContent = `v${remoteVer} Mevcut — Şimdi Güncelle`;
+          if (quickLbl) quickLbl.textContent = t('settings.quick_update_avail', { ver: remoteVer });
         }
       } else {
-        lineEl.textContent = `Güncel sürümdesiniz (Son sürüm: v${remoteVer})`;
+        lineEl.textContent = t('settings.up_to_date', { ver: remoteVer });
         lineEl.className = 'text-xs font-semibold text-emerald-500 mt-0.5';
         if (quickBtn) {
           quickBtn.classList.add('hidden');
@@ -11854,7 +13934,7 @@ async function refreshAppVersionAndUpdateStatus() {
         }
       }
     } else if (remoteVer) {
-      lineEl.textContent = `Son yayınlanan sürüm: v${remoteVer}`;
+      lineEl.textContent = t('settings.latest_published', { ver: remoteVer });
     }
   } else if (isAndroid) {
     const remoteName = String(latest.android?.versionName || '').replace(/^v/i, '');
@@ -11862,13 +13942,13 @@ async function refreshAppVersionAndUpdateStatus() {
     const hasNewByCode = remoteCode > 0 && installedCode > 0 && remoteCode > installedCode;
     const hasNewByName = remoteName && installedVer && compareSemverStrings(remoteName, installedVer) > 0;
     if (hasNewByCode || (!installedCode && hasNewByName)) {
-      lineEl.textContent = `Yeni sürüm var: v${remoteName || remoteCode} (Yüklü: v${installedVer || installedCode})`;
+      lineEl.textContent = t('settings.new_ver_available', { remote: remoteName || remoteCode, installed: installedVer || installedCode });
       lineEl.className = 'text-xs font-semibold text-amber-500 mt-0.5';
     } else if (installedVer && remoteName) {
-      lineEl.textContent = `Güncel sürümdesiniz (Son sürüm: v${remoteName})`;
+      lineEl.textContent = t('settings.up_to_date', { ver: remoteName });
       lineEl.className = 'text-xs font-semibold text-emerald-500 mt-0.5';
     } else if (remoteName) {
-      lineEl.textContent = `Son yayınlanan sürüm: v${remoteName}`;
+      lineEl.textContent = t('settings.latest_published', { ver: remoteName });
     }
   }
 }
@@ -11884,6 +13964,7 @@ async function toggleDesktopSetting(key) {
     minimizeToTray: 'minimizeToTray'
   };
   const bridgeKey = bridgeKeyMap[key] || key;
+  const isEn = getAppLanguage() === 'en';
   try {
     const res = await callExtensionBridge('SET_DESKTOP_SETTINGS', { [bridgeKey]: next, key: bridgeKey, value: next }, 4000);
     if (res && res.success) {
@@ -11896,22 +13977,22 @@ async function toggleDesktopSetting(key) {
       };
       updateDesktopTogglePill(document.getElementById(keyMap[key]), next);
       const labelMap = {
-        createDesktopShortcut: 'Masaüstü kısayolu',
-        createStartMenuShortcut: 'Başlat menüsü kısayolu',
-        launchOnStartup: 'Windows ile başlatma',
-        minimizeToTray: 'Kapatınca tepsiye küçültme'
+        createDesktopShortcut: t('settings.desktop_shortcut'),
+        createStartMenuShortcut: t('settings.start_menu'),
+        launchOnStartup: t('settings.win_startup'),
+        minimizeToTray: t('settings.min_tray')
       };
       if (typeof showToast === 'function') {
-        showToast(`${labelMap[key] || key} ${next ? 'açıldı' : 'kapatıldı'}`);
+        showToast(`${labelMap[key] || key}: ${next ? t('settings.on') : t('settings.off')}`);
       }
     } else {
       if (typeof showToast === 'function') {
-        showToast('Ayar değiştirilemedi');
+        showToast(isEn ? 'Could not update setting' : 'Ayar değiştirilemedi');
       }
     }
   } catch (e) {
     if (typeof showToast === 'function') {
-      showToast('Ayar değiştirilemedi');
+      showToast(isEn ? 'Could not update setting' : 'Ayar değiştirilemedi');
     }
   }
 }
@@ -11920,7 +14001,7 @@ window.toggleDesktopSetting = toggleDesktopSetting;
 function openDesktopInstallFolder() {
   callExtensionBridge('OPEN_INSTALL_FOLDER', {}, 4000);
   if (typeof showToast === 'function') {
-    showToast('Uygulama klasörü açılıyor...');
+    showToast(t('toast.opening_folder'));
   }
 }
 window.openDesktopInstallFolder = openDesktopInstallFolder;
@@ -11937,7 +14018,7 @@ async function pickDesktopDownloadFolder() {
         const modalDirEl = document.getElementById('modal-dl-folder-path');
         if (modalDirEl) modalDirEl.textContent = nextDir;
         if (typeof showToast === 'function') {
-          showToast(`İndirme klasörü güncellendi: ${nextDir}`);
+          showToast(t('toast.dl_folder_updated', { dir: nextDir }));
         }
       }
       if (typeof refreshDesktopBridgeSettings === 'function') {
@@ -11950,7 +14031,7 @@ async function pickDesktopDownloadFolder() {
     }
   } catch (e) {
     if (typeof showToast === 'function') {
-      showToast('Klasör seçimi masaüstü uygulamasında desteklenir');
+      showToast(t('toast.dl_folder_desktop_only'));
     }
   }
 }
@@ -12027,59 +14108,59 @@ function renderDesktopUpdateModalContent() {
 
   if (st.phase === 'available') {
     if (heroIcon) heroIcon.textContent = 'system_update';
-    if (titleEl) titleEl.textContent = 'Yeni Sürüm Mevcut';
+    if (titleEl) titleEl.textContent = t('dupd.available');
     if (consentEl) {
-      consentEl.textContent = 'Yeni sürümün indirilip kurulmasını onaylıyor musunuz? İndirme sırasında müzik çalmaya kesintisiz devam eder.';
+      consentEl.textContent = t('dupd.consent');
       consentEl.classList.remove('hidden');
     }
-    if (secBtn) secBtn.textContent = 'Daha Sonra';
+    if (secBtn) secBtn.textContent = t('dupd.later');
     if (priIcon) priIcon.textContent = 'download';
-    if (priLbl) priLbl.textContent = 'İndir ve Güncelle';
+    if (priLbl) priLbl.textContent = t('dupd.download_update');
   } else if (st.phase === 'downloading' || st.phase === 'verifying') {
     if (heroIcon) heroIcon.textContent = 'downloading';
-    if (titleEl) titleEl.textContent = 'Güncelleme İndiriliyor';
+    if (titleEl) titleEl.textContent = t('dupd.downloading');
     if (progWrap) progWrap.classList.remove('hidden');
     const pct = Math.max(0, Math.min(100, Number(st.percent) || 0));
-    if (phaseLbl) phaseLbl.textContent = st.phase === 'verifying' ? 'SHA-256 Güvenlik Doğrulaması Yapılıyor...' : 'Güncelleme paketi indiriliyor...';
+    if (phaseLbl) phaseLbl.textContent = st.phase === 'verifying' ? t('dupd.verifying_sha') : t('dupd.downloading_pkg');
     if (pctEl) pctEl.textContent = `${pct}%`;
     if (barEl) barEl.style.width = `${pct}%`;
     if (bytesEl) bytesEl.textContent = `${formatUpdateMb(st.bytesDownloaded)} / ${formatUpdateMb(st.totalBytes)}`;
-    if (secHintEl) secHintEl.textContent = st.phase === 'verifying' ? 'Bütünlük Kontrolü' : 'SHA-256 Korumalı';
-    if (secBtn) secBtn.textContent = 'Arka Plana Al';
+    if (secHintEl) secHintEl.textContent = st.phase === 'verifying' ? t('dupd.integrity_check') : t('dupd.sha_protected');
+    if (secBtn) secBtn.textContent = t('dupd.bg_hide');
     if (priBtn) {
       priBtn.disabled = true;
       priBtn.classList.add('opacity-60', 'pointer-events-none');
     }
     if (priIcon) priIcon.textContent = 'hourglass_top';
-    if (priLbl) priLbl.textContent = st.phase === 'verifying' ? 'Doğrulanıyor...' : 'İndiriliyor...';
+    if (priLbl) priLbl.textContent = st.phase === 'verifying' ? t('dupd.verifying_btn') : t('dl.downloading');
   } else if (st.phase === 'ready') {
     if (heroIcon) heroIcon.textContent = 'verified';
-    if (titleEl) titleEl.textContent = 'Güncelleme Kuruluma Hazır';
+    if (titleEl) titleEl.textContent = t('dupd.ready');
     if (progWrap) progWrap.classList.remove('hidden');
-    if (phaseLbl) phaseLbl.textContent = 'Doğrulandı ve Hazır';
+    if (phaseLbl) phaseLbl.textContent = t('dupd.verified_ready');
     if (pctEl) pctEl.textContent = '100%';
     if (barEl) barEl.style.width = '100%';
-    if (bytesEl) bytesEl.textContent = st.totalBytes > 0 ? `${formatUpdateMb(st.totalBytes)} Tamamlandı` : 'Paketlendi';
-    if (secHintEl) secHintEl.textContent = 'Hazır';
+    if (bytesEl) bytesEl.textContent = st.totalBytes > 0 ? t('dupd.completed', { size: formatUpdateMb(st.totalBytes) }) : t('dupd.packaged');
+    if (secHintEl) secHintEl.textContent = t('dupd.ready_badge');
     if (consentEl) {
       consentEl.textContent = st.autoApplyAfterDownload
-        ? 'Paket doğrulandı! Uygulama şimdi yeniden başlatılarak güncelleniyor...'
-        : 'Güncelleme paketi doğrulandı. Şimdi yeniden başlatarak hemen uygulayabilirsiniz.';
+        ? t('dupd.restart_hint')
+        : t('dupd.manual_restart_hint');
       consentEl.classList.remove('hidden');
     }
-    if (secBtn) secBtn.textContent = 'Kapatırken Kur';
+    if (secBtn) secBtn.textContent = t('dupd.close_apply');
     if (priIcon) priIcon.textContent = 'restart_alt';
-    if (priLbl) priLbl.textContent = 'Yeniden Başlat ve Güncelle';
+    if (priLbl) priLbl.textContent = t('dupd.restart_update');
   } else if (st.phase === 'error') {
     if (heroIcon) heroIcon.textContent = 'error';
-    if (titleEl) titleEl.textContent = 'Güncelleme Başarısız';
+    if (titleEl) titleEl.textContent = t('dupd.error');
     if (errBox) {
-      errBox.textContent = st.errorMessage || 'Güncelleme paketi indirilirken bir sorun oluştu.';
+      errBox.textContent = st.errorMessage || t('dupd.err_fallback');
       errBox.classList.remove('hidden');
     }
-    if (secBtn) secBtn.textContent = 'Kapat';
+    if (secBtn) secBtn.textContent = t('dupd.close');
     if (priIcon) priIcon.textContent = 'refresh';
-    if (priLbl) priLbl.textContent = 'Tekrar Dene';
+    if (priLbl) priLbl.textContent = t('dupd.retry');
   }
 }
 
@@ -12166,8 +14247,8 @@ window.__kurfaDesktopUpdateUI = function (payload) {
   if (phase === 'available' || phase === 'ready') {
     if (lineEl) {
       lineEl.textContent = phase === 'ready'
-        ? `Güncelleme hazır: v${__kurfaDesktopUpdateState.version}`
-        : `Yeni sürüm var: v${__kurfaDesktopUpdateState.version}`;
+        ? t('settings.quick_update_ready', { ver: __kurfaDesktopUpdateState.version })
+        : t('settings.quick_update_avail', { ver: __kurfaDesktopUpdateState.version });
       lineEl.className = 'text-xs font-semibold text-amber-500 mt-0.5';
     }
     if (quickBtn) {
@@ -12175,8 +14256,8 @@ window.__kurfaDesktopUpdateUI = function (payload) {
       quickBtn.classList.add('flex');
       if (quickLbl) {
         quickLbl.textContent = phase === 'ready'
-          ? `v${__kurfaDesktopUpdateState.version} Hazır — Yeniden Başlat`
-          : `v${__kurfaDesktopUpdateState.version} Mevcut — Şimdi Güncelle`;
+          ? t('settings.quick_update_ready', { ver: __kurfaDesktopUpdateState.version })
+          : t('settings.quick_update_avail', { ver: __kurfaDesktopUpdateState.version });
       }
     }
 
@@ -12194,7 +14275,7 @@ window.__kurfaDesktopUpdateUI = function (payload) {
     renderDesktopUpdateModalContent();
   } else if (phase === 'up-to-date') {
     if (lineEl) {
-      lineEl.textContent = `Güncel sürümdesiniz (v${__kurfaDesktopUpdateState.currentVersion || __kurfaDesktopUpdateState.version})`;
+      lineEl.textContent = t('settings.up_to_date', { ver: __kurfaDesktopUpdateState.currentVersion || __kurfaDesktopUpdateState.version });
       lineEl.className = 'text-xs font-semibold text-emerald-500 mt-0.5';
     }
     if (quickBtn) {
@@ -12208,16 +14289,17 @@ async function triggerDesktopUpdateCheck() {
   const iconEl = document.getElementById('btn-desktop-check-update-icon');
   const lblEl = document.getElementById('btn-desktop-check-update-label');
   const btnEl = document.getElementById('btn-desktop-check-update');
+  const isEn = getAppLanguage() === 'en';
 
   if (btnEl) btnEl.disabled = true;
   if (iconEl) iconEl.classList.add('animate-spin');
-  if (lblEl) lblEl.textContent = 'Denetleniyor...';
+  if (lblEl) lblEl.textContent = t('settings.checking_update');
   __kurfaDesktopUpdateState.userDeferred = false;
 
   try {
     const res = await callExtensionBridge('CHECK_UPDATE', {}, 15000);
     if (!res) {
-      if (typeof showToast === 'function') showToast('Masaüstü köprüsüne ulaşılamadı.');
+      if (typeof showToast === 'function') showToast(isEn ? 'Could not reach desktop bridge.' : 'Masaüstü köprüsüne ulaşılamadı.');
       return;
     }
 
@@ -12238,19 +14320,19 @@ async function triggerDesktopUpdateCheck() {
         version: res.remoteVersion || res.currentVersion || ''
       });
       if (typeof showToast === 'function') {
-        showToast(`Uygulamanız güncel (v${res.currentVersion || ''})`, 'success');
+        showToast(t('settings.up_to_date', { ver: res.currentVersion || '' }), 'success');
       }
     } else if (res.status === 'error') {
       if (typeof showToast === 'function') {
-        showToast(res.errorMessage || 'Güncelleme kontrolü başarısız oldu.');
+        showToast(res.errorMessage || (isEn ? 'Update check failed.' : 'Güncelleme kontrolü başarısız oldu.'));
       }
     } else {
-      if (typeof showToast === 'function') showToast('Güncelleme kontrolü tamamlandı.');
+      if (typeof showToast === 'function') showToast(isEn ? 'Update check completed.' : 'Güncelleme kontrolü tamamlandı.');
     }
   } finally {
     if (btnEl) btnEl.disabled = false;
     if (iconEl) iconEl.classList.remove('animate-spin');
-    if (lblEl) lblEl.textContent = 'Güncelleme Denetle';
+    if (lblEl) lblEl.textContent = t('settings.check_update');
   }
 }
 window.triggerDesktopUpdateCheck = triggerDesktopUpdateCheck;
@@ -12277,25 +14359,24 @@ function openAdWarningModal(target, options = {}) {
   if (mode === 'welcome') {
     if (trackCard) trackCard.classList.add('hidden');
     if (welcomeBox) welcomeBox.classList.remove('hidden');
-    if (titleElHeader) titleElHeader.textContent = 'Hoş Geldin! Reklamsız Koruma';
-    if (subtitleEl) subtitleEl.textContent = 'İlk Ziyaret • Cihazına Özel Öneri';
+    if (titleElHeader) titleElHeader.textContent = t('adw.welcome_title');
+    if (subtitleEl) subtitleEl.textContent = t('adw.welcome_sub');
     if (bodyTextEl) bodyTextEl.classList.add('hidden');
-    if (continueBtn) continueBtn.textContent = 'Şimdilik Tarayıcıda Devam Et';
+    if (continueBtn) continueBtn.textContent = t('adw.welcome_continue');
   } else {
     if (trackCard) trackCard.classList.remove('hidden');
     if (welcomeBox) welcomeBox.classList.add('hidden');
-    if (titleElHeader) titleElHeader.textContent = 'Reklam Uyarısı';
-    if (subtitleEl) subtitleEl.textContent = '%0 Reklamlı Cihaz Motoru Önerisi';
+    if (titleElHeader) titleElHeader.textContent = t('adw.title');
+    if (subtitleEl) subtitleEl.textContent = t('adw.subtitle');
     if (bodyTextEl) {
       bodyTextEl.classList.remove('hidden');
-      bodyTextEl.textContent =
-        'Web tarayıcısında bu parçada YouTube reklamı çıkabilir. Cihazına uygun uygulamayı indirirsen tüm şarkılar %0 reklamlı çalar.';
+      bodyTextEl.textContent = t('adw.body');
     }
-    if (continueBtn) continueBtn.textContent = 'Yine de Tarayıcıda Çal';
+    if (continueBtn) continueBtn.textContent = t('adw.continue_btn');
 
     if (thumbEl) thumbEl.src = safeUrl(getTrackThumbnail(target), './kurfamuzik_logo.png');
-    if (titleEl) titleEl.textContent = target?.title || 'Bilinmeyen Parça';
-    if (artistEl) artistEl.textContent = target?.artist || 'Bilinmeyen Sanatçı';
+    if (titleEl) titleEl.textContent = target?.title || (getAppLanguage() === 'en' ? 'Unknown Track' : 'Bilinmeyen Parça');
+    if (artistEl) artistEl.textContent = target?.artist || (getAppLanguage() === 'en' ? 'Unknown Artist' : 'Bilinmeyen Sanatçı');
   }
 
   const platform = detectUserDevicePlatform();
@@ -12307,32 +14388,34 @@ function openAdWarningModal(target, options = {}) {
   const storeWatchClick = () => {
     startAdBlockerBackgroundWatcher();
     if (typeof showToast === 'function') {
-      showToast(`${browserStore.storeName} açıldı. Ekle'ye basınca otomatik algılanacak.`);
+      showToast(getAppLanguage() === 'en'
+        ? `${browserStore.storeName} opened. Adding the extension will be detected automatically.`
+        : `${browserStore.storeName} açıldı. Ekle'ye basınca otomatik algılanacak.`);
     }
   };
 
   const platformConfigs = {
     windows: {
       badge: `Windows • ${browserStore.name}`,
-      primaryLabel: 'Windows Uygulamasını İndir (.exe • %0 Reklam)',
+      primaryLabel: t('adw.win_cta'),
       primaryHref: 'https://github.com/KurfaCore/kurfanova-app/releases/latest/download/Kurfanova-Muzik-Windows.exe',
       primaryTarget: '_blank',
       primaryDownload: 'Kurfanova-Muzik-Windows.exe',
       primaryOnClick: null,
-      secondaryLabel: `${browserStore.name} İçin AdGuard Ekle`,
+      secondaryLabel: t('adw.adguard_short', { name: browserStore.name }),
       secondaryHref: browserStore.url,
       secondaryTarget: '_blank',
       secondaryDownload: null,
       secondaryOnClick: storeWatchClick
     },
     android: {
-      badge: 'Android Algılandı',
-      primaryLabel: 'Android APK İndir (%0 Reklam)',
+      badge: t('adw.android_detected'),
+      primaryLabel: t('adw.android_cta'),
       primaryHref: 'https://github.com/KurfaCore/kurfanova-app/releases/latest/download/Kurfanova-Muzik.apk',
       primaryTarget: '_blank',
       primaryDownload: 'Kurfanova-Muzik.apk',
       primaryOnClick: null,
-      secondaryLabel: 'Tarayıcı Kısayolu (WebAPK)',
+      secondaryLabel: t('adw.webapk'),
       secondaryHref: '#webapk',
       secondaryTarget: '_self',
       secondaryDownload: null,
@@ -12344,12 +14427,12 @@ function openAdWarningModal(target, options = {}) {
     },
     macos: {
       badge: `macOS • ${browserStore.name}`,
-      primaryLabel: `${browserStore.name} İçin AdGuard Ekle (Resmi Mağaza)`,
+      primaryLabel: t('adw.adguard_cta', { name: browserStore.name }),
       primaryHref: browserStore.url,
       primaryTarget: '_blank',
       primaryDownload: null,
       primaryOnClick: storeWatchClick,
-      secondaryLabel: 'Tüm Kurulum Seçenekleri',
+      secondaryLabel: t('adw.all_install_opts'),
       secondaryHref: '#install',
       secondaryTarget: '_self',
       secondaryDownload: null,
@@ -12361,12 +14444,12 @@ function openAdWarningModal(target, options = {}) {
     },
     linux: {
       badge: `Linux • ${browserStore.name}`,
-      primaryLabel: `${browserStore.name} İçin AdGuard Ekle (Resmi Mağaza)`,
+      primaryLabel: t('adw.adguard_cta', { name: browserStore.name }),
       primaryHref: browserStore.url,
       primaryTarget: '_blank',
       primaryDownload: null,
       primaryOnClick: storeWatchClick,
-      secondaryLabel: 'Tüm Kurulum Seçenekleri',
+      secondaryLabel: t('adw.all_install_opts'),
       secondaryHref: '#install',
       secondaryTarget: '_self',
       secondaryDownload: null,
@@ -12377,13 +14460,13 @@ function openAdWarningModal(target, options = {}) {
       }
     },
     ios: {
-      badge: 'iOS Safari Algılandı',
-      primaryLabel: 'Safari İçin AdGuard Kur (App Store)',
+      badge: 'iOS Safari',
+      primaryLabel: t('adw.ios_cta'),
       primaryHref: KURFA_ADGUARD_STORES['safari-ios'].url,
       primaryTarget: '_blank',
       primaryDownload: null,
       primaryOnClick: storeWatchClick,
-      secondaryLabel: 'Reklamsız Açık Katalogda Ara',
+      secondaryLabel: t('adw.open_catalog'),
       secondaryHref: '#audius',
       secondaryTarget: '_self',
       secondaryDownload: null,
