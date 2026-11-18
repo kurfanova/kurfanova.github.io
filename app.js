@@ -520,8 +520,16 @@ function initWebAutoUpdater() {
 }
 
 window.__kurfaOnNativeUpdateReady = function (info) {
-  if (info && info.uiHandled) return;
   const ver = String(info?.version || '');
+  if (typeof window.__kurfaDesktopUpdateUI === 'function' && ver) {
+    window.__kurfaDesktopUpdateUI({
+      phase: 'ready',
+      version: ver,
+      notes: info?.notes || '',
+      percent: 100
+    });
+    return;
+  }
   if (typeof showToast === 'function' && ver) {
     showToast(`Kurfamüzik v${ver} indirildi ve doğrulandı — kapanışta otomatik güncellenecek.`);
   }
@@ -533,17 +541,16 @@ window.requestNativeAppUpdateCheck = function () {
     return true;
   }
   if (getBrowserExtensionMode().startsWith('desktop')) {
-    callExtensionBridge('CHECK_UPDATE', {}, 8000);
-    return true;
+    return callExtensionBridge('CHECK_UPDATE', {}, 15000);
   }
   return false;
 };
 
 window.kurfaCheckAppUpdate = function () {
   const now = Date.now();
-  if (now - __kurfaLastManualUpdateCheckAt < 20000) {
+  if (now - __kurfaLastManualUpdateCheckAt < 3000) {
     if (typeof showToast === 'function') {
-      showToast('Güncelleme az önce denetlendi, lütfen bekleyin.');
+      showToast('Lütfen birkaç saniye bekleyin...');
     }
     return false;
   }
@@ -11861,14 +11868,25 @@ async function refreshAppVersionAndUpdateStatus() {
 
   if (isDesktop) {
     const remoteVer = String(latest.desktop?.version || '').replace(/^v/i, '');
+    const quickBtn = document.getElementById('btn-settings-quick-update');
+    const quickLbl = document.getElementById('btn-settings-quick-update-label');
     if (remoteVer && installedVer) {
       const cmp = compareSemverStrings(remoteVer, installedVer);
       if (cmp > 0) {
         lineEl.textContent = `Yeni sürüm var: v${remoteVer} (Yüklü: v${installedVer})`;
         lineEl.className = 'text-xs font-semibold text-amber-500 mt-0.5';
+        if (quickBtn) {
+          quickBtn.classList.remove('hidden');
+          quickBtn.classList.add('flex');
+          if (quickLbl) quickLbl.textContent = `v${remoteVer} Mevcut — Şimdi Güncelle`;
+        }
       } else {
         lineEl.textContent = `Güncel sürümdesiniz (Son sürüm: v${remoteVer})`;
         lineEl.className = 'text-xs font-semibold text-emerald-500 mt-0.5';
+        if (quickBtn) {
+          quickBtn.classList.add('hidden');
+          quickBtn.classList.remove('flex');
+        }
       }
     } else if (remoteVer) {
       lineEl.textContent = `Son yayınlanan sürüm: v${remoteVer}`;
@@ -11942,10 +11960,301 @@ function openDesktopInstallFolder() {
 }
 window.openDesktopInstallFolder = openDesktopInstallFolder;
 
-function triggerDesktopUpdateCheck() {
-  const triggered = typeof window.kurfaCheckAppUpdate === 'function' ? window.kurfaCheckAppUpdate() : false;
-  if (triggered !== false && typeof showToast === 'function') {
-    showToast('Güncelleme denetleniyor...');
+// =============================================================================
+// DESKTOP OTA UPDATE CONSENT MODAL & LIVE PROGRESS CONTROLLER
+// =============================================================================
+const __kurfaDesktopUpdateState = {
+  phase: 'idle', // 'available' | 'downloading' | 'verifying' | 'ready' | 'error' | 'up-to-date'
+  currentVersion: '',
+  version: '',
+  notes: '',
+  bytesDownloaded: 0,
+  totalBytes: 0,
+  percent: 0,
+  errorMessage: '',
+  userDeferred: false,
+  autoApplyAfterDownload: false,
+  autoRestartScheduled: false
+};
+
+function formatUpdateMb(bytes) {
+  if (!bytes || bytes <= 0) return '0 MB';
+  return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+}
+
+function renderDesktopUpdateModalContent() {
+  const modal = document.getElementById('desktop-update-modal');
+  if (!modal) return;
+
+  const titleEl = document.getElementById('desktop-update-title');
+  const subEl = document.getElementById('desktop-update-subtitle');
+  const notesEl = document.getElementById('desktop-update-notes-box');
+  const progWrap = document.getElementById('desktop-update-progress-wrap');
+  const phaseLbl = document.getElementById('desktop-update-phase-label');
+  const pctEl = document.getElementById('desktop-update-pct');
+  const barEl = document.getElementById('desktop-update-bar');
+  const bytesEl = document.getElementById('desktop-update-bytes');
+  const secHintEl = document.getElementById('desktop-update-sec-hint');
+  const errBox = document.getElementById('desktop-update-error-box');
+  const consentEl = document.getElementById('desktop-update-consent-text');
+  const secBtn = document.getElementById('desktop-update-secondary-btn');
+  const priBtn = document.getElementById('desktop-update-primary-btn');
+  const priIcon = document.getElementById('desktop-update-primary-icon');
+  const priLbl = document.getElementById('desktop-update-primary-label');
+  const heroIcon = document.getElementById('desktop-update-hero-icon');
+
+  const st = __kurfaDesktopUpdateState;
+  const curTxt = st.currentVersion ? `v${st.currentVersion} → ` : '';
+  const sizeTxt = st.totalBytes > 0 ? ` • ${formatUpdateMb(st.totalBytes)}` : '';
+  if (subEl) subEl.textContent = `${curTxt}v${st.version || '...'}${sizeTxt}`;
+
+  if (notesEl) {
+    const cleanNotes = String(st.notes || '').trim();
+    if (cleanNotes) {
+      notesEl.textContent = cleanNotes;
+      notesEl.classList.remove('hidden');
+    } else {
+      notesEl.classList.add('hidden');
+    }
+  }
+
+  if (errBox) errBox.classList.add('hidden');
+  if (progWrap) progWrap.classList.add('hidden');
+  if (consentEl) consentEl.classList.add('hidden');
+  if (priBtn) {
+    priBtn.disabled = false;
+    priBtn.classList.remove('opacity-60', 'pointer-events-none');
+  }
+  if (secBtn) {
+    secBtn.classList.remove('hidden');
+  }
+
+  if (st.phase === 'available') {
+    if (heroIcon) heroIcon.textContent = 'system_update';
+    if (titleEl) titleEl.textContent = 'Yeni Sürüm Mevcut';
+    if (consentEl) {
+      consentEl.textContent = 'Yeni sürümün indirilip kurulmasını onaylıyor musunuz? İndirme sırasında müzik çalmaya kesintisiz devam eder.';
+      consentEl.classList.remove('hidden');
+    }
+    if (secBtn) secBtn.textContent = 'Daha Sonra';
+    if (priIcon) priIcon.textContent = 'download';
+    if (priLbl) priLbl.textContent = 'İndir ve Güncelle';
+  } else if (st.phase === 'downloading' || st.phase === 'verifying') {
+    if (heroIcon) heroIcon.textContent = 'downloading';
+    if (titleEl) titleEl.textContent = 'Güncelleme İndiriliyor';
+    if (progWrap) progWrap.classList.remove('hidden');
+    const pct = Math.max(0, Math.min(100, Number(st.percent) || 0));
+    if (phaseLbl) phaseLbl.textContent = st.phase === 'verifying' ? 'SHA-256 Güvenlik Doğrulaması Yapılıyor...' : 'Güncelleme paketi indiriliyor...';
+    if (pctEl) pctEl.textContent = `${pct}%`;
+    if (barEl) barEl.style.width = `${pct}%`;
+    if (bytesEl) bytesEl.textContent = `${formatUpdateMb(st.bytesDownloaded)} / ${formatUpdateMb(st.totalBytes)}`;
+    if (secHintEl) secHintEl.textContent = st.phase === 'verifying' ? 'Bütünlük Kontrolü' : 'SHA-256 Korumalı';
+    if (secBtn) secBtn.textContent = 'Arka Plana Al';
+    if (priBtn) {
+      priBtn.disabled = true;
+      priBtn.classList.add('opacity-60', 'pointer-events-none');
+    }
+    if (priIcon) priIcon.textContent = 'hourglass_top';
+    if (priLbl) priLbl.textContent = st.phase === 'verifying' ? 'Doğrulanıyor...' : 'İndiriliyor...';
+  } else if (st.phase === 'ready') {
+    if (heroIcon) heroIcon.textContent = 'verified';
+    if (titleEl) titleEl.textContent = 'Güncelleme Kuruluma Hazır';
+    if (progWrap) progWrap.classList.remove('hidden');
+    if (phaseLbl) phaseLbl.textContent = 'Doğrulandı ve Hazır';
+    if (pctEl) pctEl.textContent = '100%';
+    if (barEl) barEl.style.width = '100%';
+    if (bytesEl) bytesEl.textContent = st.totalBytes > 0 ? `${formatUpdateMb(st.totalBytes)} Tamamlandı` : 'Paketlendi';
+    if (secHintEl) secHintEl.textContent = 'Hazır';
+    if (consentEl) {
+      consentEl.textContent = st.autoApplyAfterDownload
+        ? 'Paket doğrulandı! Uygulama şimdi yeniden başlatılarak güncelleniyor...'
+        : 'Güncelleme paketi doğrulandı. Şimdi yeniden başlatarak hemen uygulayabilirsiniz.';
+      consentEl.classList.remove('hidden');
+    }
+    if (secBtn) secBtn.textContent = 'Kapatırken Kur';
+    if (priIcon) priIcon.textContent = 'restart_alt';
+    if (priLbl) priLbl.textContent = 'Yeniden Başlat ve Güncelle';
+  } else if (st.phase === 'error') {
+    if (heroIcon) heroIcon.textContent = 'error';
+    if (titleEl) titleEl.textContent = 'Güncelleme Başarısız';
+    if (errBox) {
+      errBox.textContent = st.errorMessage || 'Güncelleme paketi indirilirken bir sorun oluştu.';
+      errBox.classList.remove('hidden');
+    }
+    if (secBtn) secBtn.textContent = 'Kapat';
+    if (priIcon) priIcon.textContent = 'refresh';
+    if (priLbl) priLbl.textContent = 'Tekrar Dene';
+  }
+}
+
+function openDesktopUpdateModal() {
+  const modal = document.getElementById('desktop-update-modal');
+  const card = document.getElementById('desktop-update-modal-card');
+  if (!modal) return;
+  renderDesktopUpdateModalContent();
+  modal.classList.remove('opacity-0', 'pointer-events-none');
+  modal.classList.add('opacity-100', 'pointer-events-auto');
+  if (card) {
+    card.classList.remove('scale-95');
+    card.classList.add('scale-100');
+  }
+}
+
+function dismissDesktopUpdateModal(userDeferred = false) {
+  if (userDeferred) {
+    __kurfaDesktopUpdateState.userDeferred = true;
+    __kurfaDesktopUpdateState.autoApplyAfterDownload = false;
+  }
+  const modal = document.getElementById('desktop-update-modal');
+  const card = document.getElementById('desktop-update-modal-card');
+  if (!modal) return;
+  modal.classList.add('opacity-0', 'pointer-events-none');
+  modal.classList.remove('opacity-100', 'pointer-events-auto');
+  if (card) {
+    card.classList.add('scale-95');
+    card.classList.remove('scale-100');
+  }
+}
+window.dismissDesktopUpdateModal = dismissDesktopUpdateModal;
+
+async function confirmDesktopUpdateAction() {
+  const st = __kurfaDesktopUpdateState;
+  if (st.phase === 'ready') {
+    const res = await callExtensionBridge('APPLY_UPDATE', {}, 5000);
+    if (!res || !res.success) {
+      if (typeof showToast === 'function') showToast('Güncelleme uygulanamadı, lütfen uygulamayı yeniden açın.');
+    }
+    return;
+  }
+  if (st.phase === 'available' || st.phase === 'error') {
+    st.autoApplyAfterDownload = true;
+    st.phase = 'downloading';
+    st.percent = 0;
+    renderDesktopUpdateModalContent();
+    await callExtensionBridge('START_UPDATE_DOWNLOAD', {}, 6000);
+  }
+}
+window.confirmDesktopUpdateAction = confirmDesktopUpdateAction;
+
+function openDesktopUpdateModalFromSettings() {
+  if (__kurfaDesktopUpdateState.version && (__kurfaDesktopUpdateState.phase === 'available' || __kurfaDesktopUpdateState.phase === 'ready' || __kurfaDesktopUpdateState.phase === 'downloading')) {
+    __kurfaDesktopUpdateState.userDeferred = false;
+    openDesktopUpdateModal();
+  } else {
+    triggerDesktopUpdateCheck();
+  }
+}
+window.openDesktopUpdateModalFromSettings = openDesktopUpdateModalFromSettings;
+
+window.__kurfaDesktopUpdateUI = function (payload) {
+  if (!payload || typeof payload !== 'object') return;
+  const phase = String(payload.phase || '');
+  if (phase === 'hide') {
+    dismissDesktopUpdateModal(false);
+    return;
+  }
+
+  if (payload.currentVersion) __kurfaDesktopUpdateState.currentVersion = String(payload.currentVersion);
+  if (payload.version) __kurfaDesktopUpdateState.version = String(payload.version);
+  if (payload.notes !== undefined) __kurfaDesktopUpdateState.notes = String(payload.notes || '');
+  if (typeof payload.bytesDownloaded === 'number') __kurfaDesktopUpdateState.bytesDownloaded = payload.bytesDownloaded;
+  if (typeof payload.totalBytes === 'number' && payload.totalBytes > 0) __kurfaDesktopUpdateState.totalBytes = payload.totalBytes;
+  if (typeof payload.percent === 'number') __kurfaDesktopUpdateState.percent = payload.percent;
+  __kurfaDesktopUpdateState.errorMessage = String(payload.errorMessage || '');
+  __kurfaDesktopUpdateState.phase = phase;
+
+  const lineEl = document.getElementById('settings-update-check-line');
+  const quickBtn = document.getElementById('btn-settings-quick-update');
+  const quickLbl = document.getElementById('btn-settings-quick-update-label');
+
+  if (phase === 'available' || phase === 'ready') {
+    if (lineEl) {
+      lineEl.textContent = phase === 'ready'
+        ? `Güncelleme hazır: v${__kurfaDesktopUpdateState.version}`
+        : `Yeni sürüm var: v${__kurfaDesktopUpdateState.version}`;
+      lineEl.className = 'text-xs font-semibold text-amber-500 mt-0.5';
+    }
+    if (quickBtn) {
+      quickBtn.classList.remove('hidden');
+      quickBtn.classList.add('flex');
+      if (quickLbl) {
+        quickLbl.textContent = phase === 'ready'
+          ? `v${__kurfaDesktopUpdateState.version} Hazır — Yeniden Başlat`
+          : `v${__kurfaDesktopUpdateState.version} Mevcut — Şimdi Güncelle`;
+      }
+    }
+
+    if (!__kurfaDesktopUpdateState.userDeferred) {
+      openDesktopUpdateModal();
+    }
+
+    if (phase === 'ready' && __kurfaDesktopUpdateState.autoApplyAfterDownload && !__kurfaDesktopUpdateState.autoRestartScheduled) {
+      __kurfaDesktopUpdateState.autoRestartScheduled = true;
+      setTimeout(() => {
+        callExtensionBridge('APPLY_UPDATE', {}, 5000);
+      }, 950);
+    }
+  } else if (phase === 'downloading' || phase === 'verifying' || phase === 'error') {
+    renderDesktopUpdateModalContent();
+  } else if (phase === 'up-to-date') {
+    if (lineEl) {
+      lineEl.textContent = `Güncel sürümdesiniz (v${__kurfaDesktopUpdateState.currentVersion || __kurfaDesktopUpdateState.version})`;
+      lineEl.className = 'text-xs font-semibold text-emerald-500 mt-0.5';
+    }
+    if (quickBtn) {
+      quickBtn.classList.add('hidden');
+      quickBtn.classList.remove('flex');
+    }
+  }
+};
+
+async function triggerDesktopUpdateCheck() {
+  const iconEl = document.getElementById('btn-desktop-check-update-icon');
+  const lblEl = document.getElementById('btn-desktop-check-update-label');
+  const btnEl = document.getElementById('btn-desktop-check-update');
+
+  if (btnEl) btnEl.disabled = true;
+  if (iconEl) iconEl.classList.add('animate-spin');
+  if (lblEl) lblEl.textContent = 'Denetleniyor...';
+  __kurfaDesktopUpdateState.userDeferred = false;
+
+  try {
+    const res = await callExtensionBridge('CHECK_UPDATE', {}, 15000);
+    if (!res) {
+      if (typeof showToast === 'function') showToast('Masaüstü köprüsüne ulaşılamadı.');
+      return;
+    }
+
+    if (res.status === 'available' || res.status === 'staged') {
+      window.__kurfaDesktopUpdateUI({
+        phase: res.status === 'staged' ? 'ready' : 'available',
+        currentVersion: res.currentVersion || '',
+        version: res.remoteVersion || res.stagedVersion || '',
+        notes: res.notes || '',
+        totalBytes: res.sizeBytes || 0,
+        bytesDownloaded: res.status === 'staged' ? (res.sizeBytes || 0) : 0,
+        percent: res.status === 'staged' ? 100 : 0
+      });
+    } else if (res.status === 'up-to-date') {
+      window.__kurfaDesktopUpdateUI({
+        phase: 'up-to-date',
+        currentVersion: res.currentVersion || '',
+        version: res.remoteVersion || res.currentVersion || ''
+      });
+      if (typeof showToast === 'function') {
+        showToast(`Uygulamanız güncel (v${res.currentVersion || ''})`, 'success');
+      }
+    } else if (res.status === 'error') {
+      if (typeof showToast === 'function') {
+        showToast(res.errorMessage || 'Güncelleme kontrolü başarısız oldu.');
+      }
+    } else {
+      if (typeof showToast === 'function') showToast('Güncelleme kontrolü tamamlandı.');
+    }
+  } finally {
+    if (btnEl) btnEl.disabled = false;
+    if (iconEl) iconEl.classList.remove('animate-spin');
+    if (lblEl) lblEl.textContent = 'Güncelleme Denetle';
   }
 }
 window.triggerDesktopUpdateCheck = triggerDesktopUpdateCheck;
