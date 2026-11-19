@@ -1,5 +1,5 @@
 // Kurfanova PWA Service Worker
-const CACHE_NAME = 'kurfanova-shell-v4.5.0';
+const CACHE_NAME = 'kurfanova-shell-v4.5.1';
 
 const SHELL_ASSETS = [
   './',
@@ -128,7 +128,7 @@ self.addEventListener('fetch', (event) => {
   if (url.pathname.includes('/api/')) return;
   if (shouldBypassHost(url.hostname)) return;
   if (url.origin !== self.location.origin) return;
-  if (url.pathname.toLowerCase().endsWith('.apk') || url.pathname.toLowerCase().endsWith('.zip') || url.pathname.toLowerCase().endsWith('.user.js')) return;
+  if (url.pathname.toLowerCase().endsWith('.apk') || url.pathname.toLowerCase().endsWith('.exe') || url.pathname.toLowerCase().endsWith('.zip') || url.pathname.toLowerCase().endsWith('.user.js')) return;
 
   if (request.mode === 'navigate' || isAppShellPath(url.pathname) || url.pathname.endsWith('/explore-seed.json')) {
     event.respondWith(networkFirst(request, request.mode === 'navigate'));
