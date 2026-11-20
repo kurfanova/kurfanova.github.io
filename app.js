@@ -1104,6 +1104,23 @@ function isAndroidNativeEngine() {
   }
 }
 
+function getAndroidExoBridge() {
+  try {
+    if (typeof window === 'undefined') return null;
+    if (window.KurfaAndroid && typeof window.KurfaAndroid.playNativeExo === 'function') {
+      return window.KurfaAndroid;
+    }
+    if (window.KurfaAndroidBridge && typeof window.KurfaAndroidBridge.playNativeExo === 'function') {
+      return window.KurfaAndroidBridge;
+    }
+  } catch (e) {}
+  return null;
+}
+
+function hasNativeExoPlayer() {
+  return Boolean(getAndroidExoBridge());
+}
+
 function getBrowserExtensionMode() {
   try {
     return (typeof document !== 'undefined' && document.documentElement && document.documentElement.dataset && document.documentElement.dataset.kurfaExt) || '';
@@ -1283,7 +1300,7 @@ function updateLocalEngineStatusUI() {
 }
 
 function hasAdFreeLocalEngine() {
-  return Boolean(isAndroidNativeEngine() || getBrowserExtensionMode());
+  return Boolean(isAndroidNativeEngine() || hasNativeExoPlayer() || getBrowserExtensionMode());
 }
 
 function hasAdFreePlaybackEnvironment() {
@@ -1792,7 +1809,14 @@ async function kurfaResolveDirectAudio(videoId) {
 
   if (getBrowserExtensionMode()) {
     const res = await callExtensionBridge('STREAM', { videoId: cleanVid }, 6000);
-    if (res && res.success && res.streamUrl) return res;
+    if (res && res.success && res.streamUrl) {
+      try {
+        if (typeof res.streamUrl === 'string' && res.streamUrl.includes('/__kurfa_native_audio__/')) {
+          state._desktopLocalAudioOrigin = new URL(res.streamUrl).origin;
+        }
+      } catch (_) {}
+      return res;
+    }
   }
 
   return { success: false };
@@ -2521,6 +2545,70 @@ function saveQueueState() {
   safeSetStorage('kurfa_original_queue', JSON.stringify(origToStore));
   safeSetStorage('kurfa_user_queue', JSON.stringify(state.userQueue));
   safeSetStorage('kurfa_queue_index', String(idxToStore));
+  if (typeof persistQueue === 'function') persistQueue(qToStore, idxToStore);
+}
+
+function compactTrackForStorage(t) {
+  if (!t || typeof t !== 'object') return null;
+  const id = t.id || t.ytId;
+  if (!id) return null;
+  return {
+    id,
+    ytId: t.ytId || safeYtId(id) || null,
+    title: String(t.title || 'Şarkı'),
+    artist: String(t.artist || 'Sanatçı'),
+    thumbnail: getTrackThumbnail(t),
+    duration: t.duration || '3:30',
+    source: t.source || null,
+    audiusStreamUrl: t.audiusStreamUrl || null,
+    isLocal: Boolean(t.isLocal),
+    streamUrl: t.streamUrl || null
+  };
+}
+
+function persistQueue(preCleanedQueue = null, preIdx = null) {
+  try {
+    if (typeof state === 'undefined' || !state) return;
+    const rawQ = Array.isArray(preCleanedQueue) ? preCleanedQueue : (state.queue || []);
+    const qSlice = rawQ.slice(0, 120).map(compactTrackForStorage).filter(Boolean);
+    const idx = Math.max(0, Math.min(preIdx !== null ? preIdx : (state.queueIndex || 0), Math.max(0, qSlice.length - 1)));
+    const cur = compactTrackForStorage(state.currentTrack);
+    safeSetStorage('kurfa_persisted_queue_v1', JSON.stringify({
+      queue: qSlice,
+      queueIndex: idx,
+      currentTrack: cur,
+      contextTitle: state.playingContextTitle || '',
+      contextSub: state.playingContextSub || '',
+      savedAt: Date.now()
+    }));
+  } catch (_) {}
+}
+window.persistQueue = persistQueue;
+
+function restorePersistedQueue() {
+  try {
+    const saved = safeGetJSON('kurfa_persisted_queue_v1', null);
+    if (!saved || typeof saved !== 'object') return;
+    if ((!Array.isArray(state.queue) || state.queue.length === 0) && Array.isArray(saved.queue) && saved.queue.length > 0) {
+      state.queue = cleanDeduplicateQueueArray(saved.queue);
+    }
+    if (!state.currentTrack && saved.currentTrack && (saved.currentTrack.id || saved.currentTrack.ytId)) {
+      state.currentTrack = saved.currentTrack;
+    }
+    if (Array.isArray(state.queue) && state.queue.length > 0) {
+      if (state.currentTrack) {
+        const curId = state.currentTrack.id || state.currentTrack.ytId;
+        const foundIdx = state.queue.findIndex(t => t && (t.id === curId || t.ytId === curId));
+        state.queueIndex = foundIdx !== -1 ? foundIdx : Math.max(0, Math.min(Number(saved.queueIndex) || 0, state.queue.length - 1));
+      } else {
+        state.queueIndex = Math.max(0, Math.min(Number(saved.queueIndex) || 0, state.queue.length - 1));
+        state.currentTrack = state.queue[state.queueIndex] || null;
+      }
+    }
+    if (saved.contextTitle) state.playingContextTitle = saved.contextTitle;
+    if (saved.contextSub) state.playingContextSub = saved.contextSub;
+    state.isPlaying = false;
+  } catch (_) {}
 }
 
 function setPlaybackQueueContext(tracks, startTrackOrIdx = 0, contextTitle = '', contextSub = '') {
@@ -2586,7 +2674,14 @@ const state = {
   _errorSkipTimer: null,
   _stallWatchdogTimer: null,
   _trackSwitchStartedAt: 0,
-  _activeMediaEngine: 'none', // 'none' | 'audio' | 'youtube'
+  _activeMediaEngine: 'none', // 'none' | 'audio' | 'youtube' | 'native-exo'
+  _nativeExoCurrentTime: 0,
+  _nativeExoDuration: 0,
+  _nativeExoFallbackActive: false,
+  _lastNativeExoEndedToken: -1,
+  _desktopLocalAudioOrigin: '',
+  _prefetchedNextStreamKey: '',
+  _prefetchTimer: null,
   _activeTrackConfirmedPlaying: false,
   _activeTrackId: null,
   _seekOnceHandler: null,
@@ -3341,15 +3436,26 @@ function syncNativeAppPlaybackState(playing, force = false) {
   } catch (e) {}
 }
 
-function stopAllPlayback(skipYtStop = false, preserveNativeLock = false) {
+function stopAllPlayback(skipYtStop = false, preserveNativeLock = false, skipExoStop = false) {
   currentPlaybackToken++;
   clearTimeout(state._guardianResumeTimer);
   clearTimeout(state._errorSkipTimer);
   clearTimeout(state._stallWatchdogTimer);
+  clearTimeout(state._prefetchTimer);
   state._isAdMuted = false;
   state._adSeekAttempts = 0;
+  const wasNativeExo = state._activeMediaEngine === 'native-exo';
   state._activeMediaEngine = 'none';
   state._activeTrackConfirmedPlaying = false;
+  state._nativeExoCurrentTime = 0;
+  state._nativeExoDuration = 0;
+
+  if (!skipExoStop && wasNativeExo) {
+    const exo = getAndroidExoBridge();
+    if (exo && typeof exo.stopNativeExo === 'function') {
+      try { exo.stopNativeExo(); } catch (_) {}
+    }
+  }
 
   // 1. Immediately pause and clear HTML5 audio element without spurious error events
   if (DOM.audioEngine) {
@@ -3739,6 +3845,9 @@ function getCurrentPlaybackTime() {
   if (state._activeMediaEngine === 'none') {
     return Math.max(0, state.currentPlayheadTime || 0);
   }
+  if (state._activeMediaEngine === 'native-exo') {
+    return Math.max(0, state._nativeExoCurrentTime || state.currentPlayheadTime || 0);
+  }
   const isLocal = Boolean(state.currentTrack && (
     state.currentTrack.isLocal ||
     String(state.currentTrack.id).startsWith('local_') ||
@@ -3774,6 +3883,15 @@ window.getCurrentPlaybackTime = getCurrentPlaybackTime;
 function seekPlaybackToSeconds(targetSec) {
   if (typeof targetSec !== 'number' || isNaN(targetSec) || targetSec < 0) return;
   state.currentPlayheadTime = targetSec;
+
+  // 0. If Android Native Media3 ExoPlayer is active, seek it directly
+  if (state._activeMediaEngine === 'native-exo') {
+    state._nativeExoCurrentTime = targetSec;
+    const exo = getAndroidExoBridge();
+    if (exo && typeof exo.seekNativeExo === 'function') {
+      try { exo.seekNativeExo(targetSec); } catch (e) {}
+    }
+  }
 
   // 1. If HTML5 audio engine is active or has a loaded source, seek it
   if (DOM.audioEngine && DOM.audioEngine.src) {
@@ -3918,13 +4036,96 @@ function updateSpotifyTrackInStorage(placeholderId, ytId, thumbnail) {
   }
 }
 
-async function prefetchNextQueueTrack() {
-  if (!state.queue || state.queueIndex >= state.queue.length - 1) return;
-  const next = state.queue[state.queueIndex + 1];
+function getUpcomingQueueTrackForPrefetch() {
+  if (Array.isArray(state.userQueue) && state.userQueue.length > 0) {
+    return state.userQueue[0] || null;
+  }
+  if (Array.isArray(state.queue) && state.queueIndex >= 0 && state.queueIndex < state.queue.length - 1) {
+    return state.queue[state.queueIndex + 1] || null;
+  }
+  return null;
+}
+
+function getWindowsDesktopLocalOrigin() {
+  if (state._desktopLocalAudioOrigin) return state._desktopLocalAudioOrigin;
+  try {
+    const curSrc = DOM.audioEngine && DOM.audioEngine.getAttribute('src');
+    if (curSrc && curSrc.includes('/__kurfa_native_audio__/')) {
+      const orig = new URL(curSrc).origin;
+      state._desktopLocalAudioOrigin = orig;
+      return orig;
+    }
+  } catch (_) {}
+  try {
+    if (
+      typeof window !== 'undefined' &&
+      (window.location.hostname === '127.0.0.1' || window.location.hostname === 'localhost') &&
+      typeof getBrowserExtensionMode === 'function' &&
+      getBrowserExtensionMode().startsWith('desktop')
+    ) {
+      return window.location.origin;
+    }
+  } catch (_) {}
+  return '';
+}
+
+function prefetchNextTrackStream(nextTrackArg = null) {
+  const next = nextTrackArg || getUpcomingQueueTrackForPrefetch();
   if (!next) return;
   if (next.isLocal || String(next.id || '').startsWith('local_') || String(next.id || '').startsWith('audius_')) return;
-  if (safeYtId(next.ytId)) return;
-  if (safeYtId(next.id) && !String(next.id).startsWith('sp-')) return;
+
+  const nextId = safeYtId(next.ytId) || safeYtId(next.id);
+  if (!nextId || failedVideoIds.has(nextId)) return;
+
+  const prefetchKey = `${currentPlaybackToken}:${nextId}`;
+  if (state._prefetchedNextStreamKey === prefetchKey) return;
+  state._prefetchedNextStreamKey = prefetchKey;
+
+  try {
+    const androidPrefetcher =
+      (typeof window !== 'undefined' && window.KurfaAndroid && typeof window.KurfaAndroid.prefetchNative === 'function')
+        ? window.KurfaAndroid
+        : ((typeof window !== 'undefined' && window.KurfaAndroidBridge && typeof window.KurfaAndroidBridge.prefetchNative === 'function')
+            ? window.KurfaAndroidBridge
+            : null);
+    if (androidPrefetcher) {
+      androidPrefetcher.prefetchNative(nextId);
+      return;
+    }
+  } catch (_) {}
+
+  const localOrigin = getWindowsDesktopLocalOrigin();
+  if (localOrigin) {
+    try {
+      fetch(`${localOrigin}/__kurfa_prefetch__/${encodeURIComponent(nextId)}`, { cache: 'no-store' }).catch(() => {});
+      return;
+    } catch (_) {}
+  }
+
+  if (typeof getBrowserExtensionMode === 'function' && getBrowserExtensionMode().startsWith('desktop')) {
+    kurfaResolveDirectAudio(nextId).catch(() => {});
+  }
+}
+
+function scheduleNextTrackPrefetch(token) {
+  clearTimeout(state._prefetchTimer);
+  state._prefetchTimer = setTimeout(() => {
+    state._prefetchTimer = null;
+    if (token !== currentPlaybackToken || !state.isPlaying || state.userPaused) return;
+    prefetchNextQueueTrack();
+  }, 4000);
+}
+
+async function prefetchNextQueueTrack() {
+  const next = getUpcomingQueueTrackForPrefetch();
+  if (!next) return;
+  if (next.isLocal || String(next.id || '').startsWith('local_') || String(next.id || '').startsWith('audius_')) return;
+
+  const alreadyYtId = safeYtId(next.ytId) || (safeYtId(next.id) && !String(next.id).startsWith('sp-') ? safeYtId(next.id) : null);
+  if (alreadyYtId) {
+    prefetchNextTrackStream(next);
+    return;
+  }
 
   try {
     const q = `${next.artist || ''} ${next.title || ''} audio`.trim();
@@ -3939,6 +4140,7 @@ async function prefetchNextQueueTrack() {
           next.thumbnail = safeThumb;
         }
         updateSpotifyTrackInStorage(next.id, validId, safeThumb);
+        prefetchNextTrackStream(next);
       }
     }
   } catch(e) {}
@@ -4132,6 +4334,8 @@ function playTrackById(videoId, arg2, arg3, arg4, arg5, options = {}) {
   state._trackSwitchStartedAt = Date.now();
   state._activeMediaEngine = 'none';
   state._activeTrackConfirmedPlaying = false;
+  state._nativeExoFallbackActive = Boolean(options && options._skipNativeExo);
+  state._prefetchedNextStreamKey = '';
   state._activeTrackId = target?.id || cleanYtId || rawId;
   state._playerInError = false;
   state._lastErrorVideoId = null;
@@ -4306,6 +4510,40 @@ function playTrackById(videoId, arg2, arg3, arg4, arg5, options = {}) {
     return;
   }
 
+  const nativeExo = (state.deckVisualMode !== 'video' && !state._nativeExoFallbackActive) ? getAndroidExoBridge() : null;
+  if (nativeExo && cleanYtId) {
+    try {
+      if (state.ytPlayer) {
+        try {
+          if (normalizedStart === 0 && typeof state.ytPlayer.seekTo === 'function') state.ytPlayer.seekTo(0, true);
+          if (typeof state.ytPlayer.pauseVideo === 'function') state.ytPlayer.pauseVideo();
+        } catch (e) {}
+      }
+      state._activeMediaEngine = 'native-exo';
+      state._nativeExoCurrentTime = normalizedStart;
+      state._nativeExoDuration = estDuration;
+      state.isPlaying = true;
+      updatePlayPauseUI(true);
+      syncNativeAppPlaybackState(true);
+      if (typeof nativeExo.setVolumeNativeExo === 'function') {
+        try { nativeExo.setVolumeNativeExo(state.isMuted ? 0 : (state.volume ?? 0.8)); } catch (_) {}
+      }
+      nativeExo.playNativeExo(
+        cleanYtId,
+        String(target.title || 'Kurfamüzik'),
+        String(target.artist || 'Sanatçı'),
+        getTrackThumbnail(target),
+        Number(normalizedStart) || 0
+      );
+      scheduleNextTrackPrefetch(token);
+      return;
+    } catch (exoErr) {
+      console.warn('Native ExoPlayer invocation failed, falling back:', exoErr);
+      state._activeMediaEngine = 'none';
+      state._nativeExoFallbackActive = true;
+    }
+  }
+
   if (preferDirectAudio && cleanYtId && DOM.audioEngine) {
     state.isPlaying = true;
     updatePlayPauseUI(true);
@@ -4453,6 +4691,7 @@ function loadDirectAudioStream(streamUrl, startSeconds, token, ytFallbackId) {
         state._activeMediaEngine = 'audio';
         state._activeTrackConfirmedPlaying = true;
         syncNativeAppPlaybackState(true);
+        scheduleNextTrackPrefetch(token);
       }).catch((err) => {
         if (token !== currentPlaybackToken || (err && err.name === 'AbortError')) return;
         const safeFallbackStart = (!state._activeTrackConfirmedPlaying || (Date.now() - (state._trackSwitchStartedAt || 0)) < 4000) ? 0 : targetStart;
@@ -4495,6 +4734,7 @@ function loadYouTubePlayback(cleanYtId, target, normalizedStart, token, ytCanDir
       });
       state.isPlaying = true;
       updatePlayPauseUI(true);
+      scheduleNextTrackPrefetch(token);
 
       // Token-guarded stall watchdog: nudge once if YT stays UNSTARTED (-1) or CUED (5)
       state._stallWatchdogTimer = setTimeout(() => {
@@ -4633,6 +4873,21 @@ function resumePlayback() {
     return;
   }
 
+  // 1b. Android Native Media3 ExoPlayer resume
+  if (state._activeMediaEngine === 'native-exo' && state.currentTrack) {
+    const exo = getAndroidExoBridge();
+    if (exo && typeof exo.resumeNativeExo === 'function') {
+      try {
+        exo.resumeNativeExo();
+        state.isPlaying = true;
+        updatePlayPauseUI(true);
+        syncNativeAppPlaybackState(true);
+        if (typeof startSeekbarTicker === 'function') startSeekbarTicker();
+        return;
+      } catch (e) {}
+    }
+  }
+
   // 2. If HTML5 Audio engine has a loaded source (Audius / direct stream), resume it
   if (DOM.audioEngine && DOM.audioEngine.getAttribute('src') && !DOM.audioEngine.ended && state.currentTrack) {
     DOM.audioEngine.play().then(() => {
@@ -4697,6 +4952,12 @@ function pausePlayback() {
   clearTimeout(state._guardianResumeTimer);
   clearTimeout(state._errorSkipTimer);
   clearTimeout(state._stallWatchdogTimer);
+  if (state._activeMediaEngine === 'native-exo') {
+    const exo = getAndroidExoBridge();
+    if (exo && typeof exo.pauseNativeExo === 'function') {
+      try { exo.pauseNativeExo(); } catch (e) {}
+    }
+  }
   if (state.ytReady && state.ytPlayer && typeof state.ytPlayer.pauseVideo === 'function') {
     try { state.ytPlayer.pauseVideo(); } catch(e) {}
   }
@@ -4805,6 +5066,20 @@ function playPrevTrack() {
 
 function handleTrackEnd() {
   if (state.repeatMode === 2) {
+    if (state._activeMediaEngine === 'native-exo') {
+      const exo = getAndroidExoBridge();
+      if (exo && typeof exo.seekNativeExo === 'function') {
+        try {
+          state._nativeExoCurrentTime = 0;
+          state.currentPlayheadTime = 0;
+          exo.seekNativeExo(0);
+          if (typeof exo.resumeNativeExo === 'function') exo.resumeNativeExo();
+          state.isPlaying = true;
+          updatePlayPauseUI(true);
+          return;
+        } catch (e) {}
+      }
+    }
     if (DOM.audioEngine && DOM.audioEngine.getAttribute('src')) {
       DOM.audioEngine.currentTime = 0;
       resumePlayback();
@@ -5139,6 +5414,10 @@ window.formatTime = formatTime;
 
 function getActiveMediaDuration() {
   let dur = 0;
+  // 0. Native ExoPlayer duration
+  if (state._activeMediaEngine === 'native-exo' && Number(state._nativeExoDuration) > 0) {
+    dur = Number(state._nativeExoDuration);
+  }
   // 1. If Video mode, prioritize YouTube duration
   if (state.deckVisualMode === 'video' && state.ytReady && state.ytPlayer && typeof state.ytPlayer.getDuration === 'function') {
     dur = state.ytPlayer.getDuration() || 0;
@@ -5167,6 +5446,9 @@ window.getActiveMediaDuration = getActiveMediaDuration;
 function getActiveMediaCurrentTime() {
   if (state._activeMediaEngine === 'none') {
     return Math.max(0, state.currentPlayheadTime || 0);
+  }
+  if (state._activeMediaEngine === 'native-exo') {
+    return Math.max(0, state._nativeExoCurrentTime || state.currentPlayheadTime || 0);
   }
 
   const isLocal = Boolean(state.currentTrack && (
@@ -5314,6 +5596,9 @@ function startSeekbarTicker() {
           if (state.currentTab === 'calma-listeleri') {
             syncLyricsWithTime(cur);
           }
+          if ((cur >= 4 || (dur - cur) <= 15) && typeof prefetchNextTrackStream === 'function') {
+            prefetchNextTrackStream();
+          }
         }
       }
     }
@@ -5457,6 +5742,10 @@ function setPlayerVolume(vol) {
   }
   if (DOM.audioEngine) {
     DOM.audioEngine.volume = state.volume;
+  }
+  const exo = getAndroidExoBridge();
+  if (exo && typeof exo.setVolumeNativeExo === 'function') {
+    try { exo.setVolumeNativeExo(state.volume); } catch (_) {}
   }
 
   if (DOM.btnVolumeIcon) {
@@ -6727,6 +7016,286 @@ function renderSearchEmpty(query) {
       </div>
     `;
   }
+}
+
+// =============================================================================
+// LIVE SEARCH SUGGESTIONS (AUTOCOMPLETE DROPDOWN)
+// =============================================================================
+
+const __kurfaSuggestCache = new Map();
+let __kurfaSuggestTimer = null;
+let __kurfaSuggestAbort = null;
+let __kurfaSuggestActiveIdx = -1;
+let __kurfaSuggestEntries = [];
+
+function positionSearchSuggestionsDropdown() {
+  const dd = document.getElementById('search-suggest-dropdown');
+  const wrap = document.getElementById('top-search-wrapper');
+  if (!dd || !wrap) return;
+  if (window.innerWidth < 640) {
+    dd.style.top = '62px';
+    dd.style.left = '12px';
+    dd.style.right = '12px';
+    dd.style.width = 'auto';
+    return;
+  }
+  const rect = wrap.getBoundingClientRect();
+  dd.style.top = `${Math.round(rect.bottom + 8)}px`;
+  dd.style.left = `${Math.round(rect.left)}px`;
+  dd.style.right = 'auto';
+  dd.style.width = `${Math.round(rect.width)}px`;
+}
+
+function hideSearchSuggestionsDropdown() {
+  const dd = document.getElementById('search-suggest-dropdown');
+  if (dd) {
+    dd.classList.add('hidden');
+    dd.innerHTML = '';
+  }
+  if (DOM.topSearchInput) {
+    DOM.topSearchInput.setAttribute('aria-expanded', 'false');
+    DOM.topSearchInput.removeAttribute('aria-activedescendant');
+  }
+  __kurfaSuggestActiveIdx = -1;
+  __kurfaSuggestEntries = [];
+}
+window.hideSearchSuggestionsDropdown = hideSearchSuggestionsDropdown;
+
+function highlightSuggestMatch(text, query) {
+  const raw = String(text || '');
+  const q = String(query || '').trim();
+  if (!q) return escapeHtml(raw);
+  const idx = raw.toLowerCase().indexOf(q.toLowerCase());
+  if (idx === -1) return escapeHtml(raw);
+  const before = raw.slice(0, idx);
+  const match = raw.slice(idx, idx + q.length);
+  const after = raw.slice(idx + q.length);
+  return `${escapeHtml(before)}<mark>${escapeHtml(match)}</mark>${escapeHtml(after)}`;
+}
+
+function renderSearchSuggestionsDropdown(query, suggestions = [], items = []) {
+  const dd = document.getElementById('search-suggest-dropdown');
+  if (!dd) return;
+  const cleanQ = String(query || '').trim();
+  if (!cleanQ) {
+    hideSearchSuggestionsDropdown();
+    return;
+  }
+
+  const entries = [];
+  const cleanItems = Array.isArray(items) ? items.slice(0, 3) : [];
+  const cleanSugs = Array.isArray(suggestions) ? suggestions.slice(0, 8) : [];
+
+  cleanItems.forEach((it) => {
+    if (!it || !it.title) return;
+    entries.push({
+      kind: it.id ? 'track' : 'query',
+      query: it.query || `${it.artist ? it.artist + ' ' : ''}${it.title}`,
+      id: it.id || '',
+      title: it.title,
+      artist: it.artist || '',
+      thumbnail: it.thumbnail || ''
+    });
+  });
+
+  cleanSugs.forEach((s) => {
+    const val = String(s || '').trim();
+    if (!val) return;
+    entries.push({
+      kind: 'suggestion',
+      query: val,
+      title: val
+    });
+  });
+
+  if (entries.length === 0) {
+    hideSearchSuggestionsDropdown();
+    return;
+  }
+
+  __kurfaSuggestEntries = entries;
+  __kurfaSuggestActiveIdx = -1;
+
+  let html = '';
+  let idx = 0;
+
+  if (cleanItems.length > 0) {
+    html += `<div class="kurfa-suggest-section-label">${escapeHtml(getAppLanguage() === 'en' ? 'Quick Matches' : 'Hızlı Eşleşmeler')}</div>`;
+    for (let i = 0; i < cleanItems.length; i++) {
+      const e = entries[idx];
+      const safeThumb = safeUrl(e.thumbnail, './kurfamuzik_logo.png');
+      html += `
+        <button type="button" role="option" id="kurfa-suggest-opt-${idx}" data-suggest-idx="${idx}" aria-selected="false" class="kurfa-suggest-item">
+          <img src="${escapeHtml(safeThumb)}" alt="" class="kurfa-suggest-thumb" referrerpolicy="no-referrer" onerror="this.onerror=null;this.src='./kurfamuzik_logo.png'">
+          <span class="kurfa-suggest-text-wrap">
+            <span class="kurfa-suggest-title">${highlightSuggestMatch(e.title, cleanQ)}</span>
+            <span class="kurfa-suggest-sub">${escapeHtml(e.artist || 'YouTube Music')}</span>
+          </span>
+          <span class="material-symbols-outlined text-[18px] opacity-60 flex-shrink-0" aria-hidden="true">${e.id ? 'play_arrow' : 'north_west'}</span>
+        </button>
+      `;
+      idx++;
+    }
+  }
+
+  if (cleanSugs.length > 0) {
+    if (cleanItems.length > 0) {
+      html += `<div class="kurfa-suggest-section-label">${escapeHtml(getAppLanguage() === 'en' ? 'Suggestions' : 'Arama Önerileri')}</div>`;
+    }
+    for (let i = 0; i < cleanSugs.length; i++) {
+      const e = entries[idx];
+      html += `
+        <div class="kurfa-suggest-item" role="option" id="kurfa-suggest-opt-${idx}" data-suggest-idx="${idx}" aria-selected="false" tabindex="-1">
+          <span class="kurfa-suggest-icon" aria-hidden="true">
+            <span class="material-symbols-outlined text-[17px]">search</span>
+          </span>
+          <span class="kurfa-suggest-text-wrap">
+            <span class="kurfa-suggest-title">${highlightSuggestMatch(e.title, cleanQ)}</span>
+          </span>
+          <span role="button" tabindex="-1" class="kurfa-suggest-fill-btn" data-suggest-fill="${idx}" title="${escapeHtml(getAppLanguage() === 'en' ? 'Fill search' : 'Kutuya Yaz')}" aria-label="Kutuya yaz">
+            <span class="material-symbols-outlined text-[16px]" aria-hidden="true">north_west</span>
+          </span>
+        </div>
+      `;
+      idx++;
+    }
+  }
+
+  dd.innerHTML = html;
+  positionSearchSuggestionsDropdown();
+  dd.classList.remove('hidden');
+  if (DOM.topSearchInput) {
+    DOM.topSearchInput.setAttribute('aria-expanded', 'true');
+  }
+
+  dd.querySelectorAll('[data-suggest-idx]').forEach((el) => {
+    el.addEventListener('mousedown', (ev) => {
+      ev.preventDefault();
+    });
+    el.addEventListener('click', (ev) => {
+      const fillBtn = ev.target && ev.target.closest ? ev.target.closest('[data-suggest-fill]') : null;
+      const itemIdx = parseInt(el.getAttribute('data-suggest-idx') || '-1', 10);
+      const entry = __kurfaSuggestEntries[itemIdx];
+      if (!entry) return;
+
+      if (fillBtn) {
+        ev.stopPropagation();
+        if (DOM.topSearchInput) {
+          DOM.topSearchInput.value = entry.query;
+          DOM.topSearchInput.focus();
+          if (typeof syncTopSearchClearBtn === 'function') syncTopSearchClearBtn();
+          scheduleSearchSuggestions(entry.query);
+        }
+        return;
+      }
+
+      selectSearchSuggestionEntry(entry);
+    });
+  });
+}
+
+function selectSearchSuggestionEntry(entry) {
+  if (!entry) return;
+  hideSearchSuggestionsDropdown();
+  if (DOM.topSearchInput) {
+    DOM.topSearchInput.value = entry.query || entry.title || '';
+    if (typeof syncTopSearchClearBtn === 'function') syncTopSearchClearBtn();
+  }
+  if (entry.kind === 'track' && entry.id && safeYtId(entry.id)) {
+    playTrackById(entry.id, {
+      id: entry.id,
+      ytId: entry.id,
+      title: entry.title,
+      artist: entry.artist || 'Sanatçı',
+      thumbnail: entry.thumbnail || `https://i.ytimg.com/vi/${entry.id}/hqdefault.jpg`,
+      duration: '3:20'
+    });
+  }
+  const q = (entry.query || entry.title || '').trim();
+  if (q) {
+    executeSearchImmediate(q, true);
+  }
+}
+
+function moveSearchSuggestSelection(delta) {
+  const dd = document.getElementById('search-suggest-dropdown');
+  if (!dd || dd.classList.contains('hidden') || __kurfaSuggestEntries.length === 0) return false;
+  const total = __kurfaSuggestEntries.length;
+  let next = __kurfaSuggestActiveIdx + delta;
+  if (next < 0) next = total - 1;
+  if (next >= total) next = 0;
+  __kurfaSuggestActiveIdx = next;
+
+  dd.querySelectorAll('[data-suggest-idx]').forEach((el) => {
+    const idx = parseInt(el.getAttribute('data-suggest-idx') || '-1', 10);
+    const active = idx === next;
+    el.classList.toggle('active', active);
+    el.setAttribute('aria-selected', active ? 'true' : 'false');
+    if (active) {
+      try { el.scrollIntoView({ block: 'nearest' }); } catch (_) {}
+      if (DOM.topSearchInput) {
+        DOM.topSearchInput.setAttribute('aria-activedescendant', el.id);
+      }
+    }
+  });
+  return true;
+}
+
+async function fetchSearchSuggestions(query) {
+  const cleanQ = String(query || '').trim();
+  if (!cleanQ || cleanQ.length < 1) {
+    hideSearchSuggestionsDropdown();
+    return;
+  }
+
+  const cacheKey = cleanQ.toLowerCase();
+  const cached = __kurfaSuggestCache.get(cacheKey);
+  if (cached && (Date.now() - cached.ts) < 5 * 60 * 1000) {
+    if (DOM.topSearchInput && DOM.topSearchInput.value.trim().toLowerCase() === cacheKey) {
+      renderSearchSuggestionsDropdown(cleanQ, cached.suggestions, cached.items);
+    }
+    return;
+  }
+
+  if (__kurfaSuggestAbort) {
+    try { __kurfaSuggestAbort.abort(); } catch (_) {}
+  }
+  __kurfaSuggestAbort = (typeof AbortController !== 'undefined') ? new AbortController() : null;
+
+  try {
+    const res = await fetch(`${API_BASE}/api/suggest?q=${encodeURIComponent(cleanQ)}`, {
+      signal: __kurfaSuggestAbort ? __kurfaSuggestAbort.signal : undefined
+    });
+    if (!res.ok) return;
+    const data = await res.json();
+    if (!data || !data.success) return;
+
+    const suggestions = Array.isArray(data.suggestions) ? data.suggestions : [];
+    const items = Array.isArray(data.items) ? data.items : [];
+    __kurfaSuggestCache.set(cacheKey, { suggestions, items, ts: Date.now() });
+    if (__kurfaSuggestCache.size > 60) {
+      const oldestKey = __kurfaSuggestCache.keys().next().value;
+      __kurfaSuggestCache.delete(oldestKey);
+    }
+
+    if (DOM.topSearchInput && DOM.topSearchInput.value.trim().toLowerCase() === cacheKey) {
+      renderSearchSuggestionsDropdown(cleanQ, suggestions, items);
+    }
+  } catch (err) {
+    if (err && err.name === 'AbortError') return;
+  }
+}
+
+function scheduleSearchSuggestions(query) {
+  clearTimeout(__kurfaSuggestTimer);
+  const cleanQ = String(query || '').trim();
+  if (!cleanQ) {
+    hideSearchSuggestionsDropdown();
+    return;
+  }
+  __kurfaSuggestTimer = setTimeout(() => {
+    fetchSearchSuggestions(cleanQ);
+  }, 180);
 }
 
 function executeSearchFromInput() {
@@ -8614,10 +9183,25 @@ async function fetchExploreData(force = false) {
     }
 
     if (!data) {
-      const endpoint = force ? `${API_BASE}/api/explore?admin=force` : `${API_BASE}/api/explore`;
-      const res = await fetch(endpoint);
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      data = await res.json();
+      let apiRes = null;
+      if (!force) {
+        try {
+          const musicExpRes = await fetch(`${API_BASE}/api/music-explore`);
+          if (musicExpRes.ok) {
+            const musicJson = await musicExpRes.json();
+            if (musicJson && musicJson.success && Array.isArray(musicJson.trends) && musicJson.trends.length > 0) {
+              apiRes = musicJson;
+            }
+          }
+        } catch (_) {}
+      }
+      if (!apiRes) {
+        const endpoint = force ? `${API_BASE}/api/explore?admin=force` : `${API_BASE}/api/explore`;
+        const res = await fetch(endpoint);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        apiRes = await res.json();
+      }
+      data = apiRes;
     }
 
     if (data && data.success && Array.isArray(data.trends) && data.trends.length > 0) {
@@ -11038,55 +11622,95 @@ async function triggerSmartRadioContinue() {
       }
     }
 
+    let foundTracks = [];
+    let usedAutomix = false;
+    const currentSeedYtId = safeYtId(state.currentTrack?.ytId) || safeYtId(state.currentTrack?.id);
+
+    if (currentSeedYtId) {
+      const mixCtrl = new AbortController();
+      const mixTimeout = setTimeout(() => mixCtrl.abort(), 5000);
+      try {
+        const mixRes = await fetch(`${API_BASE}/api/automix?v=${encodeURIComponent(currentSeedYtId)}`, { signal: mixCtrl.signal });
+        if (mixRes.ok) {
+          const mixData = await mixRes.json();
+          if (mixData && mixData.success && Array.isArray(mixData.tracks)) {
+            const freshMix = mixData.tracks.filter(t => {
+              if (!t || !t.id) return false;
+              const candVid = safeYtId(t.ytId || t.id);
+              if (!candVid || failedVideoIds.has(candVid)) return false;
+              if (existingIds.has(candVid) || existingIds.has(t.id)) return false;
+              const titleKey = `${(t.title || '').trim().toLowerCase()}|${(t.artist || '').trim().toLowerCase()}`;
+              if (existingTitles.has(titleKey)) return false;
+              existingIds.add(candVid);
+              existingTitles.add(titleKey);
+              return true;
+            });
+            if (freshMix.length > 0) {
+              foundTracks = freshMix;
+              usedAutomix = true;
+            }
+          }
+        }
+      } catch (mixErr) {
+        if (mixErr && mixErr.name !== 'AbortError') {
+          console.warn('Automix fetch fallback:', mixErr);
+        }
+      } finally {
+        clearTimeout(mixTimeout);
+      }
+    }
+
+    if (radioToken !== currentPlaybackToken || state.userPaused) return;
+
     const queries = [
       `${cleanArtist} radyo hit şarkılar`,
       'trend türkçe pop müzik',
       'türkiye popüler şarkılar'
     ];
 
-    let foundTracks = [];
-
-    for (const q of queries) {
-      if (radioToken !== currentPlaybackToken || state.userPaused) return;
-      const ctrl = new AbortController();
-      const timeoutId = setTimeout(() => ctrl.abort(), 4000);
-      try {
-        const data = await kurfaSearchTracks(q, { signal: ctrl.signal });
-        if (data && data.success && Array.isArray(data.results)) {
-          const fresh = data.results.filter(t => {
-            if (!t || !t.id) return false;
-            const candVid = safeYtId(t.ytId || t.id);
-            if (candVid && failedVideoIds.has(candVid)) return false;
-            if (existingIds.has(t.id)) return false;
-            if (t.ytId && existingIds.has(t.ytId)) return false;
-            const titleKey = `${(t.title || '').trim().toLowerCase()}|${(t.artist || '').trim().toLowerCase()}`;
-            if (existingTitles.has(titleKey)) return false;
-            return true;
-          });
-          if (fresh.length > 0) {
-            foundTracks = fresh;
-            break;
+    if (foundTracks.length === 0) {
+      for (const q of queries) {
+        if (radioToken !== currentPlaybackToken || state.userPaused) return;
+        const ctrl = new AbortController();
+        const timeoutId = setTimeout(() => ctrl.abort(), 4000);
+        try {
+          const data = await kurfaSearchTracks(q, { signal: ctrl.signal });
+          if (data && data.success && Array.isArray(data.results)) {
+            const fresh = data.results.filter(t => {
+              if (!t || !t.id) return false;
+              const candVid = safeYtId(t.ytId || t.id);
+              if (candVid && failedVideoIds.has(candVid)) return false;
+              if (existingIds.has(t.id)) return false;
+              if (t.ytId && existingIds.has(t.ytId)) return false;
+              const titleKey = `${(t.title || '').trim().toLowerCase()}|${(t.artist || '').trim().toLowerCase()}`;
+              if (existingTitles.has(titleKey)) return false;
+              return true;
+            });
+            if (fresh.length > 0) {
+              foundTracks = fresh;
+              break;
+            }
           }
+        } catch (err) {
+          if (err && err.name !== 'AbortError') {
+            console.warn("Smart radio cascade step error:", q, err);
+          }
+        } finally {
+          clearTimeout(timeoutId);
         }
-      } catch (err) {
-        if (err && err.name !== 'AbortError') {
-          console.warn("Smart radio cascade step error:", q, err);
-        }
-      } finally {
-        clearTimeout(timeoutId);
       }
     }
 
     if (radioToken !== currentPlaybackToken || state.userPaused) return;
 
     if (foundTracks.length > 0) {
-      const toAdd = foundTracks.slice(0, 5);
+      const toAdd = foundTracks.slice(0, usedAutomix ? 10 : 5);
       const firstAdded = toAdd[0];
       state.queue = cleanDeduplicateQueueArray([...state.queue, ...toAdd]);
       const foundIdx = firstAdded ? state.queue.findIndex(q => q.id === firstAdded.id) : -1;
       state.queueIndex = foundIdx !== -1 ? foundIdx : Math.max(0, state.queue.length - 1);
-      state.playingContextSub = 'AKILLI RADYO DEVAMI';
-      state.playingContextTitle = `${cleanArtist} Radyosu`;
+      state.playingContextSub = usedAutomix ? 'YOUTUBE MUSIC AUTOMIX' : 'AKILLI RADYO DEVAMI';
+      state.playingContextTitle = usedAutomix && rawTitle ? `${rawTitle} Radyosu` : `${cleanArtist} Radyosu`;
 
       saveQueueState();
       renderQueueDrawerList();
@@ -11094,7 +11718,7 @@ async function triggerSmartRadioContinue() {
       const nextTrack = state.queue[state.queueIndex];
       if (nextTrack) {
         playTrackById(nextTrack.id, nextTrack, 0, undefined, undefined, { isAutoAdvance: true });
-        showToast(`Akilli Radyo: ${nextTrack.title}`);
+        showToast(`${usedAutomix ? 'Automix' : 'Akıllı Radyo'}: ${nextTrack.title}`);
         return;
       }
     }
@@ -12524,11 +13148,33 @@ async function scanBluetoothDevices() {
 // =============================================================================
 
 function setupEventListeners() {
-  // Top Search Bar
+  // Top Search Bar + Live Autocomplete Suggestions
   if (DOM.topSearchInput) {
     DOM.topSearchInput.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowDown') {
+        if (moveSearchSuggestSelection(1)) e.preventDefault();
+        return;
+      }
+      if (e.key === 'ArrowUp') {
+        if (moveSearchSuggestSelection(-1)) e.preventDefault();
+        return;
+      }
+      if (e.key === 'Escape') {
+        const dd = document.getElementById('search-suggest-dropdown');
+        if (dd && !dd.classList.contains('hidden')) {
+          e.preventDefault();
+          e.stopPropagation();
+          hideSearchSuggestionsDropdown();
+        }
+        return;
+      }
       if (e.key === 'Enter') {
         e.preventDefault();
+        if (__kurfaSuggestActiveIdx >= 0 && __kurfaSuggestEntries[__kurfaSuggestActiveIdx]) {
+          selectSearchSuggestionEntry(__kurfaSuggestEntries[__kurfaSuggestActiveIdx]);
+          return;
+        }
+        hideSearchSuggestionsDropdown();
         const val = DOM.topSearchInput.value.trim();
         if (val) executeSearchImmediate(val, true);
       }
@@ -12537,6 +13183,7 @@ function setupEventListeners() {
       if (typeof syncTopSearchClearBtn === 'function') syncTopSearchClearBtn();
       const val = e.target.value.trim();
       if (!val) {
+        hideSearchSuggestionsDropdown();
         if (!e.target.value) {
           clearSearchInput();
         } else if (typeof showSearchDiscoveryHub === 'function') {
@@ -12544,9 +13191,29 @@ function setupEventListeners() {
         }
         return;
       }
+      scheduleSearchSuggestions(val);
       if (val.length >= 2) debouncedSearch(val);
     });
+    DOM.topSearchInput.addEventListener('focus', () => {
+      const val = DOM.topSearchInput.value.trim();
+      if (val.length >= 1) {
+        scheduleSearchSuggestions(val);
+      }
+    });
   }
+  document.addEventListener('pointerdown', (e) => {
+    const wrapper = document.getElementById('top-search-wrapper');
+    const dd = document.getElementById('search-suggest-dropdown');
+    if (wrapper && !wrapper.contains(e.target) && (!dd || !dd.contains(e.target))) {
+      hideSearchSuggestionsDropdown();
+    }
+  });
+  window.addEventListener('resize', () => {
+    const dd = document.getElementById('search-suggest-dropdown');
+    if (dd && !dd.classList.contains('hidden')) {
+      positionSearchSuggestionsDropdown();
+    }
+  }, { passive: true });
 
   // Global Keyboard Shortcuts
   window.addEventListener('keydown', (e) => {
@@ -12813,6 +13480,10 @@ function setupEventListeners() {
       const cur = DOM.audioEngine.currentTime;
       if (Number.isFinite(cur) && cur >= 0) {
         state.currentPlayheadTime = cur;
+        const dur = getActiveMediaDuration();
+        if ((cur >= 4 || (dur > 0 && (dur - cur) <= 15)) && typeof prefetchNextTrackStream === 'function') {
+          prefetchNextTrackStream();
+        }
         // Keep Android notification progress accurate even when screen is off / app is backgrounded
         if (document.hidden && state.isPlaying && typeof isAndroidNativeEngine === 'function' && isAndroidNativeEngine() &&
             window.KurfaAndroidBridge && typeof window.KurfaAndroidBridge.updatePlaybackTiming === 'function') {
@@ -12821,7 +13492,6 @@ function setupEventListeners() {
           if (window._lastAndroidTimingTrackId !== tid || !window._lastAndroidTimingSyncAt || (nowMs - window._lastAndroidTimingSyncAt) >= 4000) {
             window._lastAndroidTimingTrackId = tid;
             window._lastAndroidTimingSyncAt = nowMs;
-            const dur = getActiveMediaDuration();
             try { window.KurfaAndroidBridge.updatePlaybackTiming(Math.floor(cur), Math.floor(dur || 0)); } catch (_) {}
           }
         }
@@ -12900,9 +13570,12 @@ function initApp() {
     }
   }
 
-  // Sync queueIndex with locally restored last played track (0 server load)
+  // Sync queueIndex with locally restored last played track & persisted queue (0 server load, never auto-plays)
+  if (typeof restorePersistedQueue === 'function') {
+    restorePersistedQueue();
+  }
   if (state.currentTrack && Array.isArray(state.queue) && state.queue.length > 0) {
-    const restoredIdx = state.queue.findIndex(t => t && t.id === state.currentTrack.id);
+    const restoredIdx = state.queue.findIndex(t => t && (t.id === state.currentTrack.id || (t.ytId && t.ytId === state.currentTrack.ytId)));
     if (restoredIdx !== -1) state.queueIndex = restoredIdx;
   }
   renderPopularCardsGrid();
@@ -13010,6 +13683,7 @@ function initApp() {
         }));
       }
       safeSetStorage('kurfa_queue_index', String(state.queueIndex || 0));
+      if (typeof persistQueue === 'function') persistQueue();
     } catch (_) {}
   };
   window.addEventListener('pagehide', persistPlaybackSession);
@@ -13017,6 +13691,127 @@ function initApp() {
 
   console.log("Kurfamüzik Client v5 Initialized");
 }
+
+// Native Android Media3 ExoPlayer Event Bridge
+window.__kurfaNativeExoEvent = function(rawPayload) {
+  try {
+    const evt = typeof rawPayload === 'string' ? JSON.parse(rawPayload) : rawPayload;
+    if (!evt || typeof evt !== 'object') return;
+
+    const evtType = String(evt.type || '').toLowerCase();
+    const evtVid = evt.videoId ? safeYtId(evt.videoId) : null;
+    const activeVid = safeYtId(state.currentTrack?.ytId || state.currentTrack?.id);
+
+    if (evtVid && activeVid && evtVid !== activeVid) {
+      return;
+    }
+
+    if (evtType === 'time') {
+      if (state._activeMediaEngine !== 'native-exo') {
+        state._activeMediaEngine = 'native-exo';
+      }
+      const cur = Math.max(0, Number(evt.currentTime) || 0);
+      const dur = Math.max(0, Number(evt.duration) || 0);
+      state._nativeExoCurrentTime = cur;
+      state.currentPlayheadTime = cur;
+      if (dur > 0) state._nativeExoDuration = dur;
+
+      const resolvedDur = dur > 0 ? dur : (typeof getActiveMediaDuration === 'function' ? getActiveMediaDuration() : 0);
+      if (!state.isSeeking && typeof updateSeekbarUI === 'function' && resolvedDur > 0) {
+        updateSeekbarUI(cur, resolvedDur);
+      }
+      if (typeof syncLyricsWithTime === 'function') {
+        syncLyricsWithTime(cur);
+      }
+      if ((cur >= 4 || (resolvedDur > 0 && (resolvedDur - cur) <= 15)) && typeof prefetchNextTrackStream === 'function') {
+        prefetchNextTrackStream();
+      }
+      return;
+    }
+
+    if (evtType === 'state') {
+      state._activeMediaEngine = 'native-exo';
+      const playing = Boolean(evt.playing);
+      if (evt.duration > 0) state._nativeExoDuration = Number(evt.duration);
+      if (evt.currentTime >= 0) {
+        state._nativeExoCurrentTime = Number(evt.currentTime);
+        state.currentPlayheadTime = Number(evt.currentTime);
+      }
+      if (playing) {
+        state._activeTrackConfirmedPlaying = true;
+        state.userPaused = false;
+      }
+      if (!state.userPaused || !playing) {
+        state.isPlaying = playing;
+        updatePlayPauseUI(playing);
+        syncNativeAppPlaybackState(playing);
+      }
+      return;
+    }
+
+    if (evtType === 'ended') {
+      if (state._lastNativeExoEndedToken === currentPlaybackToken) return;
+      state._lastNativeExoEndedToken = currentPlaybackToken;
+      handleTrackEnd();
+      return;
+    }
+
+    if (evtType === 'error') {
+      const exo = getAndroidExoBridge();
+      if (exo && typeof exo.stopNativeExo === 'function') {
+        try { exo.stopNativeExo(); } catch (_) {}
+      }
+      if (state._activeMediaEngine !== 'native-exo') return;
+
+      const resumeSec = Math.max(0, Math.floor(state._nativeExoCurrentTime || state.currentPlayheadTime || 0));
+      const fallbackToken = currentPlaybackToken;
+      state._activeMediaEngine = 'none';
+      state._nativeExoFallbackActive = true;
+
+      if (!activeVid || state.userPaused) {
+        state.isPlaying = false;
+        updatePlayPauseUI(false);
+        return;
+      }
+
+      if (typeof kurfaResolveDirectAudio === 'function' && DOM.audioEngine) {
+        kurfaResolveDirectAudio(activeVid).then((res) => {
+          if (fallbackToken !== currentPlaybackToken || state.userPaused) return;
+          if (res && res.success && res.streamUrl) {
+            loadDirectAudioStream(res.streamUrl, resumeSec, fallbackToken, activeVid);
+          } else {
+            loadYouTubePlayback(
+              activeVid,
+              state.currentTrack,
+              resumeSec,
+              fallbackToken,
+              Boolean(state.ytReady && state.ytPlayer && typeof state.ytPlayer.loadVideoById === 'function')
+            );
+          }
+        }).catch(() => {
+          if (fallbackToken !== currentPlaybackToken || state.userPaused) return;
+          loadYouTubePlayback(
+            activeVid,
+            state.currentTrack,
+            resumeSec,
+            fallbackToken,
+            Boolean(state.ytReady && state.ytPlayer && typeof state.ytPlayer.loadVideoById === 'function')
+          );
+        });
+      } else {
+        loadYouTubePlayback(
+          activeVid,
+          state.currentTrack,
+          resumeSec,
+          fallbackToken,
+          Boolean(state.ytReady && state.ytPlayer && typeof state.ytPlayer.loadVideoById === 'function')
+        );
+      }
+    }
+  } catch (e) {
+    console.warn('__kurfaNativeExoEvent handler error:', e);
+  }
+};
 
 // Native Android MediaSession & Updater Callbacks
 window.kurfaNativeTogglePlay = function() {

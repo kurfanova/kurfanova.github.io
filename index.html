@@ -138,7 +138,7 @@
     }
   </style>
   <link rel="stylesheet" href="./tailwind.min.css?v=20261120_v17">
-  <link rel="stylesheet" href="./style.css?v=20261120_v19">
+  <link rel="stylesheet" href="./style.css?v=20261120_v20">
 </head>
 <body class="bg-background font-sans text-on-surface antialiased min-h-screen">
   <script>
@@ -272,7 +272,7 @@
 
         <!-- Search Bar -->
         <div class="flex-1 min-w-0 max-w-xl">
-          <div class="relative flex items-center w-full">
+          <div id="top-search-wrapper" class="relative flex items-center w-full">
             <span class="material-symbols-outlined absolute left-3 md:left-3.5 text-on-surface-variant text-[18px] md:text-[20px]" aria-hidden="true">search</span>
             <input 
               type="text" 
@@ -281,6 +281,9 @@
               data-i18n-placeholder="topbar.search_placeholder"
               autocomplete="off"
               aria-label="Şarkı veya Sanatçı Ara"
+              aria-autocomplete="list"
+              aria-controls="search-suggest-dropdown"
+              aria-expanded="false"
               data-i18n-aria="topbar.search_placeholder"
               class="w-full h-9 md:h-10 pl-8 sm:pl-10 pr-8 sm:pr-24 rounded-full bg-surface-container-low text-xs md:text-sm text-on-surface placeholder:text-on-surface-variant focus:outline-none focus:bg-surface-container-lowest focus:ring-2 focus:ring-primary shadow-inner transition-all"
             />
@@ -313,6 +316,14 @@
         </div>
       </div>
     </header>
+
+    <!-- Live Search Suggestions Dropdown (Placed outside header to avoid nested backdrop-filter compositing issues) -->
+    <div
+      id="search-suggest-dropdown"
+      role="listbox"
+      aria-label="Arama Önerileri"
+      class="kurfa-suggest-dropdown hidden"
+    ></div>
 
     <!-- Mobile Top Floating Download Notification Island (Mobile Only) -->
     <div id="mobile-download-banner" class="md:hidden fixed top-16 left-3 right-3 z-50 hidden items-center gap-3 px-3.5 py-2.5 rounded-2xl bg-surface-container-lowest/95 backdrop-blur-xl border border-white/10 shadow-[0_12px_36px_rgba(0,0,0,0.55)] transition-all transform duration-300 cursor-pointer" onclick="openDownloaderModal()" title="İndirme durumunu görüntüle">
@@ -2175,7 +2186,7 @@
   </div>
 
   <!-- Scripts (App loads immediately; YouTube IFrame API loads async after so phones never stall on boot) -->
-  <script src="./app.js?v=20261120_v19"></script>
+  <script src="./app.js?v=20261120_v20"></script>
   <script src="https://www.youtube.com/iframe_api" async defer></script>
 </body>
 </html>
