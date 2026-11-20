@@ -966,7 +966,11 @@ function applyAppLanguage(lang, persist = false) {
   }
 
   if (typeof document !== 'undefined') {
+    const hasActiveTrack = Boolean(typeof state !== 'undefined' && state && state.currentTrack);
     document.querySelectorAll('[data-i18n]').forEach((el) => {
+      if (hasActiveTrack && (el.id === 'player-artist' || el.id === 'player-artist-mobile' || el.id === 'deck-artist')) {
+        return;
+      }
       const k = el.getAttribute('data-i18n');
       if (k) el.textContent = t(k);
     });
@@ -1050,7 +1054,9 @@ function applyAppLanguage(lang, persist = false) {
       if (typeof renderDesktopUpdateModalContent === 'function' && typeof __kurfaDesktopUpdateState !== 'undefined' && __kurfaDesktopUpdateState.phase !== 'idle') {
         renderDesktopUpdateModalContent();
       }
-      if (!state.currentTrack) {
+      if (state.currentTrack) {
+        updatePlayerTrackUI(state.currentTrack);
+      } else {
         updatePlayerTrackUI(null);
       }
     } catch (_) {}
@@ -1706,6 +1712,9 @@ if (typeof window !== 'undefined') {
       }
     }
     if (isBrowserAdBlockerActive() || hasAdFreeLocalEngine()) {
+      return;
+    }
+    if (typeof state !== 'undefined' && state && state.isPlaying && state._activeMediaEngine === 'audio') {
       return;
     }
     const isWatching = Boolean(__kurfaAdBlockerWatching);
@@ -3314,8 +3323,25 @@ function updateKutuphaneBadges() {
 // =============================================================================
 
 let currentPlaybackToken = 0;
+let __lastNativePlaybackSync = null;
 
-function stopAllPlayback(skipYtStop = false) {
+function syncNativeAppPlaybackState(playing, force = false) {
+  const next = Boolean(playing);
+  if (!force && __lastNativePlaybackSync === next) return;
+  __lastNativePlaybackSync = next;
+  try {
+    if (window.KurfaAndroidBridge && typeof window.KurfaAndroidBridge.setNativePlaybackState === 'function') {
+      window.KurfaAndroidBridge.setNativePlaybackState(next);
+    }
+  } catch (e) {}
+  try {
+    if (typeof getBrowserExtensionMode === 'function' && getBrowserExtensionMode().startsWith('desktop')) {
+      callExtensionBridge('SET_PLAYBACK_STATE', { isPlaying: next }, 1500).catch(() => {});
+    }
+  } catch (e) {}
+}
+
+function stopAllPlayback(skipYtStop = false, preserveNativeLock = false) {
   currentPlaybackToken++;
   clearTimeout(state._guardianResumeTimer);
   clearTimeout(state._errorSkipTimer);
@@ -3356,11 +3382,9 @@ function stopAllPlayback(skipYtStop = false) {
     } catch(e) {}
   }
 
-  try {
-    if (window.KurfaAndroidBridge && typeof window.KurfaAndroidBridge.setNativePlaybackState === 'function') {
-      window.KurfaAndroidBridge.setNativePlaybackState(false);
-    }
-  } catch(e) {}
+  if (!preserveNativeLock) {
+    syncNativeAppPlaybackState(false);
+  }
 }
 
 function initYouTubeEngine() {
@@ -3433,6 +3457,8 @@ let lastAdCheckTime = 0;
 function checkAndHandleAdPlayback() {
   if (!state.ytPlayer || !state.isPlaying || !state.ytReady) return;
   if (!state.currentTrack) return;
+  if (state._activeMediaEngine !== 'youtube') return;
+  if (DOM.audioEngine && DOM.audioEngine.getAttribute('src') && state.deckVisualMode !== 'video') return;
 
   try {
     const p = state.ytPlayer;
@@ -3513,16 +3539,15 @@ function onPlayerStateChange(event) {
       return;
     }
 
-    // If HTML5 audio engine is already playing an active stream, keep it and silence YouTube
-    if (DOM.audioEngine && !DOM.audioEngine.paused && DOM.audioEngine.currentTime > 0 && DOM.audioEngine.getAttribute('src')) {
-      if (state.deckVisualMode !== 'video') {
-        try {
-          if (state.ytPlayer && typeof state.ytPlayer.pauseVideo === 'function') {
-            state.ytPlayer.pauseVideo();
-          }
-        } catch(e) {}
-        return;
-      }
+    // Strict single-engine lock: if HTML5 audio engine owns playback (loaded or actively playing in non-video mode),
+    // silence YouTube immediately and NEVER kill DOM.audioEngine!
+    if (state.deckVisualMode !== 'video' && (state._activeMediaEngine === 'audio' || (DOM.audioEngine && DOM.audioEngine.getAttribute('src')))) {
+      try {
+        if (state.ytPlayer && typeof state.ytPlayer.pauseVideo === 'function') {
+          state.ytPlayer.pauseVideo();
+        }
+      } catch(e) {}
+      return;
     }
 
     // Otherwise, YouTube is the active playback source; silence HTML5 audio safely
@@ -3537,28 +3562,22 @@ function onPlayerStateChange(event) {
     state.isPlaying = true;
     state.userPaused = false;
     updatePlayPauseUI(true);
-    try {
-      if (window.KurfaAndroidBridge && typeof window.KurfaAndroidBridge.setNativePlaybackState === 'function') {
-        window.KurfaAndroidBridge.setNativePlaybackState(true);
-      }
-    } catch (_) {}
+    syncNativeAppPlaybackState(true);
     startSeekbarTicker();
     checkAndHandleAdPlayback();
   } else if (event.data === 3) {
-    checkAndHandleAdPlayback();
+    if (state._activeMediaEngine === 'youtube') {
+      checkAndHandleAdPlayback();
+    }
   } else if (event.data === YT.PlayerState.PAUSED) {
     if (state._switchingDeckMode) return;
 
-    if (DOM.audioEngine && !DOM.audioEngine.paused && DOM.audioEngine.currentTime > 0) {
+    if (state.deckVisualMode !== 'video' && (state._activeMediaEngine === 'audio' || (DOM.audioEngine && DOM.audioEngine.getAttribute('src') && !DOM.audioEngine.paused))) {
       return;
     }
 
     const syncAndroidPaused = () => {
-      try {
-        if (window.KurfaAndroidBridge && typeof window.KurfaAndroidBridge.setNativePlaybackState === 'function') {
-          window.KurfaAndroidBridge.setNativePlaybackState(false);
-        }
-      } catch (_) {}
+      syncNativeAppPlaybackState(false);
     };
 
     if (state._playerInError || state._lastErrorVideoId) {
@@ -3927,7 +3946,8 @@ async function prefetchNextQueueTrack() {
 
 async function resolveAndPlaySpotifyTrack(placeholderId, track, options = {}) {
   if (track?.isLocal || String(placeholderId || '').startsWith('local_')) return;
-  stopAllPlayback(true);
+  stopAllPlayback(true, true);
+  syncNativeAppPlaybackState(true);
   const resolveToken = currentPlaybackToken;
   const rawTitle = String(track?.title || 'Şarkı').trim();
   const cleanTitle = rawTitle.replace(/\s*[\(\[](official\s*(video|audio|music\s*video|lyric\s*video|visualizer)|lyrics|video\s*klip|klip)[\)\]]/gi, '').trim();
@@ -4097,10 +4117,14 @@ function playTrackById(videoId, arg2, arg3, arg4, arg5, options = {}) {
   clearTimeout(state._errorSkipTimer);
   clearTimeout(state._stallWatchdogTimer);
 
-  // Stop background timers/HTML5 audio; keep YT active only when YT loads immediately
+  // Stop background timers/HTML5 audio; keep YT active only when YT loads immediately,
+  // and keep native background wake/foreground locks active across track transitions.
   const ytCanDirectLoad = Boolean(state.ytReady && state.ytPlayer && typeof state.ytPlayer.loadVideoById === 'function');
-  stopAllPlayback(ytCanDirectLoad && !preferDirectAudio && !shouldCheckPrePlayGate);
+  stopAllPlayback(ytCanDirectLoad && !preferDirectAudio && !shouldCheckPrePlayGate, true);
   const token = currentPlaybackToken;
+  if (!shouldCheckPrePlayGate) {
+    syncNativeAppPlaybackState(true);
+  }
 
   state._isAdMuted = false;
   state._adSeekAttempts = 0;
@@ -4400,17 +4424,18 @@ function loadDirectAudioStream(streamUrl, startSeconds, token, ytFallbackId) {
       DOM.audioEngine.removeEventListener('loadedmetadata', state._seekOnceHandler);
       state._seekOnceHandler = null;
     }
+    state._activeMediaEngine = 'audio';
     DOM.audioEngine.volume = state.isMuted ? 0 : (state.volume ?? 0.8);
     state.currentPlayheadTime = targetStart;
-    try {
-      DOM.audioEngine.currentTime = targetStart;
-    } catch(e) {}
+    state._pendingDirectSeekSec = targetStart;
     state._seekOnceHandler = () => {
       state._seekOnceHandler = null;
       if (token !== currentPlaybackToken) return;
+      const pendingSeek = state._pendingDirectSeekSec || 0;
+      state._pendingDirectSeekSec = 0;
       try {
-        if (targetStart > 0) {
-          DOM.audioEngine.currentTime = targetStart;
+        if (pendingSeek > 0) {
+          DOM.audioEngine.currentTime = pendingSeek;
         } else {
           DOM.audioEngine.currentTime = 0;
         }
@@ -4420,17 +4445,14 @@ function loadDirectAudioStream(streamUrl, startSeconds, token, ytFallbackId) {
     DOM.audioEngine.src = streamUrl;
     state.isPlaying = true;
     updatePlayPauseUI(true);
+    syncNativeAppPlaybackState(true);
     const playPromise = DOM.audioEngine.play();
     if (playPromise && typeof playPromise.then === 'function') {
       playPromise.then(() => {
         if (token !== currentPlaybackToken) return;
         state._activeMediaEngine = 'audio';
         state._activeTrackConfirmedPlaying = true;
-        try {
-          if (window.KurfaAndroidBridge && typeof window.KurfaAndroidBridge.setNativePlaybackState === 'function') {
-            window.KurfaAndroidBridge.setNativePlaybackState(true);
-          }
-        } catch(e) {}
+        syncNativeAppPlaybackState(true);
       }).catch((err) => {
         if (token !== currentPlaybackToken || (err && err.name === 'AbortError')) return;
         const safeFallbackStart = (!state._activeTrackConfirmedPlaying || (Date.now() - (state._trackSwitchStartedAt || 0)) < 4000) ? 0 : targetStart;
@@ -4441,6 +4463,7 @@ function loadDirectAudioStream(streamUrl, startSeconds, token, ytFallbackId) {
           state._activeTrackConfirmedPlaying = false;
           state.isPlaying = false;
           updatePlayPauseUI(false);
+          syncNativeAppPlaybackState(false);
         }
       });
     }
@@ -4680,11 +4703,7 @@ function pausePlayback() {
   if (DOM.audioEngine) {
     try { DOM.audioEngine.pause(); } catch(e) {}
   }
-  try {
-    if (window.KurfaAndroidBridge && typeof window.KurfaAndroidBridge.setNativePlaybackState === 'function') {
-      window.KurfaAndroidBridge.setNativePlaybackState(false);
-    }
-  } catch(e) {}
+  syncNativeAppPlaybackState(false, true);
   state.isPlaying = false;
   updatePlayPauseUI(false);
   if (typeof syncPipState === 'function') {
@@ -4759,10 +4778,12 @@ function playNextTrack(opts = {}) {
     } else {
       state.isPlaying = false;
       updatePlayPauseUI(false);
+      syncNativeAppPlaybackState(false);
     }
   } else if (isLocalQueueSession()) {
     state.isPlaying = false;
     updatePlayPauseUI(false);
+    syncNativeAppPlaybackState(false);
     showToast("Yerel çalma listesinin sonuna gelindi");
   } else {
     triggerSmartRadioContinue();
@@ -4800,6 +4821,7 @@ function handleTrackEnd() {
   } else if (isLocalQueueSession()) {
     state.isPlaying = false;
     updatePlayPauseUI(false);
+    syncNativeAppPlaybackState(false);
     showToast("Yerel çalma listesinin sonuna gelindi");
   } else {
     triggerSmartRadioContinue();
@@ -4954,7 +4976,11 @@ function updatePlayerTrackUI(track) {
 
   const safeThumb = safeUrl(track.thumbnail || getTrackThumbnail(track), defaultPlaceholder);
   const cleanTitle = formatCleanTrackTitle(track.title) || (getAppLanguage() === 'en' ? 'Track' : 'Şarkı');
-  const cleanArtist = track.artist || (getAppLanguage() === 'en' ? 'Artist' : 'Sanatçı');
+  const rawArtist = typeof track.artist === 'string' ? track.artist.trim() : '';
+  const selectSongStr = t('player.select_song');
+  const cleanArtist = (rawArtist && rawArtist !== 'Bir parça seçin' && rawArtist !== 'Select a track' && rawArtist !== selectSongStr)
+    ? rawArtist
+    : (getAppLanguage() === 'en' ? 'Artist' : 'Sanatçı');
 
   // Desktop elements
   if (DOM.playerThumb) DOM.playerThumb.src = safeThumb;
@@ -5117,12 +5143,14 @@ function getActiveMediaDuration() {
   if (state.deckVisualMode === 'video' && state.ytReady && state.ytPlayer && typeof state.ytPlayer.getDuration === 'function') {
     dur = state.ytPlayer.getDuration() || 0;
   }
-  // 2. If HTML5 audio has duration, use it
-  if (!dur && DOM.audioEngine && DOM.audioEngine.duration && !isNaN(DOM.audioEngine.duration) && DOM.audioEngine.duration > 0) {
+  // 2. If HTML5 audio is active or has a loaded source, use its duration (never fall back to stale YouTube duration)
+  const isAudioEngineActive = state._activeMediaEngine === 'audio' ||
+    (state.deckVisualMode !== 'video' && DOM.audioEngine && Boolean(DOM.audioEngine.getAttribute('src')));
+  if (!dur && DOM.audioEngine && DOM.audioEngine.duration && !isNaN(DOM.audioEngine.duration) && isFinite(DOM.audioEngine.duration) && DOM.audioEngine.duration > 0) {
     dur = DOM.audioEngine.duration;
   }
-  // 3. If YouTube player has duration
-  if (!dur && state.ytReady && state.ytPlayer && typeof state.ytPlayer.getDuration === 'function') {
+  // 3. Only read YouTube duration when YouTube is the active engine
+  if (!dur && !isAudioEngineActive && state.ytReady && state.ytPlayer && typeof state.ytPlayer.getDuration === 'function') {
     dur = state.ytPlayer.getDuration() || 0;
   }
   // 4. Fallback to track duration string (e.g. "3:45")
@@ -5271,7 +5299,7 @@ function startSeekbarTicker() {
       const adCheckInterval = 650;
       if (now - lastSeekbarTickTime >= throttleInterval) {
         lastSeekbarTickTime = now;
-        if (now - lastAdCheckTime >= adCheckInterval) {
+        if (state._activeMediaEngine === 'youtube' && now - lastAdCheckTime >= adCheckInterval) {
           lastAdCheckTime = now;
           checkAndHandleAdPlayback();
         }
@@ -11833,12 +11861,22 @@ function seekToFraction(frac) {
   seekPlaybackToSeconds(seekTime);
 }
 
+function resolveCleanArtistLabel(track) {
+  if (!track) return t('player.select_song');
+  const raw = typeof track.artist === 'string' ? track.artist.trim() : '';
+  const selectSongStr = t('player.select_song');
+  if (raw && raw !== 'Bir parça seçin' && raw !== 'Select a track' && raw !== selectSongStr) {
+    return raw;
+  }
+  return getAppLanguage() === 'en' ? 'Artist' : 'Sanatçı';
+}
+
 function syncDesktopMiniPlayerState(curSec, durSec) {
   if (typeof getBrowserExtensionMode !== 'function' || !getBrowserExtensionMode().startsWith('desktop')) return;
   const track = state.currentTrack;
   const payload = {
     title: (track && track.title) ? track.title : 'Kurfamüzik',
-    artist: (track && track.artist) ? track.artist : 'Bir parça seçin',
+    artist: resolveCleanArtistLabel(track),
     thumbnail: track ? getTrackThumbnail(track) : '',
     isPlaying: Boolean(state.isPlaying),
     isMuted: Boolean(state.isMuted || state.volume === 0),
@@ -11860,7 +11898,7 @@ async function toggleDocumentPipPlayer() {
     const track = state.currentTrack;
     const res = await callExtensionBridge('TOGGLE_MINI_PLAYER', {
       title: (track && track.title) ? track.title : 'Kurfamüzik',
-      artist: (track && track.artist) ? track.artist : 'Bir parça seçin',
+      artist: resolveCleanArtistLabel(track),
       thumbnail: track ? getTrackThumbnail(track) : '',
       isPlaying: Boolean(state.isPlaying),
       isMuted: Boolean(state.isMuted || state.volume === 0),
@@ -12609,11 +12647,15 @@ function setupEventListeners() {
     }
 
     if (!state.userPaused && state.currentTrack && state.isPlaying) {
-      if (DOM.audioEngine && DOM.audioEngine.getAttribute('src') && DOM.audioEngine.paused) {
-        try {
-          DOM.audioEngine.play().catch(() => {});
-        } catch (e) {}
-      } else if (state.ytReady && state.ytPlayer && typeof state.ytPlayer.getPlayerState === 'function') {
+      const audioOwnsPlayback = state._activeMediaEngine === 'audio' ||
+        (state.deckVisualMode !== 'video' && DOM.audioEngine && Boolean(DOM.audioEngine.getAttribute('src')));
+      if (audioOwnsPlayback) {
+        if (DOM.audioEngine && DOM.audioEngine.getAttribute('src') && DOM.audioEngine.paused && !DOM.audioEngine.ended) {
+          try {
+            DOM.audioEngine.play().catch(() => {});
+          } catch (e) {}
+        }
+      } else if (state._activeMediaEngine === 'youtube' && state.ytReady && state.ytPlayer && typeof state.ytPlayer.getPlayerState === 'function') {
         try {
           const pState = state.ytPlayer.getPlayerState();
           if (pState === 2 || pState === 5) {
@@ -12671,7 +12713,7 @@ function setupEventListeners() {
       const prevSrc = `${DOM.audioEngine.getAttribute('src') || ''}`;
       const isNativeProxySrc = prevSrc.includes('/__kurfa_native_audio__/');
       const maxDirectRetries = isNativeProxySrc
-        ? (state._activeTrackConfirmedPlaying ? 1 : 0)
+        ? (state._activeTrackConfirmedPlaying ? 2 : 1)
         : 2;
 
       if (playId && hasAdFreeLocalEngine() && state.deckVisualMode !== 'video' && state._audioEngineRetryCount <= maxDirectRetries) {
@@ -12726,6 +12768,7 @@ function setupEventListeners() {
       if (!DOM.audioEngine.getAttribute('src') || state.userPaused || !state.isPlaying || state.deckVisualMode === 'video') return;
       const snapTime = DOM.audioEngine.currentTime || 0;
       const snapToken = currentPlaybackToken;
+      const waitMs = DOM.audioEngine.networkState === 2 ? 14000 : 9000;
       _audioStallTimer = setTimeout(() => {
         _audioStallTimer = null;
         if (snapToken !== currentPlaybackToken || state.userPaused || !state.isPlaying || state.deckVisualMode === 'video') return;
@@ -12734,7 +12777,7 @@ function setupEventListeners() {
         if (DOM.audioEngine.readyState < 3 && !DOM.audioEngine.paused && Math.abs(nowTime - snapTime) < 0.25) {
           handoffAudioErrorOrStall(Math.max(0, Math.floor(nowTime || state.currentPlayheadTime || 0)));
         }
-      }, 12000);
+      }, waitMs);
     };
 
     DOM.audioEngine.addEventListener('ended', () => {
@@ -12748,7 +12791,42 @@ function setupEventListeners() {
         state._activeTrackConfirmedPlaying = true;
       }
     });
-    DOM.audioEngine.addEventListener('timeupdate', clearAudioStallWatchdog);
+    DOM.audioEngine.addEventListener('canplay', clearAudioStallWatchdog);
+    DOM.audioEngine.addEventListener('canplaythrough', clearAudioStallWatchdog);
+    DOM.audioEngine.addEventListener('progress', () => {
+      if (_audioStallTimer && DOM.audioEngine && DOM.audioEngine.readyState >= 3) {
+        clearAudioStallWatchdog();
+      }
+    });
+    const syncNativeDurFromAudio = () => {
+      if (!DOM.audioEngine || !DOM.audioEngine.getAttribute('src') || state._activeMediaEngine !== 'audio') return;
+      const d = DOM.audioEngine.duration;
+      if (Number.isFinite(d) && d > 0) {
+        if (DOM.playerTimeDur) DOM.playerTimeDur.textContent = formatTime(d);
+      }
+    };
+    DOM.audioEngine.addEventListener('loadedmetadata', syncNativeDurFromAudio);
+    DOM.audioEngine.addEventListener('durationchange', syncNativeDurFromAudio);
+    DOM.audioEngine.addEventListener('timeupdate', () => {
+      clearAudioStallWatchdog();
+      if (!DOM.audioEngine || !DOM.audioEngine.getAttribute('src')) return;
+      const cur = DOM.audioEngine.currentTime;
+      if (Number.isFinite(cur) && cur >= 0) {
+        state.currentPlayheadTime = cur;
+        // Keep Android notification progress accurate even when screen is off / app is backgrounded
+        if (document.hidden && state.isPlaying && typeof isAndroidNativeEngine === 'function' && isAndroidNativeEngine() &&
+            window.KurfaAndroidBridge && typeof window.KurfaAndroidBridge.updatePlaybackTiming === 'function') {
+          const nowMs = Date.now();
+          const tid = state.currentTrack ? (state.currentTrack.id || '') : '';
+          if (window._lastAndroidTimingTrackId !== tid || !window._lastAndroidTimingSyncAt || (nowMs - window._lastAndroidTimingSyncAt) >= 4000) {
+            window._lastAndroidTimingTrackId = tid;
+            window._lastAndroidTimingSyncAt = nowMs;
+            const dur = getActiveMediaDuration();
+            try { window.KurfaAndroidBridge.updatePlaybackTiming(Math.floor(cur), Math.floor(dur || 0)); } catch (_) {}
+          }
+        }
+      }
+    });
     DOM.audioEngine.addEventListener('waiting', scheduleStallWatchdog);
     DOM.audioEngine.addEventListener('stalled', scheduleStallWatchdog);
     DOM.audioEngine.addEventListener('error', (e) => {
@@ -12768,11 +12846,7 @@ function setupEventListeners() {
       if (state.ytPlayer && typeof state.ytPlayer.pauseVideo === 'function') {
         try { state.ytPlayer.pauseVideo(); } catch (e) {}
       }
-      try {
-        if (window.KurfaAndroidBridge && typeof window.KurfaAndroidBridge.setNativePlaybackState === 'function') {
-          window.KurfaAndroidBridge.setNativePlaybackState(true);
-        }
-      } catch(e) {}
+      syncNativeAppPlaybackState(true);
       state.isPlaying = true;
       updatePlayPauseUI(true);
       startSeekbarTicker();
@@ -12780,15 +12854,10 @@ function setupEventListeners() {
     DOM.audioEngine.addEventListener('pause', () => {
       clearAudioStallWatchdog();
       if (DOM.audioEngine.getAttribute('src') && state.userPaused) {
-        try {
-          if (window.KurfaAndroidBridge && typeof window.KurfaAndroidBridge.setNativePlaybackState === 'function') {
-            window.KurfaAndroidBridge.setNativePlaybackState(false);
-          }
-        } catch(e) {}
+        syncNativeAppPlaybackState(false);
         state.isPlaying = false;
         updatePlayPauseUI(false);
       } else if (
-        typeof isAndroidNativeEngine === 'function' && isAndroidNativeEngine() &&
         DOM.audioEngine.getAttribute('src') && !DOM.audioEngine.seeking &&
         state.deckVisualMode !== 'video' && !state.userPaused && state.isPlaying && !DOM.audioEngine.ended &&
         _bgPauseRecoverCount < 3
@@ -12801,7 +12870,7 @@ function setupEventListeners() {
           ) {
             DOM.audioEngine.play().catch(() => {});
           }
-        }, 90);
+        }, 110);
       }
     });
   }
@@ -12952,6 +13021,12 @@ function initApp() {
 // Native Android MediaSession & Updater Callbacks
 window.kurfaNativeTogglePlay = function() {
   if (typeof togglePlay === 'function') togglePlay();
+};
+window.kurfaNativePlay = function() {
+  if (!state.isPlaying && typeof resumePlayback === 'function') resumePlayback();
+};
+window.kurfaNativePause = function() {
+  if (state.isPlaying && typeof pausePlayback === 'function') pausePlayback();
 };
 window.kurfaNativeNextTrack = function() {
   if (typeof playNextTrack === 'function') playNextTrack();

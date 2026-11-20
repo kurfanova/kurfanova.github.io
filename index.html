@@ -138,7 +138,7 @@
     }
   </style>
   <link rel="stylesheet" href="./tailwind.min.css?v=20261120_v17">
-  <link rel="stylesheet" href="./style.css?v=20261120_v17">
+  <link rel="stylesheet" href="./style.css?v=20261120_v18">
 </head>
 <body class="bg-background font-sans text-on-surface antialiased min-h-screen">
   <script>
@@ -259,7 +259,7 @@
   <!-- ===================================================================== -->
   <!-- 2. MAIN WRAPPER & TOPBAR                                              -->
   <!-- ===================================================================== -->
-  <div class="md:pl-64 flex flex-col min-h-screen">
+  <div id="app-shell" class="md:pl-64 flex flex-col min-h-screen min-w-0 max-w-full">
     
     <!-- Top Header -->
     <header class="fixed top-0 left-0 md:left-64 right-0 h-16 bg-surface-container-lowest/90 backdrop-blur-md z-30 shadow-[0_1px_8px_rgba(0,0,0,0.04)]">
@@ -271,7 +271,7 @@
         </div>
 
         <!-- Search Bar -->
-        <div class="flex-1 max-w-xl">
+        <div class="flex-1 min-w-0 max-w-xl">
           <div class="relative flex items-center w-full">
             <span class="material-symbols-outlined absolute left-3 md:left-3.5 text-on-surface-variant text-[18px] md:text-[20px]" aria-hidden="true">search</span>
             <input 
@@ -471,7 +471,7 @@
           <section class="flex flex-col gap-space-md" id="trendler">
             <div class="flex flex-wrap items-center justify-between gap-2">
               <h2 class="text-lg md:text-xl font-bold text-on-surface tracking-tight" data-i18n="explore.yt_trends_title">Türkiye Müzik Trendleri</h2>
-              <div class="flex items-center gap-2">
+              <div class="flex flex-wrap items-center gap-2 max-w-full">
                 <div class="flex items-center gap-1" id="trendler-head-arrows">
                   <button type="button" id="btn-trendler-head-left" class="shelf-head-arrow-btn" onclick="scrollShelf('trendler-cards-grid', -1)" aria-label="Sola Kaydır" data-i18n-aria="explore.scroll_left" title="Sola Kaydır" data-i18n-title="explore.scroll_left">
                     <span class="material-symbols-outlined text-[18px]">chevron_left</span>
@@ -480,11 +480,11 @@
                     <span class="material-symbols-outlined text-[18px]">chevron_right</span>
                   </button>
                 </div>
-                <button type="button" id="btn-toggle-trends" class="flex items-center gap-1 px-3 py-1.5 rounded-full bg-surface-container-low hover:bg-surface-container border border-surface-container/60 text-xs font-semibold text-on-surface transition-all" onclick="toggleTrendsShowAll()">
+                <button type="button" id="btn-toggle-trends" class="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-surface-container-low hover:bg-surface-container border border-surface-container/60 text-xs font-semibold text-on-surface transition-all whitespace-nowrap shrink-0" onclick="toggleTrendsShowAll()">
                   <span class="material-symbols-outlined text-[16px]">expand_more</span>
                   <span data-i18n="explore.show_all">Tümünü Göster</span>
                 </button>
-                <button type="button" class="px-4 py-1.5 rounded-full bg-primary text-on-primary text-xs font-bold shadow-sm hover:bg-primary-container transition-all active:scale-95" onclick="playAllTrends()" data-i18n="explore.play_all">
+                <button type="button" id="btn-play-all-trends" class="px-4 py-1.5 rounded-full bg-primary text-on-primary text-xs font-bold shadow-sm hover:bg-primary-container transition-all active:scale-95 whitespace-nowrap shrink-0" onclick="playAllTrends()" data-i18n="explore.play_all">
                   Tümünü Oynat
                 </button>
               </div>
@@ -1331,22 +1331,22 @@
   </div>
 
   <!-- MOBILE BOTTOM NAVIGATION BAR (Visible only on mobile screens) -->
-  <nav id="mobile-bottom-nav" class="md:hidden fixed bottom-0 left-0 right-0 h-16 bg-surface-container-lowest/95 backdrop-blur-md border-t border-surface-container z-40 flex items-center justify-around px-1 shadow-[0_-2px_12px_rgba(0,0,0,0.04)]">
-    <button type="button" aria-label="Keşfet" data-i18n-aria="nav.explore" class="mobile-nav-item active flex flex-col items-center justify-center flex-1 h-full py-1 text-on-surface-variant transition-colors" data-tab="kesfet" onclick="switchTab('kesfet')">
+  <nav id="mobile-bottom-nav" class="md:hidden fixed bottom-0 left-0 right-0 h-16 bg-surface-container-lowest/95 backdrop-blur-md border-t border-surface-container z-40 grid grid-cols-4 items-center px-1 shadow-[0_-2px_12px_rgba(0,0,0,0.04)]">
+    <button type="button" aria-label="Keşfet" data-i18n-aria="nav.explore" class="mobile-nav-item active flex flex-col items-center justify-center min-w-0 w-full h-full py-1 px-0.5 text-on-surface-variant transition-colors" data-tab="kesfet" onclick="switchTab('kesfet')">
       <span class="material-symbols-outlined text-[22px]" aria-hidden="true">explore</span>
-      <span class="text-[10px] font-semibold mt-0.5" data-i18n="nav.explore">Keşfet</span>
+      <span class="text-[11px] font-semibold mt-0.5 truncate max-w-full" data-i18n="nav.explore">Keşfet</span>
     </button>
-    <button type="button" aria-label="Kütüphane" data-i18n-aria="nav.library" class="mobile-nav-item flex flex-col items-center justify-center flex-1 h-full py-1 text-on-surface-variant transition-colors" data-tab="kutuphanem" onclick="switchTab('kutuphanem')">
+    <button type="button" aria-label="Kütüphane" data-i18n-aria="nav.library" class="mobile-nav-item flex flex-col items-center justify-center min-w-0 w-full h-full py-1 px-0.5 text-on-surface-variant transition-colors" data-tab="kutuphanem" onclick="switchTab('kutuphanem')">
       <span class="material-symbols-outlined text-[22px]" aria-hidden="true">library_music</span>
-      <span class="text-[10px] font-semibold mt-0.5" data-i18n="nav.library">Kütüphane</span>
+      <span class="text-[11px] font-semibold mt-0.5 truncate max-w-full" data-i18n="nav.library">Kütüphane</span>
     </button>
-    <button type="button" aria-label="Arama" data-i18n-aria="nav.search" class="mobile-nav-item flex flex-col items-center justify-center flex-1 h-full py-1 text-on-surface-variant transition-colors" data-tab="arama" onclick="switchTab('arama')">
+    <button type="button" aria-label="Arama" data-i18n-aria="nav.search" class="mobile-nav-item flex flex-col items-center justify-center min-w-0 w-full h-full py-1 px-0.5 text-on-surface-variant transition-colors" data-tab="arama" onclick="switchTab('arama')">
       <span class="material-symbols-outlined text-[22px]" aria-hidden="true">search</span>
-      <span class="text-[10px] font-semibold mt-0.5" data-i18n="nav.search">Arama</span>
+      <span class="text-[11px] font-semibold mt-0.5 truncate max-w-full" data-i18n="nav.search">Arama</span>
     </button>
-    <button type="button" aria-label="Sözler & EQ" data-i18n-aria="player.nav_lyrics_eq" class="mobile-nav-item flex flex-col items-center justify-center flex-1 h-full py-1 text-on-surface-variant transition-colors" data-tab="calma-listeleri" onclick="switchTab('calma-listeleri')">
+    <button type="button" aria-label="Sözler & EQ" data-i18n-aria="player.nav_lyrics_eq" class="mobile-nav-item flex flex-col items-center justify-center min-w-0 w-full h-full py-1 px-0.5 text-on-surface-variant transition-colors" data-tab="calma-listeleri" onclick="switchTab('calma-listeleri')">
       <span class="material-symbols-outlined text-[22px]" aria-hidden="true">lyrics</span>
-      <span class="text-[10px] font-semibold mt-0.5" data-i18n="player.nav_lyrics_eq">Sözler & EQ</span>
+      <span class="text-[11px] font-semibold mt-0.5 truncate max-w-full" data-i18n="player.nav_lyrics_eq">Sözler & EQ</span>
     </button>
   </nav>
 
@@ -1887,7 +1887,7 @@
   <!-- ===================================================================== -->
   <!-- 14.0 MASAÜSTÜ GÜNCELLEME ONAY & İLERLEME MODALI                        -->
   <!-- ===================================================================== -->
-  <div id="desktop-update-modal" style="z-index: 95;" class="fixed inset-0 bg-black/70 backdrop-blur-md flex items-center justify-center p-4 opacity-0 pointer-events-none transition-all duration-200" onclick="if (event.target === this) dismissDesktopUpdateModal(true)">
+  <div id="desktop-update-modal" style="z-index: 1070;" class="fixed inset-0 bg-black/70 backdrop-blur-md flex items-center justify-center p-4 opacity-0 pointer-events-none transition-all duration-200" onclick="if (event.target === this) dismissDesktopUpdateModal(true)">
     <div id="desktop-update-modal-card" class="w-full max-w-md rounded-3xl bg-surface-container-lowest/95 border border-surface-container shadow-2xl p-5 sm:p-6 flex flex-col gap-4 transform scale-95 transition-all duration-200" style="backdrop-filter: blur(24px) saturate(180%); -webkit-backdrop-filter: blur(24px) saturate(180%); box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.16), 0 24px 48px -12px rgba(0, 0, 0, 0.55);">
       <div class="flex items-start justify-between gap-3">
         <div class="flex items-center gap-3 min-w-0">
@@ -2175,7 +2175,7 @@
   </div>
 
   <!-- Scripts (App loads immediately; YouTube IFrame API loads async after so phones never stall on boot) -->
-  <script src="./app.js?v=20261120_v17"></script>
+  <script src="./app.js?v=20261120_v18"></script>
   <script src="https://www.youtube.com/iframe_api" async defer></script>
 </body>
 </html>
