@@ -1782,7 +1782,7 @@ async function kurfaResolveDirectAudio(videoId) {
   }
 
   if (getBrowserExtensionMode()) {
-    const res = await callExtensionBridge('STREAM', { videoId: cleanVid }, 9000);
+    const res = await callExtensionBridge('STREAM', { videoId: cleanVid }, 6000);
     if (res && res.success && res.streamUrl) return res;
   }
 
@@ -12668,8 +12668,13 @@ function setupEventListeners() {
       }
       state._audioEngineRetryCount = (state._audioEngineRetryCount || 0) + 1;
 
-      if (playId && hasAdFreeLocalEngine() && state.deckVisualMode !== 'video' && state._audioEngineRetryCount <= 2) {
-        const prevSrc = `${DOM.audioEngine.getAttribute('src') || ''}`;
+      const prevSrc = `${DOM.audioEngine.getAttribute('src') || ''}`;
+      const isNativeProxySrc = prevSrc.includes('/__kurfa_native_audio__/');
+      const maxDirectRetries = isNativeProxySrc
+        ? (state._activeTrackConfirmedPlaying ? 1 : 0)
+        : 2;
+
+      if (playId && hasAdFreeLocalEngine() && state.deckVisualMode !== 'video' && state._audioEngineRetryCount <= maxDirectRetries) {
         try {
           if (window.KurfaAndroidBridge && typeof window.KurfaAndroidBridge.invalidateAudioStream === 'function') {
             window.KurfaAndroidBridge.invalidateAudioStream(playId);
@@ -12686,8 +12691,11 @@ function setupEventListeners() {
             return;
           }
         } catch (_) {}
+      }
+
+      if (playId && hasAdFreeLocalEngine() && state.deckVisualMode !== 'video' && state._audioEngineRetryCount <= 1) {
         try {
-          const aud = await kurfaTryQuickAudiusMatch(state.currentTrack, 1600);
+          const aud = await kurfaTryQuickAudiusMatch(state.currentTrack, 1200);
           if (errToken !== currentPlaybackToken || state.userPaused || state.deckVisualMode === 'video') return;
           if (aud && aud.success && aud.streamUrl && aud.streamUrl !== prevSrc) {
             loadDirectAudioStream(aud.streamUrl, safeTimeSec, errToken, null);
