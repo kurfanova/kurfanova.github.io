@@ -6514,10 +6514,10 @@ function renderSearchResults(results, query) {
         <div class="flex flex-col min-w-0 flex-1 overflow-hidden">
           <div class="flex items-center gap-2 min-w-0">
             ${isCurrentRow ? renderMiniEqBarsHtml(isPlayingCurrent) : ''}
-            <h4 class="text-xs md:text-sm font-bold truncate block group-hover:text-primary transition-colors ${isCurrentRow ? 'text-primary' : 'text-on-surface'}">${safeTitle}</h4>
+            <h4 class="kurfa-row-title text-xs md:text-sm font-bold truncate block text-on-surface group-hover:text-primary transition-colors">${safeTitle}</h4>
             ${isCurrentRow ? renderPlayingPillHtml() : ''}
           </div>
-          <p class="text-[11px] text-on-surface-variant truncate block">${safeArtist} - ${escapeHtml(t('search.yt_audio_suffix'))}</p>
+          <p class="kurfa-row-artist text-[11px] text-on-surface-variant truncate block">${safeArtist} - ${escapeHtml(t('search.yt_audio_suffix'))}</p>
         </div>
       </div>
       <div class="flex items-center gap-1.5 sm:gap-2 flex-shrink-0 pl-2">
@@ -7029,17 +7029,17 @@ function renderHomeTracklistTable() {
     row.className = `track-row flex items-center justify-between gap-2 p-2.5 rounded-xl transition-colors group cursor-pointer ${isCurrentRow ? 'active' : ''}`;
     row.innerHTML = `
       <div class="flex items-center gap-2.5 min-w-0 flex-1 pr-3 overflow-hidden">
-        <span class="w-5 flex items-center justify-center flex-shrink-0 text-xs font-bold font-mono group-hover:hidden ${isCurrentRow ? 'text-primary font-extrabold' : 'text-on-surface-variant'}">${isCurrentRow ? renderMiniEqBarsHtml(isPlayingCurrent) : (index + 1)}</span>
-        <button type="button" class="btn-play-row w-5 text-center hidden group-hover:flex items-center justify-center flex-shrink-0 text-primary" title="${escapeHtml(t('player.play_btn'))}">
+        <span class="w-5 flex items-center justify-center flex-shrink-0 text-xs font-bold font-mono tabular-nums group-hover:hidden text-on-surface-variant">${isCurrentRow ? renderMiniEqBarsHtml(isPlayingCurrent) : (index + 1)}</span>
+        <button type="button" class="btn-play-row w-5 text-center hidden group-hover:flex items-center justify-center flex-shrink-0 text-on-surface" title="${escapeHtml(t('player.play_btn'))}">
           <span class="material-symbols-outlined text-[18px]">${isPlayingCurrent ? 'pause' : 'play_arrow'}</span>
         </button>
         <img src="${safeThumb}" alt="${safeTitle}" loading="lazy" decoding="async" class="w-10 h-10 rounded-lg object-cover flex-shrink-0" onerror="this.onerror=null; this.src='./kurfamuzik_logo.png';">
         <div class="flex flex-col min-w-0 flex-1 overflow-hidden">
           <div class="flex items-center gap-2 min-w-0">
-            <span class="text-xs md:text-sm font-bold truncate block ${isCurrentRow ? 'text-primary' : 'text-on-surface'}">${safeTitle}</span>
+            <span class="kurfa-row-title text-xs md:text-sm font-bold truncate block text-on-surface">${safeTitle}</span>
             ${isCurrentRow ? renderPlayingPillHtml() : ''}
           </div>
-          <span class="text-[11px] text-on-surface-variant truncate block">${safeArtist}</span>
+          <span class="kurfa-row-artist text-[11px] text-on-surface-variant truncate block">${safeArtist}</span>
         </div>
       </div>
       <div class="flex items-center gap-1.5 sm:gap-2 flex-shrink-0 pl-2">
@@ -7543,18 +7543,18 @@ function renderArtistTracks(tracks, artistName) {
     row.className = `track-row flex items-center justify-between gap-2 p-2 sm:p-2.5 rounded-xl transition-colors group cursor-pointer ${isCurrentRow ? 'active' : ''}`;
     row.innerHTML = `
       <div class="flex items-center gap-3 min-w-0 flex-1 pr-3 overflow-hidden">
-        <span class="w-6 flex items-center justify-center flex-shrink-0 text-xs font-bold font-mono group-hover:hidden ${isCurrentRow ? 'text-primary font-extrabold' : 'text-on-surface-variant'}">${isCurrentRow ? renderMiniEqBarsHtml(isPlayingCurrent) : (idx + 1)}</span>
-        <button type="button" class="w-6 h-6 rounded-full items-center justify-center text-primary hidden group-hover:flex flex-shrink-0" title="${escapeHtml(t('player.play_btn'))}">
+        <span class="w-6 flex items-center justify-center flex-shrink-0 text-xs font-bold font-mono tabular-nums group-hover:hidden text-on-surface-variant">${isCurrentRow ? renderMiniEqBarsHtml(isPlayingCurrent) : (idx + 1)}</span>
+        <button type="button" class="w-6 h-6 rounded-full items-center justify-center text-on-surface hidden group-hover:flex flex-shrink-0" title="${escapeHtml(t('player.play_btn'))}">
           <span class="material-symbols-outlined text-[18px] filled">${isPlayingCurrent ? 'pause' : 'play_arrow'}</span>
         </button>
 
         <img src="${safeThumb}" alt="${safeTitle}" class="w-10 h-10 sm:w-11 sm:h-11 rounded-lg object-cover flex-shrink-0 shadow-sm bg-surface-container-high" loading="lazy" onerror="this.onerror=null; this.src='./kurfamuzik_logo.png';">
         <div class="flex flex-col min-w-0 flex-1 overflow-hidden">
           <div class="flex items-center gap-2 min-w-0">
-            <span class="text-xs sm:text-sm font-bold truncate block ${isCurrentRow ? 'text-primary' : 'text-on-surface'}">${safeTitle}</span>
+            <span class="kurfa-row-title text-xs sm:text-sm font-bold truncate block text-on-surface">${safeTitle}</span>
             ${isCurrentRow ? renderPlayingPillHtml() : ''}
           </div>
-          <span class="text-[11px] text-on-surface-variant truncate block font-medium">${safeArtist}</span>
+          <span class="kurfa-row-artist text-[11px] text-on-surface-variant truncate block font-medium">${safeArtist}</span>
         </div>
       </div>
 
@@ -7670,14 +7670,14 @@ function renderFavoritesTable() {
     row.className = `track-row flex items-center justify-between gap-2 p-2.5 rounded-xl transition-colors group cursor-pointer ${isCurrentRow ? 'active' : ''}`;
     row.innerHTML = `
       <div class="flex items-center gap-3 min-w-0 flex-1 pr-3 overflow-hidden">
-        <span class="w-5 flex items-center justify-center flex-shrink-0 text-xs font-bold font-mono ${isCurrentRow ? 'text-primary font-extrabold' : 'text-on-surface-variant'}">${isCurrentRow ? renderMiniEqBarsHtml(isPlayingCurrent) : (index + 1)}</span>
+        <span class="w-5 flex items-center justify-center flex-shrink-0 text-xs font-bold font-mono tabular-nums text-on-surface-variant">${isCurrentRow ? renderMiniEqBarsHtml(isPlayingCurrent) : (index + 1)}</span>
         <img src="${safeThumb}" alt="${safeTitle}" class="w-10 h-10 rounded-lg object-cover flex-shrink-0" onerror="this.onerror=null; this.src='./kurfamuzik_logo.png'">
         <div class="flex flex-col min-w-0 flex-1 overflow-hidden">
           <div class="flex items-center gap-2 min-w-0">
-            <span class="text-xs md:text-sm font-bold truncate block group-hover:text-primary transition-colors ${isCurrentRow ? 'text-primary' : 'text-on-surface'}">${safeTitle}</span>
+            <span class="kurfa-row-title text-xs md:text-sm font-bold truncate block text-on-surface group-hover:text-primary transition-colors">${safeTitle}</span>
             ${isCurrentRow ? renderPlayingPillHtml() : ''}
           </div>
-          <span class="text-[11px] text-on-surface-variant truncate block">${safeArtist}</span>
+          <span class="kurfa-row-artist text-[11px] text-on-surface-variant truncate block">${safeArtist}</span>
         </div>
       </div>
       <div class="flex items-center gap-1.5 sm:gap-2 flex-shrink-0 pl-2">
@@ -7772,10 +7772,10 @@ function renderDownloadsTable() {
         <img src="${safeThumb}" alt="${safeTitle}" class="w-10 h-10 rounded-lg object-cover flex-shrink-0" onerror="this.onerror=null; this.src='./kurfamuzik_logo.png'">
         <div class="flex flex-col min-w-0 flex-1 overflow-hidden">
           <div class="flex items-center gap-1.5 min-w-0">
-            <span class="text-xs md:text-sm font-bold text-on-surface truncate block group-hover:text-primary transition-colors">${safeTitle}</span>
+            <span class="kurfa-row-title text-xs md:text-sm font-bold text-on-surface truncate block group-hover:text-primary transition-colors">${safeTitle}</span>
             ${isCurrent ? renderPlayingPillHtml() : ''}
           </div>
-          <span class="text-[11px] text-on-surface-variant truncate block">${safeArtist} - ${safeSize}</span>
+          <span class="kurfa-row-artist text-[11px] text-on-surface-variant truncate block">${safeArtist} - ${safeSize}</span>
         </div>
       </div>
       <div class="flex items-center gap-1.5 sm:gap-2 flex-shrink-0 pl-2">
@@ -7864,16 +7864,16 @@ function renderPlaylistTracksTable() {
     row.className = `track-row flex items-center justify-between gap-2 p-2.5 rounded-xl transition-all group cursor-pointer ${isCurrent ? 'active' : ''}`;
     row.innerHTML = `
       <div class="flex items-center gap-3 min-w-0 flex-1 pr-3 overflow-hidden">
-        <span class="w-6 text-center text-xs font-bold font-mono flex items-center justify-center flex-shrink-0 ${isCurrent ? 'text-primary font-extrabold' : 'text-on-surface-variant'}">
+        <span class="w-6 text-center text-xs font-bold font-mono tabular-nums flex items-center justify-center flex-shrink-0 text-on-surface-variant">
           ${isCurrent ? renderMiniEqBarsHtml(isPlayingCurrent) : (index + 1)}
         </span>
-        <img src="${safeThumb}" alt="${safeTitle}" class="w-10 h-10 rounded-lg object-cover flex-shrink-0 ${isCurrent ? 'ring-2 ring-primary/50' : ''}" onerror="this.onerror=null; this.src='./kurfamuzik_logo.png';">
+        <img src="${safeThumb}" alt="${safeTitle}" class="w-10 h-10 rounded-lg object-cover flex-shrink-0" onerror="this.onerror=null; this.src='./kurfamuzik_logo.png';">
         <div class="flex flex-col min-w-0 flex-1 overflow-hidden">
           <div class="flex items-center gap-2 min-w-0">
-            <span class="text-xs md:text-sm font-bold truncate block ${isCurrent ? 'text-primary font-extrabold' : 'text-on-surface'}">${safeTitle}</span>
+            <span class="kurfa-row-title text-xs md:text-sm font-bold truncate block text-on-surface">${safeTitle}</span>
             ${isCurrent ? renderPlayingPillHtml() : ''}
           </div>
-          <span class="text-[11px] text-on-surface-variant truncate block font-medium">${safeArtist}</span>
+          <span class="kurfa-row-artist text-[11px] text-on-surface-variant truncate block font-medium">${safeArtist}</span>
         </div>
       </div>
       <div class="flex items-center gap-1.5 sm:gap-2 text-xs text-on-surface-variant flex-shrink-0 pl-2">
@@ -8025,17 +8025,17 @@ function renderQueueDrawerList() {
       const safeArtist = escapeHtml(uTrack.artist || 'Sanatçı');
       const safeThumb = escapeHtml(safeUrl(uTrack.thumbnail || getTrackThumbnail(uTrack), './kurfamuzik_logo.png'));
       const row = document.createElement('div');
-      row.className = 'flex items-center justify-between p-2 rounded-xl bg-primary/5 hover:bg-primary/10 transition-colors cursor-pointer group border border-primary/15 mb-1';
+      row.className = 'flex-shrink-0 min-h-[54px] flex items-center justify-between py-2 px-2.5 rounded-xl bg-surface-container/60 hover:bg-surface-container transition-colors cursor-pointer group border border-black/5 dark:border-white/10 mb-1';
       row.innerHTML = `
-        <div class="flex items-center gap-2 min-w-0 flex-1">
-          <span class="w-4 text-center text-[11px] font-bold text-primary">${uIdx + 1}</span>
-          <img src="${safeThumb}" alt="${safeTitle}" class="w-8 h-8 rounded-md object-cover flex-shrink-0" loading="lazy" onerror="this.onerror=null; this.src='./kurfamuzik_logo.png'">
-          <div class="flex flex-col min-w-0">
-            <span class="text-xs font-bold text-on-surface truncate">${safeTitle}</span>
-            <span class="text-[10px] text-on-surface-variant truncate">${safeArtist}</span>
+        <div class="flex items-center gap-2.5 min-w-0 flex-1">
+          <span class="w-5 text-center text-[11px] font-bold font-mono tabular-nums text-on-surface-variant flex-shrink-0">${uIdx + 1}</span>
+          <img src="${safeThumb}" alt="${safeTitle}" class="w-10 h-10 rounded-lg object-cover flex-shrink-0" loading="lazy" onerror="this.onerror=null; this.src='./kurfamuzik_logo.png'">
+          <div class="flex flex-col min-w-0 flex-1">
+            <span class="kurfa-row-title text-xs font-bold text-on-surface truncate">${safeTitle}</span>
+            <span class="kurfa-row-artist text-[11px] text-on-surface-variant truncate">${safeArtist}</span>
           </div>
         </div>
-        <button type="button" class="w-6 h-6 rounded-full flex items-center justify-center text-on-surface-variant hover:text-error transition-colors btn-uq-remove" title="${escapeHtml(t('queue.remove'))}">
+        <button type="button" class="w-6 h-6 rounded-full flex items-center justify-center text-on-surface-variant hover:text-error transition-colors btn-uq-remove flex-shrink-0" title="${escapeHtml(t('queue.remove'))}">
           <span class="material-symbols-outlined text-[15px]">close</span>
         </button>
       `;
@@ -8084,40 +8084,40 @@ function renderQueueDrawerList() {
     const safeThumb = escapeHtml(safeUrl(track.thumbnail || getTrackThumbnail(track), './kurfamuzik_logo.png'));
 
     const item = document.createElement('div');
-    item.className = `track-row flex items-center justify-between gap-2 p-2 rounded-xl transition-all cursor-pointer group select-none ${isCurrent ? 'active font-bold' : ''}`;
+    item.className = `track-row flex-shrink-0 min-h-[54px] flex items-center justify-between gap-2 px-2.5 py-2 rounded-xl transition-all cursor-pointer group select-none ${isCurrent ? 'active font-bold' : ''}`;
     item.setAttribute('draggable', 'true');
     item.dataset.index = index;
     if (isCurrent) item.dataset.current = '1';
 
     item.innerHTML = `
-      <div class="flex items-center gap-2 min-w-0 flex-1 pr-3 overflow-hidden">
-        <div class="flex flex-col items-center justify-center flex-shrink-0 -mr-0.5">
-          <button type="button" class="w-4 h-3.5 flex items-center justify-center text-on-surface-variant hover:text-primary transition-colors btn-queue-up ${index === 0 ? 'opacity-20 cursor-not-allowed pointer-events-none' : ''}" title="${escapeHtml(t('queue.move_up'))}">
-            <span class="material-symbols-outlined text-[14px]">keyboard_arrow_up</span>
+      <div class="flex items-center gap-2 min-w-0 flex-1 pr-1 overflow-hidden">
+        <div class="flex flex-col items-center justify-center gap-[2px] flex-shrink-0 w-5 opacity-55 group-hover:opacity-100 transition-opacity">
+          <button type="button" class="w-5 h-4 flex items-center justify-center rounded text-on-surface-variant hover:text-on-surface hover:bg-black/5 dark:hover:bg-white/10 transition-colors btn-queue-up ${index === 0 ? 'opacity-20 cursor-not-allowed pointer-events-none' : ''}" title="${escapeHtml(t('queue.move_up'))}">
+            <span class="material-symbols-outlined text-[15px] leading-none">keyboard_arrow_up</span>
           </button>
-          <button type="button" class="w-4 h-3.5 flex items-center justify-center text-on-surface-variant hover:text-primary transition-colors btn-queue-down ${index === queueCount - 1 ? 'opacity-20 cursor-not-allowed pointer-events-none' : ''}" title="${escapeHtml(t('queue.move_down'))}">
-            <span class="material-symbols-outlined text-[14px]">keyboard_arrow_down</span>
+          <button type="button" class="w-5 h-4 flex items-center justify-center rounded text-on-surface-variant hover:text-on-surface hover:bg-black/5 dark:hover:bg-white/10 transition-colors btn-queue-down ${index === queueCount - 1 ? 'opacity-20 cursor-not-allowed pointer-events-none' : ''}" title="${escapeHtml(t('queue.move_down'))}">
+            <span class="material-symbols-outlined text-[15px] leading-none">keyboard_arrow_down</span>
           </button>
         </div>
-        <span class="w-4 flex items-center justify-center text-[11px] flex-shrink-0 ${isCurrent ? 'text-primary font-extrabold' : 'text-on-surface-variant'}">${isCurrent ? renderMiniEqBarsHtml(state.isPlaying) : (index + 1)}</span>
-        <img src="${safeThumb}" alt="${safeTitle}" class="w-8 h-8 rounded-md object-cover flex-shrink-0" loading="lazy" onerror="this.onerror=null; this.src='./kurfamuzik_logo.png'">
+        <span class="w-5 flex items-center justify-center text-[11px] font-mono tabular-nums flex-shrink-0 text-on-surface-variant">${isCurrent ? renderMiniEqBarsHtml(state.isPlaying) : (index + 1)}</span>
+        <img src="${safeThumb}" alt="${safeTitle}" class="w-10 h-10 rounded-lg object-cover flex-shrink-0" loading="lazy" onerror="this.onerror=null; this.src='./kurfamuzik_logo.png'">
         <div class="flex flex-col min-w-0 flex-1 overflow-hidden">
           <div class="flex items-center gap-1.5 min-w-0">
-            <span class="text-xs truncate block ${isCurrent ? 'text-primary font-extrabold' : 'text-on-surface'}">${safeTitle}</span>
+            <span class="kurfa-row-title text-xs font-bold truncate block text-on-surface">${safeTitle}</span>
             ${isCurrent ? renderPlayingPillHtml() : ''}
           </div>
-          <span class="text-[10px] text-on-surface-variant truncate block">${safeArtist}</span>
+          <span class="kurfa-row-artist text-[11px] text-on-surface-variant truncate block">${safeArtist}</span>
         </div>
       </div>
-      <div class="flex items-center gap-1 flex-shrink-0 pl-2">
-        <span class="text-[11px] text-on-surface-variant font-mono whitespace-nowrap">${safeDur}</span>
-        <button type="button" class="hidden sm:flex w-6 h-6 rounded-full items-center justify-center text-on-surface-variant hover:text-primary opacity-0 group-hover:opacity-100 transition-opacity btn-queue-add-pl" title="${escapeHtml(t('player.add_to_playlist'))}">
+      <div class="flex items-center gap-0.5 flex-shrink-0 pl-1">
+        <span class="text-[11px] text-on-surface-variant font-mono tabular-nums whitespace-nowrap px-1">${safeDur}</span>
+        <button type="button" class="hidden sm:group-hover:flex w-6 h-6 rounded-full items-center justify-center text-on-surface-variant hover:text-on-surface transition-colors btn-queue-add-pl" title="${escapeHtml(t('player.add_to_playlist'))}">
           <span class="material-symbols-outlined text-[15px]">playlist_add</span>
         </button>
-        <button type="button" class="hidden sm:flex w-6 h-6 rounded-full items-center justify-center text-on-surface-variant hover:text-tertiary opacity-0 group-hover:opacity-100 transition-opacity btn-queue-dl" title="${escapeHtml(t('hero.download'))}">
+        <button type="button" class="hidden sm:group-hover:flex w-6 h-6 rounded-full items-center justify-center text-on-surface-variant hover:text-on-surface transition-colors btn-queue-dl" title="${escapeHtml(t('hero.download'))}">
           <span class="material-symbols-outlined text-[15px]">download</span>
         </button>
-        <button type="button" class="w-6 h-6 rounded-full flex items-center justify-center text-on-surface-variant hover:text-error sm:opacity-0 sm:group-hover:opacity-100 transition-opacity btn-queue-remove" title="${escapeHtml(t('queue.remove'))}">
+        <button type="button" class="flex sm:hidden sm:group-hover:flex w-6 h-6 rounded-full items-center justify-center text-on-surface-variant hover:text-error transition-colors btn-queue-remove" title="${escapeHtml(t('queue.remove'))}">
           <span class="material-symbols-outlined text-[15px]">close</span>
         </button>
       </div>
@@ -10453,10 +10453,10 @@ function openCustomPlaylistDetail(playlistId) {
             <img src="${thumb}" alt="${safeTitle}" class="w-9 h-9 rounded-lg object-cover flex-shrink-0" loading="lazy" onerror="this.onerror=null; this.src='./kurfamuzik_logo.png';">
             <div class="flex flex-col min-w-0 flex-1 overflow-hidden">
               <div class="flex items-center gap-1.5 min-w-0">
-                <span class="text-xs font-bold text-on-surface truncate block group-hover:text-primary transition-colors">${safeTitle}</span>
+                <span class="kurfa-row-title text-xs font-bold text-on-surface truncate block group-hover:text-primary transition-colors">${safeTitle}</span>
                 ${isCurrent ? renderPlayingPillHtml() : ''}
               </div>
-              <span class="text-[11px] text-on-surface-variant truncate block">${safeArtist}</span>
+              <span class="kurfa-row-artist text-[11px] text-on-surface-variant truncate block">${safeArtist}</span>
             </div>
           </div>
           <div class="flex items-center gap-1.5 sm:gap-2 flex-shrink-0 pl-2">
@@ -10771,10 +10771,10 @@ function openSpotifyPlaylistDetail(playlistId) {
             <img data-sp-id="${safeSpId}" src="${safeThumb}" alt="${safeTrackTitle}" class="w-9 h-9 rounded-lg object-cover flex-shrink-0" loading="lazy">
             <div class="flex flex-col min-w-0 flex-1 overflow-hidden">
               <div class="flex items-center gap-1.5 min-w-0">
-                <span class="text-xs font-bold text-on-surface truncate block group-hover:text-green-500 transition-colors">${safeTrackTitle}</span>
+                <span class="kurfa-row-title text-xs font-bold text-on-surface truncate block group-hover:text-green-500 transition-colors">${safeTrackTitle}</span>
                 ${isCurrent ? renderPlayingPillHtml() : ''}
               </div>
-              <span class="text-[11px] text-on-surface-variant truncate block">${safeTrackArtist}</span>
+              <span class="kurfa-row-artist text-[11px] text-on-surface-variant truncate block">${safeTrackArtist}</span>
             </div>
           </div>
           <div class="flex items-center gap-1.5 sm:gap-2 flex-shrink-0 pl-2">
@@ -13387,16 +13387,16 @@ function renderDeviceAudioList(filterText = '') {
     row.dataset.trackIdx = String(idx + 1);
     row.innerHTML = `
       <div class="flex items-center gap-2.5 min-w-0 flex-1 pr-3 overflow-hidden">
-        <span class="w-5 text-center text-[11px] font-mono track-idx-num flex items-center justify-center flex-shrink-0 ${isPlayingCur ? 'text-primary font-extrabold' : 'text-on-surface-variant'}">${isPlayingCur ? renderMiniEqBarsHtml(isAnimating) : (idx + 1)}</span>
-        <div class="w-9 h-9 rounded-lg bg-surface-container-high flex items-center justify-center flex-shrink-0 text-primary">
+        <span class="w-5 text-center text-[11px] font-mono tabular-nums track-idx-num flex items-center justify-center flex-shrink-0 text-on-surface-variant">${isPlayingCur ? renderMiniEqBarsHtml(isAnimating) : (idx + 1)}</span>
+        <div class="w-9 h-9 rounded-lg bg-surface-container-high flex items-center justify-center flex-shrink-0 text-on-surface-variant">
           <span class="material-symbols-outlined text-[18px] track-icon">${isAnimating ? 'graphic_eq' : 'music_note'}</span>
         </div>
         <div class="flex flex-col min-w-0 flex-1 overflow-hidden">
           <div class="flex items-center gap-1.5 min-w-0 track-title-wrap">
-            <span class="text-xs font-bold truncate block track-title-text ${isPlayingCur ? 'text-primary' : 'text-on-surface'}">${escapeHtml(cleanLocalTrackMeta(track).title || (isEn ? 'Track' : 'Parça'))}</span>
+            <span class="kurfa-row-title text-xs font-bold truncate block track-title-text text-on-surface">${escapeHtml(cleanLocalTrackMeta(track).title || (isEn ? 'Track' : 'Parça'))}</span>
             ${isPlayingCur ? renderPlayingPillHtml() : ''}
           </div>
-          <span class="text-[11px] text-on-surface-variant truncate block">${escapeHtml(track.artist || t('library.device_title'))}</span>
+          <span class="kurfa-row-artist text-[11px] text-on-surface-variant truncate block">${escapeHtml(track.artist || t('library.device_title'))}</span>
         </div>
       </div>
       <span class="text-[11px] text-on-surface-variant font-mono flex-shrink-0 pl-2 track-duration-text">${escapeHtml(track.duration || '3:30')}</span>
@@ -13449,9 +13449,8 @@ function syncActiveTrackRowInDeviceAudio() {
     row.classList.toggle('active', isCur);
     const numEl = row.querySelector('.track-idx-num');
     if (numEl) {
-      numEl.classList.toggle('text-primary', isCur);
-      numEl.classList.toggle('font-extrabold', isCur);
-      numEl.classList.toggle('text-on-surface-variant', !isCur);
+      numEl.classList.remove('text-primary', 'font-extrabold');
+      numEl.classList.add('text-on-surface-variant');
       numEl.innerHTML = isCur ? renderMiniEqBarsHtml(isPlaying) : escapeHtml(row.dataset.trackIdx || '');
     }
     const iconEl = row.querySelector('.track-icon');
@@ -13460,8 +13459,8 @@ function syncActiveTrackRowInDeviceAudio() {
     }
     const titleEl = row.querySelector('.track-title-text');
     if (titleEl) {
-      titleEl.classList.toggle('text-primary', isCur);
-      titleEl.classList.toggle('text-on-surface', !isCur);
+      titleEl.classList.remove('text-primary');
+      titleEl.classList.add('text-on-surface');
     }
     const titleWrap = row.querySelector('.track-title-wrap');
     if (titleWrap) {
