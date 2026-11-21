@@ -526,6 +526,20 @@ const KURFA_I18N = {
     'fx.crossfade': 'Crossfade (Geçiş)',
     'fx.normalization': 'Ses Dengeleme',
     'fx.skip_silence': 'Sessizliği Atla',
+    'fx.yt_engine_note': 'YouTube video/IFrame modunda Tempo ve Crossfade aktiftir; 5-Bant EQ, Ses Dengeleme ve Sessizliği Atla doğrudan ses akışında / Masaüstünde / Android\'de çalışır.',
+    'fx.dsp_active_note': 'Web Audio DSP aktif (5-Bant EQ • Kompresör • RMS Sessizlik Analizi)',
+
+    'artist.albums': "Albümler ve Single'lar",
+    'artist.album_count': '{count} Albüm',
+    'search.albums': 'Albümler',
+    'search.albums_sub': 'Albüm içeriğini ve parçalarını gör',
+    'album.badge': 'Albüm',
+    'album.play_all': 'Tümünü Oynat',
+    'album.queue_all': 'Sıraya Ekle',
+    'album.track_count': '{count} Parça',
+    'album.loading': 'Albüm parçaları yükleniyor...',
+    'album.error': 'Albüm içeriği yüklenemedi.',
+    'album.queued_toast': '{title} sıraya eklendi ({count} parça)',
 
     'stats.tab': 'İstatistikler',
     'stats.title': 'Dinleme İstatistikleri',
@@ -1056,6 +1070,20 @@ const KURFA_I18N = {
     'fx.crossfade': 'Crossfade',
     'fx.normalization': 'Loudness Normalization',
     'fx.skip_silence': 'Skip Silence',
+    'fx.yt_engine_note': 'In YouTube IFrame mode, Tempo and Crossfade are active; 5-Band EQ, Normalization and Skip Silence run on Direct Audio / Desktop / Android streams.',
+    'fx.dsp_active_note': 'Web Audio DSP active (5-Band EQ • Compressor • RMS Silence Detector)',
+
+    'artist.albums': 'Albums & Singles',
+    'artist.album_count': '{count} Albums',
+    'search.albums': 'Albums',
+    'search.albums_sub': 'View album & full tracklist',
+    'album.badge': 'Album',
+    'album.play_all': 'Play All',
+    'album.queue_all': 'Add to Queue',
+    'album.track_count': '{count} Tracks',
+    'album.loading': 'Loading album tracks...',
+    'album.error': 'Could not load album details.',
+    'album.queued_toast': '{title} added to queue ({count} tracks)',
 
     'stats.tab': 'Statistics',
     'stats.title': 'Listening Statistics',
@@ -2177,33 +2205,38 @@ async function kurfaTryQuickAudiusMatch(target, timeoutMs = 650) {
 const __kurfaSearchMemory = new Map();
 function readSearchClientCache(cacheKey) {
   const mem = __kurfaSearchMemory.get(cacheKey);
-  if (mem && mem.expiresAt > Date.now()) return mem.results;
+  if (mem && mem.expiresAt > Date.now()) return mem;
   try {
-    const raw = localStorage.getItem('kurfa_search_cache_v2');
+    const raw = localStorage.getItem('kurfa_search_cache_v3');
     if (!raw) return null;
     const store = JSON.parse(raw);
     const entry = store && store[cacheKey];
     if (entry && entry.expiresAt > Date.now() && Array.isArray(entry.results) && entry.results.length > 0) {
       __kurfaSearchMemory.set(cacheKey, entry);
-      return entry.results;
+      return entry;
     }
   } catch (e) {}
   return null;
 }
 
-function writeSearchClientCache(cacheKey, results) {
+function writeSearchClientCache(cacheKey, results, artists = [], albums = []) {
   if (!Array.isArray(results) || results.length === 0) return;
-  const entry = { results, expiresAt: Date.now() + 6 * 3600 * 1000 };
+  const entry = {
+    results,
+    artists: Array.isArray(artists) ? artists : [],
+    albums: Array.isArray(albums) ? albums : [],
+    expiresAt: Date.now() + 6 * 3600 * 1000
+  };
   if (__kurfaSearchMemory.size >= 40) __kurfaSearchMemory.clear();
   __kurfaSearchMemory.set(cacheKey, entry);
   try {
-    const store = JSON.parse(localStorage.getItem('kurfa_search_cache_v2') || '{}') || {};
+    const store = JSON.parse(localStorage.getItem('kurfa_search_cache_v3') || '{}') || {};
     const keys = Object.keys(store);
     if (keys.length >= 30) {
       delete store[keys[0]];
     }
     store[cacheKey] = entry;
-    localStorage.setItem('kurfa_search_cache_v2', JSON.stringify(store));
+    localStorage.setItem('kurfa_search_cache_v3', JSON.stringify(store));
   } catch (e) {}
 }
 
@@ -2217,12 +2250,18 @@ async function kurfaSearchTracks(query, opts = {}) {
 
   const cached = readSearchClientCache(cacheKey);
   if (cached) {
-    return { success: true, source: 'client-cache', results: cached };
+    return {
+      success: true,
+      source: 'client-cache',
+      results: cached.results,
+      artists: cached.artists || [],
+      albums: cached.albums || []
+    };
   }
 
   if (source === 'audius') {
     const audRes = await kurfaSearchOpenCatalog(cleanQ, signal);
-    if (audRes.success) writeSearchClientCache(cacheKey, audRes.results);
+    if (audRes.success) writeSearchClientCache(cacheKey, audRes.results, [], []);
     return audRes;
   }
 
@@ -2230,7 +2269,7 @@ async function kurfaSearchTracks(query, opts = {}) {
     const apkRes = await callAndroidBridge('searchTracksAsync', [cleanQ, filterSingles], 11000);
     if (signal && signal.aborted) throw new DOMException('Aborted', 'AbortError');
     if (apkRes && apkRes.success && Array.isArray(apkRes.results) && apkRes.results.length > 0) {
-      writeSearchClientCache(cacheKey, apkRes.results);
+      writeSearchClientCache(cacheKey, apkRes.results, apkRes.artists || [], apkRes.albums || []);
       return apkRes;
     }
   }
@@ -2239,7 +2278,7 @@ async function kurfaSearchTracks(query, opts = {}) {
     const extRes = await callExtensionBridge('SEARCH', { query: cleanQ, filterSingles }, 9000);
     if (signal && signal.aborted) throw new DOMException('Aborted', 'AbortError');
     if (extRes && extRes.success && Array.isArray(extRes.results) && extRes.results.length > 0) {
-      writeSearchClientCache(cacheKey, extRes.results);
+      writeSearchClientCache(cacheKey, extRes.results, extRes.artists || [], extRes.albums || []);
       return extRes;
     }
   }
@@ -2251,7 +2290,7 @@ async function kurfaSearchTracks(query, opts = {}) {
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
   const data = await res.json();
   if (data && data.success && Array.isArray(data.results) && data.results.length > 0) {
-    writeSearchClientCache(cacheKey, data.results);
+    writeSearchClientCache(cacheKey, data.results, data.artists || [], data.albums || []);
   }
   return data;
 }
@@ -4512,6 +4551,27 @@ function playTrackById(videoId, arg2, arg3, arg4, arg5, options = {}) {
   clearTimeout(state._errorSkipTimer);
   clearTimeout(state._stallWatchdogTimer);
 
+  if (
+    DOM.audioEngine &&
+    !DOM.audioEngine.paused &&
+    DOM.audioEngine.getAttribute('src') &&
+    state._activeTrackConfirmedPlaying &&
+    !(options && options._skipPreFade) &&
+    !(state.proSettings && state.proSettings.crossfadeSec > 0 && state._crossfadeFadingOut) &&
+    typeof startSmoothFade === 'function'
+  ) {
+    currentPlaybackToken++;
+    const preFadeToken = currentPlaybackToken;
+    startSmoothFade(typeof state._smoothFadeGain === 'number' ? state._smoothFadeGain : 1, 0, 175, () => {
+      if (preFadeToken !== currentPlaybackToken || state.userPaused) return;
+      playTrackById(videoId, arg2, arg3, arg4, arg5, { ...(options || {}), _skipPreFade: true });
+    });
+    return;
+  }
+
+  if (typeof cancelSmoothFade === 'function') cancelSmoothFade();
+  state._smoothFadeGain = 1;
+
   // Stop background timers/HTML5 audio; keep YT active only when YT loads immediately,
   // and keep native background wake/foreground locks active across track transitions.
   const ytCanDirectLoad = Boolean(state.ytReady && state.ytPlayer && typeof state.ytPlayer.loadVideoById === 'function');
@@ -4871,13 +4931,42 @@ function loadDirectAudioStream(streamUrl, startSeconds, token, ytFallbackId) {
       state._seekOnceHandler = null;
     }
     state._activeMediaEngine = 'audio';
+    if (typeof updateFxEngineNote === 'function') updateFxEngineNote();
     const spd = Math.max(0.5, Math.min(2.0, Number(state.proSettings?.playbackSpeed) || 1.0));
     try {
       DOM.audioEngine.playbackRate = spd;
       if ('preservesPitch' in DOM.audioEngine) DOM.audioEngine.preservesPitch = true;
     } catch (_) {}
-    const effGain = (typeof getEffectiveVolumeMultiplier === 'function') ? getEffectiveVolumeMultiplier() : 1;
-    DOM.audioEngine.volume = state.isMuted ? 0 : Math.max(0, Math.min(1, (state.volume ?? 0.8) * effGain));
+    const isCrossfadeIn = Boolean(state._crossfadeGain !== undefined && state._crossfadeGain < 0.99);
+    if (!isCrossfadeIn) {
+      state._smoothFadeGain = 0.01;
+    }
+    if (typeof applyEffectiveVolume === 'function') {
+      applyEffectiveVolume();
+    } else {
+      const effGain = (typeof getEffectiveVolumeMultiplier === 'function') ? getEffectiveVolumeMultiplier() : 1;
+      DOM.audioEngine.volume = state.isMuted ? 0 : Math.max(0, Math.min(1, (state.volume ?? 0.8) * effGain));
+    }
+
+    const shouldUseCors = Boolean(
+      typeof KurfaDSP === 'undefined' ||
+      (!KurfaDSP.corsBlockedUrls.has(streamUrl) && (
+        KurfaDSP.isConnected ||
+        streamUrl.startsWith('http://') ||
+        streamUrl.startsWith('https://') ||
+        streamUrl.startsWith('blob:') ||
+        streamUrl.startsWith('/')
+      ))
+    );
+    try {
+      if (shouldUseCors) {
+        DOM.audioEngine.crossOrigin = 'anonymous';
+      } else {
+        DOM.audioEngine.removeAttribute('crossorigin');
+        DOM.audioEngine.crossOrigin = null;
+      }
+    } catch (_) {}
+
     state.currentPlayheadTime = targetStart;
     state._pendingDirectSeekSec = targetStart;
     state._seekOnceHandler = () => {
@@ -4904,6 +4993,13 @@ function loadDirectAudioStream(streamUrl, startSeconds, token, ytFallbackId) {
         if (token !== currentPlaybackToken) return;
         state._activeMediaEngine = 'audio';
         state._activeTrackConfirmedPlaying = true;
+        if (typeof KurfaDSP !== 'undefined') {
+          KurfaDSP.connectMediaElement(DOM.audioEngine);
+          KurfaDSP.resumeContext();
+        }
+        if (!isCrossfadeIn && typeof startSmoothFade === 'function') {
+          startSmoothFade(0.01, 1.0, 220);
+        }
         syncNativeAppPlaybackState(true);
         scheduleNextTrackPrefetch(token);
       }).catch((err) => {
@@ -4947,6 +5043,8 @@ function loadYouTubePlayback(cleanYtId, target, normalizedStart, token, ytCanDir
         videoId: cleanYtId,
         startSeconds: normalizedStart
       });
+      state._activeMediaEngine = 'youtube';
+      if (typeof updateFxEngineNote === 'function') updateFxEngineNote();
       state.isPlaying = true;
       updatePlayPauseUI(true);
       scheduleNextTrackPrefetch(token);
@@ -5070,7 +5168,12 @@ function resumePlayback() {
   // 1. Local track resume: NEVER touch YouTube Player!
   if (isLocalTrack) {
     if (DOM.audioEngine && DOM.audioEngine.getAttribute('src') && !DOM.audioEngine.ended) {
+      if (typeof KurfaDSP !== 'undefined') KurfaDSP.resumeContext();
+      state._smoothFadeGain = 0.02;
+      if (typeof applyEffectiveVolume === 'function') applyEffectiveVolume();
       DOM.audioEngine.play().then(() => {
+        if (state.userPaused) return;
+        if (typeof startSmoothFade === 'function') startSmoothFade(0.02, 1.0, 120);
         state.isPlaying = true;
         updatePlayPauseUI(true);
         if (typeof startSeekbarTicker === 'function') startSeekbarTicker();
@@ -5105,7 +5208,12 @@ function resumePlayback() {
 
   // 2. If HTML5 Audio engine has a loaded source (Audius / direct stream), resume it
   if (DOM.audioEngine && DOM.audioEngine.getAttribute('src') && !DOM.audioEngine.ended && state.currentTrack) {
+    if (typeof KurfaDSP !== 'undefined') KurfaDSP.resumeContext();
+    state._smoothFadeGain = 0.02;
+    if (typeof applyEffectiveVolume === 'function') applyEffectiveVolume();
     DOM.audioEngine.play().then(() => {
+      if (state.userPaused) return;
+      if (typeof startSmoothFade === 'function') startSmoothFade(0.02, 1.0, 120);
       state.isPlaying = true;
       updatePlayPauseUI(true);
       if (typeof startSeekbarTicker === 'function') startSeekbarTicker();
@@ -5177,7 +5285,16 @@ function pausePlayback() {
     try { state.ytPlayer.pauseVideo(); } catch(e) {}
   }
   if (DOM.audioEngine) {
-    try { DOM.audioEngine.pause(); } catch(e) {}
+    if (!DOM.audioEngine.paused && DOM.audioEngine.getAttribute('src') && typeof startSmoothFade === 'function') {
+      startSmoothFade(typeof state._smoothFadeGain === 'number' ? state._smoothFadeGain : 1, 0, 120, () => {
+        if (!state.userPaused) return;
+        try { DOM.audioEngine.pause(); } catch (e) {}
+        state._smoothFadeGain = 1;
+        if (typeof applyEffectiveVolume === 'function') applyEffectiveVolume();
+      });
+    } else {
+      try { DOM.audioEngine.pause(); } catch(e) {}
+    }
   }
   syncNativeAppPlaybackState(false, true);
   state.isPlaying = false;
@@ -5962,7 +6079,14 @@ function applyEffectiveVolume() {
     } catch(e) {}
   }
   if (DOM.audioEngine) {
-    DOM.audioEngine.volume = eff;
+    if (typeof KurfaDSP !== 'undefined' && KurfaDSP.isConnected && KurfaDSP.masterFadeGainNode && KurfaDSP.ctx && state._activeMediaEngine === 'audio') {
+      DOM.audioEngine.volume = baseVol;
+      try {
+        KurfaDSP.masterFadeGainNode.gain.setTargetAtTime(mult, KurfaDSP.ctx.currentTime, 0.012);
+      } catch (_) {}
+    } else {
+      DOM.audioEngine.volume = eff;
+    }
   }
   const exo = getAndroidExoBridge();
   if (exo && typeof exo.setVolumeNativeExo === 'function') {
@@ -6987,8 +7111,9 @@ function syncLyricsWithTime(currentTime, forceScroll = false) {
 
   const adjustedTime = (currentTime || 0) + (state.lyricsOffset || 0);
   const firstLyricTime = state.activeLyrics[0].time;
+  const firstIsInterlude = Boolean(state.activeLyrics[0] && state.activeLyrics[0].isInterlude);
 
-  if (adjustedTime < firstLyricTime) {
+  if (adjustedTime < firstLyricTime || (firstIsInterlude && !state.isPlaying && (currentTime || 0) <= 0.15)) {
     if (state.currentLyricIndex !== -2 || forceScroll) {
       if (state.currentLyricIndex >= 0 && _lyricsLineEls[state.currentLyricIndex]) {
         _lyricsLineEls[state.currentLyricIndex].classList.remove('active-lyric', 'active');
@@ -7500,6 +7625,7 @@ function showSearchDiscoveryHub() {
   const sortRow = document.getElementById('search-sort-buttons-row');
   const countEl = document.getElementById('search-results-count');
   const artistsSection = document.getElementById('search-artists-section');
+  const albumsSection = document.getElementById('search-albums-section');
   if (hub) {
     hub.classList.remove('hidden');
     hub.classList.add('flex');
@@ -7513,6 +7639,10 @@ function showSearchDiscoveryHub() {
   if (artistsSection) {
     artistsSection.classList.add('hidden');
     artistsSection.classList.remove('flex');
+  }
+  if (albumsSection) {
+    albumsSection.classList.add('hidden');
+    albumsSection.classList.remove('flex');
   }
   if (DOM.searchSpotlightBox) DOM.searchSpotlightBox.style.display = 'none';
   if (typeof syncTopSearchClearBtn === 'function') syncTopSearchClearBtn();
@@ -7684,6 +7814,13 @@ async function executeSearchImmediate(query, autoSwitchTab = true, options = {})
     artistsSection.classList.remove('flex');
     artistsGrid.innerHTML = '';
   }
+  const albumsSection = document.getElementById('search-albums-section');
+  const albumsGrid = document.getElementById('search-albums-grid');
+  if (albumsSection && albumsGrid) {
+    albumsSection.classList.add('hidden');
+    albumsSection.classList.remove('flex');
+    albumsGrid.innerHTML = '';
+  }
 
   if (DOM.searchResultsList) {
     DOM.searchResultsList.innerHTML = `
@@ -7700,7 +7837,7 @@ async function executeSearchImmediate(query, autoSwitchTab = true, options = {})
     : Promise.resolve([]);
 
   try {
-    const [data, artists] = await Promise.all([
+    const [data, fallbackArtists] = await Promise.all([
       kurfaSearchTracks(cleanQ, {
         signal: sig,
         source: state.searchSource || 'auto'
@@ -7709,7 +7846,11 @@ async function executeSearchImmediate(query, autoSwitchTab = true, options = {})
     ]);
     if (seqToken !== searchSeqToken) return;
 
-    renderSearchArtistsShelf(artists, cleanQ);
+    const searchArtists = (Array.isArray(data?.artists) && data.artists.length > 0)
+      ? data.artists
+      : fallbackArtists;
+    renderSearchArtistsShelf(searchArtists, cleanQ);
+    renderSearchAlbumsShelf(Array.isArray(data?.albums) ? data.albums : [], cleanQ);
 
     if (data && data.success && data.results && data.results.length > 0) {
       state.currentSearchResults = data.results;
@@ -7880,19 +8021,22 @@ function renderSearchArtistsShelf(artists, query) {
 
   list.slice(0, 12).forEach((artist) => {
     const safeName = escapeHtml(artist.name || 'Sanatçı');
-    const safeGenre = escapeHtml(artist.genre || 'Sanatçı');
+    const rawSub = artist.subtitle || artist.genre || '';
     const fansNum = Number(artist.fans || 0);
-    const fansLabel = fansNum >= 1000000
-      ? t('artist.listeners_m', { val: (fansNum / 1000000).toFixed(1) })
-      : (fansNum >= 1000 ? t('artist.listeners_k', { val: Math.round(fansNum / 1000) }) : safeGenre);
-    const safeImg = escapeHtml(safeUrl(artist.image || artist.img, './kurfamuzik_logo.png'));
+    const fansLabel = rawSub
+      ? String(rawSub)
+      : (fansNum >= 1000000
+          ? t('artist.listeners_m', { val: (fansNum / 1000000).toFixed(1) })
+          : (fansNum >= 1000 ? t('artist.listeners_k', { val: Math.round(fansNum / 1000) }) : (artist.genre || t('artist.profile_label'))));
+    const imgUrl = safeUrl(artist.photo || artist.cover || artist.image || artist.img, './kurfamuzik_logo.png');
+    const safeImg = escapeHtml(imgUrl);
 
     const card = document.createElement('button');
     card.type = 'button';
-    card.className = 'group flex flex-col items-center text-center w-28 sm:w-32 p-3 rounded-2xl bg-surface-container-lowest hover:bg-surface-container-low border border-surface-container/60 transition-all cursor-pointer flex-shrink-0';
+    card.className = 'group flex flex-col items-center text-center w-28 sm:w-32 p-2.5 rounded-2xl bg-surface-container-lowest hover:bg-surface-container-low border border-surface-container/60 transition-all cursor-pointer flex-shrink-0';
     card.innerHTML = `
-      <div class="relative w-16 h-16 sm:w-20 sm:h-20 rounded-full overflow-hidden mb-2 shadow-sm ring-1 ring-surface-container group-hover:ring-primary/50 transition-all bg-surface-container-high">
-        <img src="${safeImg}" alt="${safeName}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" loading="lazy">
+      <div class="relative w-20 h-20 sm:w-24 sm:h-24 aspect-square rounded-2xl overflow-hidden mb-2 shadow-sm ring-1 ring-surface-container group-hover:ring-primary/50 transition-all bg-surface-container-high flex-shrink-0">
+        <img src="${safeImg}" alt="${safeName}" referrerpolicy="no-referrer" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" loading="lazy">
       </div>
       <span class="font-bold text-xs text-on-surface truncate w-full group-hover:text-primary transition-colors">${safeName}</span>
       <span class="text-[10px] text-on-surface-variant truncate w-full mt-0.5">${escapeHtml(fansLabel)}</span>
@@ -7910,15 +8054,74 @@ function renderSearchArtistsShelf(artists, query) {
 
     card.onclick = () => {
       openArtistDetail({
-        id: artist.id || artist.name,
+        id: artist.browseId || artist.id || artist.name,
         name: artist.name,
-        genre: artist.genre || 'Müzik',
+        genre: artist.genre || artist.subtitle || 'Müzik',
         fans: artist.fans || 0,
-        img: artist.image || artist.img || './kurfamuzik_logo.png',
+        img: imgUrl,
         dynamic: true
       });
     };
     grid.appendChild(card);
+  });
+}
+
+function createAlbumCard(album) {
+  const albumId = album.browseId || album.id || '';
+  const titleText = album.title || album.name || t('album.badge');
+  const artistText = album.artist || '';
+  const yearText = album.year ? String(album.year) : '';
+  const typeText = album.type ? String(album.type) : t('album.badge');
+  const coverUrl = safeUrl(album.cover || album.thumbnail || album.image, './kurfamuzik_logo.png');
+  const subParts = [yearText, artistText].filter(Boolean);
+  const subLine = subParts.join(' • ') || typeText;
+
+  const card = document.createElement('button');
+  card.type = 'button';
+  card.className = 'kurfa-album-card group flex flex-col text-left p-2.5 rounded-2xl bg-surface-container-lowest hover:bg-surface-container-low border border-surface-container/60 transition-all cursor-pointer';
+  card.innerHTML = `
+    <div class="relative w-full aspect-square rounded-xl overflow-hidden mb-2 shadow-sm bg-surface-container-high flex-shrink-0">
+      <img src="${escapeHtml(coverUrl)}" alt="${escapeHtml(titleText)}" referrerpolicy="no-referrer" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" loading="lazy" onerror="this.onerror=null; this.src='./kurfamuzik_logo.png'">
+      <span class="absolute top-1.5 left-1.5 px-1.5 py-0.5 rounded-md bg-black/65 backdrop-blur-sm text-[9px] font-bold text-white uppercase tracking-wide">${escapeHtml(typeText)}</span>
+      <span class="absolute right-2 bottom-2 w-8 h-8 rounded-full bg-primary text-on-primary flex items-center justify-center shadow-md opacity-0 translate-y-1 group-hover:opacity-100 group-hover:translate-y-0 transition-all">
+        <span class="material-symbols-outlined text-[18px] filled">play_arrow</span>
+      </span>
+    </div>
+    <span class="font-bold text-xs text-on-surface truncate w-full group-hover:text-primary transition-colors">${escapeHtml(titleText)}</span>
+    <span class="text-[10px] text-on-surface-variant truncate w-full mt-0.5">${escapeHtml(subLine)}</span>
+  `;
+  card.onclick = () => {
+    if (albumId) {
+      openAlbumDetail({
+        id: albumId,
+        title: titleText,
+        artist: artistText,
+        year: yearText,
+        type: typeText,
+        cover: coverUrl
+      });
+    }
+  };
+  return card;
+}
+
+function renderSearchAlbumsShelf(albums, query) {
+  const section = document.getElementById('search-albums-section');
+  const grid = document.getElementById('search-albums-grid');
+  if (!section || !grid) return;
+  grid.innerHTML = '';
+
+  const list = Array.isArray(albums) ? albums.filter(a => a && (a.id || a.browseId) && (a.title || a.name)) : [];
+  if (list.length === 0) {
+    section.classList.add('hidden');
+    section.classList.remove('flex');
+    return;
+  }
+
+  section.classList.remove('hidden');
+  section.classList.add('flex');
+  list.slice(0, 12).forEach((album) => {
+    grid.appendChild(createAlbumCard(album));
   });
 }
 
@@ -8977,8 +9180,18 @@ function openArtistDetail(artist) {
   const genreEl = document.getElementById('artist-profile-genre');
   const countEl = document.getElementById('artist-tracks-count');
   const listEl = document.getElementById('artist-tracks-container');
+  const albumsSectionEl = document.getElementById('artist-albums-section');
+  const albumsGridEl = document.getElementById('artist-albums-grid');
+  if (albumsSectionEl && albumsGridEl) {
+    albumsSectionEl.classList.add('hidden');
+    albumsSectionEl.classList.remove('flex');
+    albumsGridEl.innerHTML = '';
+  }
 
-  if (avatarEl) avatarEl.src = safeUrl(artist.img || artist.image, './kurfamuzik_logo.png');
+  if (avatarEl) {
+    avatarEl.referrerPolicy = 'no-referrer';
+    avatarEl.src = safeUrl(artist.photo || artist.cover || artist.img || artist.image, './kurfamuzik_logo.png');
+  }
   if (nameEl) nameEl.textContent = artist.name;
   const listenerMeta = formatListenerCount(artist.fans) || t('artist.profile_label');
   if (genreEl) genreEl.textContent = `${artist.genre || 'Müzik'} • ${listenerMeta}`;
@@ -8997,21 +9210,30 @@ function openArtistDetail(artist) {
   const loadArtistTracks = async () => {
     const sig = artistAbortController ? artistAbortController.signal : undefined;
     try {
+      const idParam = (artist.id && String(artist.id).startsWith('UC')) ? `&id=${encodeURIComponent(artist.id)}` : '';
       const apiRes = await fetch(
-        `${API_BASE}/api/artist?name=${encodeURIComponent(artist.name || '')}`,
+        `${API_BASE}/api/artist?name=${encodeURIComponent(artist.name || '')}${idParam}`,
         { signal: sig }
       );
       if (apiRes.ok) {
         const apiData = await apiRes.json();
         if (seq !== artistSeqToken) return;
         if (apiData?.artist) {
-          if (avatarEl && apiData.artist.image && !String(artist.img || '').startsWith('http')) {
-            avatarEl.src = safeUrl(apiData.artist.image, './kurfamuzik_logo.png');
+          const officialPhoto = apiData.artist.photo || apiData.artist.cover || apiData.artist.image;
+          if (avatarEl && officialPhoto) {
+            avatarEl.src = safeUrl(officialPhoto, './kurfamuzik_logo.png');
           }
-          if (genreEl && apiData.artist.fans) {
-            const fLabel = formatListenerCount(apiData.artist.fans) || t('artist.profile_label');
-            genreEl.textContent = `${apiData.artist.genre || artist.genre || 'Müzik'} • ${fLabel}`;
+          if (genreEl) {
+            if (apiData.artist.subtitle) {
+              genreEl.textContent = String(apiData.artist.subtitle);
+            } else if (apiData.artist.fans) {
+              const fLabel = formatListenerCount(apiData.artist.fans) || t('artist.profile_label');
+              genreEl.textContent = `${apiData.artist.genre || artist.genre || 'Müzik'} • ${fLabel}`;
+            }
           }
+        }
+        if (Array.isArray(apiData?.albums) && apiData.albums.length > 0) {
+          renderArtistAlbumsShelf(apiData.albums);
         }
         if (apiData && apiData.success && Array.isArray(apiData.tracks) && apiData.tracks.length > 0) {
           currentArtistTracks = apiData.tracks;
@@ -9167,6 +9389,210 @@ function closeArtistDetail() {
     switchTab(targetTab, false);
   }
 }
+
+function renderArtistAlbumsShelf(albums) {
+  const section = document.getElementById('artist-albums-section');
+  const grid = document.getElementById('artist-albums-grid');
+  const countEl = document.getElementById('artist-albums-count');
+  if (!section || !grid) return;
+  grid.innerHTML = '';
+
+  const list = Array.isArray(albums) ? albums.filter(a => a && (a.id || a.browseId) && (a.title || a.name)) : [];
+  if (list.length === 0) {
+    section.classList.add('hidden');
+    section.classList.remove('flex');
+    return;
+  }
+
+  section.classList.remove('hidden');
+  section.classList.add('flex');
+  if (countEl) countEl.textContent = t('artist.album_count', { count: list.length });
+  list.forEach((album) => {
+    grid.appendChild(createAlbumCard(album));
+  });
+}
+
+let _albumAbortController = null;
+let _albumSeqToken = 0;
+
+function closeAlbumDetail() {
+  if (_albumAbortController) {
+    try { _albumAbortController.abort(); } catch (_) {}
+  }
+  _albumSeqToken++;
+  const modal = document.getElementById('album-detail-modal');
+  const card = document.getElementById('album-detail-modal-card');
+  if (modal) {
+    modal.classList.add('opacity-0', 'pointer-events-none');
+    modal.classList.remove('opacity-100', 'pointer-events-auto');
+  }
+  if (card) {
+    card.classList.add('scale-95');
+    card.classList.remove('scale-100');
+  }
+}
+window.closeAlbumDetail = closeAlbumDetail;
+
+async function openAlbumDetail(album) {
+  const albumId = String(album?.browseId || album?.id || '').trim();
+  if (!albumId) return;
+  const modal = document.getElementById('album-detail-modal');
+  const card = document.getElementById('album-detail-modal-card');
+  const coverEl = document.getElementById('album-detail-cover');
+  const typeEl = document.getElementById('album-detail-type');
+  const titleEl = document.getElementById('album-detail-title');
+  const metaEl = document.getElementById('album-detail-meta');
+  const tracksEl = document.getElementById('album-detail-tracks');
+  const playAllBtn = document.getElementById('album-detail-play-all');
+  const queueAllBtn = document.getElementById('album-detail-queue-all');
+  if (!modal || !tracksEl) return;
+
+  if (_albumAbortController) {
+    try { _albumAbortController.abort(); } catch (_) {}
+  }
+  _albumAbortController = (typeof AbortController !== 'undefined') ? new AbortController() : null;
+  const seq = ++_albumSeqToken;
+
+  const initTitle = album.title || album.name || t('album.badge');
+  const initArtist = album.artist || '';
+  const initYear = album.year ? String(album.year) : '';
+  const initCover = safeUrl(album.cover || album.thumbnail || album.image, './kurfamuzik_logo.png');
+
+  if (coverEl) coverEl.src = initCover;
+  if (typeEl) typeEl.textContent = album.type || t('album.badge');
+  if (titleEl) titleEl.textContent = initTitle;
+  if (metaEl) metaEl.textContent = [initArtist, initYear].filter(Boolean).join(' • ');
+  tracksEl.innerHTML = `
+    <div class="flex items-center justify-center py-10 gap-3 text-on-surface-variant text-xs">
+      <div class="w-5 h-5 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
+      <span>${escapeHtml(t('album.loading'))}</span>
+    </div>
+  `;
+  if (playAllBtn) playAllBtn.onclick = null;
+  if (queueAllBtn) queueAllBtn.onclick = null;
+
+  modal.classList.remove('opacity-0', 'pointer-events-none');
+  modal.classList.add('opacity-100', 'pointer-events-auto');
+  if (card) {
+    card.classList.remove('scale-95');
+    card.classList.add('scale-100');
+  }
+
+  try {
+    const res = await fetch(`${API_BASE}/api/album?id=${encodeURIComponent(albumId)}`, {
+      signal: _albumAbortController ? _albumAbortController.signal : undefined
+    });
+    if (seq !== _albumSeqToken) return;
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+    if (seq !== _albumSeqToken) return;
+    if (!data || !data.success || !Array.isArray(data.tracks) || data.tracks.length === 0) {
+      throw new Error('empty_album');
+    }
+
+    const albInfo = data.album || {};
+    const finalCover = safeUrl(albInfo.cover || initCover, './kurfamuzik_logo.png');
+    const finalTitle = albInfo.title || initTitle;
+    const finalArtist = albInfo.artist || initArtist;
+    const finalYear = albInfo.year || initYear;
+    const normalizedTracks = data.tracks.map((tr) => {
+      const vid = safeYtId(tr.videoId || tr.ytId || tr.id);
+      return {
+        id: vid || String(tr.id || `sp-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`),
+        ytId: vid || undefined,
+        title: tr.title || 'Şarkı',
+        artist: tr.artist || finalArtist || 'Sanatçı',
+        duration: tr.duration || '3:30',
+        thumbnail: safeUrl(tr.cover || tr.thumbnail || finalCover, './kurfamuzik_logo.png'),
+        album: finalTitle
+      };
+    });
+
+    if (coverEl) coverEl.src = finalCover;
+    if (typeEl) typeEl.textContent = albInfo.type || album.type || t('album.badge');
+    if (titleEl) titleEl.textContent = finalTitle;
+    if (metaEl) {
+      metaEl.textContent = [finalArtist, finalYear, t('album.track_count', { count: normalizedTracks.length })]
+        .filter(Boolean)
+        .join(' • ');
+    }
+
+    if (playAllBtn) {
+      playAllBtn.onclick = () => {
+        const chosen = setPlaybackQueueContext(normalizedTracks, 0, finalTitle, finalArtist || t('album.badge'));
+        if (chosen) playTrackById(chosen.id, chosen);
+        closeAlbumDetail();
+      };
+    }
+    if (queueAllBtn) {
+      queueAllBtn.onclick = () => {
+        normalizedTracks.forEach((tr) => addToQueueTrack(tr));
+        showToast(t('album.queued_toast', { title: finalTitle, count: normalizedTracks.length }));
+      };
+    }
+
+    tracksEl.innerHTML = '';
+    const frag = document.createDocumentFragment();
+    normalizedTracks.forEach((tr, idx) => {
+      const isCurrentRow = state.currentTrack && (state.currentTrack.id === tr.id || (tr.ytId && state.currentTrack.ytId === tr.ytId));
+      const isFav = state.favorites.some(f => f.id === tr.id);
+      const row = document.createElement('div');
+      row.className = `track-row flex items-center justify-between gap-2 p-2 rounded-xl transition-colors group cursor-pointer ${isCurrentRow ? 'active' : ''}`;
+      row.innerHTML = `
+        <div class="flex items-center gap-3 min-w-0 flex-1 pr-2 overflow-hidden">
+          <span class="w-6 text-center text-xs font-bold font-mono tabular-nums text-on-surface-variant flex-shrink-0">${idx + 1}</span>
+          <img src="${escapeHtml(tr.thumbnail)}" alt="${escapeHtml(tr.title)}" referrerpolicy="no-referrer" class="w-9 h-9 rounded-lg object-cover flex-shrink-0 bg-surface-container-high" loading="lazy" onerror="this.onerror=null; this.src='./kurfamuzik_logo.png'">
+          <div class="flex flex-col min-w-0 flex-1 overflow-hidden">
+            <span class="kurfa-row-title text-xs sm:text-sm font-bold truncate block text-on-surface group-hover:text-primary transition-colors">${escapeHtml(tr.title)}</span>
+            <span class="kurfa-row-artist text-[11px] text-on-surface-variant truncate block">${escapeHtml(tr.artist)}</span>
+          </div>
+        </div>
+        <div class="flex items-center gap-1 flex-shrink-0">
+          <span class="text-[11px] text-on-surface-variant font-mono hidden sm:inline mr-1">${escapeHtml(tr.duration)}</span>
+          <button type="button" class="btn-alb-q w-7 h-7 rounded-full flex items-center justify-center text-on-surface-variant hover:text-secondary transition-colors" title="${escapeHtml(t('player.add_to_queue'))}">
+            <span class="material-symbols-outlined text-[17px]">queue_music</span>
+          </button>
+          <button type="button" class="btn-alb-fav w-7 h-7 rounded-full flex items-center justify-center text-on-surface-variant hover:text-primary transition-colors" title="${escapeHtml(t('player.fav_add'))}">
+            <span class="material-symbols-outlined text-[17px] ${isFav ? 'text-primary filled' : ''}">${isFav ? 'favorite' : 'favorite_border'}</span>
+          </button>
+        </div>
+      `;
+      row.onclick = () => {
+        const chosen = setPlaybackQueueContext(normalizedTracks, idx, finalTitle, finalArtist || t('album.badge'));
+        if (chosen) playTrackById(chosen.id, chosen);
+        closeAlbumDetail();
+      };
+      const qBtn = row.querySelector('.btn-alb-q');
+      if (qBtn) {
+        qBtn.onclick = (e) => {
+          e.stopPropagation();
+          addToQueueTrack(tr);
+        };
+      }
+      const fBtn = row.querySelector('.btn-alb-fav');
+      if (fBtn) {
+        fBtn.onclick = (e) => {
+          e.stopPropagation();
+          toggleFavorite(tr);
+          const ic = fBtn.querySelector('.material-symbols-outlined');
+          const nowFav = state.favorites.some(f => f.id === tr.id);
+          if (ic) {
+            ic.textContent = nowFav ? 'favorite' : 'favorite_border';
+            ic.classList.toggle('text-primary', nowFav);
+            ic.classList.toggle('filled', nowFav);
+          }
+        };
+      }
+      frag.appendChild(row);
+    });
+    tracksEl.appendChild(frag);
+  } catch (err) {
+    if (err && err.name === 'AbortError') return;
+    if (seq !== _albumSeqToken) return;
+    tracksEl.innerHTML = `<div class="text-center py-8 text-xs text-on-surface-variant">${escapeHtml(t('album.error'))}</div>`;
+  }
+}
+window.openAlbumDetail = openAlbumDetail;
 
 function updateQuickFavCount() {
   const el = document.getElementById('quick-fav-count');
@@ -11245,12 +11671,21 @@ const KurfaDSP = {
   ctx: null,
   sourceNode: null,
   filters: [], // 5 BiquadFilterNodes: 60Hz, 250Hz, 1kHz, 4kHz, 16kHz
-  gainNode: null,
   compressorNode: null,
+  makeupGainNode: null,
+  masterFadeGainNode: null,
+  analyserNode: null,
   frequencies: [60, 250, 1000, 4000, 16000],
   types: ['lowshelf', 'peaking', 'peaking', 'peaking', 'highshelf'],
   gains: [0, 0, 0, 0, 0], // dB (-12 .. +12)
   isInitialized: false,
+  isConnected: false,
+  graphConnected: false,
+  corsBlockedUrls: new Set(),
+  _silenceTimer: null,
+  _silenceMs: 0,
+  _silenceBoosting: false,
+  _rmsBuffer: null,
 
   presets: {
     'standart': [0, 0, 0, 0, 0],
@@ -11264,38 +11699,74 @@ const KurfaDSP = {
   },
 
   init(audioEl) {
-    // Keep Web Audio DynamicsCompressorNode + BiquadFilterNode graph available without
-    // hijacking cross-origin CDN streams on DOM.audioEngine (CORS would mute opaque streams).
     this.isInitialized = true;
-    this.ensureCompressorAndFilters();
+    try {
+      if (state.activeEqPreset === 'ozel') {
+        const saved = JSON.parse(localStorage.getItem('kurfa_eq_gains') || 'null');
+        if (Array.isArray(saved) && saved.length === 5) {
+          this.gains = saved.map(v => Math.max(-12, Math.min(12, Math.round(Number(v) || 0))));
+        }
+      }
+    } catch (_) {}
+    this.updateUI();
     syncAudioFxUI();
   },
 
-  ensureCompressorAndFilters() {
+  ensureGraph() {
     try {
       const AudioCtx = window.AudioContext || window.webkitAudioContext;
       if (!AudioCtx) return false;
       if (!this.ctx) {
         this.ctx = new AudioCtx();
       }
-      if (!this.compressorNode) {
-        const comp = this.ctx.createDynamicsCompressor();
-        comp.threshold.value = -18;
-        comp.knee.value = 24;
-        comp.ratio.value = 3.5;
-        comp.attack.value = 0.005;
-        comp.release.value = 0.25;
-        this.compressorNode = comp;
-      }
       if (!this.filters || this.filters.length !== 5) {
         this.filters = this.frequencies.map((freq, idx) => {
           const f = this.ctx.createBiquadFilter();
           f.type = this.types[idx] || 'peaking';
           f.frequency.value = freq;
-          f.Q.value = 1.0;
+          f.Q.value = (idx === 0 || idx === 4) ? 0.8 : 1.0;
           f.gain.value = this.gains[idx] || 0;
           return f;
         });
+      }
+      if (!this.compressorNode) {
+        const comp = this.ctx.createDynamicsCompressor();
+        const normOn = Boolean(state.proSettings && state.proSettings.normalization);
+        comp.threshold.value = normOn ? -20 : 0;
+        comp.knee.value = 18;
+        comp.ratio.value = normOn ? 4.5 : 1.0;
+        comp.attack.value = 0.004;
+        comp.release.value = 0.22;
+        this.compressorNode = comp;
+      }
+      if (!this.makeupGainNode) {
+        const mg = this.ctx.createGain();
+        const normOn = Boolean(state.proSettings && state.proSettings.normalization);
+        mg.gain.value = normOn ? 1.28 : 1.0;
+        this.makeupGainNode = mg;
+      }
+      if (!this.masterFadeGainNode) {
+        const fg = this.ctx.createGain();
+        fg.gain.value = 1.0;
+        this.masterFadeGainNode = fg;
+      }
+      if (!this.analyserNode) {
+        const an = this.ctx.createAnalyser();
+        an.fftSize = 1024;
+        an.smoothingTimeConstant = 0.25;
+        this.analyserNode = an;
+        this._rmsBuffer = new Float32Array(an.fftSize);
+      }
+      if (!this.graphConnected) {
+        for (let i = 0; i < this.filters.length - 1; i++) {
+          this.filters[i].connect(this.filters[i + 1]);
+        }
+        this.filters[this.filters.length - 1].connect(this.compressorNode);
+        this.compressorNode.connect(this.makeupGainNode);
+        this.makeupGainNode.connect(this.masterFadeGainNode);
+        this.masterFadeGainNode.connect(this.analyserNode);
+        this.analyserNode.connect(this.ctx.destination);
+        this.graphConnected = true;
       }
       return true;
     } catch (_) {
@@ -11303,26 +11774,84 @@ const KurfaDSP = {
     }
   },
 
-  setGain(bandIndex, db) {
+  canAttachAudioElement(audioEl) {
+    if (!audioEl) return false;
+    const src = String(audioEl.currentSrc || audioEl.getAttribute('src') || '');
+    if (!src) return false;
+    if (src.startsWith('blob:') || src.startsWith('data:') || src.startsWith('/')) return true;
+    if (audioEl.crossOrigin === 'anonymous') return true;
+    try {
+      const u = new URL(src, window.location.href);
+      return u.origin === window.location.origin;
+    } catch (_) {
+      return false;
+    }
+  },
+
+  connectMediaElement(audioEl) {
+    if (!audioEl) return false;
+    if (!this.ensureGraph()) return false;
+    if (!this.sourceNode) {
+      if (!this.canAttachAudioElement(audioEl)) return false;
+      try {
+        this.sourceNode = this.ctx.createMediaElementSource(audioEl);
+        this.sourceNode.connect(this.filters[0]);
+        this.isConnected = true;
+        if (typeof applyEffectiveVolume === 'function') applyEffectiveVolume();
+        this.syncSilenceDetector();
+        updateFxEngineNote();
+      } catch (_) {
+        return false;
+      }
+    }
+    this.resumeContext();
+    return this.isConnected;
+  },
+
+  resumeContext() {
+    if (!this.ensureGraph()) return;
+    if (this.ctx && this.ctx.state === 'suspended') {
+      this.ctx.resume().catch(() => {});
+    }
+    if (!this.isConnected && DOM.audioEngine && this.canAttachAudioElement(DOM.audioEngine)) {
+      this.connectMediaElement(DOM.audioEngine);
+    }
+  },
+
+  setGain(bandIndex, db, persist = true) {
     db = Math.max(-12, Math.min(12, Math.round(db)));
     this.gains[bandIndex] = db;
+    this.resumeContext();
     if (this.filters[bandIndex] && this.ctx) {
       try {
-        this.filters[bandIndex].gain.setTargetAtTime(db, this.ctx.currentTime, 0.05);
-      } catch(e) {}
+        this.filters[bandIndex].gain.setTargetAtTime(db, this.ctx.currentTime, 0.03);
+      } catch (e) {}
+    }
+    if (persist) {
+      try { safeSetStorage('kurfa_eq_gains', JSON.stringify(this.gains)); } catch (_) {}
     }
     this.updateUI();
   },
 
-  applyPreset(presetKey) {
-    const pGains = this.presets[presetKey] || this.presets['standart'];
-    this.gains = [...pGains];
+  applyPreset(presetKey, resumeAudio = true) {
+    if (presetKey === 'ozel') {
+      try {
+        const saved = JSON.parse(localStorage.getItem('kurfa_eq_gains') || 'null');
+        if (Array.isArray(saved) && saved.length === 5) {
+          this.gains = saved.map(v => Math.max(-12, Math.min(12, Math.round(Number(v) || 0))));
+        }
+      } catch (_) {}
+    } else {
+      const pGains = this.presets[presetKey] || this.presets['standart'];
+      this.gains = [...pGains];
+    }
 
+    if (resumeAudio) this.resumeContext();
     if (this.ctx && this.filters.length === 5) {
       this.filters.forEach((f, idx) => {
         try {
-          f.gain.setTargetAtTime(this.gains[idx], this.ctx.currentTime, 0.05);
-        } catch(e) {}
+          f.gain.setTargetAtTime(this.gains[idx], this.ctx.currentTime, 0.03);
+        } catch (e) {}
       });
     }
 
@@ -11332,13 +11861,21 @@ const KurfaDSP = {
     this.updateUI();
   },
 
-  applyNormalization(enabled) {
-    this.ensureCompressorAndFilters();
+  applyNormalization(enabled, resumeAudio = true) {
+    if (resumeAudio) this.resumeContext();
     if (this.compressorNode && this.ctx) {
       try {
-        // Gentle transparent loudness leveling when enabled, bypass ratio=1 when disabled
-        this.compressorNode.ratio.setTargetAtTime(enabled ? 3.5 : 1.0, this.ctx.currentTime, 0.05);
-        this.compressorNode.threshold.setTargetAtTime(enabled ? -18 : 0, this.ctx.currentTime, 0.05);
+        const now = this.ctx.currentTime;
+        this.compressorNode.threshold.setTargetAtTime(enabled ? -20 : 0, now, 0.04);
+        this.compressorNode.knee.setTargetAtTime(18, now, 0.04);
+        this.compressorNode.ratio.setTargetAtTime(enabled ? 4.5 : 1.0, now, 0.04);
+        this.compressorNode.attack.setTargetAtTime(0.004, now, 0.04);
+        this.compressorNode.release.setTargetAtTime(0.22, now, 0.04);
+      } catch (_) {}
+    }
+    if (this.makeupGainNode && this.ctx) {
+      try {
+        this.makeupGainNode.gain.setTargetAtTime(enabled ? 1.28 : 1.0, this.ctx.currentTime, 0.04);
       } catch (_) {}
     }
     if (typeof applyEffectiveVolume === 'function') {
@@ -11346,15 +11883,136 @@ const KurfaDSP = {
     }
   },
 
+  syncSilenceDetector() {
+    const enabled = Boolean(state.proSettings && state.proSettings.skipSilence);
+    if (!enabled) {
+      if (this._silenceTimer) {
+        clearInterval(this._silenceTimer);
+        this._silenceTimer = null;
+      }
+      this._silenceMs = 0;
+      if (this._silenceBoosting && DOM.audioEngine) {
+        this._silenceBoosting = false;
+        try {
+          DOM.audioEngine.playbackRate = Math.max(0.5, Math.min(2.0, Number(state.proSettings?.playbackSpeed) || 1.0));
+        } catch (_) {}
+      }
+      return;
+    }
+
+    this.resumeContext();
+    if (this._silenceTimer) return;
+    this._silenceTimer = setInterval(() => {
+      if (!state.proSettings?.skipSilence) {
+        this.syncSilenceDetector();
+        return;
+      }
+      if (
+        !this.isConnected ||
+        !this.analyserNode ||
+        state._activeMediaEngine !== 'audio' ||
+        !state.isPlaying ||
+        state.userPaused ||
+        !DOM.audioEngine ||
+        DOM.audioEngine.paused ||
+        DOM.audioEngine.ended
+      ) {
+        this._silenceMs = 0;
+        if (this._silenceBoosting && DOM.audioEngine) {
+          this._silenceBoosting = false;
+          try {
+            DOM.audioEngine.playbackRate = Math.max(0.5, Math.min(2.0, Number(state.proSettings?.playbackSpeed) || 1.0));
+          } catch (_) {}
+        }
+        return;
+      }
+
+      const cur = DOM.audioEngine.currentTime || 0;
+      const dur = DOM.audioEngine.duration || 0;
+      if (cur < 0.8 || (dur > 0 && (dur - cur) < 1.5)) {
+        this._silenceMs = 0;
+        if (this._silenceBoosting) {
+          this._silenceBoosting = false;
+          try {
+            DOM.audioEngine.playbackRate = Math.max(0.5, Math.min(2.0, Number(state.proSettings?.playbackSpeed) || 1.0));
+          } catch (_) {}
+        }
+        return;
+      }
+
+      let rms = 0;
+      try {
+        if (!this._rmsBuffer || this._rmsBuffer.length !== this.analyserNode.fftSize) {
+          this._rmsBuffer = new Float32Array(this.analyserNode.fftSize);
+        }
+        if (typeof this.analyserNode.getFloatTimeDomainData === 'function') {
+          this.analyserNode.getFloatTimeDomainData(this._rmsBuffer);
+          let sumSq = 0;
+          for (let i = 0; i < this._rmsBuffer.length; i++) {
+            const s = this._rmsBuffer[i];
+            sumSq += s * s;
+          }
+          rms = Math.sqrt(sumSq / this._rmsBuffer.length);
+        } else {
+          const byteBuf = new Uint8Array(this.analyserNode.fftSize);
+          this.analyserNode.getByteTimeDomainData(byteBuf);
+          let sumSq = 0;
+          for (let i = 0; i < byteBuf.length; i++) {
+            const s = (byteBuf[i] - 128) / 128;
+            sumSq += s * s;
+          }
+          rms = Math.sqrt(sumSq / byteBuf.length);
+        }
+      } catch (_) {
+        return;
+      }
+
+      const db = rms > 1e-6 ? (20 * Math.log10(rms)) : -100;
+      const baseSpeed = Math.max(0.5, Math.min(2.0, Number(state.proSettings?.playbackSpeed) || 1.0));
+      if (db < -48) {
+        this._silenceMs += 120;
+        if (this._silenceMs >= 1200 && !this._silenceBoosting) {
+          this._silenceBoosting = true;
+          try {
+            DOM.audioEngine.playbackRate = Math.min(2.0, Math.max(1.8, baseSpeed * 1.8));
+          } catch (_) {}
+        }
+      } else if (db >= -44) {
+        this._silenceMs = 0;
+        if (this._silenceBoosting) {
+          this._silenceBoosting = false;
+          try {
+            DOM.audioEngine.playbackRate = baseSpeed;
+          } catch (_) {}
+        }
+      }
+    }, 120);
+  },
+
   updateUI() {
     const bandKeys = ['60hz', '250hz', '1khz', '4khz', '16khz'];
     bandKeys.forEach((key, idx) => {
-      const db = this.gains[idx] || 0;
+      const db = Math.max(-12, Math.min(12, Math.round(this.gains[idx] || 0)));
       const bar = document.getElementById(`eq-bar-${key}`);
+      const thumb = document.getElementById(`eq-thumb-${key}`);
+      const track = document.getElementById(`eq-track-${key}`);
       const val = document.getElementById(`eq-val-${key}`);
+      const pctFromBottom = ((db + 12) / 24) * 100;
       if (bar) {
-        const h = Math.max(6, Math.min(44, 24 + db * 1.5));
-        bar.style.height = `${h}px`;
+        if (db >= 0) {
+          bar.style.bottom = '50%';
+          bar.style.height = `${(db / 12) * 50}%`;
+        } else {
+          const absPct = (-db / 12) * 50;
+          bar.style.bottom = `${50 - absPct}%`;
+          bar.style.height = `${absPct}%`;
+        }
+      }
+      if (thumb) {
+        thumb.style.bottom = `${pctFromBottom}%`;
+      }
+      if (track) {
+        track.setAttribute('aria-valuenow', String(db));
       }
       if (val) {
         val.textContent = db > 0 ? `+${db}dB` : `${db}dB`;
@@ -11363,6 +12021,99 @@ const KurfaDSP = {
   }
 };
 
+function updateFxEngineNote() {
+  const noteEl = document.getElementById('fx-engine-note');
+  if (!noteEl) return;
+  if (state.currentTrack && state._activeMediaEngine === 'youtube') {
+    noteEl.textContent = t('fx.yt_engine_note');
+    noteEl.classList.remove('hidden');
+  } else if (KurfaDSP.isConnected) {
+    noteEl.textContent = t('fx.dsp_active_note');
+    noteEl.classList.remove('hidden');
+  } else {
+    noteEl.textContent = '';
+    noteEl.classList.add('hidden');
+  }
+}
+window.updateFxEngineNote = updateFxEngineNote;
+
+function applyCustomEqGainFromUser(bandIdx, db) {
+  if (bandIdx < 0 || bandIdx > 4) return;
+  const cleanDb = Math.max(-12, Math.min(12, Math.round(db)));
+  KurfaDSP.setGain(bandIdx, cleanDb, true);
+  state.activeEqPreset = 'ozel';
+  safeSetStorage('kurfa_eq_preset', 'ozel');
+  const labelEl = document.getElementById('eq-active-preset-label');
+  if (labelEl) labelEl.textContent = getAppLanguage() === 'en' ? 'Custom' : '\u00d6zel Ayar';
+  document.querySelectorAll('#eq-presets-container .eq-preset-btn').forEach(b => b.classList.remove('active'));
+}
+
+function initStudioEqFaders() {
+  const grid = document.getElementById('kurfa-studio-eq-grid');
+  if (!grid || grid.dataset.fadersBound === '1') return;
+  grid.dataset.fadersBound = '1';
+
+  const cols = grid.querySelectorAll('.kurfa-studio-fader-col[data-eq-band]');
+  cols.forEach((col) => {
+    const bandIdx = parseInt(col.getAttribute('data-eq-band'), 10);
+    const track = col.querySelector('.kurfa-studio-fader-track');
+    if (!track || Number.isNaN(bandIdx)) return;
+
+    const computeDbFromClientY = (clientY) => {
+      const rect = track.getBoundingClientRect();
+      if (!rect || rect.height <= 0) return 0;
+      const ratio = 1 - Math.max(0, Math.min(1, (clientY - rect.top) / rect.height));
+      return Math.round(ratio * 24 - 12);
+    };
+
+    track.addEventListener('pointerdown', (e) => {
+      e.preventDefault();
+      col.classList.add('dragging');
+      try { track.setPointerCapture(e.pointerId); } catch (_) {}
+      applyCustomEqGainFromUser(bandIdx, computeDbFromClientY(e.clientY));
+
+      const onMove = (ev) => {
+        applyCustomEqGainFromUser(bandIdx, computeDbFromClientY(ev.clientY));
+      };
+      const onUp = (ev) => {
+        col.classList.remove('dragging');
+        try { track.releasePointerCapture(ev.pointerId); } catch (_) {}
+        track.removeEventListener('pointermove', onMove);
+        track.removeEventListener('pointerup', onUp);
+        track.removeEventListener('pointercancel', onUp);
+      };
+      track.addEventListener('pointermove', onMove);
+      track.addEventListener('pointerup', onUp);
+      track.addEventListener('pointercancel', onUp);
+    });
+
+    track.addEventListener('dblclick', (e) => {
+      e.preventDefault();
+      applyCustomEqGainFromUser(bandIdx, 0);
+    });
+
+    track.addEventListener('keydown', (e) => {
+      const cur = KurfaDSP.gains[bandIdx] || 0;
+      if (e.key === 'ArrowUp' || e.key === 'ArrowRight') {
+        e.preventDefault();
+        applyCustomEqGainFromUser(bandIdx, cur + 1);
+      } else if (e.key === 'ArrowDown' || e.key === 'ArrowLeft') {
+        e.preventDefault();
+        applyCustomEqGainFromUser(bandIdx, cur - 1);
+      } else if (e.key === 'Home') {
+        e.preventDefault();
+        applyCustomEqGainFromUser(bandIdx, 12);
+      } else if (e.key === 'End') {
+        e.preventDefault();
+        applyCustomEqGainFromUser(bandIdx, -12);
+      } else if (e.key === '0') {
+        e.preventDefault();
+        applyCustomEqGainFromUser(bandIdx, 0);
+      }
+    });
+  });
+}
+
 function cycleBandGain(bandIdx) {
   if (bandIdx < 0 || bandIdx > 4) return;
   const current = KurfaDSP.gains[bandIdx] || 0;
@@ -11370,12 +12121,7 @@ function cycleBandGain(bandIdx) {
   const currIdx = steps.indexOf(current);
   const next = (currIdx !== -1 && currIdx < steps.length - 1) ? steps[currIdx + 1] : steps[0];
 
-  KurfaDSP.setGain(bandIdx, next);
-  state.activeEqPreset = 'ozel';
-  const labelEl = document.getElementById('eq-active-preset-label');
-  if (labelEl) labelEl.textContent = getAppLanguage() === 'en' ? 'Custom' : '\u00d6zel Ayar';
-
-  document.querySelectorAll('#eq-presets-container .eq-preset-btn').forEach(b => b.classList.remove('active'));
+  applyCustomEqGainFromUser(bandIdx, next);
   const freqLabels = ['60Hz (Bass)', '250Hz (Alt Mid)', '1kHz (Vokal)', '4kHz (\u00dcst Mid)', '16kHz (Tiz)'];
   showToast(`${freqLabels[bandIdx]}: ${next > 0 ? '+' : ''}${next}dB`);
 }
@@ -11405,7 +12151,7 @@ function setEqualizerPreset(preset, silent = true) {
     btn.classList.toggle('active', pKey === preset);
   });
 
-  KurfaDSP.applyPreset(preset);
+  KurfaDSP.applyPreset(preset, !silent);
   if (!silent) showToast(`AutoEq: ${labelMap[preset] || preset}`);
 }
 
@@ -11425,7 +12171,7 @@ function setPlaybackSpeed(speed, silent = false) {
   state.proSettings.playbackSpeed = clean;
   safeSetStorage('kurfa_speed', String(clean));
 
-  if (DOM.audioEngine) {
+  if (DOM.audioEngine && !KurfaDSP._silenceBoosting) {
     try {
       DOM.audioEngine.playbackRate = clean;
       if ('preservesPitch' in DOM.audioEngine) DOM.audioEngine.preservesPitch = true;
@@ -11460,6 +12206,13 @@ function toggleAudioNormalization() {
   state.proSettings.normalization = !state.proSettings.normalization;
   safeSetStorage('kurfa_norm', String(state.proSettings.normalization));
   KurfaDSP.applyNormalization(state.proSettings.normalization);
+  try {
+    if (window.KurfaAndroid && typeof window.KurfaAndroid.setNormalizationNative === 'function') {
+      window.KurfaAndroid.setNormalizationNative(Boolean(state.proSettings.normalization));
+    } else if (window.KurfaAndroidBridge && typeof window.KurfaAndroidBridge.setNormalizationNative === 'function') {
+      window.KurfaAndroidBridge.setNormalizationNative(Boolean(state.proSettings.normalization));
+    }
+  } catch (_) {}
   syncAudioFxUI();
   showToast(state.proSettings.normalization ? t('toast.norm_on') : t('toast.norm_off'));
 }
@@ -11468,6 +12221,7 @@ window.toggleAudioNormalization = toggleAudioNormalization;
 function toggleSkipSilence() {
   state.proSettings.skipSilence = !state.proSettings.skipSilence;
   safeSetStorage('kurfa_skip_silence', String(state.proSettings.skipSilence));
+  KurfaDSP.syncSilenceDetector();
   try {
     if (window.KurfaAndroid && typeof window.KurfaAndroid.setSkipSilenceNative === 'function') {
       window.KurfaAndroid.setSkipSilenceNative(Boolean(state.proSettings.skipSilence));
@@ -11485,7 +12239,11 @@ function syncAudioFxUI() {
   const spdVal = document.getElementById('fx-speed-val');
   const spdSlider = document.getElementById('fx-speed-slider');
   if (spdVal) spdVal.textContent = `${spd.toFixed(2).replace(/\.00$/, '.0')}x`;
-  if (spdSlider) spdSlider.value = String(spd);
+  if (spdSlider) {
+    spdSlider.value = String(spd);
+    const spdPct = Math.max(0, Math.min(100, ((spd - 0.5) / 1.5) * 100));
+    spdSlider.style.setProperty('--range-pct', `${spdPct.toFixed(1)}%`);
+  }
   document.querySelectorAll('#fx-speed-presets .fx-pill-btn').forEach((btn) => {
     const v = parseFloat(btn.getAttribute('data-speed'));
     btn.classList.toggle('active', Math.abs(v - spd) < 0.02);
@@ -11495,7 +12253,11 @@ function syncAudioFxUI() {
   const cfVal = document.getElementById('fx-crossfade-val');
   const cfSlider = document.getElementById('fx-crossfade-slider');
   if (cfVal) cfVal.textContent = `${cf}s`;
-  if (cfSlider) cfSlider.value = String(cf);
+  if (cfSlider) {
+    cfSlider.value = String(cf);
+    const cfPct = Math.max(0, Math.min(100, (cf / 8) * 100));
+    cfSlider.style.setProperty('--range-pct', `${cfPct.toFixed(1)}%`);
+  }
 
   const normOn = Boolean(state.proSettings?.normalization);
   const normBadge = document.getElementById('fx-norm-badge');
@@ -11506,47 +12268,94 @@ function syncAudioFxUI() {
       ? 'px-1.5 py-0.5 rounded-full text-[10px] bg-primary text-on-primary flex-shrink-0'
       : 'px-1.5 py-0.5 rounded-full text-[10px] bg-surface-container text-on-surface-variant flex-shrink-0';
   }
-  if (normBtn) normBtn.classList.toggle('border', normOn);
+  if (normBtn) normBtn.classList.toggle('fx-on', normOn);
 
   const silOn = Boolean(state.proSettings?.skipSilence);
   const silBadge = document.getElementById('fx-silence-badge');
+  const silBtn = document.getElementById('btn-fx-skip-silence');
   if (silBadge) {
     silBadge.textContent = silOn ? t('settings.on') : t('settings.off');
     silBadge.className = silOn
       ? 'px-1.5 py-0.5 rounded-full text-[10px] bg-primary text-on-primary flex-shrink-0'
       : 'px-1.5 py-0.5 rounded-full text-[10px] bg-surface-container text-on-surface-variant flex-shrink-0';
   }
+  if (silBtn) silBtn.classList.toggle('fx-on', silOn);
 
   const body = document.getElementById('audio-fx-body');
   const chev = document.getElementById('audio-fx-chevron');
   if (body) body.classList.toggle('hidden', _audioFxCollapsed);
   if (chev) chev.style.transform = _audioFxCollapsed ? 'rotate(-90deg)' : 'rotate(0deg)';
+  updateFxEngineNote();
 }
 window.syncAudioFxUI = syncAudioFxUI;
 
-// Crossfade & Sleep Timer Volume Multiplier
+// Quintic Smoothstep Fade, Crossfade & Sleep Timer Volume Multiplier
+let _smoothFadeRaf = null;
+let _smoothFadeSeq = 0;
+function quinticSmoothstep(t) {
+  const c = Math.max(0, Math.min(1, t));
+  return c * c * c * (c * (c * 6 - 15) + 10);
+}
+
+function cancelSmoothFade() {
+  _smoothFadeSeq++;
+  if (_smoothFadeRaf) {
+    cancelAnimationFrame(_smoothFadeRaf);
+    _smoothFadeRaf = null;
+  }
+}
+
+function startSmoothFade(fromGain, toGain, durationMs, onDone) {
+  cancelSmoothFade();
+  const seq = _smoothFadeSeq;
+  const dur = Math.max(40, Number(durationMs) || 180);
+  const start = performance.now();
+  const f = Math.max(0, Math.min(1, Number(fromGain)));
+  const to = Math.max(0, Math.min(1, Number(toGain)));
+  state._smoothFadeGain = f;
+  if (typeof applyEffectiveVolume === 'function') applyEffectiveVolume();
+
+  const tick = (now) => {
+    if (seq !== _smoothFadeSeq) return;
+    const p = Math.min(1, (now - start) / dur);
+    const e = quinticSmoothstep(p);
+    state._smoothFadeGain = f + (to - f) * e;
+    if (typeof applyEffectiveVolume === 'function') applyEffectiveVolume();
+    if (p < 1) {
+      _smoothFadeRaf = requestAnimationFrame(tick);
+    } else {
+      state._smoothFadeGain = to;
+      _smoothFadeRaf = null;
+      if (typeof applyEffectiveVolume === 'function') applyEffectiveVolume();
+      if (typeof onDone === 'function') onDone();
+    }
+  };
+  _smoothFadeRaf = requestAnimationFrame(tick);
+  return seq;
+}
+
 let _crossfadeInRaf = null;
 function startCrossfadeIn(durationSec) {
   if (_crossfadeInRaf) {
     cancelAnimationFrame(_crossfadeInRaf);
     _crossfadeInRaf = null;
   }
-  const durMs = Math.min(4000, Math.max(800, (Number(durationSec) || 2) * 500));
+  const durMs = Math.min(6000, Math.max(900, (Number(durationSec) || 2) * 850));
   const startMs = performance.now();
-  state._crossfadeGain = 0.08;
+  state._crossfadeGain = 0.02;
   state._crossfadeFadingOut = false;
   if (typeof applyEffectiveVolume === 'function') applyEffectiveVolume();
 
   const step = (now) => {
     const p = Math.min(1, (now - startMs) / durMs);
-    // Quintic smoothstep
-    state._crossfadeGain = p * p * p * (p * (p * 6 - 15) + 10);
+    state._crossfadeGain = quinticSmoothstep(p);
     if (typeof applyEffectiveVolume === 'function') applyEffectiveVolume();
     if (p < 1) {
       _crossfadeInRaf = requestAnimationFrame(step);
     } else {
       state._crossfadeGain = 1;
       _crossfadeInRaf = null;
+      if (typeof applyEffectiveVolume === 'function') applyEffectiveVolume();
     }
   };
   _crossfadeInRaf = requestAnimationFrame(step);
@@ -11554,7 +12363,7 @@ function startCrossfadeIn(durationSec) {
 
 function checkCrossfadeTick(cur, dur) {
   const cf = Number(state.proSettings?.crossfadeSec) || 0;
-  if (cf <= 0 || !dur || dur < cf + 6) {
+  if (cf <= 0 || !dur || dur < cf + 4) {
     if (state._crossfadeFadingOut) {
       state._crossfadeFadingOut = false;
       state._crossfadeGain = 1;
@@ -11566,7 +12375,7 @@ function checkCrossfadeTick(cur, dur) {
   if (remaining > 0 && remaining <= cf) {
     state._crossfadeFadingOut = true;
     const tNorm = Math.max(0, Math.min(1, remaining / cf));
-    state._crossfadeGain = Math.max(0.05, tNorm * tNorm);
+    state._crossfadeGain = Math.max(0.02, quinticSmoothstep(tNorm));
     if (typeof applyEffectiveVolume === 'function') applyEffectiveVolume();
   } else if (state._crossfadeFadingOut && remaining > cf) {
     state._crossfadeFadingOut = false;
@@ -11583,8 +12392,8 @@ function getEffectiveVolumeMultiplier() {
   if (typeof state._crossfadeGain === 'number' && state._crossfadeGain < 1) {
     mult *= state._crossfadeGain;
   }
-  if (state.proSettings && state.proSettings.normalization) {
-    mult *= 0.92; // Slight headroom compensation when normalization is active
+  if (typeof state._smoothFadeGain === 'number' && state._smoothFadeGain < 1) {
+    mult *= state._smoothFadeGain;
   }
   return Math.max(0, Math.min(1, mult));
 }
@@ -15043,6 +15852,7 @@ function setupEventListeners() {
   window.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') {
       const modalClosers = [
+        ['album-detail-modal', closeAlbumDetail],
         ['ad-warning-modal', () => dismissAdWarningModal(false)],
         ['app-install-modal', closeAppInstallModal],
         ['google-account-chooser-modal', closeGoogleAccountChooser],
@@ -15280,6 +16090,12 @@ function setupEventListeners() {
       if (DOM.audioEngine && DOM.audioEngine.getAttribute('src')) {
         state._activeMediaEngine = 'audio';
         state._activeTrackConfirmedPlaying = true;
+        if (typeof KurfaDSP !== 'undefined') {
+          KurfaDSP.connectMediaElement(DOM.audioEngine);
+          KurfaDSP.resumeContext();
+          KurfaDSP.syncSilenceDetector();
+        }
+        if (typeof updateFxEngineNote === 'function') updateFxEngineNote();
       }
     });
     DOM.audioEngine.addEventListener('canplay', clearAudioStallWatchdog);
@@ -15327,7 +16143,24 @@ function setupEventListeners() {
     DOM.audioEngine.addEventListener('stalled', scheduleStallWatchdog);
     DOM.audioEngine.addEventListener('error', (e) => {
       clearAudioStallWatchdog();
-      if (!DOM.audioEngine.getAttribute('src')) return;
+      const prevSrc = `${DOM.audioEngine.getAttribute('src') || ''}`;
+      if (!prevSrc) return;
+      if (
+        DOM.audioEngine.crossOrigin === 'anonymous' &&
+        !state._activeTrackConfirmedPlaying &&
+        typeof KurfaDSP !== 'undefined' &&
+        !KurfaDSP.sourceNode &&
+        !KurfaDSP.corsBlockedUrls.has(prevSrc)
+      ) {
+        KurfaDSP.corsBlockedUrls.add(prevSrc);
+        try {
+          DOM.audioEngine.removeAttribute('crossorigin');
+          DOM.audioEngine.crossOrigin = null;
+          DOM.audioEngine.src = prevSrc;
+          DOM.audioEngine.play().catch(() => {});
+          return;
+        } catch (_) {}
+      }
       console.warn("DOM.audioEngine media error:", e);
       const cur = Math.max(0, Math.floor(DOM.audioEngine.currentTime || state.currentPlayheadTime || 0));
       handoffAudioErrorOrStall(cur);
@@ -15432,7 +16265,6 @@ function initApp() {
   }
   setPlayerVolume(state.volume);
   updateLyricsDisplay();
-  setEqualizerPreset(state.activeEqPreset || 'standart', true);
   state.deckVisualMode = 'vinyl';
   syncDeckVisualUIOnly('vinyl');
   if (typeof syncTopSearchClearBtn === 'function') syncTopSearchClearBtn();
@@ -15464,8 +16296,10 @@ function initApp() {
   }
 
   KurfaDSP.init(DOM.audioEngine);
+  initStudioEqFaders();
+  setEqualizerPreset(state.activeEqPreset || 'standart', true);
   if (state.proSettings) {
-    if (state.proSettings.normalization) KurfaDSP.applyNormalization(true);
+    if (state.proSettings.normalization) KurfaDSP.applyNormalization(true, false);
     if (typeof syncAudioFxUI === 'function') syncAudioFxUI();
     if (typeof LiquidBackground !== 'undefined') LiquidBackground.syncToggleState();
     if (typeof updateSponsorBlockToggleUI === 'function') updateSponsorBlockToggleUI();
