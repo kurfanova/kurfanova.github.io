@@ -138,7 +138,7 @@
     }
   </style>
   <link rel="stylesheet" href="./tailwind.min.css?v=20261120_v17">
-  <link rel="stylesheet" href="./style.css?v=20261120_v20">
+  <link rel="stylesheet" href="./style.css?v=20261121_v22">
 </head>
 <body class="bg-background font-sans text-on-surface antialiased min-h-screen">
   <script>
@@ -858,6 +858,10 @@
               <span class="material-symbols-outlined text-[16px] text-red-500" aria-hidden="true">favorite</span>
               <span><span data-i18n="library.favorites">Favoriler</span> (<span id="fav-badge-count">0</span>)</span>
             </button>
+            <button type="button" id="kutuphane-btn-istatistik" class="sub-tab-pill shrink-0 flex items-center gap-1.5 px-3.5 sm:px-4 py-2 rounded-full text-xs font-semibold bg-surface-container-low text-on-surface hover:bg-surface-container-high" onclick="switchKutuphaneSubTab('istatistik')">
+              <span class="material-symbols-outlined text-[16px] text-secondary" aria-hidden="true">bar_chart</span>
+              <span data-i18n="stats.tab">İstatistikler</span>
+            </button>
           </div>
         </section>
 
@@ -1025,6 +1029,58 @@
           </div>
         </div>
 
+        <!-- KÜTÜPHANE PANE 4: GELİŞMİŞ DİNLEME İSTATİSTİKLERİ -->
+        <div id="kutuphane-pane-istatistik" class="flex flex-col gap-4 hidden">
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <div class="flex items-center gap-2 min-w-0">
+              <h2 class="text-sm sm:text-base font-bold text-on-surface" data-i18n="stats.title">Dinleme İstatistikleri</h2>
+              <span class="text-[11px] text-on-surface-variant" id="stats-period-note"></span>
+            </div>
+            <div class="inline-flex p-0.5 rounded-full bg-surface-container-low border border-surface-container/60 text-[11px] font-bold" id="stats-period-pills">
+              <button type="button" id="btn-stats-week" class="px-3 py-1 rounded-full bg-primary text-on-primary transition-all" onclick="setStatsPeriod('week')" data-i18n="stats.week">Haftalık</button>
+              <button type="button" id="btn-stats-month" class="px-3 py-1 rounded-full text-on-surface-variant hover:text-on-surface transition-all" onclick="setStatsPeriod('month')" data-i18n="stats.month">Aylık</button>
+              <button type="button" id="btn-stats-all" class="px-3 py-1 rounded-full text-on-surface-variant hover:text-on-surface transition-all" onclick="setStatsPeriod('all')" data-i18n="stats.all">Tümü</button>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-3 gap-2.5 sm:gap-3">
+            <div class="rounded-2xl bg-surface-container-lowest border border-surface-container/60 p-3 sm:p-4 shadow-sm flex flex-col gap-1">
+              <span class="text-[11px] font-semibold text-on-surface-variant truncate" data-i18n="stats.total_time">Toplam Süre</span>
+              <span class="text-base sm:text-xl font-extrabold text-primary truncate" id="stats-summary-time">0 dk</span>
+            </div>
+            <div class="rounded-2xl bg-surface-container-lowest border border-surface-container/60 p-3 sm:p-4 shadow-sm flex flex-col gap-1">
+              <span class="text-[11px] font-semibold text-on-surface-variant truncate" data-i18n="stats.tracks_played">Dinlenen Şarkı</span>
+              <span class="text-base sm:text-xl font-extrabold text-secondary truncate" id="stats-summary-plays">0</span>
+            </div>
+            <div class="rounded-2xl bg-surface-container-lowest border border-surface-container/60 p-3 sm:p-4 shadow-sm flex flex-col gap-1">
+              <span class="text-[11px] font-semibold text-on-surface-variant truncate" data-i18n="stats.top_artist_label">Favori Sanatçı</span>
+              <span class="text-xs sm:text-sm font-extrabold text-on-surface truncate" id="stats-summary-top-artist">—</span>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <div class="rounded-2xl bg-surface-container-lowest border border-surface-container/60 p-3.5 sm:p-4 shadow-sm flex flex-col gap-2.5">
+              <div class="flex items-center justify-between">
+                <h3 class="text-xs sm:text-sm font-bold text-on-surface flex items-center gap-1.5">
+                  <span class="material-symbols-outlined text-[17px] text-primary">music_note</span>
+                  <span data-i18n="stats.top_tracks">En Çok Dinlenen İlk 5 Şarkı</span>
+                </h3>
+              </div>
+              <div id="stats-top-tracks-list" class="flex flex-col gap-1.5"></div>
+            </div>
+
+            <div class="rounded-2xl bg-surface-container-lowest border border-surface-container/60 p-3.5 sm:p-4 shadow-sm flex flex-col gap-2.5">
+              <div class="flex items-center justify-between">
+                <h3 class="text-xs sm:text-sm font-bold text-on-surface flex items-center gap-1.5">
+                  <span class="material-symbols-outlined text-[17px] text-secondary">artist</span>
+                  <span data-i18n="stats.top_artists">En Çok Dinlenen İlk 5 Sanatçı</span>
+                </h3>
+              </div>
+              <div id="stats-top-artists-list" class="flex flex-col gap-1.5"></div>
+            </div>
+          </div>
+        </div>
+
       </div><!-- /#tab-kutuphanem -->
 
 
@@ -1075,28 +1131,36 @@
           <div class="xl:col-span-5 order-1 xl:order-2 flex flex-col gap-space-md">
             
             <!-- Vinyl & Deck Card -->
-            <div class="bg-surface-container-lowest rounded-3xl p-4 sm:p-6 shadow-sm border border-surface-container/60 flex flex-col items-center relative overflow-hidden">
-              <div class="w-full flex items-center justify-between gap-2 mb-4">
-                <div class="flex items-center gap-1.5 text-primary text-xs font-bold tracking-wide whitespace-nowrap">
+            <div id="deck-main-card" class="bg-surface-container-lowest rounded-3xl p-4 sm:p-6 shadow-sm border border-surface-container/60 flex flex-col items-center relative overflow-hidden">
+              <div id="player-liquid-bg" class="kurfa-liquid-bg" aria-hidden="true"></div>
+
+              <div class="relative z-10 w-full flex items-center justify-between gap-2 mb-4">
+                <div class="flex items-center gap-1.5 text-primary text-xs font-bold tracking-wide whitespace-nowrap min-w-0">
                   <span class="material-symbols-outlined text-[16px]" aria-hidden="true">graphic_eq</span>
                   <span data-i18n="player.now_playing">Şimdi Çalıyor</span>
                 </div>
 
-                <!-- Deck Mode Switch: Kapak vs Video -->
-                <div class="inline-flex p-0.5 bg-surface-container-low rounded-full text-[11px] font-bold border border-surface-container/70 flex-shrink-0">
-                  <button type="button" id="btn-deck-vinyl-mode" class="px-3 py-1 rounded-full bg-surface-container-lowest text-on-surface shadow-xs transition-all flex items-center gap-1 whitespace-nowrap" onclick="setDeckVisualMode('vinyl')">
-                    <span class="material-symbols-outlined text-[14px]">album</span>
-                    <span data-i18n="player.cover_mode">Kapak</span>
+                <div class="flex items-center gap-1.5 flex-shrink-0">
+                  <button type="button" id="btn-deck-sleep-timer" onclick="toggleSleepTimerPopover(this)" class="h-7 px-2 rounded-full bg-surface-container-low/80 hover:bg-surface-container border border-surface-container/70 text-[11px] font-bold text-on-surface-variant hover:text-primary flex items-center gap-1 transition-colors" title="Uyku Zamanlayıcı" data-i18n-title="sleep.title">
+                    <span class="material-symbols-outlined text-[14px]" aria-hidden="true">bedtime</span>
+                    <span id="deck-sleep-badge" class="hidden font-mono text-[10px] text-primary"></span>
                   </button>
-                  <button type="button" id="btn-deck-video-mode" class="px-3 py-1 rounded-full text-on-surface-variant hover:text-on-surface transition-all flex items-center gap-1 whitespace-nowrap" onclick="setDeckVisualMode('video')">
-                    <span class="material-symbols-outlined text-[14px]">smart_display</span>
-                    <span data-i18n="player.video_mode">Video</span>
-                  </button>
+                  <!-- Deck Mode Switch: Kapak vs Video -->
+                  <div class="inline-flex p-0.5 bg-surface-container-low rounded-full text-[11px] font-bold border border-surface-container/70 flex-shrink-0">
+                    <button type="button" id="btn-deck-vinyl-mode" class="px-3 py-1 rounded-full bg-surface-container-lowest text-on-surface shadow-xs transition-all flex items-center gap-1 whitespace-nowrap" onclick="setDeckVisualMode('vinyl')">
+                      <span class="material-symbols-outlined text-[14px]">album</span>
+                      <span data-i18n="player.cover_mode">Kapak</span>
+                    </button>
+                    <button type="button" id="btn-deck-video-mode" class="px-3 py-1 rounded-full text-on-surface-variant hover:text-on-surface transition-all flex items-center gap-1 whitespace-nowrap" onclick="setDeckVisualMode('video')">
+                      <span class="material-symbols-outlined text-[14px]">smart_display</span>
+                      <span data-i18n="player.video_mode">Video</span>
+                    </button>
+                  </div>
                 </div>
               </div>
 
               <!-- 1. Album Art & Subtle Vinyl Accent (Compact on Desktop for generous Lyrics space) -->
-              <div id="deck-vinyl-wrapper" class="relative w-36 h-36 sm:w-40 sm:h-40 xl:w-28 xl:h-28 my-1 flex items-center justify-center transition-all duration-300">
+              <div id="deck-vinyl-wrapper" class="relative z-10 w-36 h-36 sm:w-40 sm:h-40 xl:w-28 xl:h-28 my-1 flex items-center justify-center transition-all duration-300">
                 <div class="absolute right-[-10px] w-28 h-28 sm:w-32 sm:h-32 xl:w-24 xl:h-24 rounded-full bg-inverse-surface/90 shadow-lg flex items-center justify-center animate-spin-slow" id="vinyl-disc">
                   <div class="w-9 h-9 xl:w-7 xl:h-7 rounded-full bg-primary flex items-center justify-center">
                     <div class="w-2.5 h-2.5 rounded-full bg-surface-container-lowest"></div>
@@ -1108,7 +1172,7 @@
               </div>
 
               <!-- Video Mode Ad & Notice Banner -->
-              <div id="deck-video-ad-notice" class="w-full my-2 p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-900 dark:text-amber-200 text-xs flex items-center justify-between gap-2 transition-all hidden">
+              <div id="deck-video-ad-notice" class="relative z-10 w-full my-2 p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-900 dark:text-amber-200 text-xs flex items-center justify-between gap-2 transition-all hidden">
                 <div class="flex items-center gap-2 flex-1 min-w-0">
                   <span class="material-symbols-outlined text-[18px] text-amber-600 dark:text-amber-400 flex-shrink-0">info</span>
                   <p class="text-[11px] leading-tight font-medium" data-i18n="player.video_ad_notice">YouTube video modunda reklam görülebilir; reklamsız dinleme için <strong class="underline cursor-pointer" onclick="setDeckVisualMode('vinyl')">Kapak Modu</strong>'na geçebilirsiniz.</p>
@@ -1119,7 +1183,7 @@
               </div>
 
               <!-- 2. Live YouTube Video Container -->
-              <div id="deck-video-wrapper" class="w-full aspect-video rounded-2xl overflow-hidden bg-black shadow-xl relative my-2 border border-surface-container group hidden">
+              <div id="deck-video-wrapper" class="relative z-10 w-full aspect-video rounded-2xl overflow-hidden bg-black shadow-xl my-2 border border-surface-container group hidden">
                 <div id="deck-video-slot" class="w-full h-full relative flex items-center justify-center">
                   <div id="deck-video-placeholder" class="text-xs text-zinc-400 flex flex-col items-center gap-2">
                     <span class="material-symbols-outlined text-[36px] text-primary animate-pulse" aria-hidden="true">smart_display</span>
@@ -1134,46 +1198,166 @@
                 </div>
               </div>
 
-              <div class="w-full text-center mt-3 mb-1 px-2">
+              <div class="relative z-10 w-full text-center mt-3 mb-1 px-2">
                 <h3 class="text-base sm:text-lg font-extrabold text-on-surface leading-snug line-clamp-2 break-words" id="deck-title">Kurfa Müzik</h3>
                 <p class="text-xs sm:text-sm text-on-surface-variant font-medium mt-0.5 truncate" id="deck-artist" data-i18n="player.select_song">Bir şarkı seçin</p>
               </div>
 
               <!-- Clean Integrated Lyrics Panel (No Nested Card Clutter) -->
-              <div class="w-full mt-4 pt-4 border-t border-surface-container/60 flex flex-col" id="karaoke-lyrics-card">
+              <div class="relative z-10 w-full mt-4 pt-4 border-t border-surface-container/60 flex flex-col" id="karaoke-lyrics-card">
                 <div class="flex items-center justify-between gap-2 mb-2.5">
-                  <div class="flex items-center gap-2">
+                  <div class="flex items-center gap-2 min-w-0">
                     <span class="w-2 h-2 rounded-full bg-primary animate-pulse flex-shrink-0"></span>
-                    <span id="lyrics-status-label" class="text-xs font-extrabold text-on-surface tracking-tight" data-i18n="player.lyrics_title">Şarkı Sözleri</span>
+                    <span id="lyrics-status-label" class="text-xs font-extrabold text-on-surface tracking-tight truncate" data-i18n="player.lyrics_title">Şarkı Sözleri</span>
                   </div>
-                  <span class="text-[11px] text-on-surface-variant font-medium whitespace-nowrap" id="lyrics-source-badge" data-i18n="player.lyrics_synced">Senkronize</span>
+                  <div class="flex items-center gap-1.5 flex-shrink-0">
+                    <span class="text-[11px] text-on-surface-variant font-medium whitespace-nowrap truncate max-w-[125px]" id="lyrics-source-badge" data-i18n="player.lyrics_synced">Senkronize</span>
+                    <button type="button" id="btn-lyrics-share-mode" onclick="toggleLyricsShareSelectMode()" class="hidden h-6 px-2 rounded-full bg-surface-container-low/90 hover:bg-surface-container border border-surface-container/70 text-[11px] font-bold text-on-surface flex items-center gap-1 transition-all active:scale-95" title="Söz Kartı Paylaş" data-i18n-title="lyrics.share_btn">
+                      <span class="material-symbols-outlined text-[13px] text-primary">ios_share</span>
+                      <span data-i18n="lyrics.share_btn">Paylaş</span>
+                    </button>
+                  </div>
                 </div>
 
-                <!-- Evenly Spaced 1-Row Sync Controls -->
-                <div class="w-full grid grid-cols-6 gap-1.5 mb-2 hidden" id="lyrics-offset-controls" title="Söz senkronizasyon ayarı" data-i18n-title="player.lyrics_sync_title">
-                  <button type="button" class="h-7 rounded-xl bg-surface-container-low hover:bg-surface-container text-[11px] font-mono font-bold text-on-surface transition-colors active:scale-95" onclick="adjustLyricsOffset(-5.0)">-5s</button>
+                <!-- Share Selection Mode Toolbar -->
+                <div id="lyrics-share-toolbar" class="hidden w-full items-center justify-between gap-2 px-2.5 py-1.5 mb-2 rounded-xl bg-primary/10 border border-primary/25 text-xs">
+                  <span id="lyrics-share-hint" class="text-[11px] font-semibold text-on-surface truncate" data-i18n="lyrics.select_lines_hint">1-4 satır seçin</span>
+                  <div class="flex items-center gap-1.5 flex-shrink-0">
+                    <button type="button" id="btn-lyrics-share-confirm" onclick="openLyricsShareModal()" class="h-6 px-2.5 rounded-full bg-primary text-on-primary text-[11px] font-bold flex items-center gap-1 active:scale-95 transition-all">
+                      <span class="material-symbols-outlined text-[13px]">image</span>
+                      <span id="lyrics-share-count-label" data-i18n="lyrics.create_card">Kart Oluştur</span>
+                    </button>
+                    <button type="button" onclick="cancelLyricsShareSelectMode()" class="h-6 px-2 rounded-full bg-surface-container text-on-surface-variant text-[11px] font-semibold hover:text-on-surface" data-i18n="cpl.cancel">İptal</button>
+                  </div>
+                </div>
+
+                <!-- Evenly Spaced 1-Row Sync Controls (-1s / -0.5s / 0.0s / +0.5s / +1s / Eşitle) -->
+                <div class="w-full grid grid-cols-6 gap-1 sm:gap-1.5 mb-2 hidden" id="lyrics-offset-controls" title="Söz senkronizasyon ayarı" data-i18n-title="player.lyrics_sync_title">
                   <button type="button" class="h-7 rounded-xl bg-surface-container-low hover:bg-surface-container text-[11px] font-mono font-bold text-on-surface transition-colors active:scale-95" onclick="adjustLyricsOffset(-1.0)">-1s</button>
-                  <button type="button" class="h-7 rounded-xl bg-primary/10 hover:bg-primary/20 text-[11px] font-mono text-primary font-extrabold transition-colors active:scale-95" onclick="promptManualOffset()">
+                  <button type="button" class="h-7 rounded-xl bg-surface-container-low hover:bg-surface-container text-[11px] font-mono font-bold text-on-surface transition-colors active:scale-95" onclick="adjustLyricsOffset(-0.5)">-0.5s</button>
+                  <button type="button" class="h-7 rounded-xl bg-primary/10 hover:bg-primary/20 text-[11px] font-mono text-primary font-extrabold transition-colors active:scale-95" onclick="adjustLyricsOffset(0)" title="0.0s Sıfırla" data-i18n-title="lyrics.reset_offset">
                     <span id="lyrics-offset-display">0.0s</span>
                   </button>
+                  <button type="button" class="h-7 rounded-xl bg-surface-container-low hover:bg-surface-container text-[11px] font-mono font-bold text-on-surface transition-colors active:scale-95" onclick="adjustLyricsOffset(0.5)">+0.5s</button>
                   <button type="button" class="h-7 rounded-xl bg-surface-container-low hover:bg-surface-container text-[11px] font-mono font-bold text-on-surface transition-colors active:scale-95" onclick="adjustLyricsOffset(1.0)">+1s</button>
-                  <button type="button" class="h-7 rounded-xl bg-surface-container-low hover:bg-surface-container text-[11px] font-mono font-bold text-on-surface transition-colors active:scale-95" onclick="adjustLyricsOffset(5.0)">+5s</button>
-                  <button type="button" class="h-7 rounded-xl bg-primary hover:bg-primary/90 text-on-primary text-[11px] font-bold transition-all flex items-center justify-center gap-1 active:scale-95" onclick="syncActiveLineToPlayback()">
+                  <button type="button" class="h-7 rounded-xl bg-primary hover:bg-primary/90 text-on-primary text-[11px] font-bold transition-all flex items-center justify-center gap-0.5 active:scale-95 px-1 truncate" onclick="syncActiveLineToPlayback()">
                     <span class="material-symbols-outlined text-[13px]" aria-hidden="true">sync</span>
-                    <span data-i18n="player.lyrics_sync_btn">Eşitle</span>
+                    <span class="truncate" data-i18n="player.lyrics_sync_btn">Eşitle</span>
                   </button>
                 </div>
 
                 <div id="lyrics-intro-diff-hint" class="hidden items-center gap-1.5 px-2.5 py-1 rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400 text-[11px] font-semibold mb-2"></div>
 
-                <!-- Clean Scrollable Lyrics Viewport -->
-                <div class="w-full py-1.5 min-h-[280px] xl:h-[420px] max-h-[460px] overflow-y-auto relative scroll-smooth" id="karaoke-lyrics-box">
-                  <div id="deck-lyrics-lines" class="flex flex-col gap-1.5 text-[15px] text-on-surface font-medium py-1">
-                    <!-- Injected by JavaScript -->
+                <!-- Clean Scrollable Lyrics Viewport + Floating Resync Pill -->
+                <div class="relative w-full">
+                  <div class="w-full py-1.5 min-h-[280px] xl:h-[420px] max-h-[460px] overflow-y-auto relative" id="karaoke-lyrics-box">
+                    <div id="deck-lyrics-lines" class="flex flex-col gap-1.5 text-[15px] text-on-surface font-medium py-1 pb-10">
+                      <!-- Injected by JavaScript -->
+                    </div>
                   </div>
+                  <button type="button" id="btn-lyrics-resync" onclick="resumeLyricsAutoScroll()" class="hidden absolute bottom-3 left-1/2 -translate-x-1/2 z-20 px-3.5 py-1.5 rounded-full text-xs font-bold flex items-center gap-1.5 whitespace-nowrap active:scale-95 transition-all">
+                    <span class="material-symbols-outlined text-[15px] text-primary">my_location</span>
+                    <span data-i18n="lyrics.resync_btn">Senkronize Et</span>
+                  </button>
                 </div>
               </div>
 
+            </div>
+
+            <!-- Compact Collapsible Audio Engine & AutoEq FX Card -->
+            <div id="audio-fx-card" class="bg-surface-container-lowest rounded-3xl p-4 sm:p-5 shadow-sm border border-surface-container/60 flex flex-col gap-3">
+              <div class="flex items-center justify-between gap-2 cursor-pointer select-none" onclick="toggleAudioFxPanel()">
+                <div class="flex items-center gap-2 min-w-0">
+                  <span class="material-symbols-outlined text-[18px] text-primary flex-shrink-0">tune</span>
+                  <span class="text-xs sm:text-sm font-extrabold text-on-surface truncate" data-i18n="fx.title">Ses Motoru &amp; FX</span>
+                </div>
+                <div class="flex items-center gap-2 flex-shrink-0">
+                  <span id="eq-active-preset-label" class="px-2.5 py-0.5 rounded-full bg-surface-container text-[11px] font-bold text-primary whitespace-nowrap">Düz / Flat</span>
+                  <span id="audio-fx-chevron" class="material-symbols-outlined text-[18px] text-on-surface-variant transition-transform duration-200">expand_more</span>
+                </div>
+              </div>
+
+              <div id="audio-fx-body" class="flex flex-col gap-3.5 pt-2 border-t border-surface-container/60">
+                <!-- 5-Band Visual Interactive EQ -->
+                <div class="kurfa-eq-grid px-1 pt-1">
+                  <button type="button" onclick="cycleBandGain(0)" class="flex flex-col items-center gap-1 py-1.5 rounded-xl hover:bg-surface-container-low transition-colors">
+                    <div class="h-12 flex items-end justify-center w-full"><span id="eq-bar-60hz" class="eq-bar w-2.5 rounded-full bg-primary" style="height:24px;"></span></div>
+                    <span id="eq-val-60hz" class="text-[10px] font-mono font-bold text-on-surface">0dB</span>
+                    <span class="text-[10px] text-on-surface-variant">60Hz</span>
+                  </button>
+                  <button type="button" onclick="cycleBandGain(1)" class="flex flex-col items-center gap-1 py-1.5 rounded-xl hover:bg-surface-container-low transition-colors">
+                    <div class="h-12 flex items-end justify-center w-full"><span id="eq-bar-250hz" class="eq-bar w-2.5 rounded-full bg-primary" style="height:24px;"></span></div>
+                    <span id="eq-val-250hz" class="text-[10px] font-mono font-bold text-on-surface">0dB</span>
+                    <span class="text-[10px] text-on-surface-variant">250Hz</span>
+                  </button>
+                  <button type="button" onclick="cycleBandGain(2)" class="flex flex-col items-center gap-1 py-1.5 rounded-xl hover:bg-surface-container-low transition-colors">
+                    <div class="h-12 flex items-end justify-center w-full"><span id="eq-bar-1khz" class="eq-bar w-2.5 rounded-full bg-primary" style="height:24px;"></span></div>
+                    <span id="eq-val-1khz" class="text-[10px] font-mono font-bold text-on-surface">0dB</span>
+                    <span class="text-[10px] text-on-surface-variant">1kHz</span>
+                  </button>
+                  <button type="button" onclick="cycleBandGain(3)" class="flex flex-col items-center gap-1 py-1.5 rounded-xl hover:bg-surface-container-low transition-colors">
+                    <div class="h-12 flex items-end justify-center w-full"><span id="eq-bar-4khz" class="eq-bar w-2.5 rounded-full bg-primary" style="height:24px;"></span></div>
+                    <span id="eq-val-4khz" class="text-[10px] font-mono font-bold text-on-surface">0dB</span>
+                    <span class="text-[10px] text-on-surface-variant">4kHz</span>
+                  </button>
+                  <button type="button" onclick="cycleBandGain(4)" class="flex flex-col items-center gap-1 py-1.5 rounded-xl hover:bg-surface-container-low transition-colors">
+                    <div class="h-12 flex items-end justify-center w-full"><span id="eq-bar-16khz" class="eq-bar w-2.5 rounded-full bg-primary" style="height:24px;"></span></div>
+                    <span id="eq-val-16khz" class="text-[10px] font-mono font-bold text-on-surface">0dB</span>
+                    <span class="text-[10px] text-on-surface-variant">16kHz</span>
+                  </button>
+                </div>
+
+                <!-- AutoEq Headphone Profiles -->
+                <div class="flex flex-col gap-1.5">
+                  <span class="text-[11px] font-bold text-on-surface-variant uppercase tracking-wider" data-i18n="fx.autoeq_label">AutoEq Kulaklık Profilleri</span>
+                  <div id="eq-presets-container" class="flex flex-wrap gap-1.5">
+                    <button type="button" data-eq-preset="standart" class="eq-preset-btn active px-2.5 py-1 rounded-full bg-surface-container-low text-[11px] font-semibold text-on-surface" onclick="setEqualizerPreset('standart', false)" data-i18n="fx.preset_flat">Düz / Flat</button>
+                    <button type="button" data-eq-preset="airpods_pro" class="eq-preset-btn px-2.5 py-1 rounded-full bg-surface-container-low text-[11px] font-semibold text-on-surface" onclick="setEqualizerPreset('airpods_pro', false)">AirPods Pro</button>
+                    <button type="button" data-eq-preset="sony_xm5" class="eq-preset-btn px-2.5 py-1 rounded-full bg-surface-container-low text-[11px] font-semibold text-on-surface" onclick="setEqualizerPreset('sony_xm5', false)">Sony WH-1000XM5</button>
+                    <button type="button" data-eq-preset="bass" class="eq-preset-btn px-2.5 py-1 rounded-full bg-surface-container-low text-[11px] font-semibold text-on-surface" onclick="setEqualizerPreset('bass', false)" data-i18n="fx.preset_bass">Bass Boost</button>
+                    <button type="button" data-eq-preset="vokal" class="eq-preset-btn px-2.5 py-1 rounded-full bg-surface-container-low text-[11px] font-semibold text-on-surface" onclick="setEqualizerPreset('vokal', false)" data-i18n="fx.preset_vocal">Vokal / Akustik</button>
+                    <button type="button" data-eq-preset="studio" class="eq-preset-btn px-2.5 py-1 rounded-full bg-surface-container-low text-[11px] font-semibold text-on-surface" onclick="setEqualizerPreset('studio', false)" data-i18n="fx.preset_studio">Stüdyo</button>
+                  </div>
+                </div>
+
+                <!-- Tempo / Playback Speed -->
+                <div class="flex flex-col gap-1.5 pt-1 border-t border-surface-container/50">
+                  <div class="flex items-center justify-between gap-2">
+                    <span class="text-xs font-semibold text-on-surface" data-i18n="fx.tempo">Oynatma Hızı (Tempo)</span>
+                    <span id="fx-speed-val" class="text-[11px] font-mono font-extrabold text-primary">1.00x</span>
+                  </div>
+                  <div class="flex items-center gap-2">
+                    <input type="range" id="fx-speed-slider" min="0.5" max="2.0" step="0.05" value="1.0" oninput="setPlaybackSpeed(parseFloat(this.value), true)" class="flex-1 h-1.5 rounded-lg cursor-pointer accent-primary">
+                  </div>
+                  <div class="kurfa-fx-speed-grid" id="fx-speed-presets">
+                    <button type="button" data-speed="0.75" onclick="setPlaybackSpeed(0.75, false)" class="fx-pill-btn h-7 rounded-xl bg-surface-container-low text-[11px] font-mono font-bold text-on-surface">0.75x</button>
+                    <button type="button" data-speed="1" onclick="setPlaybackSpeed(1.0, false)" class="fx-pill-btn active h-7 rounded-xl bg-surface-container-low text-[11px] font-mono font-bold text-on-surface">1.0x</button>
+                    <button type="button" data-speed="1.25" onclick="setPlaybackSpeed(1.25, false)" class="fx-pill-btn h-7 rounded-xl bg-surface-container-low text-[11px] font-mono font-bold text-on-surface">1.25x</button>
+                    <button type="button" data-speed="1.5" onclick="setPlaybackSpeed(1.5, false)" class="fx-pill-btn h-7 rounded-xl bg-surface-container-low text-[11px] font-mono font-bold text-on-surface">1.5x</button>
+                  </div>
+                </div>
+
+                <!-- Crossfade (0-8s) -->
+                <div class="flex flex-col gap-1.5 pt-1 border-t border-surface-container/50">
+                  <div class="flex items-center justify-between gap-2">
+                    <span class="text-xs font-semibold text-on-surface" data-i18n="fx.crossfade">Crossfade (Geçiş)</span>
+                    <span id="fx-crossfade-val" class="text-[11px] font-mono font-extrabold text-primary">0s</span>
+                  </div>
+                  <input type="range" id="fx-crossfade-slider" min="0" max="8" step="1" value="0" oninput="setCrossfadeSeconds(parseInt(this.value, 10))" class="w-full h-1.5 rounded-lg cursor-pointer accent-primary">
+                </div>
+
+                <!-- Normalization & Skip Silence Toggles -->
+                <div class="grid grid-cols-2 gap-2 pt-1 border-t border-surface-container/50">
+                  <button type="button" id="btn-fx-normalization" onclick="toggleAudioNormalization()" class="h-9 px-2.5 rounded-xl bg-surface-container-low hover:bg-surface-container text-[11px] font-bold text-on-surface flex items-center justify-between gap-1.5 transition-colors">
+                    <span class="truncate" data-i18n="fx.normalization">Ses Dengeleme</span>
+                    <span id="fx-norm-badge" class="px-1.5 py-0.5 rounded-full text-[10px] bg-surface-container text-on-surface-variant flex-shrink-0" data-i18n="settings.off">Kapalı</span>
+                  </button>
+                  <button type="button" id="btn-fx-skip-silence" onclick="toggleSkipSilence()" class="h-9 px-2.5 rounded-xl bg-surface-container-low hover:bg-surface-container text-[11px] font-bold text-on-surface flex items-center justify-between gap-1.5 transition-colors">
+                    <span class="truncate" data-i18n="fx.skip_silence">Sessizliği Atla</span>
+                    <span id="fx-silence-badge" class="px-1.5 py-0.5 rounded-full text-[10px] bg-surface-container text-on-surface-variant flex-shrink-0" data-i18n="settings.off">Kapalı</span>
+                  </button>
+                </div>
+              </div>
             </div>
 
           </div>
@@ -1272,6 +1456,10 @@
       </div>
       <button type="button" aria-label="Şarkı Sözleri" data-i18n-aria="player.lyrics" class="w-8 h-8 rounded-full flex items-center justify-center text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors" onclick="switchTab('calma-listeleri')" title="Şarkı Sözleri" data-i18n-title="player.lyrics">
         <span class="material-symbols-outlined text-[20px]" aria-hidden="true">lyrics</span>
+      </button>
+      <button type="button" aria-label="Uyku Zamanlayıcı" data-i18n-aria="sleep.title" id="btn-sleep-timer" class="relative w-8 h-8 rounded-full flex items-center justify-center text-on-surface-variant hover:bg-surface-container hover:text-primary transition-colors" onclick="toggleSleepTimerPopover(this)" title="Uyku Zamanlayıcı" data-i18n-title="sleep.title">
+        <span class="material-symbols-outlined text-[20px]" aria-hidden="true">bedtime</span>
+        <span id="sleep-timer-badge" class="hidden absolute -top-1 -right-1 px-1 min-w-[16px] h-4 rounded-full bg-primary text-on-primary text-[9px] font-mono font-extrabold flex items-center justify-center leading-none shadow-sm"></span>
       </button>
       <button type="button" aria-label="Mini Oynatıcı (Resim İçinde Resim)" data-i18n-aria="player.pip" id="btn-desktop-pip" class="w-8 h-8 rounded-full flex items-center justify-center text-on-surface-variant hover:bg-surface-container hover:text-primary transition-colors" onclick="toggleDocumentPipPlayer()" title="Mini Kayan Oynatıcı (PiP)" data-i18n-title="player.pip">
         <span class="material-symbols-outlined text-[20px]" aria-hidden="true">picture_in_picture_alt</span>
@@ -1633,6 +1821,10 @@
             <span class="text-[10px] text-on-surface-variant" data-i18n="settings.stat_downloads">İndirilen</span>
           </div>
         </div>
+        <button type="button" onclick="closeProfileModal(); switchTab('kutuphanem'); switchKutuphaneSubTab('istatistik');" class="w-full py-1.5 px-3 rounded-xl bg-surface-container-lowest hover:bg-surface-container border border-surface-container/60 text-[11px] font-bold text-primary flex items-center justify-center gap-1.5 transition-colors">
+          <span class="material-symbols-outlined text-[15px]">bar_chart</span>
+          <span data-i18n="stats.view_detailed">Detaylı Dinleme İstatistikleri</span>
+        </button>
 
         <div class="flex items-center justify-between py-1">
           <div class="flex items-center gap-2.5">
@@ -1642,6 +1834,44 @@
           <button type="button" aria-label="Temayı Değiştir" id="btn-theme-toggle" class="px-3 py-1 rounded-full text-[11px] font-bold bg-surface-container text-on-surface hover:bg-surface-container-high transition-colors flex-shrink-0" onclick="toggleDarkMode()">
             Kapalı
           </button>
+        </div>
+
+        <div class="flex items-center justify-between py-1">
+          <div class="flex items-center gap-2.5 min-w-0">
+            <span class="material-symbols-outlined text-[19px] text-primary flex-shrink-0" aria-hidden="true">gradient</span>
+            <span class="text-xs font-semibold text-on-surface truncate" data-i18n="settings.dynamic_bg">Dinamik Arka Plan</span>
+          </div>
+          <button type="button" id="btn-dynamic-bg-toggle" class="px-3 py-1 rounded-full text-[11px] font-bold bg-primary text-on-primary transition-colors flex-shrink-0" onclick="toggleDynamicBackground()" data-i18n="settings.on">
+            Açık
+          </button>
+        </div>
+
+        <div class="flex items-center justify-between py-1">
+          <div class="flex items-center gap-2.5 min-w-0">
+            <span class="material-symbols-outlined text-[19px] text-emerald-500 flex-shrink-0" aria-hidden="true">fast_forward</span>
+            <span class="text-xs font-semibold text-on-surface truncate" data-i18n="settings.sponsorblock">SponsorBlock (Klip Konuşmalarını Atla)</span>
+          </div>
+          <button type="button" id="btn-sponsorblock-toggle" class="px-3 py-1 rounded-full text-[11px] font-bold bg-primary text-on-primary transition-colors flex-shrink-0" onclick="toggleSponsorBlock()" data-i18n="settings.on">
+            Açık
+          </button>
+        </div>
+
+        <div class="flex flex-col gap-1.5 py-1">
+          <div class="flex items-center justify-between gap-2">
+            <div class="flex items-center gap-2">
+              <span class="material-symbols-outlined text-[19px] text-indigo-400" aria-hidden="true">bedtime</span>
+              <span class="text-xs font-semibold text-on-surface" data-i18n="sleep.title">Uyku Zamanlayıcı</span>
+            </div>
+            <span id="settings-sleep-status" class="text-[11px] font-mono font-bold text-primary" data-i18n="settings.off">Kapalı</span>
+          </div>
+          <div class="kurfa-sleep-grid">
+            <button type="button" data-sleep-opt="15" onclick="setSleepTimer(15)" class="h-7 rounded-lg bg-surface-container hover:bg-surface-container-high text-[10px] font-bold text-on-surface transition-colors">15d</button>
+            <button type="button" data-sleep-opt="30" onclick="setSleepTimer(30)" class="h-7 rounded-lg bg-surface-container hover:bg-surface-container-high text-[10px] font-bold text-on-surface transition-colors">30d</button>
+            <button type="button" data-sleep-opt="45" onclick="setSleepTimer(45)" class="h-7 rounded-lg bg-surface-container hover:bg-surface-container-high text-[10px] font-bold text-on-surface transition-colors">45d</button>
+            <button type="button" data-sleep-opt="60" onclick="setSleepTimer(60)" class="h-7 rounded-lg bg-surface-container hover:bg-surface-container-high text-[10px] font-bold text-on-surface transition-colors">60d</button>
+            <button type="button" data-sleep-opt="track" onclick="setSleepTimer('end_of_track')" class="h-7 rounded-lg bg-surface-container hover:bg-surface-container-high text-[10px] font-bold text-on-surface truncate px-1 transition-colors" data-i18n="sleep.end_track_short">Sonu</button>
+            <button type="button" data-sleep-opt="off" onclick="setSleepTimer('off')" class="h-7 rounded-lg bg-surface-container hover:bg-surface-container-high text-[10px] font-bold text-error transition-colors" data-i18n="sleep.off">Kapat</button>
+          </div>
         </div>
 
         <div class="flex items-center justify-between py-1" id="settings-lang-row">
@@ -1668,13 +1898,13 @@
 
       <!-- 3. Veri Yedeği (Tek Seviye Temiz Butonlar) -->
       <div class="grid grid-cols-2 gap-2.5">
-        <button type="button" class="h-10 px-3 rounded-xl bg-surface-container-low/80 hover:bg-surface-container text-xs font-bold text-on-surface flex items-center justify-center gap-1.5 whitespace-nowrap transition-colors active:scale-95" onclick="exportLibraryBackup()">
-          <span class="material-symbols-outlined text-[16px]">download</span>
-          <span data-i18n="settings.backup_export">Yedek Al</span>
+        <button type="button" class="h-10 px-2.5 rounded-xl bg-surface-container-low/80 hover:bg-surface-container text-[11px] sm:text-xs font-bold text-on-surface flex items-center justify-center gap-1.5 min-w-0 transition-colors active:scale-95" onclick="exportLibraryBackup()">
+          <span class="material-symbols-outlined text-[16px] flex-shrink-0">download</span>
+          <span class="truncate" data-i18n="settings.backup_export">Verileri Yedekle (JSON)</span>
         </button>
-        <label class="h-10 px-3 rounded-xl bg-surface-container-low/80 hover:bg-surface-container text-xs font-bold text-on-surface flex items-center justify-center gap-1.5 whitespace-nowrap cursor-pointer transition-colors active:scale-95">
-          <span class="material-symbols-outlined text-[16px]">upload</span>
-          <span data-i18n="settings.backup_import">Yedeği Yükle</span>
+        <label class="h-10 px-2.5 rounded-xl bg-surface-container-low/80 hover:bg-surface-container text-[11px] sm:text-xs font-bold text-on-surface flex items-center justify-center gap-1.5 min-w-0 cursor-pointer transition-colors active:scale-95">
+          <span class="material-symbols-outlined text-[16px] flex-shrink-0">upload</span>
+          <span class="truncate" data-i18n="settings.backup_import">Yedekten Geri Yükle</span>
           <input type="file" id="profile-backup-input" accept=".json" class="hidden" onchange="importLibraryBackup(event)">
         </label>
       </div>
@@ -2173,6 +2403,58 @@
     </button>
   </div>
 
+  <!-- Sleep Timer Glass Popover -->
+  <div id="sleep-timer-popover" class="hidden fixed bottom-24 right-4 w-64 rounded-2xl p-3.5 kurfa-glass-popover flex flex-col gap-2">
+    <div class="flex items-center justify-between">
+      <div class="flex items-center gap-1.5">
+        <span class="material-symbols-outlined text-[17px] text-primary">bedtime</span>
+        <span class="text-xs font-extrabold text-on-surface" data-i18n="sleep.title">Uyku Zamanlayıcı</span>
+      </div>
+      <span id="sleep-popover-remaining" class="text-[11px] font-mono font-bold text-primary"></span>
+    </div>
+    <div class="grid grid-cols-2 gap-1.5 text-xs">
+      <button type="button" onclick="setSleepTimer(15)" class="h-8 rounded-xl bg-surface-container-low/80 hover:bg-surface-container font-semibold text-on-surface transition-colors" data-i18n="sleep.15m">15 dk</button>
+      <button type="button" onclick="setSleepTimer(30)" class="h-8 rounded-xl bg-surface-container-low/80 hover:bg-surface-container font-semibold text-on-surface transition-colors" data-i18n="sleep.30m">30 dk</button>
+      <button type="button" onclick="setSleepTimer(45)" class="h-8 rounded-xl bg-surface-container-low/80 hover:bg-surface-container font-semibold text-on-surface transition-colors" data-i18n="sleep.45m">45 dk</button>
+      <button type="button" onclick="setSleepTimer(60)" class="h-8 rounded-xl bg-surface-container-low/80 hover:bg-surface-container font-semibold text-on-surface transition-colors" data-i18n="sleep.60m">60 dk</button>
+    </div>
+    <button type="button" onclick="setSleepTimer('end_of_track')" class="h-8 rounded-xl bg-primary/10 hover:bg-primary/20 text-primary text-xs font-bold transition-colors" data-i18n="sleep.end_of_track">Şarkı Bitince Durdur</button>
+    <button type="button" onclick="setSleepTimer('off')" class="h-7 rounded-xl bg-surface-container-low/70 hover:bg-surface-container text-[11px] font-semibold text-on-surface-variant transition-colors" data-i18n="sleep.off">Kapat</button>
+  </div>
+
+  <!-- Lyrics Share Card PNG Modal -->
+  <div id="lyrics-share-modal" role="dialog" aria-modal="true" class="fixed inset-0 bg-black/65 backdrop-blur-md z-50 flex items-center justify-center p-4 opacity-0 pointer-events-none transition-opacity duration-200">
+    <div id="lyrics-share-modal-card" class="bg-surface-container-lowest rounded-3xl p-4 sm:p-5 max-w-md w-full shadow-2xl flex flex-col gap-3 border border-surface-container/60 transform scale-95 transition-transform duration-200 max-h-[90vh] overflow-y-auto">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <span class="material-symbols-outlined text-[20px] text-primary">ios_share</span>
+          <h3 class="text-sm sm:text-base font-extrabold text-on-surface" data-i18n="lyrics.share_modal_title">Söz Paylaşım Kartı</h3>
+        </div>
+        <button type="button" aria-label="Kapat" class="w-8 h-8 rounded-full flex items-center justify-center hover:bg-surface-container text-on-surface-variant" onclick="closeLyricsShareModal()">
+          <span class="material-symbols-outlined text-[19px]">close</span>
+        </button>
+      </div>
+      <div class="flex items-center justify-center bg-surface-container-low/60 rounded-2xl p-2">
+        <canvas id="lyrics-share-canvas" width="1080" height="1350" class="max-h-[50vh] w-auto rounded-xl shadow-lg aspect-[4/5]"></canvas>
+      </div>
+      <div class="grid grid-cols-3 gap-1.5 text-[11px] font-bold">
+        <button type="button" onclick="setLyricsShareTheme('mesh')" class="h-8 rounded-xl bg-surface-container-low hover:bg-surface-container text-on-surface" data-i18n="lyrics.theme_mesh">Kapak Mesh</button>
+        <button type="button" onclick="setLyricsShareTheme('dark')" class="h-8 rounded-xl bg-surface-container-low hover:bg-surface-container text-on-surface" data-i18n="lyrics.theme_dark">Koyu Cam</button>
+        <button type="button" onclick="setLyricsShareTheme('light')" class="h-8 rounded-xl bg-surface-container-low hover:bg-surface-container text-on-surface" data-i18n="lyrics.theme_light">Açık Minimal</button>
+      </div>
+      <div class="grid grid-cols-2 gap-2">
+        <button type="button" onclick="downloadLyricsShareCard()" class="h-10 rounded-xl bg-primary text-on-primary text-xs font-bold flex items-center justify-center gap-1.5 shadow-md hover:bg-primary-container active:scale-95 transition-all">
+          <span class="material-symbols-outlined text-[17px]">download</span>
+          <span data-i18n="lyrics.download_png">PNG İndir</span>
+        </button>
+        <button type="button" onclick="copyOrShareLyricsCard()" class="h-10 rounded-xl bg-surface-container hover:bg-surface-container-high text-on-surface text-xs font-bold flex items-center justify-center gap-1.5 active:scale-95 transition-all">
+          <span class="material-symbols-outlined text-[17px]">content_copy</span>
+          <span data-i18n="lyrics.copy_share">Kopyala / Paylaş</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
   <!-- Toast Notification Element (Modern Dynamic Island Floating Pill) -->
   <div id="kurfa-toast" class="kurfa-toast" role="status" aria-live="polite" onclick="dismissToast()" title="Kapatmak için tıkla">
     <div id="toast-icon-wrapper" class="flex items-center justify-center w-7 h-7 rounded-full bg-primary/15 text-primary flex-shrink-0 transition-transform">
@@ -2186,7 +2468,7 @@
   </div>
 
   <!-- Scripts (App loads immediately; YouTube IFrame API loads async after so phones never stall on boot) -->
-  <script src="./app.js?v=20261120_v20"></script>
+  <script src="./app.js?v=20261121_v22"></script>
   <script src="https://www.youtube.com/iframe_api" async defer></script>
 </body>
 </html>

@@ -1,5 +1,5 @@
 // Kurfanova PWA Service Worker
-const CACHE_NAME = 'kurfanova-shell-v4.5.5';
+const CACHE_NAME = 'kurfanova-shell-v4.6.0';
 
 const SHELL_ASSETS = [
   './',
@@ -126,6 +126,7 @@ self.addEventListener('fetch', (event) => {
   if (url.protocol !== 'http:' && url.protocol !== 'https:') return;
   if (url.pathname.startsWith('/__kurfa_native_audio__/')) return;
   if (url.pathname.startsWith('/__kurfa_prefetch__/')) return;
+  if (url.pathname.startsWith('/__kurfa_local_lyrics__')) return;
   if (url.pathname.includes('/api/')) return;
   if (shouldBypassHost(url.hostname)) return;
   if (url.origin !== self.location.origin) return;
