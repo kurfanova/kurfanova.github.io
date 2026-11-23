@@ -2889,3 +2889,134 @@ body.dark-mode .kurfa-album-modal-card {
 .kurfa-album-hero-scrim {
   background: linear-gradient(180deg, rgba(12, 16, 26, 0.55) 0%, rgba(12, 16, 26, 0.92) 100%);
 }
+
+/* ========================================================================== */
+/* v38c MAIN APP POLISH: DESKTOP CARD GUARD, MOBILE LIBRARY, SEARCH & HEADER */
+/* ========================================================================== */
+
+.kurfa-settings-card.hidden,
+#desktop-app-settings-card.hidden {
+  display: none !important;
+}
+
+/* Recent searches crisp flex-wrap & toggle pill */
+#recent-searches-chips {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.kurfa-recent-chip {
+  flex: 0 1 auto;
+  min-width: 0;
+  max-width: 100%;
+}
+
+#btn-toggle-recent-searches {
+  align-self: flex-start;
+  margin-top: 2px;
+  cursor: pointer;
+}
+
+/* Search results row alignment & text truncation polish */
+#search-results-list .track-row {
+  border: 1px solid rgba(15, 23, 42, 0.06);
+  align-items: center;
+}
+
+body.dark-mode #search-results-list .track-row {
+  border-color: rgba(255, 255, 255, 0.06);
+}
+
+#search-results-list .track-row .track-info-click {
+  min-width: 0;
+}
+
+/* Deck header zero-overlap safety */
+#deck-main-card .kurfa-deck-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+@media (max-width: 767px) {
+  /* Cap mobile quick picks to 4 items so Kesfet stays compact on phones */
+  #kesfet-quick-picks-grid > *:nth-child(n+5) {
+    display: none !important;
+  }
+
+  /* Mobile Library (#tab-kutuphanem): replace horizontal-scroll pills with clean 2-col grid */
+  #kutuphane-subtabs {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 8px !important;
+    overflow-x: visible !important;
+    white-space: normal !important;
+    padding-bottom: 12px !important;
+  }
+
+  #kutuphane-subtabs .sub-tab-pill {
+    width: 100% !important;
+    min-width: 0 !important;
+    min-height: 40px !important;
+    padding: 8px 10px !important;
+    border-radius: 14px !important;
+    justify-content: center !important;
+    text-align: center;
+    font-size: 12px !important;
+    line-height: 1.2;
+    border: 1px solid rgba(15, 23, 42, 0.07);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  body.dark-mode #kutuphane-subtabs .sub-tab-pill {
+    border-color: rgba(255, 255, 255, 0.08);
+  }
+
+  #kutuphane-subtabs .sub-tab-pill > span:last-child {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  /* 5th pill ("İstatistikler") spans full 2-col row cleanly */
+  #kutuphane-subtabs > #kutuphane-btn-istatistik:last-child {
+    grid-column: span 2 / span 2;
+  }
+
+  /* Tidy Library pane action headers & device/favorites cards on mobile */
+  #tab-kutuphanem #kutuphane-pane-listelerim > .flex,
+  #tab-kutuphanem #kutuphane-pane-cihaz > .flex,
+  #tab-kutuphanem #kutuphane-pane-favoriler > .flex,
+  #tab-kutuphanem #kutuphane-pane-spotify > .flex {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  #tab-kutuphanem #custom-playlists-grid,
+  #tab-kutuphanem #spotify-playlists-grid {
+    gap: 10px;
+  }
+
+  /* Tighter mobile deck header & search action row so icons stay aligned */
+  #deck-main-card .kurfa-deck-header > div:last-child {
+    max-width: 100%;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+  }
+
+  #search-results-list .track-row {
+    padding: 10px;
+    gap: 6px;
+  }
+
+  #search-results-list .track-row > div:last-child {
+    gap: 2px;
+    padding-left: 4px;
+  }
+}

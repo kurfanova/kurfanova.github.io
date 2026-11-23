@@ -142,7 +142,7 @@
     }
   </style>
   <link rel="stylesheet" href="./tailwind.min.css?v=20261120_v17">
-  <link rel="stylesheet" href="./style.css?v=20261121_v38">
+  <link rel="stylesheet" href="./style.css?v=20261124_v38c">
 </head>
 <body class="bg-background font-sans text-on-surface antialiased min-h-screen">
   <script>
@@ -1373,13 +1373,13 @@
             <div id="deck-main-card" class="bg-surface-container-lowest rounded-3xl p-4 sm:p-6 shadow-sm border border-surface-container/60 flex flex-col items-center relative overflow-hidden">
               <div id="player-liquid-bg" class="kurfa-liquid-bg" aria-hidden="true"></div>
 
-              <div class="relative z-10 w-full flex items-center justify-between gap-2 mb-4">
+              <div class="kurfa-deck-header relative z-10 w-full flex flex-wrap items-center justify-between gap-2 mb-4">
                 <div class="flex items-center gap-1.5 text-primary text-xs font-bold tracking-wide whitespace-nowrap min-w-0">
                   <span class="material-symbols-outlined text-[16px]" aria-hidden="true">graphic_eq</span>
                   <span data-i18n="player.now_playing">Şimdi Çalıyor</span>
                 </div>
 
-                <div class="flex items-center gap-1.5 flex-shrink-0">
+                <div class="flex items-center gap-1.5 flex-shrink-0 ml-auto">
                   <button type="button" id="btn-deck-fx-jump" onclick="openAudioFxFromSettings()" class="h-7 px-2 rounded-full bg-surface-container-low/80 hover:bg-surface-container border border-surface-container/70 text-[11px] font-bold text-on-surface-variant hover:text-primary flex items-center gap-1 transition-colors" title="Ses Motoru &amp; Ekolayzır" data-i18n-title="fx.title">
                     <span class="material-symbols-outlined text-[14px]" aria-hidden="true">tune</span>
                     <span class="hidden sm:inline">EQ</span>
@@ -1390,11 +1390,11 @@
                   </button>
                   <!-- Deck Mode Switch: Kapak vs Video -->
                   <div class="inline-flex p-0.5 bg-surface-container-low rounded-full text-[11px] font-bold border border-surface-container/70 flex-shrink-0">
-                    <button type="button" id="btn-deck-vinyl-mode" class="px-3 py-1 rounded-full bg-surface-container-lowest text-on-surface shadow-xs transition-all flex items-center gap-1 whitespace-nowrap" onclick="setDeckVisualMode('vinyl')">
+                    <button type="button" id="btn-deck-vinyl-mode" class="px-2.5 sm:px-3 py-1 rounded-full bg-surface-container-lowest text-on-surface shadow-xs transition-all flex items-center gap-1 whitespace-nowrap" onclick="setDeckVisualMode('vinyl')">
                       <span class="material-symbols-outlined text-[14px]">album</span>
                       <span data-i18n="player.cover_mode">Kapak</span>
                     </button>
-                    <button type="button" id="btn-deck-video-mode" class="px-3 py-1 rounded-full text-on-surface-variant hover:text-on-surface transition-all flex items-center gap-1 whitespace-nowrap" onclick="setDeckVisualMode('video')">
+                    <button type="button" id="btn-deck-video-mode" class="px-2.5 sm:px-3 py-1 rounded-full text-on-surface-variant hover:text-on-surface transition-all flex items-center gap-1 whitespace-nowrap" onclick="setDeckVisualMode('video')">
                       <span class="material-symbols-outlined text-[14px]">smart_display</span>
                       <span data-i18n="player.video_mode">Video</span>
                     </button>
@@ -1973,7 +1973,7 @@
                     <span class="text-[11px] text-on-surface-variant truncate" data-i18n="settings.sponsorblock_desc">Video intro ve sponsorlu konuşmaları otomatik geç</span>
                   </div>
                 </div>
-                <button type="button" role="switch" aria-checked="true" aria-label="SponsorBlock" id="btn-sponsorblock-toggle" class="kurfa-ios-switch is-on" onclick="toggleSponsorBlock()">
+                <button type="button" role="switch" aria-checked="false" aria-label="SponsorBlock" id="btn-sponsorblock-toggle" class="kurfa-ios-switch" onclick="toggleSponsorBlock()">
                   <span class="kurfa-ios-switch-thumb"></span>
                 </button>
               </div>
@@ -2846,7 +2846,7 @@
   </div>
 
   <!-- Scripts (App loads immediately; YouTube IFrame API loads async after so phones never stall on boot) -->
-  <script src="./app.js?v=20261121_v38"></script>
+  <script src="./app.js?v=20261124_v38c"></script>
   <script src="https://www.youtube.com/iframe_api" async defer></script>
 </body>
 </html>

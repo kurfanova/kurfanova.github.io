@@ -2919,7 +2919,7 @@ function cleanDeduplicateQueueArray(arr) {
   return result;
 }
 
-function saveQueueState() {
+function saveQueueState(skipNativeSync = false) {
   state.queue = cleanDeduplicateQueueArray(state.queue || []);
   state.originalQueue = cleanDeduplicateQueueArray(state.originalQueue || []);
   state.userQueue = cleanDeduplicateQueueArray(state.userQueue || []);
@@ -2944,7 +2944,7 @@ function saveQueueState() {
   safeSetStorage('kurfa_user_queue', JSON.stringify(state.userQueue));
   safeSetStorage('kurfa_queue_index', String(idxToStore));
   if (typeof persistQueue === 'function') persistQueue(qToStore, idxToStore);
-  if (typeof syncNativeAndroidQueue === 'function') syncNativeAndroidQueue(qToStore, idxToStore);
+  if (!skipNativeSync && typeof syncNativeAndroidQueue === 'function') syncNativeAndroidQueue(qToStore, idxToStore);
 }
 
 function syncNativeAndroidQueue(preQueue = null, preIdx = null) {
@@ -3145,7 +3145,7 @@ const state = {
   lyricsOffset: 0,
   proSettings: {
     dynamicBg: localStorage.getItem('kurfa_dynamic_bg') !== 'false',
-    sponsorBlock: localStorage.getItem('kurfa_sponsorblock') !== 'false',
+    sponsorBlock: localStorage.getItem('kurfa_sponsorblock') === 'true',
     playbackSpeed: Math.max(0.5, Math.min(2.0, safeGetFloat('kurfa_speed', 1.0) || 1.0)),
     crossfadeSec: Math.max(0, Math.min(8, safeGetInt('kurfa_crossfade', 0) || 0)),
     normalization: localStorage.getItem('kurfa_norm') === 'true',
@@ -3202,6 +3202,7 @@ const state = {
     } catch (_) { return 'tr'; }
   })(),
   searchHistory: safeGetJSON('kurfa_search_history', []),
+  _recentSearchesExpanded: false,
   recentlyPlayed: safeGetJSON('kurfa_recent_played', [])
 };
 
@@ -5138,8 +5139,16 @@ function playTrackById(videoId, arg2, arg3, arg4, arg5, options = {}) {
         if (typeof state.ytPlayer.seekTo === 'function') state.ytPlayer.seekTo(0, true);
       } catch(e) {}
     }
-    if (target.streamUrl) {
-      loadDirectAudioStream(target.streamUrl, normalizedStart, token, null);
+    let localStreamUrl = target.streamUrl || '';
+    if (typeof isAndroidNativeEngine === 'function' && isAndroidNativeEngine() && !target.needsIdbBlob) {
+      const mId = target.mediaId || ((/^local_(\d+)$/.exec(String(rawId)) || [])[1]) || ((/\/__kurfa_local_audio\/(\d+)/.exec(String(localStreamUrl)) || [])[1]);
+      if (mId && (!localStreamUrl || localStreamUrl.includes('/__kurfa_local_audio/'))) {
+        localStreamUrl = `${window.location.origin}/__kurfa_local_audio/${mId}`;
+        target.streamUrl = localStreamUrl;
+      }
+    }
+    if (localStreamUrl) {
+      loadDirectAudioStream(localStreamUrl, normalizedStart, token, null);
     } else if (rawId.startsWith('local_win_') && typeof getBrowserExtensionMode === 'function' && getBrowserExtensionMode().startsWith('desktop')) {
       callExtensionBridge('GET_LOCAL_AUDIO_TRACKS', {}, 5000).then((res) => {
         if (token !== currentPlaybackToken || state.userPaused) return;
@@ -5192,6 +5201,8 @@ function playTrackById(videoId, arg2, arg3, arg4, arg5, options = {}) {
       state._activeMediaEngine = 'native-exo';
       state._nativeExoCurrentTime = normalizedStart;
       state._nativeExoDuration = estDuration;
+      state._nativeExoPlayRequestedAt = Date.now();
+      state._nativeExoLastBuffering = true;
       state.isPlaying = true;
       updatePlayPauseUI(true);
       syncNativeAppPlaybackState(true);
@@ -5388,15 +5399,20 @@ function loadDirectAudioStream(streamUrl, startSeconds, token, ytFallbackId) {
       DOM.audioEngine.volume = state.isMuted ? 0 : Math.max(0, Math.min(1, (state.volume ?? 0.8) * effGain));
     }
 
+    let isSameOriginStream = false;
+    try {
+      const parsedStreamUrl = new URL(streamUrl, window.location.href);
+      isSameOriginStream = parsedStreamUrl.origin === window.location.origin;
+    } catch (_) {}
     const shouldUseCors = Boolean(
-      typeof KurfaDSP === 'undefined' ||
-      (!KurfaDSP.corsBlockedUrls.has(streamUrl) && (
-        KurfaDSP.isConnected ||
-        streamUrl.startsWith('http://') ||
-        streamUrl.startsWith('https://') ||
-        streamUrl.startsWith('blob:') ||
-        streamUrl.startsWith('/')
-      ))
+      !isSameOriginStream && (
+        typeof KurfaDSP === 'undefined' ||
+        (!KurfaDSP.corsBlockedUrls.has(streamUrl) && (
+          KurfaDSP.isConnected ||
+          streamUrl.startsWith('http://') ||
+          streamUrl.startsWith('https://')
+        ))
+      )
     );
     try {
       if (shouldUseCors) {
@@ -5423,6 +5439,7 @@ function loadDirectAudioStream(streamUrl, startSeconds, token, ytFallbackId) {
       } catch(e) {}
       applyMediaPlaybackRate(DOM.audioEngine);
       if (typeof KurfaDSP !== 'undefined') {
+        KurfaDSP.resumeContext();
         KurfaDSP.ensureConnected(DOM.audioEngine);
         KurfaDSP.syncAllParams(DOM.audioEngine);
       }
@@ -5432,6 +5449,7 @@ function loadDirectAudioStream(streamUrl, startSeconds, token, ytFallbackId) {
     // Re-apply playbackRate & DSP immediately after src assignment (browsers reset playbackRate on new src)
     applyMediaPlaybackRate(DOM.audioEngine);
     if (typeof KurfaDSP !== 'undefined') {
+      KurfaDSP.resumeContext();
       KurfaDSP.ensureConnected(DOM.audioEngine);
       KurfaDSP.syncAllParams(DOM.audioEngine);
     } else {
@@ -5772,11 +5790,17 @@ function resumePlayback() {
     return;
   }
 
-  // 1b. Android Native Media3 ExoPlayer resume
+  // 1b. Android Native Media3 ExoPlayer resume (cold reopen reloads full track cleanly)
   if (state._activeMediaEngine === 'native-exo' && state.currentTrack) {
     const exo = getAndroidExoBridge();
     if (exo && typeof exo.resumeNativeExo === 'function') {
+      if (!state._activeTrackConfirmedPlaying && !state._nativeExoLastBuffering) {
+        const playId = safeYtId(state.currentTrack.ytId) || state.currentTrack.id;
+        playTrackById(playId, state.currentTrack, curTime);
+        return;
+      }
       try {
+        state._nativeExoPlayRequestedAt = Date.now();
         exo.resumeNativeExo();
         state.isPlaying = true;
         updatePlayPauseUI(true);
@@ -6740,6 +6764,7 @@ function applyEffectiveVolume() {
     }
   }
   if (DOM.videoEngine) {
+    DOM.videoEngine.muted = (eff === 0);
     if (typeof KurfaDSP !== 'undefined' && KurfaDSP.isConnected && KurfaDSP.masterFadeGainNode && KurfaDSP.ctx && state._activeMediaEngine === 'native-video') {
       DOM.videoEngine.volume = baseVol;
       try {
@@ -8447,7 +8472,7 @@ function recordSearchHistory(query) {
   state.searchHistory = [
     clean,
     ...state.searchHistory.filter((q) => String(q || '').trim().toLowerCase() !== lower)
-  ].slice(0, 12);
+  ].slice(0, 30);
   safeSetStorage('kurfa_search_history', JSON.stringify(state.searchHistory));
   renderSearchDiscoveryHub();
   scheduleSaveUserDataToDesktop();
@@ -8525,19 +8550,26 @@ function renderSearchDiscoveryHub() {
   if (recSection && recChips) {
     const history = Array.isArray(state.searchHistory) ? state.searchHistory.filter(Boolean) : [];
     recChips.innerHTML = '';
+    const existingToggle = document.getElementById('btn-toggle-recent-searches');
+    if (existingToggle) existingToggle.remove();
+
     if (history.length === 0) {
+      state._recentSearchesExpanded = false;
       recSection.classList.add('hidden');
       recSection.classList.remove('flex');
     } else {
       recSection.classList.remove('hidden');
       recSection.classList.add('flex');
-      history.slice(0, 12).forEach((q) => {
+      const expanded = Boolean(state._recentSearchesExpanded) && history.length > 10;
+      if (history.length <= 10) state._recentSearchesExpanded = false;
+      const visibleHistory = expanded ? history : history.slice(0, 10);
+      visibleHistory.forEach((q) => {
         const chip = document.createElement('div');
-        chip.className = 'inline-flex items-center gap-1.5 pl-3 pr-1.5 py-1.5 rounded-full bg-surface-container-lowest border border-surface-container hover:border-primary/40 text-xs font-semibold text-on-surface shadow-xs transition-all cursor-pointer';
+        chip.className = 'kurfa-recent-chip inline-flex items-center gap-1.5 pl-3 pr-1.5 py-1.5 rounded-full bg-surface-container-lowest border border-surface-container hover:border-primary/40 text-xs font-semibold text-on-surface shadow-xs transition-all cursor-pointer max-w-full';
         chip.innerHTML = `
-          <span class="material-symbols-outlined text-[15px] text-primary">history</span>
-          <span class="truncate max-w-[160px]">${escapeHtml(q)}</span>
-          <button type="button" class="btn-del-chip w-5 h-5 rounded-full flex items-center justify-center text-on-surface-variant hover:text-error hover:bg-surface-container transition-colors" title="${escapeHtml(t('topbar.clear'))}">
+          <span class="material-symbols-outlined text-[15px] text-primary flex-shrink-0">history</span>
+          <span class="truncate max-w-[160px] sm:max-w-[200px]">${escapeHtml(q)}</span>
+          <button type="button" class="btn-del-chip w-5 h-5 rounded-full flex items-center justify-center text-on-surface-variant hover:text-error hover:bg-surface-container transition-colors flex-shrink-0" title="${escapeHtml(t('topbar.clear'))}">
             <span class="material-symbols-outlined text-[13px]">close</span>
           </button>
         `;
@@ -8551,13 +8583,40 @@ function renderSearchDiscoveryHub() {
         }
         recChips.appendChild(chip);
       });
+
+      if (history.length > 10) {
+        const isEn = getAppLanguage() === 'en';
+        const toggleBtn = document.createElement('button');
+        toggleBtn.type = 'button';
+        toggleBtn.id = 'btn-toggle-recent-searches';
+        toggleBtn.className = 'inline-flex items-center gap-1 self-start px-3 py-1 rounded-full bg-surface-container-low hover:bg-surface-container border border-surface-container/70 text-[11px] font-bold text-primary transition-colors';
+        toggleBtn.innerHTML = expanded
+          ? `<span>${isEn ? 'Show Less' : 'Daha Az Göster'}</span><span class="material-symbols-outlined text-[15px]">expand_less</span>`
+          : `<span>${isEn ? `Show All (${history.length})` : `Tümünü Göster (${history.length})`}</span><span class="material-symbols-outlined text-[15px]">expand_more</span>`;
+        toggleBtn.onclick = () => {
+          state._recentSearchesExpanded = !state._recentSearchesExpanded;
+          renderSearchDiscoveryHub();
+        };
+        recSection.appendChild(toggleBtn);
+      }
     }
   }
 
   const playedSection = document.getElementById('recent-played-search-section');
   const playedGrid = document.getElementById('recent-played-search-grid');
   if (playedSection && playedGrid) {
-    const recentList = Array.isArray(state.recentlyPlayed) ? state.recentlyPlayed.slice(0, 8) : [];
+    const dedupPlayed = [];
+    const seenPlayedKeys = new Set();
+    (Array.isArray(state.recentlyPlayed) ? state.recentlyPlayed : []).forEach((trk) => {
+      if (!trk || !trk.id) return;
+      const idKey = String(trk.id).trim().toLowerCase();
+      const textKey = `${formatCleanTrackTitle(trk.title || '').toLowerCase()}::${String(trk.artist || '').trim().toLowerCase()}`;
+      if (seenPlayedKeys.has(idKey) || (textKey !== '::' && seenPlayedKeys.has(textKey))) return;
+      seenPlayedKeys.add(idKey);
+      if (textKey !== '::') seenPlayedKeys.add(textKey);
+      dedupPlayed.push(trk);
+    });
+    const recentList = dedupPlayed.slice(0, 8);
     playedGrid.innerHTML = '';
     if (recentList.length === 0) {
       playedSection.classList.add('hidden');
@@ -9992,6 +10051,7 @@ function buildMergedArtistsList() {
 
   // 1. User's actually listened & liked artists FIRST (merged with verified profile avatars)
   (seeds.topArtists || []).forEach((ua) => {
+    if (!ua || (typeof isLocalOrInvalidArtist === 'function' && isLocalOrInvalidArtist(ua.name))) return;
     const key = norm(ua.name);
     if (!key || seen.has(key)) return;
     seen.add(key);
@@ -14305,7 +14365,7 @@ function toggleSponsorBlock() {
 window.toggleSponsorBlock = toggleSponsorBlock;
 
 function updateSponsorBlockToggleUI() {
-  const on = !state.proSettings || state.proSettings.sponsorBlock !== false;
+  const on = Boolean(state.proSettings && state.proSettings.sponsorBlock === true);
   const btn = document.getElementById('btn-sponsorblock-toggle');
   syncIosSwitchBtn(btn, on);
 }
@@ -14909,8 +14969,25 @@ const MIX_FALLBACK_IMAGES = [
   'https://is1-ssl.mzstatic.com/image/thumb/Music211/v4/05/81/0b/05810b21-3c0c-b3b7-d2b2-2050baab2de0/cover.jpg/300x300bb.jpg'
 ];
 
+function isLocalOrInvalidArtist(name, track = null) {
+  if (track) {
+    if (track.isLocal) return true;
+    const tid = String(track.id || '').trim().toLowerCase();
+    const tsrc = String(track.source || '').trim().toLowerCase();
+    if (tid.startsWith('local_') || tsrc === 'local') return true;
+  }
+  const clean = String(name || '').trim();
+  if (!clean || clean.length < 2) return true;
+  if (/^(yerel dosya|local file|cihaz m[üu]zi[ğg]i|bilinmeyen sanat[çc][ıi]|unknown artist|unknown|local_|audio_|track_|record|whatsapp|voice)/i.test(clean)) return true;
+  if (/\.(mp3|wav|m4a|flac|ogg|aac|opus|webm|mp4)\b/i.test(clean)) return true;
+  if (/[\\\/]/.test(clean)) return true;
+  if (/\b(netd|kurfa|sanat[çc][ıi]|artist|topic)\b/i.test(clean)) return true;
+  return false;
+}
+
 function extractCleanArtistFromTrack(track) {
   if (!track) return '';
+  if (track.isLocal || String(track.id || '').startsWith('local_') || String(track.source || '').toLowerCase() === 'local') return '';
   let artist = String(track.artist || '').trim();
   const isChannel = /\b(netd\s*m\u00fczik|netd|poll\s*production|dmc|muzikplay|avrupa|dokuzsekiz|vevo|official|topic|sanat\u00e7\u0131|kurfam\u00fczik)\b/i.test(artist);
   const titleStr = String(track.title || '').trim();
@@ -14921,13 +14998,14 @@ function extractCleanArtistFromTrack(track) {
     .replace(/\s*(?:ft\.?|feat\.?|featuring)\s+.*$/i, '')
     .split(/\s*(?:,|&|\/|\bx\b|\bve\b)\s*/i)[0]
     .trim();
-  if (!artist || artist.length < 2 || /\b(netd|kurfa|sanat\u00e7\u0131|artist)\b/i.test(artist)) return '';
+  if (isLocalOrInvalidArtist(artist, track)) return '';
   return artist;
 }
 
 function getPersonalizedKesfetSeeds() {
-  const recents = Array.isArray(state.recentlyPlayed) ? state.recentlyPlayed.filter(Boolean) : [];
-  const favs = Array.isArray(state.favorites) ? state.favorites.filter(Boolean) : [];
+  const isLocalTrackItem = (t) => !t || Boolean(t.isLocal) || String(t.id || '').startsWith('local_') || String(t.source || '').toLowerCase() === 'local';
+  const recents = Array.isArray(state.recentlyPlayed) ? state.recentlyPlayed.filter(t => t && !isLocalTrackItem(t)) : [];
+  const favs = Array.isArray(state.favorites) ? state.favorites.filter(t => t && !isLocalTrackItem(t)) : [];
   const stats = (typeof ListeningStats !== 'undefined' && typeof ListeningStats.getStore === 'function')
     ? ListeningStats.getStore()
     : { tracks: {}, artists: {} };
@@ -14935,7 +15013,7 @@ function getPersonalizedKesfetSeeds() {
   const artistScores = new Map();
   const addArtistScore = (name, score, thumb) => {
     const clean = String(name || '').trim();
-    if (!clean || /\b(netd|kurfa|sanat\u00e7\u0131|artist|topic)\b/i.test(clean)) return;
+    if (isLocalOrInvalidArtist(clean)) return;
     const key = clean.toLowerCase();
     const prev = artistScores.get(key) || { name: clean, score: 0, thumb: '' };
     prev.score += score;
@@ -15090,16 +15168,16 @@ function renderDynamicMixesGrid(seeds) {
       card.innerHTML = `
         <div class="relative aspect-square rounded-xl overflow-hidden bg-surface-container-high mb-2.5">
           <img src="${safeCover}" alt="${safeTitle}" loading="lazy" decoding="async" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" onerror="this.onerror=null; this.src='./kurfamuzik_logo.png';">
-          <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
-          <div class="absolute bottom-2.5 left-2.5 right-2.5 flex items-end justify-between gap-2">
-            <span class="px-2 py-0.5 rounded-md bg-white/90 text-slate-900 text-[10px] font-extrabold tracking-tight uppercase">${safeTitle}</span>
-            <span class="w-9 h-9 rounded-full bg-primary text-on-primary flex items-center justify-center shadow-lg opacity-0 translate-y-1 group-hover:opacity-100 group-hover:translate-y-0 transition-all">
-              <span class="material-symbols-outlined text-[20px] filled">play_arrow</span>
-            </span>
-          </div>
+          <div class="absolute inset-0 bg-gradient-to-t from-black/45 via-transparent to-transparent"></div>
+          <span class="absolute bottom-2.5 right-2.5 w-9 h-9 rounded-full bg-primary text-on-primary flex items-center justify-center shadow-lg opacity-0 translate-y-1 group-hover:opacity-100 group-hover:translate-y-0 transition-all">
+            <span class="material-symbols-outlined text-[20px] filled">play_arrow</span>
+          </span>
         </div>
-        <h3 class="font-bold text-xs sm:text-sm text-on-surface truncate">${safeTitle}</h3>
-        <p class="text-[11px] text-on-surface-variant truncate mt-0.5">${safeSub}</p>
+        <div class="min-w-0">
+          <span class="inline-block text-[10px] font-extrabold uppercase tracking-wider text-primary mb-0.5">MİX</span>
+          <h3 class="font-bold text-xs sm:text-sm text-on-surface truncate">${safeTitle}</h3>
+          <p class="text-[11px] text-on-surface-variant truncate mt-0.5">${safeSub}</p>
+        </div>
       `;
       card.onclick = () => playCuratedMix(idx);
       container.appendChild(card);
@@ -18175,6 +18253,9 @@ function setupEventListeners() {
         : Math.max(0, Math.floor(curTimeSec || 0));
       const isLocalCur = Boolean(state.currentTrack?.isLocal) || String(state.currentTrack?.id || '').startsWith('local_');
       if (isLocalCur) {
+        if (!DOM.audioEngine || !DOM.audioEngine.error) {
+          return;
+        }
         if (state.isPlaying && !state.userPaused) {
           playNextTrack({ isAutoErrorSkip: true });
         }
@@ -18451,11 +18532,19 @@ function setupEventListeners() {
       if (typeof updateFxEngineNote === 'function') updateFxEngineNote();
     });
     DOM.videoEngine.addEventListener('pause', () => {
+      if (state._switchingDeckMode) return;
       if (state._activeMediaEngine === 'native-video' && DOM.videoEngine.getAttribute('src') && !DOM.videoEngine.seeking && !DOM.videoEngine.ended) {
         state.userPaused = true;
         state.isPlaying = false;
         updatePlayPauseUI(false);
         syncNativeAppPlaybackState(false, true);
+      }
+    });
+    DOM.videoEngine.addEventListener('volumechange', () => {
+      if (state._activeMediaEngine !== 'native-video' || !DOM.videoEngine.getAttribute('src')) return;
+      const eff = DOM.videoEngine.muted ? 0 : Number(DOM.videoEngine.volume || 0);
+      if (eff === 0 && !state.isMuted && (state.volume || 0) > 0) {
+        applyEffectiveVolume();
       }
     });
     DOM.videoEngine.addEventListener('timeupdate', () => {
@@ -18473,7 +18562,7 @@ function setupEventListeners() {
     });
     DOM.videoEngine.addEventListener('error', () => {
       const prevSrc = `${DOM.videoEngine.getAttribute('src') || ''}`;
-      if (!prevSrc || state._activeMediaEngine !== 'native-video') return;
+      if (!prevSrc || state._activeMediaEngine !== 'native-video' || state._switchingDeckMode || state.userPaused) return;
       if (
         DOM.videoEngine.crossOrigin === 'anonymous' &&
         !state._activeTrackConfirmedPlaying &&
@@ -18688,6 +18777,86 @@ function initApp() {
   console.log("Kurfamüzik Client v5 Initialized");
 }
 
+// Reconcile Web UI when Android Native Media3 ExoPlayer advances the queue natively (screen off/background)
+function handleNativeExoTrackTransition(evt) {
+  const nextVid = evt && evt.videoId ? safeYtId(evt.videoId) : null;
+  if (!nextVid) return false;
+  const activeVid = safeYtId(state.currentTrack?.ytId || state.currentTrack?.id);
+  if (activeVid === nextVid) return false;
+
+  const q = Array.isArray(state.queue) ? state.queue : [];
+  let matchedIdx = -1;
+  const rawIdx = Number(evt.index);
+  if (Number.isInteger(rawIdx) && rawIdx >= 0 && rawIdx < q.length && q[rawIdx]) {
+    const candVid = safeYtId(q[rawIdx].ytId || q[rawIdx].id);
+    if (candVid === nextVid) matchedIdx = rawIdx;
+  }
+  if (matchedIdx === -1) {
+    matchedIdx = q.findIndex(t => t && (safeYtId(t.ytId || t.id) === nextVid));
+  }
+
+  let nextTrack = (matchedIdx !== -1 && q[matchedIdx]) ? { ...q[matchedIdx] } : null;
+  if (!nextTrack) {
+    nextTrack = {
+      id: nextVid,
+      ytId: nextVid,
+      title: String(evt.title || 'Kurfamüzik'),
+      artist: String(evt.artist || 'Sanatçı'),
+      thumbnail: evt.cover ? String(evt.cover) : `https://i.ytimg.com/vi/${nextVid}/hqdefault.jpg`,
+      duration: '3:30'
+    };
+  } else {
+    if (evt.title && (!nextTrack.title || nextTrack.title === 'YouTube Parçası')) nextTrack.title = String(evt.title);
+    if (evt.artist && (!nextTrack.artist || nextTrack.artist === 'Sanatçı')) nextTrack.artist = String(evt.artist);
+    if (evt.cover && !nextTrack.thumbnail) nextTrack.thumbnail = String(evt.cover);
+  }
+
+  currentPlaybackToken++;
+  if (matchedIdx !== -1) state.queueIndex = matchedIdx;
+  state.currentTrack = nextTrack;
+  state._activeTrackId = nextTrack.id || nextVid;
+  state._activeMediaEngine = 'native-exo';
+  state._activeTrackConfirmedPlaying = true;
+  state._nativeExoPlayRequestedAt = Date.now();
+  state.userPaused = false;
+  state.isPlaying = evt.playing !== undefined ? Boolean(evt.playing) : true;
+  const posSec = Math.max(0, Number(evt.currentTime) || 0);
+  const durSec = Number(evt.duration) > 0 ? Number(evt.duration) : (parseDurationToSec(nextTrack.duration) || 210);
+  state._nativeExoCurrentTime = posSec;
+  state._nativeExoDuration = Number(evt.duration) > 0 ? Number(evt.duration) : 0;
+  state.currentPlayheadTime = posSec;
+  kurfaNoteNativeExoProgress(posSec, evt);
+  kurfaResetNativeExoWatchdog(posSec);
+
+  safeSetStorage('kurfa_last_track', JSON.stringify({
+    id: nextTrack.id,
+    ytId: nextTrack.ytId || nextVid,
+    title: nextTrack.title,
+    artist: nextTrack.artist,
+    thumbnail: getTrackThumbnail(nextTrack),
+    duration: nextTrack.duration,
+    source: nextTrack.source || null
+  }));
+  recordRecentlyPlayed(nextTrack);
+  saveQueueState(true);
+  updatePlayerTrackUI(nextTrack);
+  updatePlayPauseUI(state.isPlaying);
+  if (typeof updateSeekbarUI === 'function') updateSeekbarUI(posSec, durSec);
+  if (typeof resetLyricsScrollPosition === 'function') resetLyricsScrollPosition();
+  updateLyricsDisplay();
+  renderQueueDrawerList();
+  if (state.currentTab === 'kesfet') {
+    state._lastHomeActiveId = nextTrack.id;
+    renderHomeTracklistTable();
+  } else if (state.currentTab === 'calma-listeleri') {
+    renderPlaylistTracksTable();
+  }
+  if (typeof scheduleNextTrackPrefetch === 'function') {
+    scheduleNextTrackPrefetch(currentPlaybackToken);
+  }
+  return true;
+}
+
 // Native Android Media3 ExoPlayer Event Bridge
 window.__kurfaNativeExoEvent = function(rawPayload) {
   try {
@@ -18696,9 +18865,24 @@ window.__kurfaNativeExoEvent = function(rawPayload) {
 
     const evtType = String(evt.type || '').toLowerCase();
     const evtVid = evt.videoId ? safeYtId(evt.videoId) : null;
-    const activeVid = safeYtId(state.currentTrack?.ytId || state.currentTrack?.id);
+    const isLocalCur = Boolean(state.currentTrack && (state.currentTrack.isLocal || String(state.currentTrack.id || '').startsWith('local_') || state.currentTrack.source === 'local'));
+    const activeVid = isLocalCur ? null : safeYtId(state.currentTrack?.ytId || state.currentTrack?.id);
+
+    if (evtType === 'trackchanged') {
+      if (isLocalCur && !evtVid) return;
+      handleNativeExoTrackTransition(evt);
+      return;
+    }
+
+    // Never let stale native-exo state/time events overwrite local device track or non-exo playback
+    if (isLocalCur || (state._activeMediaEngine !== 'native-exo' && !evt.playing)) {
+      return;
+    }
 
     if (evtVid && activeVid && evtVid !== activeVid) {
+      if ((evtType === 'state' || evtType === 'time') && state._activeMediaEngine === 'native-exo' && (Date.now() - (state._trackSwitchStartedAt || 0)) > 1500 && evt.title) {
+        handleNativeExoTrackTransition(evt);
+      }
       return;
     }
 
@@ -18729,6 +18913,7 @@ window.__kurfaNativeExoEvent = function(rawPayload) {
     }
 
     if (evtType === 'state') {
+      if (!evtVid && !evt.playing) return;
       state._activeMediaEngine = 'native-exo';
       // Buffering while the user still wants playback is "playing" from the UI's point of view;
       // the native + JS stall watchdogs guarantee it cannot stay frozen.
@@ -18744,6 +18929,11 @@ window.__kurfaNativeExoEvent = function(rawPayload) {
       if (Boolean(evt.playing)) {
         state._activeTrackConfirmedPlaying = true;
         state.userPaused = false;
+      } else if (!state.userPaused && !playing && !evt.buffering) {
+        const sinceReq = Date.now() - (state._nativeExoPlayRequestedAt || 0);
+        if (sinceReq < 2500) {
+          return;
+        }
       }
       if (!state.userPaused || !playing) {
         state.isPlaying = playing;
@@ -19679,14 +19869,17 @@ async function refreshDesktopBridgeSettings() {
   const card = document.getElementById('desktop-app-settings-card');
   if (!card) return;
   const extMode = getBrowserExtensionMode();
-  if (!extMode || !extMode.startsWith('desktop')) {
+  const isAndroid = (typeof isAndroidNativeApp === 'function' && isAndroidNativeApp()) || /Android/i.test(navigator.userAgent || '');
+  if (isAndroid || !extMode || !extMode.startsWith('desktop')) {
     card.classList.add('hidden');
+    card.style.display = 'none';
     return;
   }
 
   try {
     const res = await callExtensionBridge('GET_DESKTOP_SETTINGS', {}, 4000);
     if (res && res.success) {
+      card.style.display = '';
       card.classList.remove('hidden');
       __desktopSettingsState = {
         createDesktopShortcut: Boolean(res.desktopShortcut ?? res.createDesktopShortcut),
@@ -19722,9 +19915,11 @@ async function refreshDesktopBridgeSettings() {
       updateDesktopTogglePill(document.getElementById('btn-desktop-tray-toggle'), __desktopSettingsState.minimizeToTray);
     } else {
       card.classList.add('hidden');
+      card.style.display = 'none';
     }
   } catch (e) {
     card.classList.add('hidden');
+    card.style.display = 'none';
   }
 }
 window.refreshDesktopBridgeSettings = refreshDesktopBridgeSettings;
