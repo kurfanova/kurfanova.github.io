@@ -14238,48 +14238,69 @@ function normalizeSongAccentTriplet(input) {
   }
   if (!parts || parts.some(n => !Number.isFinite(n))) return null;
   const [r, g, b] = parts.map(v => Math.max(0, Math.min(255, Math.round(v))));
+  const chroma = (Math.max(r, g, b) - Math.min(r, g, b)) / 255;
   let [h, s, l] = rgbToHsl01(r, g, b);
-  if (s < 0.08) h = 210 / 360;
-  if (s < 0.35) {
-    s = Math.max(0.64, Math.min(0.86, s * 1.45));
-  } else {
-    s = Math.max(0.58, Math.min(0.88, s));
+  if (chroma < 0.18 || s < 0.12) {
+    s = Math.min(0.10, s);
+    l = Math.max(0.76, Math.min(0.86, l));
+    return hsl01ToRgb(h, s, l);
   }
-  l = Math.max(0.50, Math.min(0.62, l));
+  if (s < 0.35) {
+    s = Math.max(0.54, Math.min(0.86, s * 1.35));
+  } else {
+    s = Math.max(0.54, Math.min(0.86, s));
+  }
+  l = Math.max(0.52, Math.min(0.64, l));
   return hsl01ToRgb(h, s, l);
 }
 
-function syncSongThemeAccent(primaryRgb, secondaryRgb) {
+function syncSongThemeAccent(primaryRgb, secondaryRgb, tertiaryRgb, deepRgb) {
   if (typeof document === 'undefined' || !document.documentElement) return;
   const rootStyle = document.documentElement.style;
   const dynamicEnabled = !state.proSettings || state.proSettings.dynamicBg !== false;
   if (!dynamicEnabled || !primaryRgb) {
     rootStyle.setProperty('--kurfa-track-rgb', '244, 63, 94');
     rootStyle.setProperty('--kurfa-track-rgb-2', '139, 92, 246');
+    rootStyle.setProperty('--kurfa-track-rgb-3', '14, 165, 233');
+    rootStyle.setProperty('--kurfa-track-rgb-4', '88, 28, 135');
     return;
   }
   const p = normalizeSongAccentTriplet(primaryRgb);
   if (!p) {
     rootStyle.setProperty('--kurfa-track-rgb', '244, 63, 94');
     rootStyle.setProperty('--kurfa-track-rgb-2', '139, 92, 246');
+    rootStyle.setProperty('--kurfa-track-rgb-3', '14, 165, 233');
+    rootStyle.setProperty('--kurfa-track-rgb-4', '88, 28, 135');
     return;
   }
+  const [pHue, pSat, pLum] = rgbToHsl01(p[0], p[1], p[2]);
+  const pChroma = (Math.max(p[0], p[1], p[2]) - Math.min(p[0], p[1], p[2])) / 255;
+  const isMono = pChroma < 0.14 || pSat < 0.12;
   let s = normalizeSongAccentTriplet(secondaryRgb);
   if (!s) {
-    const [h, sat, lum] = rgbToHsl01(p[0], p[1], p[2]);
-    s = hsl01ToRgb((h + 0.1) % 1, sat, lum);
+    s = isMono ? [188, 193, 200] : hsl01ToRgb((pHue + 0.10) % 1, pSat, pLum);
+  }
+  let t = normalizeSongAccentTriplet(tertiaryRgb);
+  if (!t) {
+    t = isMono ? [148, 156, 168] : hsl01ToRgb((pHue + 0.86) % 1, Math.min(0.84, pSat), Math.min(0.66, pLum + 0.04));
+  }
+  let d = normalizeSongAccentTriplet(deepRgb);
+  if (!d) {
+    d = isMono ? [110, 118, 132] : hsl01ToRgb((pHue + 0.04) % 1, Math.max(0.45, pSat * 0.85), 0.32);
   }
   rootStyle.setProperty('--kurfa-track-rgb', `${p[0]}, ${p[1]}, ${p[2]}`);
   rootStyle.setProperty('--kurfa-track-rgb-2', `${s[0]}, ${s[1]}, ${s[2]}`);
+  rootStyle.setProperty('--kurfa-track-rgb-3', `${t[0]}, ${t[1]}, ${t[2]}`);
+  rootStyle.setProperty('--kurfa-track-rgb-4', `${d[0]}, ${d[1]}, ${d[2]}`);
 }
 window.syncSongThemeAccent = syncSongThemeAccent;
 
 function syncAmbientCoverArt() {
-  // Contained sidebar and bar cove-LED layers track --kurfa-track-rgb and --kurfa-bass/--kurfa-mid/--kurfa-high
+  // Contained sidebar and bar cove-LED layers track --kurfa-track-rgb..4 and live audio intelligence
 }
 window.syncAmbientCoverArt = syncAmbientCoverArt;
 
-// Song-Reactive Dynamic Color Palette + Real-Time 16-Bar Audio Visualizer for #audio-fx-card
+// Song-Reactive Smart 4-Tone Color Palette + Beat/BPM/Drop Intelligence + 16-Bar Visualizer
 const FxReactiveStudio = {
   _paletteCache: new Map(),
   _currentRgb: '99, 102, 241',
@@ -14291,19 +14312,36 @@ const FxReactiveStudio = {
   _bassSmooth: 0,
   _midSmooth: 0,
   _highSmooth: 0,
+  _prevBass: 0,
+  _lastBeatMs: 0,
+  _ibiList: [],
+  _bpmSmooth: 112,
+  _rollingEnergy: 0.3,
+  _surgeSmooth: 0,
+  _brightSmooth: 0.4,
 
   hashColorRgb(seedStr) {
     const palettes = [
-      '56, 189, 248',
-      '99, 102, 241',
-      '244, 63, 94',
-      '139, 92, 246',
-      '16, 185, 129',
-      '59, 130, 246',
-      '217, 70, 239',
-      '20, 184, 166',
-      '251, 113, 133',
-      '14, 165, 233'
+      { primary: '6, 182, 212', secondary: '59, 130, 246', tertiary: '16, 185, 129' },
+      { primary: '244, 63, 94', secondary: '139, 92, 246', tertiary: '251, 146, 60' },
+      { primary: '16, 185, 129', secondary: '20, 184, 166', tertiary: '56, 189, 248' },
+      { primary: '99, 102, 241', secondary: '56, 189, 248', tertiary: '192, 132, 252' },
+      { primary: '168, 85, 247', secondary: '236, 72, 153', tertiary: '59, 130, 246' },
+      { primary: '245, 158, 11', secondary: '239, 68, 68', tertiary: '251, 191, 36' },
+      { primary: '59, 130, 246', secondary: '14, 165, 233', tertiary: '129, 140, 248' },
+      { primary: '217, 70, 239', secondary: '139, 92, 246', tertiary: '244, 63, 94' },
+      { primary: '20, 184, 166', secondary: '34, 197, 94', tertiary: '56, 189, 248' },
+      { primary: '239, 68, 68', secondary: '249, 115, 22', tertiary: '244, 63, 94' },
+      { primary: '14, 165, 233', secondary: '99, 102, 241', tertiary: '45, 212, 191' },
+      { primary: '139, 92, 246', secondary: '217, 70, 239', tertiary: '56, 189, 248' },
+      { primary: '236, 72, 153', secondary: '244, 63, 94', tertiary: '168, 85, 247' },
+      { primary: '34, 197, 94', secondary: '16, 185, 129', tertiary: '234, 179, 8' },
+      { primary: '249, 115, 22', secondary: '244, 63, 94', tertiary: '250, 204, 21' },
+      { primary: '56, 189, 248', secondary: '45, 212, 191', tertiary: '99, 102, 241' },
+      { primary: '190, 24, 93', secondary: '147, 51, 234', tertiary: '251, 113, 133' },
+      { primary: '13, 148, 136', secondary: '59, 130, 246', tertiary: '167, 243, 208' },
+      { primary: '225, 29, 72', secondary: '217, 119, 6', tertiary: '139, 92, 246' },
+      { primary: '79, 70, 229', secondary: '6, 182, 212', tertiary: '236, 72, 153' }
     ];
     let h = 2166136261;
     const s = String(seedStr || 'kurfa');
@@ -14314,25 +14352,28 @@ const FxReactiveStudio = {
     return palettes[Math.abs(h) % palettes.length];
   },
 
-  applyRgb(rgbStr, track, secondaryRgbStr = null) {
-    this._currentRgb = rgbStr;
-    syncSongThemeAccent(rgbStr, secondaryRgbStr);
+  applyRgb(rgbStrOrObj, track, secondaryRgbStr = null, tertiaryRgbStr = null) {
+    const pStr = (rgbStrOrObj && typeof rgbStrOrObj === 'object') ? rgbStrOrObj.primary : rgbStrOrObj;
+    const sStr = (rgbStrOrObj && typeof rgbStrOrObj === 'object') ? (rgbStrOrObj.secondary || secondaryRgbStr) : secondaryRgbStr;
+    const tStr = (rgbStrOrObj && typeof rgbStrOrObj === 'object') ? (rgbStrOrObj.tertiary || tertiaryRgbStr) : tertiaryRgbStr;
+    this._currentRgb = pStr;
+    syncSongThemeAccent(pStr, sStr, tStr);
     const card = document.getElementById('audio-fx-card');
     if (card) {
-      card.style.setProperty('--fx-rgb', rgbStr);
+      card.style.setProperty('--fx-rgb', pStr);
     }
     const bar = document.getElementById('desktop-player-bar');
-    if (bar) bar.style.setProperty('--fx-rgb', rgbStr);
+    if (bar) bar.style.setProperty('--fx-rgb', pStr);
     const stageCard = document.getElementById('deck-main-card');
-    if (stageCard) stageCard.style.setProperty('--fx-rgb', rgbStr);
+    if (stageCard) stageCard.style.setProperty('--fx-rgb', pStr);
     const mini = document.getElementById('mobile-mini-player');
-    if (mini) mini.style.setProperty('--mini-rgb', rgbStr);
+    if (mini) mini.style.setProperty('--mini-rgb', pStr);
     const bridge = document.getElementById('mobile-dock-bridge');
-    if (bridge) bridge.style.setProperty('--mini-rgb', rgbStr);
+    if (bridge) bridge.style.setProperty('--mini-rgb', pStr);
     const pip = document.getElementById('kurfa-floating-pip');
-    if (pip) pip.style.setProperty('--pip-rgb', rgbStr);
+    if (pip) pip.style.setProperty('--pip-rgb', pStr);
     if (typeof pipWindowInstance !== 'undefined' && pipWindowInstance && pipWindowInstance.document && pipWindowInstance.document.documentElement) {
-      try { pipWindowInstance.document.documentElement.style.setProperty('--pip-rgb', rgbStr); } catch (_) {}
+      try { pipWindowInstance.document.documentElement.style.setProperty('--pip-rgb', pStr); } catch (_) {}
     }
     const sub = document.getElementById('fx-track-subtitle');
     if (sub) {
@@ -14359,15 +14400,15 @@ const FxReactiveStudio = {
     if (this._paletteCache.has(url)) {
       const cached = this._paletteCache.get(url);
       if (cached && typeof cached === 'object') {
-        this.applyRgb(cached.primary, track, cached.secondary);
+        this.applyRgb(cached.primary, track, cached.secondary, cached.tertiary);
       } else {
         this.applyRgb(cached, track);
       }
       return;
     }
-    // Immediate cover-hash tint first so transition feels instant
-    const fallbackRgb = this.hashColorRgb(seed);
-    this.applyRgb(fallbackRgb, track);
+    // Immediate multi-tone cover-hash tint first so transition feels instant
+    const fallbackPal = this.hashColorRgb(seed);
+    this.applyRgb(fallbackPal, track);
 
     if (!url || url.includes('kurfamuzik_logo') || !url.startsWith('http')) return;
     try {
@@ -14375,8 +14416,11 @@ const FxReactiveStudio = {
       try {
         const uObj = new URL(url);
         const proxyable = /(?:ytimg\.com|youtube\.com|googleusercontent\.com|ggpht\.com|scdn\.co|mzstatic\.com|dzcdn\.net)$/i.test(uObj.hostname);
-        if (proxyable && typeof API_BASE === 'string' && API_BASE.startsWith('http')) {
-          sampleUrl = `${API_BASE}/api/cover?url=${encodeURIComponent(url)}`;
+        const coverBase = (typeof API_BASE === 'string' && API_BASE.startsWith('http'))
+          ? API_BASE
+          : (typeof location !== 'undefined' && location.origin && location.origin.startsWith('http') ? location.origin : '');
+        if (proxyable && coverBase) {
+          sampleUrl = `${coverBase}/api/cover?url=${encodeURIComponent(url)}`;
         }
       } catch (_) {}
 
@@ -14385,23 +14429,29 @@ const FxReactiveStudio = {
       img.onload = () => {
         try {
           const cv = document.createElement('canvas');
-          cv.width = 24;
-          cv.height = 24;
+          cv.width = 32;
+          cv.height = 32;
           const ctx = cv.getContext('2d', { willReadFrequently: true });
           if (!ctx) return;
-          ctx.drawImage(img, 0, 0, 24, 24);
-          const px = ctx.getImageData(0, 0, 24, 24).data;
-          // 12 hue buckets (30 deg each) to find TRUE dominant primary + secondary cover colors
-          const buckets = Array.from({ length: 12 }, () => ({ w: 0, r: 0, g: 0, b: 0 }));
+          ctx.drawImage(img, 0, 0, 32, 32);
+          const px = ctx.getImageData(0, 0, 32, 32).data;
+          // 24 hue buckets (15 deg each) + monochrome/B&W platinum detection
+          const buckets = Array.from({ length: 24 }, () => ({ w: 0, r: 0, g: 0, b: 0 }));
+          let validPx = 0, chromPx = 0, sumR = 0, sumG = 0, sumB = 0;
           for (let i = 0; i < px.length; i += 4) {
             const r = px[i], g = px[i + 1], b = px[i + 2], a = px[i + 3];
             if (a < 128) continue;
+            validPx++;
+            sumR += r;
+            sumG += g;
+            sumB += b;
             const lum = r * 0.299 + g * 0.587 + b * 0.114;
-            if (lum < 26 || lum > 238) continue;
+            if (lum < 24 || lum > 240) continue;
             const [h, sat] = rgbToHsl01(r, g, b);
             if (sat < 0.12) continue;
-            const bi = Math.min(11, Math.floor(h * 12));
-            const w = 0.25 + Math.pow(sat, 1.55) * 3.4;
+            chromPx++;
+            const bi = Math.min(23, Math.floor(h * 24));
+            const w = 0.25 + Math.pow(sat, 1.5) * 3.4;
             buckets[bi].w += w;
             buckets[bi].r += r * w;
             buckets[bi].g += g * w;
@@ -14411,19 +14461,40 @@ const FxReactiveStudio = {
             .map((bk, idx) => ({ idx, ...bk }))
             .filter(bk => bk.w > 0)
             .sort((a, b) => b.w - a.w);
-          if (ranked.length > 0) {
+          const avgStr = (bk) => `${Math.round(bk.r / bk.w)}, ${Math.round(bk.g / bk.w)}, ${Math.round(bk.b / bk.w)}`;
+          const hueDist = (i, j) => Math.min(Math.abs(i - j), 24 - Math.abs(i - j));
+          let pRgb = null, sRgb = null, tRgb = null;
+          if (ranked.length === 0 || (validPx > 0 && chromPx < validPx * 0.06)) {
+            if (validPx > 0) {
+              const avgR = sumR / validPx;
+              const avgB = sumB / validPx;
+              if (avgR - avgB > 8) {
+                pRgb = '226, 216, 202';
+                sRgb = '190, 176, 158';
+                tRgb = '156, 142, 124';
+              } else {
+                pRgb = '216, 219, 223';
+                sRgb = '188, 193, 200';
+                tRgb = '148, 156, 168';
+              }
+            }
+          } else {
             const b1 = ranked[0];
-            const pRgb = `${Math.round(b1.r / b1.w)}, ${Math.round(b1.g / b1.w)}, ${Math.round(b1.b / b1.w)}`;
-            const b2 = ranked.find(bk => {
-              const dist = Math.min(Math.abs(bk.idx - b1.idx), 12 - Math.abs(bk.idx - b1.idx));
-              return dist >= 2 && bk.w >= b1.w * 0.16;
-            });
-            const sRgb = b2
-              ? `${Math.round(b2.r / b2.w)}, ${Math.round(b2.g / b2.w)}, ${Math.round(b2.b / b2.w)}`
-              : null;
-            this._paletteCache.set(url, { primary: pRgb, secondary: sRgb });
+            pRgb = avgStr(b1);
+            const b2 = ranked.find(bk => hueDist(bk.idx, b1.idx) >= 3 && bk.w >= b1.w * 0.12);
+            sRgb = b2 ? avgStr(b2) : null;
+            const b3 = ranked.find(bk =>
+              bk !== b1 && bk !== b2 &&
+              hueDist(bk.idx, b1.idx) >= 3 &&
+              (!b2 || hueDist(bk.idx, b2.idx) >= 3) &&
+              bk.w >= b1.w * 0.08
+            );
+            tRgb = b3 ? avgStr(b3) : null;
+          }
+          if (pRgb) {
+            this._paletteCache.set(url, { primary: pRgb, secondary: sRgb, tertiary: tRgb });
             if (state.currentTrack && (state.currentTrack.id === track.id || state.currentTrack.title === track.title)) {
-              this.applyRgb(pRgb, track, sRgb);
+              this.applyRgb(pRgb, track, sRgb, tRgb);
             }
           }
         } catch (_) {}
@@ -14437,12 +14508,23 @@ const FxReactiveStudio = {
     this._bassSmooth = 0;
     this._midSmooth = 0;
     this._highSmooth = 0;
-    if (typeof document !== 'undefined' && document.documentElement) {
-      const st = document.documentElement.style;
-      st.setProperty('--kurfa-beat', '0');
-      st.setProperty('--kurfa-bass', '0');
-      st.setProperty('--kurfa-mid', '0');
-      st.setProperty('--kurfa-high', '0');
+    this._prevBass = 0;
+    this._surgeSmooth = 0;
+    this._brightSmooth = 0.35;
+    if (typeof document !== 'undefined') {
+      if (document.documentElement) {
+        const st = document.documentElement.style;
+        st.setProperty('--kurfa-beat', '0');
+        st.setProperty('--kurfa-bass', '0');
+        st.setProperty('--kurfa-mid', '0');
+        st.setProperty('--kurfa-high', '0');
+        st.setProperty('--kurfa-surge', '0');
+        st.setProperty('--kurfa-bright', '0.35');
+        st.setProperty('--kurfa-tempo-s', '6.2s');
+      }
+      if (document.body) {
+        document.body.classList.remove('kurfa-drop-active');
+      }
     }
     const bars = document.querySelectorAll('#fx-live-spectrum > span');
     if (!bars.length) return;
@@ -14535,19 +14617,63 @@ const FxReactiveStudio = {
               this._midSmooth = this._midSmooth * 0.72 + rawMid * 0.28;
               this._highSmooth = this._highSmooth * 0.65 + rawHigh * 0.35;
               this._beatSmooth = this._bassSmooth * 0.6 + this._midSmooth * 0.4;
+
+              // Beat Onset & Live BPM Tempo Lock (maps 60..180 BPM -> 7.4s..3.0s)
+              if ((rawBass - this._prevBass) > 0.12 && (now - this._lastBeatMs) > 250) {
+                const dt = now - this._lastBeatMs;
+                this._lastBeatMs = now;
+                if (dt >= 300 && dt <= 1150) {
+                  this._ibiList.push(dt);
+                  if (this._ibiList.length > 8) this._ibiList.shift();
+                  const sorted = [...this._ibiList].sort((a, b) => a - b);
+                  const medIbi = sorted[Math.floor(sorted.length / 2)];
+                  const estBpm = Math.max(60, Math.min(180, 60000 / medIbi));
+                  this._bpmSmooth = this._bpmSmooth * 0.85 + estBpm * 0.15;
+                }
+              }
+              this._prevBass = rawBass;
+              const tempoNorm = Math.max(0, Math.min(1, (this._bpmSmooth - 60) / 120));
+              const tempoSec = 7.4 - tempoNorm * 4.4;
+
+              // Chorus / Drop Surge Bloom Detector
+              this._rollingEnergy = this._rollingEnergy * 0.965 + this._beatSmooth * 0.035;
+              const targetSurge = this._beatSmooth > (this._rollingEnergy * 1.32 + 0.09)
+                ? Math.min(1, (this._beatSmooth - this._rollingEnergy) * 2.4)
+                : 0;
+              this._surgeSmooth = targetSurge > this._surgeSmooth
+                ? (this._surgeSmooth * 0.5 + targetSurge * 0.5)
+                : (this._surgeSmooth * 0.90);
+
+              // Spectral Warmth / Brightness Ratio
+              const rawBright = rawHigh / (rawBass + rawMid + rawHigh + 0.05);
+              this._brightSmooth = this._brightSmooth * 0.8 + rawBright * 0.2;
+
               st.setProperty('--kurfa-bass', this._bassSmooth.toFixed(3));
               st.setProperty('--kurfa-mid', this._midSmooth.toFixed(3));
               st.setProperty('--kurfa-high', this._highSmooth.toFixed(3));
               st.setProperty('--kurfa-beat', this._beatSmooth.toFixed(3));
-            } else if (this._beatSmooth !== 0) {
+              st.setProperty('--kurfa-surge', this._surgeSmooth.toFixed(3));
+              st.setProperty('--kurfa-bright', this._brightSmooth.toFixed(3));
+              st.setProperty('--kurfa-tempo-s', `${tempoSec.toFixed(2)}s`);
+              if (document.body) {
+                document.body.classList.toggle('kurfa-drop-active', this._surgeSmooth > 0.42);
+              }
+            } else if (this._beatSmooth !== 0 || this._surgeSmooth !== 0) {
               this._beatSmooth = 0;
               this._bassSmooth = 0;
               this._midSmooth = 0;
               this._highSmooth = 0;
+              this._prevBass = 0;
+              this._surgeSmooth = 0;
+              this._brightSmooth = 0.35;
               st.setProperty('--kurfa-beat', '0');
               st.setProperty('--kurfa-bass', '0');
               st.setProperty('--kurfa-mid', '0');
               st.setProperty('--kurfa-high', '0');
+              st.setProperty('--kurfa-surge', '0');
+              st.setProperty('--kurfa-bright', '0.35');
+              st.setProperty('--kurfa-tempo-s', '6.2s');
+              if (document.body) document.body.classList.remove('kurfa-drop-active');
             }
           }
           // Low-cost ~11fps reactive loudness tint on mobile Dynamic Island pill
