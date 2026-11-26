@@ -1,18 +1,14 @@
 // Kurfanova PWA Service Worker
-const CACHE_NAME = 'kurfanova-shell-v4.7.8';
+const CACHE_NAME = 'kurfanova-shell-v1.3.1';
 
 const SHELL_ASSETS = [
   './',
   './index.html',
-  './tailwind.min.css',
-  './style.css',
-  './app.js',
-  './explore-seed.json',
-  './google-auth.html',
-  './manifest.json',
-  './icon-192.png',
-  './icon-512.png',
-  './favicon.ico'
+  './tailwind.min.css?v=20261120_v17',
+  './style.min.css?v=20261126_v131',
+  './app.min.js?v=20261126_v131',
+  './kurfamuzik_logo_96.webp',
+  './manifest.json'
 ];
 
 const BYPASS_HOSTS = [
@@ -35,8 +31,13 @@ function shouldBypassHost(hostname) {
   return BYPASS_HOSTS.some((domain) => host === domain || host.endsWith('.' + domain));
 }
 
-function isStaticAssetPath(pathname) {
-  return /\.(?:png|ico)$/i.test(pathname) || /(?:^|\/)manifest\.json$/i.test(pathname);
+function isStaticAssetPath(url) {
+  const pathname = url.pathname || '';
+  if (/\.(?:webp|png|jpg|jpeg|svg|ico|woff2)$/i.test(pathname)) return true;
+  if (/(?:^|\/)manifest\.json$/i.test(pathname)) return true;
+  if (url.searchParams.has('v') && /\.(?:min\.js|min\.css|js|css)$/i.test(pathname)) return true;
+  if (/\.(?:min\.js|min\.css)$/i.test(pathname)) return true;
+  return false;
 }
 
 function isAppShellPath(pathname) {
@@ -90,7 +91,7 @@ async function cacheFirst(request) {
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME)
-      .then((cache) => cache.addAll(SHELL_ASSETS.map((asset) => new Request(asset, { cache: 'reload' }))))
+      .then((cache) => cache.addAll(SHELL_ASSETS))
       .then(() => self.skipWaiting())
   );
 });
@@ -134,12 +135,13 @@ self.addEventListener('fetch', (event) => {
   if (url.origin !== self.location.origin) return;
   if (url.pathname.toLowerCase().endsWith('.apk') || url.pathname.toLowerCase().endsWith('.exe') || url.pathname.toLowerCase().endsWith('.zip') || url.pathname.toLowerCase().endsWith('.user.js')) return;
 
-  if (request.mode === 'navigate' || isAppShellPath(url.pathname) || url.pathname.endsWith('/explore-seed.json')) {
-    event.respondWith(networkFirst(request, request.mode === 'navigate'));
+  if (isStaticAssetPath(url)) {
+    event.respondWith(cacheFirst(request));
     return;
   }
 
-  if (isStaticAssetPath(url.pathname)) {
-    event.respondWith(cacheFirst(request));
+  if (request.mode === 'navigate' || isAppShellPath(url.pathname) || url.pathname.endsWith('/explore-seed.json')) {
+    event.respondWith(networkFirst(request, request.mode === 'navigate'));
+    return;
   }
 });

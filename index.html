@@ -41,8 +41,9 @@
   <meta name="apple-mobile-web-app-capable" content="yes"/>
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
   <meta name="google-site-verification" content="google58d513bbdf20d0f3" />
+  <meta name="msvalidate.01" content="D1F8E90F8661C1E79F00E57FA7149981" />
   <meta name="referrer" content="strict-origin-when-cross-origin" />
-  <title>Kurfamüzik</title>
+  <title>Kurfamüzik — Reklamsız Müzik, Canlı Sözler &amp; Çevrimdışı Çalar</title>
   <meta name="description" content="Kurfamüzik — Kesintisiz, reklamsız müzik ve video oynatıcı. Çevrimdışı MP3/MP4 indirme, Spotify aktarımı, arka planda dinleme ve gelişmiş ekolayzır." />
   <meta name="keywords" content="Kurfamüzik, kurfa müzik, reklamsız müzik, müzik indir, mp3 indir, mp4 indir, ücretsiz müzik dinle, arka planda çal, ekolayzır" />
   <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
@@ -104,9 +105,11 @@
   <link rel="apple-touch-icon" sizes="180x180" href="./apple-touch-icon.png?v=20261120_v17" />
   <link rel="manifest" href="./manifest.json?v=20261120_v17" />
 
-  <!-- Fonts & Icons (Non-Render-Blocking for Instant Mobile Boot) -->
+  <!-- Fonts, Icons & Media Preconnect (Non-Render-Blocking for Instant Mobile Boot) -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://i.ytimg.com" crossorigin>
+  <link rel="dns-prefetch" href="https://kurfanova.kurfa.workers.dev">
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" media="print" onload="this.media='all'"/>
   <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL@24,400,0..1&display=swap" rel="stylesheet" media="print" onload="this.media='all'"/>
   <noscript>
@@ -142,7 +145,7 @@
     }
   </style>
   <link rel="stylesheet" href="./tailwind.min.css?v=20261120_v17">
-  <link rel="stylesheet" href="./style.css?v=20261124_v38c">
+  <link rel="stylesheet" href="./style.min.css?v=20261126_v131">
 </head>
 <body class="bg-background font-sans text-on-surface antialiased min-h-screen">
   <script>
@@ -191,7 +194,7 @@
       
       <!-- Brand Logo & Title -->
       <div class="flex items-center gap-space-sm mb-space-lg cursor-pointer" onclick="switchTab('kesfet')">
-        <img src="./assets/kurfamuzik_logo.png?v=20261120_v17" alt="Kurfamüzik Logo" class="h-9 w-9 object-contain flex-shrink-0" onerror="this.onerror=null; this.src='./kurfamuzik_logo.png?v=20261120_v17';">
+        <img src="./kurfamuzik_logo_96.webp" alt="Kurfamüzik Logo" width="36" height="36" class="h-9 w-9 object-contain flex-shrink-0" onerror="this.onerror=null; this.src='./kurfamuzik_logo.png';">
         <div class="flex flex-col">
           <span class="text-xl font-extrabold tracking-tight text-primary leading-none">Kurfamüzik</span>
           <span class="text-[11px] text-on-surface-variant font-medium leading-tight mt-1" data-i18n="nav.brand_sub">Masaüstü & Web</span>
@@ -272,7 +275,7 @@
         
         <!-- Mobile Brand Title (Mobile Only) -->
         <div class="flex items-center gap-1.5 md:hidden cursor-pointer flex-shrink-0" onclick="switchTab('kesfet')">
-          <img src="./assets/kurfamuzik_logo.png?v=20261120_v17" alt="Logo" class="h-8 w-8 object-contain" onerror="this.onerror=null; this.src='./kurfamuzik_logo.png?v=20261120_v17';">
+          <img src="./kurfamuzik_logo_96.webp" alt="Logo" width="32" height="32" class="h-8 w-8 object-contain" onerror="this.onerror=null; this.src='./kurfamuzik_logo.png';">
         </div>
 
         <!-- Search Bar -->
@@ -314,7 +317,7 @@
           <button type="button" aria-label="Dil Değiştir" data-i18n-aria="topbar.lang_toggle" id="topbar-lang-btn" class="hidden md:flex h-9 px-2.5 rounded-full items-center justify-center text-[11px] font-extrabold tracking-wide text-on-surface-variant hover:text-primary hover:bg-surface-container transition-colors border border-surface-container/60" onclick="toggleAppLanguage()" title="Dil / Language" data-i18n-title="topbar.lang_toggle">TR</button>
           <!-- User Profile & Settings Hub Button -->
           <button type="button" aria-label="Ayarlar & Profil" data-i18n-aria="nav.profile_settings" id="topbar-profile-btn" class="flex items-center gap-1.5 pl-1 pr-2.5 py-1 rounded-full bg-surface-container-low hover:bg-surface-container transition-all border border-surface-container shadow-xs" onclick="openProfileModal()" title="Profil & Ayarlar" data-i18n-title="nav.profile_settings">
-            <img id="topbar-user-avatar" src="./kurfamuzik_logo.png?v=20261120_v17" alt="Kurfamüzik" class="w-7 h-7 rounded-full object-contain" onerror="this.onerror=null; this.src='./kurfamuzik_logo.png?v=20261120_v17';">
+            <img id="topbar-user-avatar" src="./kurfamuzik_logo_96.webp" alt="Kurfamüzik" width="28" height="28" class="w-7 h-7 rounded-full object-contain" onerror="this.onerror=null; this.src='./kurfamuzik_logo.png';">
             <span id="topbar-user-name" class="text-xs font-bold text-on-surface max-w-[84px] sm:max-w-none truncate">Dinleyici</span>
             <span class="material-symbols-outlined text-[15px] text-on-surface-variant" aria-hidden="true">settings</span>
           </button>
@@ -372,7 +375,7 @@
               <!-- Mobile Top Row: Compact Cover + Meta side by side; Desktop: Meta only (Cover sits on right) -->
               <div class="flex items-center gap-3.5 w-full">
                 <div class="sm:hidden w-16 h-16 rounded-2xl overflow-hidden shadow-xl border border-white/25 bg-black/40 flex-shrink-0 cursor-pointer" onclick="playHeroTrack()">
-                  <img id="hero-cover-img-mobile" src="./kurfamuzik_logo.png" alt="Trend Kapak" class="w-full h-full object-cover" onerror="this.onerror=null; this.src='./kurfamuzik_logo.png';">
+                  <img id="hero-cover-img-mobile" src="./kurfamuzik_logo_256.webp" alt="Trend Kapak" width="128" height="128" fetchpriority="high" class="w-full h-full object-cover" onerror="this.onerror=null; this.src='./kurfamuzik_logo.png';">
                 </div>
                 <div class="flex flex-col min-w-0 flex-1 gap-1">
                   <div class="flex items-center gap-2">
@@ -422,7 +425,7 @@
             <!-- Cover Artwork Preview (Desktop/Tablet Right) -->
             <div class="relative z-10 hidden sm:flex items-center justify-center flex-shrink-0">
               <div class="w-32 h-32 md:w-40 md:h-40 rounded-2xl overflow-hidden shadow-2xl border border-white/25 bg-black/40 cursor-pointer group" onclick="playHeroTrack()" title="Hemen Dinle" data-i18n-title="hero.listen_now">
-                <img id="hero-cover-img" src="./kurfamuzik_logo.png" alt="Trend Kapak" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" onerror="this.onerror=null; this.src='./kurfamuzik_logo.png';">
+                <img id="hero-cover-img" src="./kurfamuzik_logo_256.webp" alt="Trend Kapak" width="160" height="160" fetchpriority="high" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" onerror="this.onerror=null; this.src='./kurfamuzik_logo.png';">
               </div>
             </div>
           </div>
@@ -430,8 +433,8 @@
 
         <!-- Modern Segmented Navigation Bar & Genre Hierarchy -->
         <section id="kesfet-nav-bar" class="w-full flex flex-col gap-3 pt-1">
-          <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
-            <div class="inline-flex p-1 rounded-2xl bg-surface-container-low shadow-inner border border-surface-container/60 gap-1 overflow-x-auto whitespace-nowrap scrollbar-none max-w-full" id="kesfet-subtabs">
+          <div class="flex flex-row items-center justify-between gap-2">
+            <div class="inline-flex flex-1 min-w-0 p-1 rounded-2xl bg-surface-container-low shadow-inner border border-surface-container/60 gap-1 overflow-x-auto whitespace-nowrap scrollbar-none" id="kesfet-subtabs">
               <button type="button" id="subtab-btn-trendler" class="sub-tab-pill active flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold bg-primary text-on-primary shadow-sm transition-all" onclick="switchKesfetSubTab('trendler')">
                 <span class="material-symbols-outlined text-[16px]" aria-hidden="true">explore</span>
                 <span data-i18n="explore.tab_trends">Keşfet &amp; Senin İçin</span>
@@ -445,9 +448,9 @@
                 <span data-i18n="explore.tab_new">Albümler &amp; Yeni Çıkanlar</span>
               </button>
             </div>
-            <button type="button" id="btn-refresh-explore" onclick="refreshPersonalizedExplore()" class="self-end sm:self-auto px-3 py-1.5 rounded-full bg-surface-container-low hover:bg-surface-container border border-surface-container/60 text-[11px] font-bold text-on-surface-variant hover:text-on-surface flex items-center gap-1.5 transition-all active:scale-95">
-              <span class="material-symbols-outlined text-[15px]" id="refresh-explore-icon">refresh</span>
-              <span data-i18n="explore.refresh_feed">Akışı Yenile</span>
+            <button type="button" id="btn-refresh-explore" onclick="refreshPersonalizedExplore()" title="Akışı Yenile" data-i18n-title="explore.refresh_feed" class="w-9 h-9 sm:w-auto sm:h-auto sm:px-3 sm:py-1.5 rounded-full bg-surface-container-low hover:bg-surface-container border border-surface-container/60 text-[11px] font-bold text-on-surface-variant hover:text-on-surface flex items-center justify-center gap-1.5 transition-all active:scale-95 flex-shrink-0">
+              <span class="material-symbols-outlined text-[16px] sm:text-[15px]" id="refresh-explore-icon">refresh</span>
+              <span class="hidden sm:inline" data-i18n="explore.refresh_feed">Akışı Yenile</span>
             </button>
           </div>
         </section>
@@ -713,7 +716,7 @@
           <!-- Spotify-Style Artist Header Banner -->
           <div class="relative w-full rounded-2xl overflow-hidden bg-surface-container-lowest border border-surface-container shadow-md p-6 sm:p-8 flex flex-col md:flex-row items-center md:items-end gap-6">
             <div class="relative w-28 h-28 sm:w-36 sm:h-36 rounded-full overflow-hidden shadow-2xl ring-2 ring-primary/25 flex-shrink-0 bg-surface-container-high">
-              <img id="artist-profile-avatar" src="./kurfamuzik_logo.png" alt="Sanatçı" loading="lazy" class="w-full h-full object-cover" onerror="this.onerror=null; this.src='./kurfamuzik_logo.png';">
+              <img id="artist-profile-avatar" src="./kurfamuzik_logo_256.webp" alt="Sanatçı" width="128" height="128" loading="lazy" class="w-full h-full object-cover" onerror="this.onerror=null; this.src='./kurfamuzik_logo.png';">
             </div>
             <div class="flex flex-col items-center md:items-start text-center md:text-left min-w-0 flex-1">
               <div class="flex items-center gap-1.5 text-xs font-bold text-primary mb-1">
@@ -766,46 +769,71 @@
       <!-- ================================================================= -->
       <!-- TAB 2: ARAMA (SANATÇILAR, YOUTUBE & AÇIK KATALOG)                 -->
       <!-- ================================================================= -->
-      <div id="tab-arama" class="view-tab flex flex-col w-full gap-5">
-        
-        <!-- Filter Chips Bar (Single Clean Unified Header Search Controls Everything) -->
-        <section class="rounded-2xl bg-surface-container-lowest p-2.5 sm:p-3 shadow-sm border border-surface-container/70">
-          <div class="flex items-center justify-between gap-2">
-            <div class="flex items-center gap-1.5 overflow-x-auto whitespace-nowrap scrollbar-none py-0.5 max-w-full" id="search-filter-chips">
-                <button type="button" class="filter-chip active shrink-0 flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-primary text-on-primary text-xs font-semibold transition-all" onclick="applySearchFilter('all', this)">
-                  <span class="material-symbols-outlined text-[15px]" aria-hidden="true">library_music</span>
-                  <span data-i18n="search.filter_all">Tümü</span>
+      <!-- TAB 2: ARAMA (METROLIST / SPOTIFY PRO SEARCH EXPERIENCE)          -->
+      <!-- ================================================================= -->
+      <div id="tab-arama" class="view-tab flex flex-col w-full gap-4 sm:gap-5">
+
+        <!-- Dedicated In-Page Search Capsule + Category Chips -->
+        <section class="kurfa-search-command-bar rounded-2xl p-2.5 sm:p-3 flex flex-col gap-2.5">
+          <div class="flex items-center gap-2">
+            <div class="relative flex-1 min-w-0">
+              <span class="material-symbols-outlined text-[19px] text-primary absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" aria-hidden="true">search</span>
+              <input type="text" id="arama-page-search-input" autocomplete="off" spellcheck="false" placeholder="Şarkı, albüm, sanatçı veya YouTube linki ara..." data-i18n-placeholder="topbar.search_placeholder" aria-label="Arama" class="kurfa-arama-input w-full h-10 pl-10 pr-16 rounded-full text-xs sm:text-sm font-medium focus:outline-none">
+              <div class="absolute right-1.5 top-1/2 -translate-y-1/2 flex items-center gap-0.5">
+                <button type="button" id="btn-arama-clear" class="hidden w-7 h-7 rounded-full flex items-center justify-center text-on-surface-variant hover:text-on-surface transition-colors" onclick="clearSearchInput()" title="Temizle" data-i18n-title="search.clear">
+                  <span class="material-symbols-outlined text-[16px]" aria-hidden="true">close</span>
                 </button>
-                <button type="button" class="filter-chip shrink-0 flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-surface-container-low hover:bg-surface-container text-on-surface-variant text-xs font-semibold transition-all" onclick="applySearchFilter('Resmi Klip', this)">
-                  <span class="material-symbols-outlined text-[15px]" aria-hidden="true">videocam</span>
-                  <span data-i18n="search.filter_mv">Resmi Klipler</span>
+                <button type="button" class="w-7 h-7 rounded-full flex items-center justify-center text-on-surface-variant hover:text-primary transition-colors" onclick="pasteFromClipboard()" title="Panodan Yapıştır" data-i18n-title="topbar.paste">
+                  <span class="material-symbols-outlined text-[16px]" aria-hidden="true">content_paste</span>
                 </button>
-                <button type="button" class="filter-chip shrink-0 flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-surface-container-low hover:bg-surface-container text-on-surface-variant text-xs font-semibold transition-all" onclick="applySearchFilter('Canlı Performans', this)">
-                  <span class="material-symbols-outlined text-[15px]" aria-hidden="true">mic_external_on</span>
-                  <span data-i18n="search.filter_live">Canlı</span>
-                </button>
-                <button type="button" class="filter-chip shrink-0 flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-surface-container-low hover:bg-surface-container text-on-surface-variant text-xs font-semibold transition-all" onclick="applySearchFilter('Remix Mashup', this)">
-                  <span class="material-symbols-outlined text-[15px]" aria-hidden="true">album</span>
-                  <span data-i18n="search.filter_remix">Remix</span>
-                </button>
-                <button type="button" class="filter-chip shrink-0 flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-surface-container-low hover:bg-surface-container text-on-surface-variant text-xs font-semibold transition-all" onclick="applySearchFilter('Akustik', this)">
-                  <span class="material-symbols-outlined text-[15px]" aria-hidden="true">graphic_eq</span>
-                  <span data-i18n="search.filter_acoustic">Akustik</span>
-                </button>
-                <button type="button" class="sm:hidden shrink-0 flex items-center gap-1 px-3 py-1.5 rounded-full bg-surface-container-low hover:bg-surface-container text-on-surface-variant text-xs font-semibold transition-all" onclick="pasteFromClipboard()" title="Panodan Link veya Şarkı Yapıştır" data-i18n-title="topbar.paste">
-                  <span class="material-symbols-outlined text-[15px]" aria-hidden="true">content_paste</span>
-                  <span data-i18n="search.paste">Yapıştır</span>
-                </button>
+              </div>
             </div>
+            <button type="button" class="h-10 px-4 rounded-full bg-primary text-on-primary text-xs font-bold shadow-sm hover:opacity-95 active:scale-95 transition-all flex-shrink-0" onclick="executeSearchFromInput()" data-i18n="search.go">Ara</button>
+          </div>
+
+          <div class="kurfa-scroll-rail-wrap" data-scroll-rail>
+            <div class="flex items-center gap-1.5 overflow-x-auto whitespace-nowrap scrollbar-none py-0.5 max-w-full" id="search-filter-chips">
+              <button type="button" data-search-cat="all" class="filter-chip active shrink-0 flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-primary text-on-primary text-xs font-semibold transition-all" onclick="applySearchFilter('all', this)">
+                <span class="material-symbols-outlined text-[15px]" aria-hidden="true">auto_awesome</span>
+                <span data-i18n="search.filter_all">Tümü</span>
+              </button>
+              <button type="button" data-search-cat="songs" class="filter-chip shrink-0 flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-surface-container-low hover:bg-surface-container text-on-surface-variant text-xs font-semibold transition-all" onclick="applySearchFilter('songs', this)">
+                <span class="material-symbols-outlined text-[15px]" aria-hidden="true">music_note</span>
+                <span data-i18n="search.songs">Şarkılar</span>
+              </button>
+              <button type="button" data-search-cat="albums" class="filter-chip shrink-0 flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-surface-container-low hover:bg-surface-container text-on-surface-variant text-xs font-semibold transition-all" onclick="applySearchFilter('albums', this)">
+                <span class="material-symbols-outlined text-[15px]" aria-hidden="true">album</span>
+                <span data-i18n="search.albums">Albümler</span>
+              </button>
+              <button type="button" data-search-cat="artists" class="filter-chip shrink-0 flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-surface-container-low hover:bg-surface-container text-on-surface-variant text-xs font-semibold transition-all" onclick="applySearchFilter('artists', this)">
+                <span class="material-symbols-outlined text-[15px]" aria-hidden="true">artist</span>
+                <span data-i18n="search.artists">Sanatçılar</span>
+              </button>
+              <button type="button" data-search-cat="Resmi Klip" class="filter-chip shrink-0 flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-surface-container-low hover:bg-surface-container text-on-surface-variant text-xs font-semibold transition-all" onclick="applySearchFilter('Resmi Klip', this)">
+                <span class="material-symbols-outlined text-[15px]" aria-hidden="true">videocam</span>
+                <span data-i18n="search.clips">Klipler</span>
+              </button>
+              <button type="button" data-search-cat="Canlı Performans" class="filter-chip shrink-0 flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-surface-container-low hover:bg-surface-container text-on-surface-variant text-xs font-semibold transition-all" onclick="applySearchFilter('Canlı Performans', this)">
+                <span class="material-symbols-outlined text-[15px]" aria-hidden="true">mic_external_on</span>
+                <span data-i18n="search.filter_live">Canlı</span>
+              </button>
+              <button type="button" data-search-cat="Remix Mashup" class="filter-chip shrink-0 flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-surface-container-low hover:bg-surface-container text-on-surface-variant text-xs font-semibold transition-all" onclick="applySearchFilter('Remix Mashup', this)">
+                <span class="material-symbols-outlined text-[15px]" aria-hidden="true">graphic_eq</span>
+                <span data-i18n="search.filter_remix">Remix</span>
+              </button>
+            </div>
+            <button type="button" class="kurfa-rail-hint kurfa-rail-hint-right" aria-label="Sağa kaydır" onclick="scrollKurfaRail(this, 160)">
+              <span class="material-symbols-outlined text-[15px]" aria-hidden="true">chevron_right</span>
+            </button>
           </div>
         </section>
 
-        <!-- Spotify-Style Search Discovery Hub (Visible when search query is empty) -->
-        <section id="search-discovery-hub" class="flex flex-col gap-6">
+        <!-- Search Discovery Hub (Visible when search query is empty) -->
+        <section id="search-discovery-hub" class="flex flex-col gap-5 sm:gap-6">
           <!-- Son Aramalar -->
           <div id="recent-searches-section" class="hidden flex-col gap-3">
             <div class="flex items-center justify-between">
-              <h2 class="text-base sm:text-lg font-bold text-on-surface tracking-tight" data-i18n="search.recent_searches">Son Aramalar</h2>
+              <h2 class="text-sm sm:text-base font-extrabold text-on-surface tracking-tight" data-i18n="search.recent_searches">Son Aramalar</h2>
               <button type="button" id="btn-clear-search-history" class="text-xs font-bold text-primary hover:underline px-2 py-1 rounded-lg transition-colors" onclick="clearSearchHistory()" data-i18n="search.clear">Temizle</button>
             </div>
             <div id="recent-searches-chips" class="flex flex-wrap items-center gap-2">
@@ -816,37 +844,39 @@
           <!-- Son Dinlenenler -->
           <div id="recent-played-search-section" class="hidden flex-col gap-3">
             <div class="flex items-center justify-between">
-              <h2 class="text-base sm:text-lg font-bold text-on-surface tracking-tight" data-i18n="search.recent_played">Son Dinlenenler</h2>
+              <h2 class="text-sm sm:text-base font-extrabold text-on-surface tracking-tight" data-i18n="search.recent_played">Son Dinlenenler</h2>
             </div>
-            <div id="recent-played-search-grid" class="flex gap-3 sm:gap-4 overflow-x-auto pb-2 scrollbar-none">
+            <div id="recent-played-search-grid" class="flex gap-3 overflow-x-auto pb-2 scrollbar-none">
               <!-- Injected dynamically -->
             </div>
           </div>
 
           <!-- Tümüne Göz At -->
           <div class="flex flex-col gap-3">
-            <h2 class="text-base sm:text-lg font-bold text-on-surface tracking-tight" data-i18n="search.browse_all">Tümüne Göz At</h2>
+            <h2 class="text-sm sm:text-base font-extrabold text-on-surface tracking-tight" data-i18n="search.browse_all">Tümüne Göz At</h2>
             <div id="browse-categories-grid" class="kurfa-cat-grid">
               <!-- Injected dynamically -->
             </div>
           </div>
         </section>
 
-        <!-- Dynamic Artists Shelf (Populates live from query) -->
-        <section id="search-artists-section" class="hidden flex-col gap-3">
-          <div class="flex items-center justify-between">
-            <h2 class="text-base sm:text-lg font-bold text-on-surface tracking-tight" data-i18n="search.artists">Sanatçılar</h2>
-            <span class="text-xs text-on-surface-variant" id="search-artists-subtitle" data-i18n="search.artists_sub">Profil & tüm şarkıları gör</span>
-          </div>
-          <div id="search-artists-grid" class="flex items-stretch gap-3 overflow-x-auto pb-2 scrollbar-none">
+        <!-- 2-Column Hero Grid (Desktop): Best Match Spotlight + Top 4 Songs -->
+        <div id="search-hero-grid" class="kurfa-search-hero-grid hidden">
+          <div id="search-spotlight-box" class="w-full rounded-2xl p-4 sm:p-5 kurfa-search-surface" style="display:none;">
             <!-- Injected dynamically -->
           </div>
-        </section>
+          <div id="search-top-songs-card" class="hidden rounded-2xl p-3.5 sm:p-4 kurfa-search-surface flex-col gap-2">
+            <div class="flex items-center justify-between px-1">
+              <h2 class="text-xs sm:text-sm font-extrabold uppercase tracking-wider text-on-surface-variant">Öne Çıkan Parçalar</h2>
+            </div>
+            <div id="search-top-songs-list" class="flex flex-col gap-1"></div>
+          </div>
+        </div>
 
-        <!-- Dynamic Albums Shelf (Populates live from query) -->
+        <!-- Dynamic Albums Shelf / Grid -->
         <section id="search-albums-section" class="hidden flex-col gap-3">
           <div class="flex items-center justify-between">
-            <h2 class="text-base sm:text-lg font-bold text-on-surface tracking-tight" data-i18n="search.albums">Albümler</h2>
+            <h2 class="text-sm sm:text-base font-extrabold text-on-surface tracking-tight" data-i18n="search.albums">Albümler</h2>
             <span class="text-xs text-on-surface-variant" id="search-albums-subtitle" data-i18n="search.albums_sub">Albüm içeriğini ve parçalarını gör</span>
           </div>
           <div id="search-albums-grid" class="flex items-stretch gap-3 overflow-x-auto pb-2 scrollbar-none">
@@ -854,15 +884,21 @@
           </div>
         </section>
 
-        <!-- Spotlight Best Match Card -->
-        <div id="search-spotlight-box" class="w-full rounded-2xl bg-surface-container-lowest p-4 sm:p-5 shadow-sm border border-surface-container/70" style="display:none;">
-          <!-- Injected dynamically -->
-        </div>
+        <!-- Dynamic Artists Shelf / Grid -->
+        <section id="search-artists-section" class="hidden flex-col gap-3">
+          <div class="flex items-center justify-between">
+            <h2 class="text-sm sm:text-base font-extrabold text-on-surface tracking-tight" data-i18n="search.artists">Sanatçılar</h2>
+            <span class="text-xs text-on-surface-variant" id="search-artists-subtitle" data-i18n="search.artists_sub">Profil & tüm şarkıları gör</span>
+          </div>
+          <div id="search-artists-grid" class="flex items-stretch gap-3 overflow-x-auto pb-2 scrollbar-none">
+            <!-- Injected dynamically -->
+          </div>
+        </section>
 
         <!-- Full-Width Search Results List -->
         <div class="hidden flex-col gap-3 w-full" id="search-results-wrapper">
           <div class="flex flex-wrap items-center justify-between gap-2">
-            <h2 class="text-base sm:text-lg font-bold text-on-surface" id="search-results-count" data-i18n="search.results_title">Arama Sonuçları</h2>
+            <h2 class="text-sm sm:text-base font-extrabold text-on-surface" id="search-results-count" data-i18n="search.results_title">Arama Sonuçları</h2>
             <div class="inline-flex items-center gap-1 bg-surface-container-low p-1 rounded-xl border border-surface-container/60 text-xs" id="search-sort-buttons-row">
               <button type="button" id="btn-sort-alaka" class="px-3 py-1 rounded-lg bg-surface-container-lowest font-bold text-primary shadow-xs transition-all" onclick="setSearchSort('alaka')" data-i18n="search.sort_relevance">Alaka</button>
               <button type="button" id="btn-sort-izlenme" class="px-3 py-1 rounded-lg text-on-surface-variant hover:text-on-surface font-medium transition-all" onclick="setSearchSort('izlenme')" data-i18n="search.sort_views">İzlenme</button>
@@ -871,7 +907,7 @@
             </div>
           </div>
 
-          <div class="bg-surface-container-lowest rounded-2xl p-2 sm:p-3 shadow-sm border border-surface-container/60 flex flex-col gap-1" id="search-results-list">
+          <div class="kurfa-search-surface rounded-2xl p-2 sm:p-3 flex flex-col gap-1" id="search-results-list">
             <div class="py-10 px-4 text-center text-on-surface-variant text-sm" data-i18n="search.empty_prompt">
               Sanatçı adı, şarkı veya YouTube bağlantısı yazarak hemen arayın.
             </div>
@@ -886,56 +922,95 @@
       <!-- ================================================================= -->
       <div id="tab-kutuphanem" class="view-tab flex flex-col w-full gap-space-lg">
         
-        <!-- Header & Sub-Tabs -->
-        <section class="flex flex-col gap-4">
-          <div class="flex items-center justify-between gap-3">
-            <div class="flex items-center gap-3 min-w-0 flex-1">
-              <div class="w-10 h-10 rounded-xl bg-primary text-on-primary flex items-center justify-center shadow-md flex-shrink-0">
-                <span class="material-symbols-outlined text-[22px]" aria-hidden="true">library_music</span>
-              </div>
-              <div class="min-w-0 flex-1">
-                <h1 class="text-xl sm:text-2xl font-bold text-on-surface leading-tight" data-i18n="library.title">Kütüphane</h1>
-                <p class="text-[11px] sm:text-xs text-on-surface-variant truncate" data-i18n="library.subtitle">Listeleriniz, Spotify ve favorileriniz</p>
-              </div>
-            </div>
+        <!-- Header, Quick Auto-Playlists Strip & Scrollable Filter Rail -->
+        <section class="flex flex-col gap-3">
+          <!-- Metrolist Auto-Playlists Quick Bento Strip -->
+          <div class="kurfa-lib-bento-grid" id="library-quick-bento">
+            <button type="button" class="kurfa-lib-bento-card" onclick="playFavoritesQuick()">
+              <span class="kurfa-lib-bento-icon bg-rose-500/15 text-rose-500">
+                <span class="material-symbols-outlined text-[19px] filled" aria-hidden="true">favorite</span>
+              </span>
+              <span class="flex flex-col min-w-0 text-left flex-1">
+                <span class="text-xs font-extrabold text-on-surface truncate" data-i18n="library.favorites">Favoriler</span>
+                <span class="text-[10.5px] text-on-surface-variant truncate" id="bento-fav-count">0 Parça</span>
+              </span>
+              <span class="material-symbols-outlined text-[18px] text-primary opacity-80" aria-hidden="true">play_arrow</span>
+            </button>
+            <button type="button" class="kurfa-lib-bento-card" onclick="switchKutuphaneSubTab('albumler')">
+              <span class="kurfa-lib-bento-icon bg-indigo-500/15 text-indigo-400">
+                <span class="material-symbols-outlined text-[19px]" aria-hidden="true">album</span>
+              </span>
+              <span class="flex flex-col min-w-0 text-left flex-1">
+                <span class="text-xs font-extrabold text-on-surface truncate" data-i18n="library.saved_albums">Kayıtlı Albümler</span>
+                <span class="text-[10.5px] text-on-surface-variant truncate" id="bento-albums-count">0 Albüm</span>
+              </span>
+              <span class="material-symbols-outlined text-[17px] text-on-surface-variant" aria-hidden="true">chevron_right</span>
+            </button>
+            <button type="button" class="kurfa-lib-bento-card" onclick="switchKutuphaneSubTab('cihaz')">
+              <span class="kurfa-lib-bento-icon bg-emerald-500/15 text-emerald-500">
+                <span class="material-symbols-outlined text-[19px]" aria-hidden="true">smartphone</span>
+              </span>
+              <span class="flex flex-col min-w-0 text-left flex-1">
+                <span class="text-xs font-extrabold text-on-surface truncate" data-i18n="library.device_music">Cihazdaki Müzikler</span>
+                <span class="text-[10.5px] text-on-surface-variant truncate" id="bento-device-count">0 Parça</span>
+              </span>
+              <span class="material-symbols-outlined text-[17px] text-on-surface-variant" aria-hidden="true">chevron_right</span>
+            </button>
           </div>
 
-          <!-- Kütüphane Sub-Tab Pills -->
-          <div class="flex items-center gap-2 border-b border-surface-container pb-3 overflow-x-auto whitespace-nowrap scrollbar-none max-w-full" id="kutuphane-subtabs">
-            <button type="button" id="kutuphane-btn-cihaz" class="sub-tab-pill shrink-0 flex items-center gap-1.5 px-3.5 sm:px-4 py-2 rounded-full text-xs font-semibold bg-surface-container-low text-on-surface hover:bg-surface-container-high" onclick="switchKutuphaneSubTab('cihaz')">
-              <span class="material-symbols-outlined text-[16px] text-primary" aria-hidden="true">smartphone</span>
-              <span><span data-i18n="library.device_music">Cihazdaki Müzikler</span> (<span id="device-audio-badge-count">0</span>)</span>
-            </button>
-            <button type="button" id="kutuphane-btn-listelerim" class="sub-tab-pill active shrink-0 flex items-center gap-1.5 px-3.5 sm:px-4 py-2 rounded-full text-xs font-bold bg-primary text-on-primary shadow-sm hover:opacity-95" onclick="switchKutuphaneSubTab('listelerim')">
-              <span class="material-symbols-outlined text-[16px]" aria-hidden="true">playlist_play</span>
-              <span><span data-i18n="library.my_playlists">Listelerim</span> (<span id="playlists-badge-count">0</span>)</span>
-            </button>
-            <button type="button" id="kutuphane-btn-spotify" class="sub-tab-pill shrink-0 flex items-center gap-1.5 px-3.5 sm:px-4 py-2 rounded-full text-xs font-semibold bg-surface-container-low text-on-surface hover:bg-surface-container-high" onclick="switchKutuphaneSubTab('spotify')">
-              <span class="material-symbols-outlined text-[16px] text-green-500" aria-hidden="true">album</span>
-              <span><span data-i18n="library.spotify">Spotify</span> (<span id="spotify-badge-count">0</span>)</span>
-            </button>
-            <button type="button" id="kutuphane-btn-favoriler" class="sub-tab-pill shrink-0 flex items-center gap-1.5 px-3.5 sm:px-4 py-2 rounded-full text-xs font-semibold bg-surface-container-low text-on-surface hover:bg-surface-container-high" onclick="switchKutuphaneSubTab('favoriler')">
-              <span class="material-symbols-outlined text-[16px] text-red-500" aria-hidden="true">favorite</span>
-              <span><span data-i18n="library.favorites">Favoriler</span> (<span id="fav-badge-count">0</span>)</span>
-            </button>
-            <button type="button" id="kutuphane-btn-istatistik" class="sub-tab-pill shrink-0 flex items-center gap-1.5 px-3.5 sm:px-4 py-2 rounded-full text-xs font-semibold bg-surface-container-low text-on-surface hover:bg-surface-container-high" onclick="switchKutuphaneSubTab('istatistik')">
-              <span class="material-symbols-outlined text-[16px] text-secondary" aria-hidden="true">bar_chart</span>
-              <span data-i18n="stats.tab">İstatistikler</span>
+          <!-- Single-Row Scrollable Kütüphane Filter Rail -->
+          <div class="flex items-center justify-between gap-2 border-b border-surface-container pb-3">
+            <div class="kurfa-scroll-rail-wrap flex-1 min-w-0" data-scroll-rail>
+              <div class="flex items-center gap-2 overflow-x-auto whitespace-nowrap scrollbar-none flex-1 min-w-0" id="kutuphane-subtabs">
+                <button type="button" id="kutuphane-btn-listelerim" class="sub-tab-pill active shrink-0 flex items-center gap-1.5 px-3.5 sm:px-4 py-2 rounded-full text-xs font-bold bg-primary text-on-primary shadow-sm hover:opacity-95" onclick="switchKutuphaneSubTab('listelerim')">
+                  <span class="material-symbols-outlined text-[16px]" aria-hidden="true">playlist_play</span>
+                  <span><span data-i18n="library.my_playlists">Listelerim</span> (<span id="playlists-badge-count">0</span>)</span>
+                </button>
+                <button type="button" id="kutuphane-btn-favoriler" class="sub-tab-pill shrink-0 flex items-center gap-1.5 px-3.5 sm:px-4 py-2 rounded-full text-xs font-semibold bg-surface-container-low text-on-surface hover:bg-surface-container-high" onclick="switchKutuphaneSubTab('favoriler')">
+                  <span class="material-symbols-outlined text-[16px] text-red-500" aria-hidden="true">favorite</span>
+                  <span><span data-i18n="library.favorites">Favoriler</span> (<span id="fav-badge-count">0</span>)</span>
+                </button>
+                <button type="button" id="kutuphane-btn-albumler" class="sub-tab-pill shrink-0 flex items-center gap-1.5 px-3.5 sm:px-4 py-2 rounded-full text-xs font-semibold bg-surface-container-low text-on-surface hover:bg-surface-container-high" onclick="switchKutuphaneSubTab('albumler')">
+                  <span class="material-symbols-outlined text-[16px] text-indigo-400" aria-hidden="true">album</span>
+                  <span><span data-i18n="search.albums">Albümler</span> (<span id="saved-albums-badge-count">0</span>)</span>
+                </button>
+                <button type="button" id="kutuphane-btn-spotify" class="sub-tab-pill shrink-0 flex items-center gap-1.5 px-3.5 sm:px-4 py-2 rounded-full text-xs font-semibold bg-surface-container-low text-on-surface hover:bg-surface-container-high" onclick="switchKutuphaneSubTab('spotify')">
+                  <span class="material-symbols-outlined text-[16px] text-green-500" aria-hidden="true">library_add_check</span>
+                  <span><span data-i18n="library.spotify">Spotify</span> (<span id="spotify-badge-count">0</span>)</span>
+                </button>
+                <button type="button" id="kutuphane-btn-cihaz" class="sub-tab-pill shrink-0 flex items-center gap-1.5 px-3.5 sm:px-4 py-2 rounded-full text-xs font-semibold bg-surface-container-low text-on-surface hover:bg-surface-container-high" onclick="switchKutuphaneSubTab('cihaz')">
+                  <span class="material-symbols-outlined text-[16px] text-primary" aria-hidden="true">smartphone</span>
+                  <span><span data-i18n="library.device_music">Cihazdaki Müzikler</span> (<span id="device-audio-badge-count">0</span>)</span>
+                </button>
+                <button type="button" id="kutuphane-btn-istatistik" class="sub-tab-pill shrink-0 flex items-center gap-1.5 px-3.5 sm:px-4 py-2 rounded-full text-xs font-semibold bg-surface-container-low text-on-surface hover:bg-surface-container-high" onclick="switchKutuphaneSubTab('istatistik')">
+                  <span class="material-symbols-outlined text-[16px] text-secondary" aria-hidden="true">bar_chart</span>
+                  <span data-i18n="stats.tab">İstatistikler</span>
+                </button>
+              </div>
+              <button type="button" class="kurfa-rail-hint kurfa-rail-hint-right" aria-label="Sağa kaydır" onclick="scrollKurfaRail(this, 160)">
+                <span class="material-symbols-outlined text-[15px]" aria-hidden="true">chevron_right</span>
+              </button>
+            </div>
+            <button type="button" id="library-view-toggle-btn" class="w-9 h-9 rounded-full bg-surface-container-low hover:bg-surface-container flex items-center justify-center text-on-surface-variant hover:text-on-surface flex-shrink-0 transition-colors" onclick="toggleLibraryViewMode()" title="Izgara / Liste Görünümü">
+              <span id="library-view-toggle-icon" class="material-symbols-outlined text-[18px]" aria-hidden="true">view_list</span>
             </button>
           </div>
         </section>
 
         <!-- KÜTÜPHANE PANE 0: ÇALMA LİSTELERİM -->
         <div id="kutuphane-pane-listelerim" class="flex flex-col gap-4">
-          <div class="flex items-center justify-between gap-2">
+          <div class="flex flex-wrap items-center justify-between gap-2">
             <div class="flex items-center gap-2 min-w-0">
               <h2 class="text-sm font-bold text-on-surface whitespace-nowrap" data-i18n="library.custom_title">Özel Listelerim</h2>
               <span class="text-xs text-on-surface-variant whitespace-nowrap" id="playlist-count-text">0 Liste</span>
             </div>
-            <button type="button" class="px-3.5 py-1.5 rounded-full bg-primary text-on-primary text-xs font-bold shadow-sm hover:bg-primary-container transition-all flex items-center gap-1 whitespace-nowrap flex-shrink-0" onclick="openCreatePlaylistModal()">
-              <span class="material-symbols-outlined text-[16px]">add</span>
-              <span data-i18n="library.new_playlist">Yeni Liste</span>
-            </button>
+            <div class="flex items-center gap-2 flex-shrink-0">
+              <input type="text" id="library-playlist-filter-input" placeholder="Listelerde ara..." aria-label="Listelerde ara" class="h-8 w-36 sm:w-44 px-3 rounded-full bg-surface-container-lowest border border-surface-container text-xs text-on-surface placeholder:text-on-surface-variant focus:outline-none focus:border-primary" oninput="renderCustomPlaylistsGrid(this.value)">
+              <button type="button" class="px-3.5 py-1.5 rounded-full bg-primary text-on-primary text-xs font-bold shadow-sm hover:bg-primary-container transition-all flex items-center gap-1 whitespace-nowrap flex-shrink-0" onclick="openCreatePlaylistModal()">
+                <span class="material-symbols-outlined text-[16px]">add</span>
+                <span data-i18n="library.new_playlist">Yeni Liste</span>
+              </button>
+            </div>
           </div>
 
           <!-- Playlists Grid -->
@@ -972,6 +1047,19 @@
             <div id="custom-playlist-tracks-table" class="flex flex-col gap-1">
               <!-- Injected by JavaScript -->
             </div>
+          </div>
+        </div>
+
+        <!-- KÜTÜPHANE PANE 1B: KAYITLI ALBÜMLER -->
+        <div id="kutuphane-pane-albumler" class="flex flex-col gap-4 hidden">
+          <div class="flex items-center justify-between gap-2">
+            <div class="flex items-center gap-2">
+              <h2 class="text-sm font-bold text-on-surface">Kayıtlı Albümler</h2>
+              <span class="text-xs text-on-surface-variant" id="saved-albums-count-text">0 Albüm</span>
+            </div>
+          </div>
+          <div id="saved-albums-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
+            <!-- Injected by JavaScript renderSavedAlbumsGrid() -->
           </div>
         </div>
 
@@ -1023,7 +1111,7 @@
                 <button type="button" class="w-8 h-8 rounded-full bg-surface-container hover:bg-surface-container-high flex items-center justify-center text-on-surface transition-colors flex-shrink-0" onclick="closeSpotifyPlaylistDetail()" title="Geri" data-i18n-title="artist.back">
                   <span class="material-symbols-outlined text-[18px]">arrow_back</span>
                 </button>
-                <img id="spd-cover" src="./assets/kurfamuzik_logo.png" alt="Cover" loading="lazy" class="w-16 h-16 rounded-xl object-cover shadow-md flex-shrink-0" onerror="this.onerror=null; this.src='./kurfamuzik_logo.png';">
+                <img id="spd-cover" src="./kurfamuzik_logo_96.webp" alt="Cover" width="64" height="64" loading="lazy" class="w-16 h-16 rounded-xl object-cover shadow-md flex-shrink-0" onerror="this.onerror=null; this.src='./kurfamuzik_logo.png';">
                 <div class="flex flex-col min-w-0">
                   <div class="flex items-center gap-2">
                     <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-green-500/20 text-green-500 uppercase tracking-wider">Spotify</span>
@@ -1147,48 +1235,213 @@
       <!-- ================================================================= -->
       <!-- TAB 4: ÇALMA LİSTELERİ, CANLI SÖZLER & PRO EQ                     -->
       <!-- ================================================================= -->
-      <div id="tab-calma-listeleri" class="view-tab flex flex-col w-full gap-space-lg">
-        
-        <!-- Playlist Banner (100% Canlı YouTube Trendi ile Dinamik Senkronize; Mobilde Deck/Sözler altında) -->
-        <section class="w-full order-3 xl:order-none bg-surface-container-lowest rounded-3xl p-4 sm:p-6 shadow-sm flex flex-col md:flex-row items-center md:items-end gap-4 sm:gap-6 relative overflow-hidden" id="playlist-hero-banner">
-          <div class="w-32 h-32 sm:w-40 sm:h-40 rounded-2xl overflow-hidden shadow-xl bg-surface-container-high relative flex-shrink-0">
-            <img id="playlist-hero-thumb" src="https://i.ytimg.com/vi/XqZsoesa55w/hqdefault.jpg" alt="Canlı Trend Şarkı" loading="lazy" class="w-full h-full object-cover transition-all duration-300" onerror="this.onerror=null; this.src='./kurfamuzik_logo.png';">
-          </div>
+      <div id="tab-calma-listeleri" data-np-pane="stage" class="view-tab flex flex-col w-full gap-4 sm:gap-6">
 
-          <div class="flex-1 flex flex-col justify-end text-center md:text-left min-w-0">
-            <div class="flex items-center justify-center md:justify-start gap-2 mb-1.5 sm:mb-2">
-              <span class="px-2.5 py-0.5 rounded-full bg-primary-fixed text-on-primary-fixed text-[10px] font-bold" id="playlist-hero-badge" data-i18n="player.playlist_badge">Trend Seçkisi</span>
-              <span class="text-on-surface-variant text-xs" id="playlist-hero-sub">#1</span>
+        <!-- Mobile Segmented View Switcher (< 1280px) -->
+        <div id="nowplaying-mobile-tabs" class="kurfa-np-mobile-tabs xl:hidden" role="tablist" aria-label="Oynatıcı Görünümleri">
+          <button type="button" role="tab" aria-selected="true" data-np-tab="stage" onclick="switchNowPlayingMobilePane('stage')" class="kurfa-np-tab-btn active">
+            <span class="material-symbols-outlined text-[15px]" aria-hidden="true">lyrics</span>
+            <span data-i18n="player.mob_tab_stage">Çalan &amp; Sözler</span>
+          </button>
+          <button type="button" role="tab" aria-selected="false" data-np-tab="queue" onclick="switchNowPlayingMobilePane('queue')" class="kurfa-np-tab-btn">
+            <span class="material-symbols-outlined text-[15px]" aria-hidden="true">queue_music</span>
+            <span data-i18n="player.mob_tab_queue">Sıradaki Liste</span>
+          </button>
+          <button type="button" role="tab" aria-selected="false" data-np-tab="fx" onclick="switchNowPlayingMobilePane('fx')" class="kurfa-np-tab-btn">
+            <span class="material-symbols-outlined text-[15px]" aria-hidden="true">graphic_eq</span>
+            <span data-i18n="player.mob_tab_fx">Ekolayzır &amp; Ses</span>
+          </button>
+        </div>
+
+        <!-- 1. FLAGSHIP STUDIO STAGE: Artwork/Video + Live Lyrics Theater -->
+        <div id="deck-main-card" data-np-section="stage" class="kurfa-studio-stage rounded-3xl p-4 sm:p-6 xl:p-7 flex flex-col relative overflow-hidden">
+          <div id="player-liquid-bg" class="kurfa-liquid-bg" aria-hidden="true"></div>
+
+          <!-- Top Stage Header -->
+          <div class="kurfa-deck-header relative z-10 w-full flex flex-wrap items-center justify-between gap-2 mb-4 xl:mb-6">
+            <div class="flex items-center gap-2 min-w-0">
+              <span class="kurfa-live-pulse-dot" aria-hidden="true"></span>
+              <span class="text-xs font-extrabold tracking-wide text-primary whitespace-nowrap" data-i18n="player.now_playing">Şimdi Çalıyor</span>
             </div>
-            <h1 class="text-xl sm:text-2xl lg:text-3xl font-bold text-on-surface tracking-tight mb-1.5 sm:mb-2 truncate" id="playlist-hero-title" data-i18n="explore.yt_trends_title">Türkiye Müzik Trendleri</h1>
-            <p class="text-xs text-on-surface-variant mb-3 sm:mb-4 line-clamp-2" id="playlist-hero-desc" data-i18n="player.yt_trends_desc">
-              Günün en çok dinlenen parçaları.
-            </p>
-            <div class="flex flex-wrap items-center justify-center md:justify-start gap-2">
-              <button type="button" aria-label="Karışık Oynat" data-i18n-aria="player.play_shuffle" class="px-4 sm:px-5 py-2 sm:py-2.5 rounded-full bg-primary text-on-primary text-xs font-bold flex items-center gap-1.5 shadow-md hover:bg-primary-container active:scale-95 transition-all" onclick="playAllPlaylist()">
-                <span class="material-symbols-outlined text-[16px] sm:text-[18px]" aria-hidden="true">shuffle</span>
-                <span data-i18n="player.play_shuffle">Tümünü Çal (Karışık)</span>
+
+            <div class="flex items-center gap-1.5 flex-shrink-0 ml-auto">
+              <button type="button" id="btn-deck-fx-jump" onclick="openAudioFxFromSettings()" class="kurfa-stage-chip h-7 px-2.5 rounded-full text-[11px] font-bold flex items-center gap-1 transition-colors" title="Ses Motoru &amp; Ekolayzır" data-i18n-title="fx.title">
+                <span class="material-symbols-outlined text-[14px]" aria-hidden="true">tune</span>
+                <span class="hidden sm:inline">EQ</span>
               </button>
+              <button type="button" id="btn-deck-sleep-timer" onclick="toggleSleepTimerPopover(this)" class="kurfa-stage-chip h-7 px-2.5 rounded-full text-[11px] font-bold flex items-center gap-1 transition-colors" title="Uyku Zamanlayıcı" data-i18n-title="sleep.title">
+                <span class="material-symbols-outlined text-[14px]" aria-hidden="true">bedtime</span>
+                <span id="deck-sleep-badge" class="hidden font-mono text-[10px] text-primary"></span>
+              </button>
+              <!-- Deck Mode Switch: Kapak vs Video -->
+              <div class="kurfa-stage-seg inline-flex p-0.5 rounded-full text-[11px] font-bold flex-shrink-0">
+                <button type="button" id="btn-deck-vinyl-mode" class="px-2.5 sm:px-3 py-1 rounded-full bg-surface-container-lowest text-on-surface shadow-xs transition-all flex items-center gap-1 whitespace-nowrap" onclick="setDeckVisualMode('vinyl')">
+                  <span class="material-symbols-outlined text-[14px]">album</span>
+                  <span data-i18n="player.cover_mode">Kapak</span>
+                </button>
+                <button type="button" id="btn-deck-video-mode" class="px-2.5 sm:px-3 py-1 rounded-full text-on-surface-variant hover:text-on-surface transition-all flex items-center gap-1 whitespace-nowrap" onclick="setDeckVisualMode('video')">
+                  <span class="material-symbols-outlined text-[14px]">smart_display</span>
+                  <span data-i18n="player.video_mode">Video</span>
+                </button>
+              </div>
             </div>
           </div>
-        </section>
 
-        <!-- Split View: Deck/Lyrics first on Mobile, Side-by-Side (Tracklist Left + Deck/Lyrics Right) on Desktop -->
-        <div class="order-1 xl:order-none grid grid-cols-1 xl:grid-cols-12 gap-space-lg items-start">
-          
-          <!-- Left Tracklist + Studio Equalizer & FX (7 cols on Desktop, below Deck on Mobile) -->
-          <div class="xl:col-span-7 order-2 xl:order-1 flex flex-col gap-space-md">
-            <div class="flex flex-col gap-space-sm">
-              <div class="flex items-center justify-between bg-surface-container-lowest p-3 rounded-2xl shadow-sm">
-                <span class="font-bold text-sm text-on-surface" data-i18n="player.tracklist">Şarkı Listesi</span>
-                <input type="text" placeholder="Liste içinde filtrele..." data-i18n-placeholder="player.filter_in_list" aria-label="Şarkı listesi içinde filtrele" data-i18n-aria="player.filter_in_list" class="h-8 pl-3 pr-3 bg-surface-container-low text-xs rounded-full focus:outline-none" oninput="filterPlaylistItems(this.value)">
+          <!-- Stage 2-Column Interior -->
+          <div class="relative z-10 grid grid-cols-1 xl:grid-cols-12 gap-5 xl:gap-8 items-center">
+            <!-- Left Column: Immersive Artwork / Video + Track Meta -->
+            <div class="xl:col-span-5 flex flex-col items-center text-center min-w-0">
+              <div id="deck-vinyl-wrapper" class="kurfa-stage-art-wrap relative z-10 my-1 flex items-center justify-center transition-all duration-300">
+                <div class="kurfa-stage-vinyl-peek absolute rounded-full bg-inverse-surface/90 shadow-xl flex items-center justify-center animate-spin-slow" id="vinyl-disc">
+                  <div class="w-12 h-12 rounded-full bg-primary flex items-center justify-center">
+                    <div class="w-3.5 h-3.5 rounded-full bg-surface-container-lowest"></div>
+                  </div>
+                </div>
+                <div class="kurfa-stage-cover-card relative z-10 rounded-2xl overflow-hidden">
+                  <img id="deck-cover-img" src="https://i.ytimg.com/vi/69L-nKRY3ac/hqdefault.jpg" alt="Cover" width="256" height="256" loading="lazy" class="w-full h-full object-cover" onerror="this.onerror=null; this.src='./kurfamuzik_logo_256.webp';">
+                </div>
               </div>
-              <div class="bg-surface-container-lowest rounded-2xl p-space-sm shadow-sm flex flex-col gap-1" id="playlist-tracks-table">
+
+              <!-- Video Mode Ad & Notice Banner -->
+              <div id="deck-video-ad-notice" class="relative z-10 w-full my-2 p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/25 text-amber-900 dark:text-amber-200 text-xs flex items-center justify-between gap-2 transition-all hidden">
+                <div class="flex items-center gap-2 flex-1 min-w-0 text-left">
+                  <span class="material-symbols-outlined text-[18px] text-amber-600 dark:text-amber-400 flex-shrink-0">info</span>
+                  <p class="text-[11px] leading-tight font-medium" data-i18n="player.video_ad_notice">YouTube video modunda reklam görülebilir; reklamsız dinleme için <strong class="underline cursor-pointer" onclick="setDeckVisualMode('vinyl')">Kapak Modu</strong>'na geçebilirsiniz.</p>
+                </div>
+                <button type="button" class="w-6 h-6 rounded-lg flex items-center justify-center hover:bg-amber-500/20 text-amber-700 dark:text-amber-300 transition-colors flex-shrink-0" onclick="dismissVideoAdNotice()" title="Bildirimi Gizle" data-i18n-title="player.dismiss_notice">
+                  <span class="material-symbols-outlined text-[15px]">close</span>
+                </button>
+              </div>
+
+              <!-- Live Native / YouTube Video Container -->
+              <div id="deck-video-wrapper" class="kurfa-cinema-video-frame relative z-10 w-full aspect-video rounded-2xl overflow-hidden bg-black shadow-xl my-1.5 group hidden">
+                <div id="deck-video-slot" class="w-full h-full relative flex items-center justify-center">
+                  <video id="native-video-engine" crossorigin="anonymous" playsinline preload="auto" controls controlsList="nodownload" class="hidden w-full h-full object-contain bg-black rounded-2xl"></video>
+                  <div id="deck-video-placeholder" class="text-xs text-zinc-400 flex flex-col items-center gap-2">
+                    <span class="material-symbols-outlined text-[36px] text-primary animate-pulse" aria-hidden="true">smart_display</span>
+                    <span class="font-medium" data-i18n="player.live_video_area">Canlı Video Alanı</span>
+                  </div>
+                </div>
+                <div class="absolute top-2 right-2 flex items-center gap-1 opacity-85 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity z-20">
+                  <button type="button" class="px-2.5 py-1 rounded-full bg-black/75 border border-white/15 text-white text-[11px] font-bold flex items-center gap-1 hover:bg-black active:scale-95 transition-all" onclick="toggleFullScreenVideo()">
+                    <span class="material-symbols-outlined text-[14px]">fullscreen</span>
+                    <span data-i18n="player.fullscreen">Tam Ekran</span>
+                  </button>
+                </div>
+              </div>
+
+              <div id="deck-track-meta" class="relative z-10 w-full text-center mt-3.5 px-2 min-w-0">
+                <h3 class="text-lg sm:text-xl xl:text-2xl font-black text-on-surface tracking-tight leading-snug line-clamp-2 break-words" id="deck-title">Kurfa Müzik</h3>
+                <p class="text-xs sm:text-sm text-on-surface-variant font-semibold mt-1 truncate" id="deck-artist" data-i18n="player.select_song">Bir şarkı seçin</p>
+              </div>
+            </div>
+
+            <!-- Right Column: Spacious Live Lyrics Theater -->
+            <div class="xl:col-span-7 flex flex-col w-full min-w-0 kurfa-stage-lyrics-col" id="karaoke-lyrics-card">
+              <div class="flex items-center justify-between gap-2 pb-2.5 mb-2 kurfa-lyrics-header-bar">
+                <div class="flex items-center gap-2 min-w-0">
+                  <span class="material-symbols-outlined text-[17px] text-primary flex-shrink-0" aria-hidden="true">lyrics</span>
+                  <span id="lyrics-status-label" class="text-xs sm:text-[13px] font-extrabold text-on-surface tracking-tight truncate" data-i18n="player.lyrics_title">Şarkı Sözleri</span>
+                </div>
+                <div class="flex items-center gap-1.5 flex-shrink-0">
+                  <button type="button" id="btn-lyrics-provider-cycle" onclick="cycleLyricsProvider()" class="kurfa-stage-chip h-7 px-2.5 rounded-full text-[10.5px] font-bold transition-colors truncate max-w-[135px]" title="Şarkı Sözü Kaynağını Değiştir (Auto / LRCLIB / SimpMusic)">
+                    <span id="lyrics-source-badge" data-i18n="player.lyrics_synced">Senkronize</span>
+                  </button>
+                  <button type="button" id="btn-lyrics-share-mode" onclick="toggleLyricsShareSelectMode()" class="kurfa-stage-chip hidden h-7 px-2.5 rounded-full text-[11px] font-bold flex items-center gap-1 transition-all active:scale-95" title="Söz Kartı Paylaş" data-i18n-title="lyrics.share_btn">
+                    <span class="material-symbols-outlined text-[13px]">ios_share</span>
+                    <span data-i18n="lyrics.share_btn">Paylaş</span>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Share Selection Mode Toolbar -->
+              <div id="lyrics-share-toolbar" class="hidden w-full items-center justify-between gap-2 px-3 py-2 mb-2 rounded-xl bg-primary/10 border border-primary/25 text-xs">
+                <span id="lyrics-share-hint" class="text-[11px] font-semibold text-on-surface truncate" data-i18n="lyrics.select_lines_hint">1-4 satır seçin</span>
+                <div class="flex items-center gap-1.5 flex-shrink-0">
+                  <button type="button" id="btn-lyrics-share-confirm" onclick="openLyricsShareModal()" class="h-6 px-2.5 rounded-full bg-primary text-on-primary text-[11px] font-bold flex items-center gap-1 active:scale-95 transition-all">
+                    <span class="material-symbols-outlined text-[13px]">image</span>
+                    <span id="lyrics-share-count-label" data-i18n="lyrics.create_card">Kart Oluştur</span>
+                  </button>
+                  <button type="button" onclick="cancelLyricsShareSelectMode()" class="h-6 px-2 rounded-full bg-surface-container text-on-surface-variant text-[11px] font-semibold hover:text-on-surface" data-i18n="cpl.cancel">İptal</button>
+                </div>
+              </div>
+
+              <!-- Compact 1-Row Sync Controls -->
+              <div class="w-full grid grid-cols-6 gap-1 sm:gap-1.5 mb-2 hidden" id="lyrics-offset-controls" title="Söz senkronizasyon ayarı" data-i18n-title="player.lyrics_sync_title">
+                <button type="button" class="kurfa-lyrics-sync-btn h-7 rounded-xl text-[11px] font-mono font-bold transition-colors active:scale-95" onclick="adjustLyricsOffset(-1.0)">-1s</button>
+                <button type="button" class="kurfa-lyrics-sync-btn h-7 rounded-xl text-[11px] font-mono font-bold transition-colors active:scale-95" onclick="adjustLyricsOffset(-0.5)">-0.5s</button>
+                <button type="button" class="h-7 rounded-xl bg-primary/12 hover:bg-primary/22 text-[11px] font-mono text-primary font-extrabold transition-colors active:scale-95" onclick="adjustLyricsOffset(0)" title="0.0s Sıfırla" data-i18n-title="lyrics.reset_offset">
+                  <span id="lyrics-offset-display">0.0s</span>
+                </button>
+                <button type="button" class="kurfa-lyrics-sync-btn h-7 rounded-xl text-[11px] font-mono font-bold transition-colors active:scale-95" onclick="adjustLyricsOffset(0.5)">+0.5s</button>
+                <button type="button" class="kurfa-lyrics-sync-btn h-7 rounded-xl text-[11px] font-mono font-bold transition-colors active:scale-95" onclick="adjustLyricsOffset(1.0)">+1s</button>
+                <button type="button" class="h-7 rounded-xl bg-primary hover:bg-primary/90 text-on-primary text-[11px] font-bold transition-all flex items-center justify-center gap-0.5 active:scale-95 px-1 truncate" onclick="syncActiveLineToPlayback()">
+                  <span class="material-symbols-outlined text-[13px]" aria-hidden="true">sync</span>
+                  <span class="truncate" data-i18n="player.lyrics_sync_btn">Eşitle</span>
+                </button>
+              </div>
+
+              <div id="lyrics-intro-diff-hint" class="hidden items-center gap-1.5 px-2.5 py-1 rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400 text-[11px] font-semibold mb-2"></div>
+
+              <!-- Clean Scrollable Lyrics Theater + Vertical Fade Mask -->
+              <div class="relative w-full">
+                <div class="kurfa-lyrics-theater w-full overflow-y-auto relative" id="karaoke-lyrics-box">
+                  <div id="deck-lyrics-lines" class="flex flex-col gap-1.5 text-base sm:text-lg text-on-surface font-semibold py-5 pb-14">
+                    <!-- Injected by JavaScript -->
+                  </div>
+                </div>
+                <button type="button" id="btn-lyrics-resync" onclick="resumeLyricsAutoScroll()" class="hidden z-20 text-xs font-bold flex items-center gap-1.5 whitespace-nowrap transition-all">
+                  <span class="material-symbols-outlined text-[15px] text-primary">my_location</span>
+                  <span data-i18n="lyrics.resync_btn">Senkronize Et</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2. LOWER STUDIO GRID: Tracklist Queue (7 cols) + Audio Engine & FX Console (5 cols) -->
+        <div class="grid grid-cols-1 xl:grid-cols-12 gap-5 sm:gap-6 items-start">
+
+          <!-- Left 7 Cols: Context Banner + Queue Tracklist -->
+          <div data-np-section="queue" class="xl:col-span-7 flex flex-col gap-4 min-w-0">
+            <section class="kurfa-np-context-banner rounded-2xl p-3.5 sm:p-4 flex items-center gap-3.5 sm:gap-4 relative overflow-hidden" id="playlist-hero-banner">
+              <div class="w-14 h-14 sm:w-16 sm:h-16 rounded-xl overflow-hidden shadow-md bg-surface-container-high relative flex-shrink-0">
+                <img id="playlist-hero-thumb" src="https://i.ytimg.com/vi/XqZsoesa55w/hqdefault.jpg" alt="Canlı Trend Şarkı" width="128" height="128" loading="lazy" class="w-full h-full object-cover transition-all duration-300" onerror="this.onerror=null; this.src='./kurfamuzik_logo_256.webp';">
+              </div>
+
+              <div class="flex-1 flex flex-col min-w-0">
+                <div class="flex items-center gap-2 mb-0.5">
+                  <span class="px-2 py-0.5 rounded-full bg-primary-fixed text-on-primary-fixed text-[10px] font-bold" id="playlist-hero-badge" data-i18n="player.playlist_badge">Trend Seçkisi</span>
+                  <span class="text-on-surface-variant text-[11px] font-semibold" id="playlist-hero-sub">#1</span>
+                </div>
+                <h1 class="text-sm sm:text-base font-extrabold text-on-surface tracking-tight truncate" id="playlist-hero-title" data-i18n="explore.yt_trends_title">Türkiye Müzik Trendleri</h1>
+                <p class="text-[11px] text-on-surface-variant truncate" id="playlist-hero-desc" data-i18n="player.yt_trends_desc">
+                  Günün en çok dinlenen parçaları.
+                </p>
+              </div>
+
+              <button type="button" aria-label="Karışık Oynat" data-i18n-aria="player.play_shuffle" class="px-3.5 sm:px-4 py-2 rounded-full bg-primary text-on-primary text-xs font-bold flex items-center gap-1.5 shadow-sm hover:bg-primary-container active:scale-95 transition-all flex-shrink-0" onclick="playAllPlaylist()">
+                <span class="material-symbols-outlined text-[16px]" aria-hidden="true">shuffle</span>
+                <span class="hidden sm:inline" data-i18n="player.play_shuffle">Tümünü Çal (Karışık)</span>
+              </button>
+            </section>
+
+            <div class="kurfa-np-queue-card rounded-2xl p-3 sm:p-4 flex flex-col gap-2.5">
+              <div class="flex items-center justify-between gap-3 px-1">
+                <span class="font-extrabold text-sm text-on-surface tracking-tight" data-i18n="player.tracklist">Şarkı Listesi</span>
+                <div class="relative w-44 sm:w-56">
+                  <span class="material-symbols-outlined text-[15px] text-on-surface-variant absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" aria-hidden="true">search</span>
+                  <input type="text" placeholder="Liste içinde filtrele..." data-i18n-placeholder="player.filter_in_list" aria-label="Şarkı listesi içinde filtrele" data-i18n-aria="player.filter_in_list" class="kurfa-queue-filter-input w-full h-8 pl-8 pr-3 text-xs rounded-full focus:outline-none" oninput="filterPlaylistItems(this.value)">
+                </div>
+              </div>
+              <div class="flex flex-col gap-1" id="playlist-tracks-table">
                 <!-- Injected by JavaScript -->
               </div>
             </div>
+          </div>
 
-            <!-- Studio Song-Reactive Audio Engine & FX Console -->
+          <!-- Right 5 Cols: Studio Song-Reactive Audio Engine & FX Console -->
+          <div data-np-section="fx" class="xl:col-span-5 flex flex-col min-w-0">
             <div id="audio-fx-card" class="kurfa-fx-studio-card rounded-3xl p-4 sm:p-5 flex flex-col gap-3.5 relative overflow-hidden" style="--fx-rgb: 99, 102, 241;">
               <div class="kurfa-fx-ambient-wash" aria-hidden="true"></div>
               <div class="relative z-10 flex items-center justify-between gap-2 cursor-pointer select-none" onclick="toggleAudioFxPanel()">
@@ -1206,7 +1459,7 @@
                 </div>
                 <div class="flex items-center gap-1.5 flex-shrink-0">
                   <button type="button" onclick="event.stopPropagation(); resetAllAudioFx();" class="px-2.5 py-1 rounded-full bg-surface-container-low/90 hover:bg-surface-container text-[11px] font-bold text-on-surface-variant hover:text-on-surface transition-colors active:scale-95" title="Tüm Ses Ayarlarını Sıfırla" data-i18n="fx.reset_all">Sıfırla</button>
-                  <span id="eq-active-preset-label" class="kurfa-fx-preset-badge px-2.5 py-1 rounded-full text-[11px] font-bold whitespace-nowrap">Düz / Flat</span>
+                  <span id="eq-active-preset-label" class="kurfa-fx-preset-badge px-2.5 py-1 rounded-full text-[11px] font-bold whitespace-nowrap" data-i18n="fx.preset_flat">Düz / Flat</span>
                   <span id="audio-fx-chevron" class="material-symbols-outlined text-[18px] text-on-surface-variant transition-transform duration-200">expand_more</span>
                 </div>
               </div>
@@ -1339,9 +1592,9 @@
                       <input type="range" id="fx-crossfade-slider" min="0" max="8" step="1" value="0" oninput="setCrossfadeSeconds(parseInt(this.value, 10))" class="kurfa-studio-range w-full">
                     </div>
                     <div class="flex items-center justify-between text-[10px] text-on-surface-variant px-0.5 pt-1">
-                      <span>0s (Anlık)</span>
+                      <span data-i18n="fx.crossfade_instant">0s (Anlık)</span>
                       <span>4s</span>
-                      <span>8s (Akıcı)</span>
+                      <span data-i18n="fx.crossfade_smooth">8s (Akıcı)</span>
                     </div>
                   </div>
                 </div>
@@ -1366,150 +1619,6 @@
             </div>
           </div>
 
-          <!-- Right: Spinning Vinyl Deck & Live Lyrics Karaoke (5 cols on Desktop, First on Mobile) -->
-          <div class="xl:col-span-5 order-1 xl:order-2 flex flex-col gap-space-md">
-            
-            <!-- Vinyl & Deck Card -->
-            <div id="deck-main-card" class="bg-surface-container-lowest rounded-3xl p-4 sm:p-6 shadow-sm border border-surface-container/60 flex flex-col items-center relative overflow-hidden">
-              <div id="player-liquid-bg" class="kurfa-liquid-bg" aria-hidden="true"></div>
-
-              <div class="kurfa-deck-header relative z-10 w-full flex flex-wrap items-center justify-between gap-2 mb-4">
-                <div class="flex items-center gap-1.5 text-primary text-xs font-bold tracking-wide whitespace-nowrap min-w-0">
-                  <span class="material-symbols-outlined text-[16px]" aria-hidden="true">graphic_eq</span>
-                  <span data-i18n="player.now_playing">Şimdi Çalıyor</span>
-                </div>
-
-                <div class="flex items-center gap-1.5 flex-shrink-0 ml-auto">
-                  <button type="button" id="btn-deck-fx-jump" onclick="openAudioFxFromSettings()" class="h-7 px-2 rounded-full bg-surface-container-low/80 hover:bg-surface-container border border-surface-container/70 text-[11px] font-bold text-on-surface-variant hover:text-primary flex items-center gap-1 transition-colors" title="Ses Motoru &amp; Ekolayzır" data-i18n-title="fx.title">
-                    <span class="material-symbols-outlined text-[14px]" aria-hidden="true">tune</span>
-                    <span class="hidden sm:inline">EQ</span>
-                  </button>
-                  <button type="button" id="btn-deck-sleep-timer" onclick="toggleSleepTimerPopover(this)" class="h-7 px-2 rounded-full bg-surface-container-low/80 hover:bg-surface-container border border-surface-container/70 text-[11px] font-bold text-on-surface-variant hover:text-primary flex items-center gap-1 transition-colors" title="Uyku Zamanlayıcı" data-i18n-title="sleep.title">
-                    <span class="material-symbols-outlined text-[14px]" aria-hidden="true">bedtime</span>
-                    <span id="deck-sleep-badge" class="hidden font-mono text-[10px] text-primary"></span>
-                  </button>
-                  <!-- Deck Mode Switch: Kapak vs Video -->
-                  <div class="inline-flex p-0.5 bg-surface-container-low rounded-full text-[11px] font-bold border border-surface-container/70 flex-shrink-0">
-                    <button type="button" id="btn-deck-vinyl-mode" class="px-2.5 sm:px-3 py-1 rounded-full bg-surface-container-lowest text-on-surface shadow-xs transition-all flex items-center gap-1 whitespace-nowrap" onclick="setDeckVisualMode('vinyl')">
-                      <span class="material-symbols-outlined text-[14px]">album</span>
-                      <span data-i18n="player.cover_mode">Kapak</span>
-                    </button>
-                    <button type="button" id="btn-deck-video-mode" class="px-2.5 sm:px-3 py-1 rounded-full text-on-surface-variant hover:text-on-surface transition-all flex items-center gap-1 whitespace-nowrap" onclick="setDeckVisualMode('video')">
-                      <span class="material-symbols-outlined text-[14px]">smart_display</span>
-                      <span data-i18n="player.video_mode">Video</span>
-                    </button>
-                  </div>
-                </div>
-              </div>
-
-              <!-- 1. Album Art & Subtle Vinyl Accent (Compact on Desktop for generous Lyrics space) -->
-              <div id="deck-vinyl-wrapper" class="relative z-10 w-36 h-36 sm:w-40 sm:h-40 xl:w-28 xl:h-28 my-1 flex items-center justify-center transition-all duration-300">
-                <div class="absolute right-[-10px] w-28 h-28 sm:w-32 sm:h-32 xl:w-24 xl:h-24 rounded-full bg-inverse-surface/90 shadow-lg flex items-center justify-center animate-spin-slow" id="vinyl-disc">
-                  <div class="w-9 h-9 xl:w-7 xl:h-7 rounded-full bg-primary flex items-center justify-center">
-                    <div class="w-2.5 h-2.5 rounded-full bg-surface-container-lowest"></div>
-                  </div>
-                </div>
-                <div class="relative z-10 w-32 h-32 sm:w-36 sm:h-36 xl:w-28 xl:h-28 rounded-2xl overflow-hidden shadow-xl bg-surface-container-high border border-surface-container/60">
-                  <img id="deck-cover-img" src="https://i.ytimg.com/vi/69L-nKRY3ac/hqdefault.jpg" alt="Cover" loading="lazy" class="w-full h-full object-cover" onerror="this.onerror=null; this.src='./kurfamuzik_logo.png';">
-                </div>
-              </div>
-
-              <!-- Video Mode Ad & Notice Banner -->
-              <div id="deck-video-ad-notice" class="relative z-10 w-full my-2 p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-900 dark:text-amber-200 text-xs flex items-center justify-between gap-2 transition-all hidden">
-                <div class="flex items-center gap-2 flex-1 min-w-0">
-                  <span class="material-symbols-outlined text-[18px] text-amber-600 dark:text-amber-400 flex-shrink-0">info</span>
-                  <p class="text-[11px] leading-tight font-medium" data-i18n="player.video_ad_notice">YouTube video modunda reklam görülebilir; reklamsız dinleme için <strong class="underline cursor-pointer" onclick="setDeckVisualMode('vinyl')">Kapak Modu</strong>'na geçebilirsiniz.</p>
-                </div>
-                <button type="button" class="w-6 h-6 rounded-lg flex items-center justify-center hover:bg-amber-500/20 text-amber-700 dark:text-amber-300 transition-colors flex-shrink-0" onclick="dismissVideoAdNotice()" title="Bildirimi Gizle" data-i18n-title="player.dismiss_notice">
-                  <span class="material-symbols-outlined text-[15px]">close</span>
-                </button>
-              </div>
-
-              <!-- 2. Live Native / YouTube Video Container -->
-              <div id="deck-video-wrapper" class="relative z-10 w-full aspect-video rounded-2xl overflow-hidden bg-black shadow-xl my-2 border border-surface-container group hidden">
-                <div id="deck-video-slot" class="w-full h-full relative flex items-center justify-center">
-                  <video id="native-video-engine" crossorigin="anonymous" playsinline preload="auto" controls controlsList="nodownload" class="hidden w-full h-full object-contain bg-black rounded-2xl"></video>
-                  <div id="deck-video-placeholder" class="text-xs text-zinc-400 flex flex-col items-center gap-2">
-                    <span class="material-symbols-outlined text-[36px] text-primary animate-pulse" aria-hidden="true">smart_display</span>
-                    <span class="font-medium" data-i18n="player.live_video_area">Canlı Video Alanı</span>
-                  </div>
-                </div>
-                <div class="absolute top-2 right-2 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity z-20">
-                  <button type="button" class="px-2 py-1 rounded-lg bg-black/70 backdrop-blur-md text-white text-[11px] font-bold flex items-center gap-1 hover:bg-black" onclick="toggleFullScreenVideo()">
-                    <span class="material-symbols-outlined text-[14px]">fullscreen</span>
-                    <span data-i18n="player.fullscreen">Tam Ekran</span>
-                  </button>
-                </div>
-              </div>
-
-              <div class="relative z-10 w-full text-center mt-3 mb-1 px-2">
-                <h3 class="text-base sm:text-lg font-extrabold text-on-surface leading-snug line-clamp-2 break-words" id="deck-title">Kurfa Müzik</h3>
-                <p class="text-xs sm:text-sm text-on-surface-variant font-medium mt-0.5 truncate" id="deck-artist" data-i18n="player.select_song">Bir şarkı seçin</p>
-              </div>
-
-              <!-- Clean Integrated Lyrics Panel (No Nested Card Clutter) -->
-              <div class="relative z-10 w-full mt-4 pt-4 border-t border-surface-container/60 flex flex-col" id="karaoke-lyrics-card">
-                <div class="flex items-center justify-between gap-2 mb-2.5">
-                  <div class="flex items-center gap-2 min-w-0">
-                    <span class="w-2 h-2 rounded-full bg-primary animate-pulse flex-shrink-0"></span>
-                    <span id="lyrics-status-label" class="text-xs font-extrabold text-on-surface tracking-tight truncate" data-i18n="player.lyrics_title">Şarkı Sözleri</span>
-                  </div>
-                  <div class="flex items-center gap-1.5 flex-shrink-0">
-                    <button type="button" id="btn-lyrics-provider-cycle" onclick="cycleLyricsProvider()" class="h-6 px-2 rounded-full bg-surface-container-low/90 hover:bg-surface-container border border-surface-container/70 text-[10px] font-bold text-on-surface-variant hover:text-on-surface transition-colors truncate max-w-[130px]" title="Şarkı Sözü Kaynağını Değiştir (Auto / LRCLIB / SimpMusic)">
-                      <span id="lyrics-source-badge" data-i18n="player.lyrics_synced">Senkronize</span>
-                    </button>
-                    <button type="button" id="btn-lyrics-share-mode" onclick="toggleLyricsShareSelectMode()" class="hidden h-6 px-2 rounded-full bg-surface-container-low/90 hover:bg-surface-container border border-surface-container/70 text-[11px] font-bold text-on-surface flex items-center gap-1 transition-all active:scale-95" title="Söz Kartı Paylaş" data-i18n-title="lyrics.share_btn">
-                      <span class="material-symbols-outlined text-[13px] text-on-surface">ios_share</span>
-                      <span data-i18n="lyrics.share_btn">Paylaş</span>
-                    </button>
-                  </div>
-                </div>
-
-                <!-- Share Selection Mode Toolbar -->
-                <div id="lyrics-share-toolbar" class="hidden w-full items-center justify-between gap-2 px-2.5 py-1.5 mb-2 rounded-xl bg-primary/10 border border-primary/25 text-xs">
-                  <span id="lyrics-share-hint" class="text-[11px] font-semibold text-on-surface truncate" data-i18n="lyrics.select_lines_hint">1-4 satır seçin</span>
-                  <div class="flex items-center gap-1.5 flex-shrink-0">
-                    <button type="button" id="btn-lyrics-share-confirm" onclick="openLyricsShareModal()" class="h-6 px-2.5 rounded-full bg-primary text-on-primary text-[11px] font-bold flex items-center gap-1 active:scale-95 transition-all">
-                      <span class="material-symbols-outlined text-[13px]">image</span>
-                      <span id="lyrics-share-count-label" data-i18n="lyrics.create_card">Kart Oluştur</span>
-                    </button>
-                    <button type="button" onclick="cancelLyricsShareSelectMode()" class="h-6 px-2 rounded-full bg-surface-container text-on-surface-variant text-[11px] font-semibold hover:text-on-surface" data-i18n="cpl.cancel">İptal</button>
-                  </div>
-                </div>
-
-                <!-- Evenly Spaced 1-Row Sync Controls (-1s / -0.5s / 0.0s / +0.5s / +1s / Eşitle) -->
-                <div class="w-full grid grid-cols-6 gap-1 sm:gap-1.5 mb-2 hidden" id="lyrics-offset-controls" title="Söz senkronizasyon ayarı" data-i18n-title="player.lyrics_sync_title">
-                  <button type="button" class="h-7 rounded-xl bg-surface-container-low hover:bg-surface-container text-[11px] font-mono font-bold text-on-surface transition-colors active:scale-95" onclick="adjustLyricsOffset(-1.0)">-1s</button>
-                  <button type="button" class="h-7 rounded-xl bg-surface-container-low hover:bg-surface-container text-[11px] font-mono font-bold text-on-surface transition-colors active:scale-95" onclick="adjustLyricsOffset(-0.5)">-0.5s</button>
-                  <button type="button" class="h-7 rounded-xl bg-primary/10 hover:bg-primary/20 text-[11px] font-mono text-primary font-extrabold transition-colors active:scale-95" onclick="adjustLyricsOffset(0)" title="0.0s Sıfırla" data-i18n-title="lyrics.reset_offset">
-                    <span id="lyrics-offset-display">0.0s</span>
-                  </button>
-                  <button type="button" class="h-7 rounded-xl bg-surface-container-low hover:bg-surface-container text-[11px] font-mono font-bold text-on-surface transition-colors active:scale-95" onclick="adjustLyricsOffset(0.5)">+0.5s</button>
-                  <button type="button" class="h-7 rounded-xl bg-surface-container-low hover:bg-surface-container text-[11px] font-mono font-bold text-on-surface transition-colors active:scale-95" onclick="adjustLyricsOffset(1.0)">+1s</button>
-                  <button type="button" class="h-7 rounded-xl bg-primary hover:bg-primary/90 text-on-primary text-[11px] font-bold transition-all flex items-center justify-center gap-0.5 active:scale-95 px-1 truncate" onclick="syncActiveLineToPlayback()">
-                    <span class="material-symbols-outlined text-[13px]" aria-hidden="true">sync</span>
-                    <span class="truncate" data-i18n="player.lyrics_sync_btn">Eşitle</span>
-                  </button>
-                </div>
-
-                <div id="lyrics-intro-diff-hint" class="hidden items-center gap-1.5 px-2.5 py-1 rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400 text-[11px] font-semibold mb-2"></div>
-
-                <!-- Clean Scrollable Lyrics Viewport + Floating Resync Pill -->
-                <div class="relative w-full">
-                  <div class="w-full py-1.5 min-h-[280px] xl:h-[420px] max-h-[460px] overflow-y-auto relative" id="karaoke-lyrics-box">
-                    <div id="deck-lyrics-lines" class="flex flex-col gap-1.5 text-[15px] text-on-surface font-medium py-1 pb-10">
-                      <!-- Injected by JavaScript -->
-                    </div>
-                  </div>
-                  <button type="button" id="btn-lyrics-resync" onclick="resumeLyricsAutoScroll()" class="hidden z-20 text-xs font-bold flex items-center gap-1.5 whitespace-nowrap transition-all">
-                    <span class="material-symbols-outlined text-[15px] text-primary">my_location</span>
-                    <span data-i18n="lyrics.resync_btn">Senkronize Et</span>
-                  </button>
-                </div>
-              </div>
-
-            </div>
-          </div>
         </div>
 
       </div><!-- /#tab-calma-listeleri -->
@@ -1538,7 +1647,7 @@
     <!-- Left: Track Metadata -->
     <div class="flex items-center gap-space-md w-1/4 min-w-[200px]">
       <div class="w-12 h-12 md:w-14 md:h-14 rounded-lg bg-surface-container-highest overflow-hidden flex-shrink-0 relative group shadow-sm flex items-center justify-center cursor-pointer" onclick="switchTab('calma-listeleri')">
-        <img id="player-thumb" src="./kurfamuzik_logo.png" alt="Kapak" class="w-full h-full object-cover" onerror="this.onerror=null; this.src='./assets/kurfamuzik_logo.png';">
+        <img id="player-thumb" src="./kurfamuzik_logo_96.webp" alt="Kapak" width="48" height="48" class="w-full h-full object-cover" onerror="this.onerror=null; this.src='./kurfamuzik_logo.png';">
         <div class="absolute inset-0 bg-inverse-surface/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
           <span class="material-symbols-outlined text-inverse-on-surface text-[20px]" aria-hidden="true">open_in_full</span>
         </div>
@@ -1636,63 +1745,85 @@
     </div>
   </footer>
 
-  <!-- MOBILE FLOATING MINI-PLAYER (Visible only on mobile screens) -->
-  <div id="mobile-mini-player" class="md:hidden fixed bottom-16 left-2 right-2 h-14 bg-surface-container-lowest/95 backdrop-blur-md rounded-2xl shadow-[0_4px_25px_rgba(0,0,0,0.12)] border border-surface-container z-50 flex items-center justify-between px-2.5 select-none">
-    <!-- Interactive Touch-Scrub Progress Bar (5px curved track, expands to 9px on press/drag) -->
-    <div id="mobile-mini-seek-hit" class="absolute -top-2.5 left-3.5 right-3.5 h-6 flex items-center cursor-pointer z-20 touch-none">
-      <div id="mobile-mini-seek-track" class="relative w-full h-[5px] bg-surface-container-high rounded-full transition-all duration-150 overflow-visible">
-        <div id="player-mobile-seek-fill" class="h-full bg-primary rounded-full relative shadow-[0_0_8px_rgba(255,46,99,0.45)]" style="width: 0%;">
-          <span id="mobile-mini-seek-thumb" class="absolute -right-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 rounded-full bg-primary ring-2 ring-white shadow-md scale-0 transition-transform duration-150"></span>
-        </div>
+  <!-- MOBILE FLOATING MINI-PLAYER (Smaller Inset Dynamic-Island Capsule + Left-Bleed Cover + Song-Reactive Wash) -->
+  <div id="mobile-mini-player" class="md:hidden fixed bottom-[72px] left-6 right-6 h-12 bg-surface-container-lowest/95 rounded-full z-50 flex items-center justify-between pr-2 pl-3 select-none">
+    <div class="kurfa-mini-bg-clip" aria-hidden="true">
+      <!-- Left-Bleed Dissolving Cover Artwork -->
+      <div class="kurfa-mini-art-bleed">
+        <img id="player-thumb-mobile" src="./kurfamuzik_logo_96.webp" alt="Kapak" width="40" height="40" class="w-full h-full object-cover" onerror="this.onerror=null; this.src='./kurfamuzik_logo.png';">
       </div>
-      <div id="mobile-mini-seek-tooltip" class="hidden absolute -top-7 -translate-x-1/2 px-2 py-0.5 rounded-md bg-inverse-surface text-inverse-on-surface text-[10px] font-mono font-bold shadow-md pointer-events-none whitespace-nowrap">0:00 / 0:00</div>
+      <!-- Subtle Song-Theme & Audio-Reactive Color Wash -->
+      <div class="kurfa-mini-reactive-wash"></div>
     </div>
 
-    <!-- Left: Thumb & Track Info (Click switches directly to Sözler & EQ) -->
-    <div class="flex items-center gap-2 min-w-0 flex-1 cursor-pointer mr-1.5" onclick="switchTab('calma-listeleri')">
-      <div class="w-10 h-10 rounded-xl overflow-hidden bg-surface-container-high flex-shrink-0 shadow-sm relative">
-        <img id="player-thumb-mobile" src="./kurfamuzik_logo.png" alt="Kapak" class="w-full h-full object-cover" onerror="this.onerror=null; this.src='./kurfamuzik_logo.png';">
-      </div>
-      <div class="flex flex-col min-w-0">
-        <span id="player-title-mobile" class="text-xs font-bold text-on-surface truncate">Kurfa Müzik</span>
-        <span id="player-artist-mobile" class="text-[10px] text-on-surface-variant truncate font-medium" data-i18n="player.select_song">Bir parça seçin</span>
-      </div>
+    <!-- Curved Top-Edge Capsule Progress Arc (Trimmed upper-shoulder curve, flush to top rim) -->
+    <svg id="mobile-mini-arc-svg" class="kurfa-mini-arc-svg" viewBox="0 0 340 46" preserveAspectRatio="none" aria-hidden="true">
+      <path id="mobile-mini-arc-track" class="kurfa-mini-arc-track" d="M 7.98 6.32 A 22.45 22.45 0 0 1 23 0.55 L 317 0.55 A 22.45 22.45 0 0 1 332.02 6.32" pathLength="100" />
+      <path id="player-mobile-seek-fill" class="kurfa-mini-arc-fill" d="M 7.98 6.32 A 22.45 22.45 0 0 1 23 0.55 L 317 0.55 A 22.45 22.45 0 0 1 332.02 6.32" pathLength="100" style="stroke-dasharray: 100; stroke-dashoffset: 100; opacity: 0;" />
+      <circle id="mobile-mini-arc-thumb" class="kurfa-mini-arc-thumb" cx="23" cy="0.55" r="4.2" />
+    </svg>
+    <!-- Top-Edge Touch Scrub Hit Zone -->
+    <div id="mobile-mini-seek-hit" class="kurfa-mini-seek-hit absolute top-0 left-0 right-0 h-5 cursor-pointer z-20 touch-none"></div>
+    <!-- YouTube-Style Attached Scrub Timestamp (Docked directly above scrub thumb) -->
+    <div id="mobile-mini-seek-tooltip" class="kurfa-mini-seek-tooltip hidden pointer-events-none" aria-hidden="true">
+      <span class="kurfa-tip-cur">0:00</span><span class="kurfa-tip-sep">/</span><span class="kurfa-tip-dur">0:00</span>
     </div>
 
-    <!-- Right: Mini Controls (Queue + Fav + Play + Next) -->
-    <div class="flex items-center gap-0.5 flex-shrink-0">
-      <button type="button" aria-label="Çalma Sırası" data-i18n-aria="player.queue" id="player-queue-btn-mobile" class="w-8 h-8 rounded-full flex items-center justify-center text-on-surface-variant hover:text-primary transition-colors" onclick="toggleQueueDrawer()">
-        <span class="material-symbols-outlined text-[19px]" aria-hidden="true">queue_music</span>
+    <!-- Left: Track Info floating cleanly over dissolved cover edge (Click switches to Sözler & EQ) -->
+    <div class="kurfa-mini-track-info relative z-10 flex flex-col min-w-0 flex-1 cursor-pointer pr-1.5" onclick="switchTab('calma-listeleri')">
+      <span id="player-title-mobile" class="text-[12.5px] font-extrabold tracking-tight text-on-surface truncate leading-tight">Kurfa Müzik</span>
+      <span id="player-artist-mobile" class="text-[10px] text-on-surface-variant truncate font-medium leading-tight mt-0.5" data-i18n="player.select_song">Bir parça seçin</span>
+    </div>
+
+    <!-- Right: Compact Controls -->
+    <div class="relative z-10 flex items-center gap-0.5 flex-shrink-0">
+      <button type="button" aria-label="Çalma Sırası" data-i18n-aria="player.queue" id="player-queue-btn-mobile" class="w-7 h-7 rounded-full flex items-center justify-center text-on-surface-variant hover:text-primary transition-colors" onclick="toggleQueueDrawer()">
+        <span class="material-symbols-outlined text-[17px]" aria-hidden="true">queue_music</span>
       </button>
-      <button type="button" aria-label="Favori" data-i18n-aria="player.fav_add" id="player-fav-btn-mobile" class="w-8 h-8 rounded-full flex items-center justify-center text-on-surface-variant hover:text-primary transition-colors" onclick="toggleCurrentFavorite()">
-        <span class="material-symbols-outlined text-[19px]" aria-hidden="true">favorite_border</span>
+      <button type="button" aria-label="Favori" data-i18n-aria="player.fav_add" id="player-fav-btn-mobile" class="w-7 h-7 rounded-full flex items-center justify-center text-on-surface-variant hover:text-primary transition-colors" onclick="toggleCurrentFavorite()">
+        <span class="material-symbols-outlined text-[17px]" aria-hidden="true">favorite_border</span>
       </button>
-      <button type="button" aria-label="Oynat/Durdur" data-i18n-aria="player.play_pause" id="btn-play-pause-mobile" class="w-9 h-9 rounded-full bg-primary text-on-primary flex items-center justify-center shadow-md hover:scale-105 active:scale-95 transition-all mx-0.5" onclick="togglePlay()">
-        <span id="player-play-icon-mobile" class="material-symbols-outlined text-[21px] filled" aria-hidden="true">play_arrow</span>
+      <button type="button" aria-label="Oynat/Durdur" data-i18n-aria="player.play_pause" id="btn-play-pause-mobile" class="w-8 h-8 rounded-full bg-primary text-on-primary flex items-center justify-center shadow-md hover:scale-105 active:scale-95 transition-all mx-0.5" onclick="togglePlay()">
+        <span id="player-play-icon-mobile" class="material-symbols-outlined text-[19px] filled" aria-hidden="true">play_arrow</span>
       </button>
-      <button type="button" aria-label="Sonraki" data-i18n-aria="player.next_song" class="w-8 h-8 rounded-full flex items-center justify-center text-on-surface-variant hover:text-on-surface transition-colors" onclick="playNextTrack()">
-        <span class="material-symbols-outlined text-[19px]" aria-hidden="true">skip_next</span>
+      <button type="button" aria-label="Sonraki" data-i18n-aria="player.next_song" class="w-7 h-7 rounded-full flex items-center justify-center text-on-surface-variant hover:text-on-surface transition-colors" onclick="playNextTrack()">
+        <span class="material-symbols-outlined text-[17px]" aria-hidden="true">skip_next</span>
       </button>
     </div>
   </div>
 
-  <!-- MOBILE BOTTOM NAVIGATION BAR (Visible only on mobile screens) -->
-  <nav id="mobile-bottom-nav" class="md:hidden fixed bottom-0 left-0 right-0 h-16 bg-surface-container-lowest/95 backdrop-blur-md border-t border-surface-container z-40 grid grid-cols-4 items-center px-1 shadow-[0_-2px_12px_rgba(0,0,0,0.04)]">
-    <button type="button" aria-label="Keşfet" data-i18n-aria="nav.explore" class="mobile-nav-item active flex flex-col items-center justify-center min-w-0 w-full h-full py-1 px-0.5 text-on-surface-variant transition-colors" data-tab="kesfet" onclick="switchTab('kesfet')">
-      <span class="material-symbols-outlined text-[22px]" aria-hidden="true">explore</span>
-      <span class="text-[11px] font-semibold mt-0.5 truncate max-w-full" data-i18n="nav.explore">Keşfet</span>
+  <!-- Lightweight GPU-Composited Data-Link Bridge (Between Mini-Player & Bottom Dock) -->
+  <div id="mobile-dock-bridge" class="md:hidden fixed pointer-events-none flex items-center justify-center" aria-hidden="true">
+    <span class="kurfa-bridge-track">
+      <span class="kurfa-bridge-packet kurfa-packet-a"></span>
+      <span class="kurfa-bridge-packet kurfa-packet-b"></span>
+    </span>
+    <span class="kurfa-bridge-node kurfa-node-l"></span>
+    <span class="kurfa-bridge-node kurfa-node-c"></span>
+    <span class="kurfa-bridge-node kurfa-node-r"></span>
+  </div>
+
+  <!-- MOBILE BOTTOM NAVIGATION BAR (Apple iOS Floating Capsule Dock — 5 Tabs) -->
+  <nav id="mobile-bottom-nav" class="kurfa-apple-dock md:hidden fixed bottom-0 left-0 right-0 z-40 grid grid-cols-5 items-center">
+    <button type="button" aria-label="Keşfet" data-i18n-aria="nav.explore" class="mobile-nav-item active flex flex-col items-center justify-center min-w-0 w-full h-full py-1 px-0.5 transition-colors" data-tab="kesfet" onclick="switchTab('kesfet')">
+      <span class="material-symbols-outlined text-[21px]" aria-hidden="true">explore</span>
+      <span class="text-[10px] font-semibold mt-0.5 truncate max-w-full" data-i18n="nav.explore">Keşfet</span>
     </button>
-    <button type="button" aria-label="Kütüphane" data-i18n-aria="nav.library" class="mobile-nav-item flex flex-col items-center justify-center min-w-0 w-full h-full py-1 px-0.5 text-on-surface-variant transition-colors" data-tab="kutuphanem" onclick="switchTab('kutuphanem')">
-      <span class="material-symbols-outlined text-[22px]" aria-hidden="true">library_music</span>
-      <span class="text-[11px] font-semibold mt-0.5 truncate max-w-full" data-i18n="nav.library">Kütüphane</span>
+    <button type="button" aria-label="Kütüphane" data-i18n-aria="nav.library" class="mobile-nav-item flex flex-col items-center justify-center min-w-0 w-full h-full py-1 px-0.5 transition-colors" data-tab="kutuphanem" onclick="switchTab('kutuphanem')">
+      <span class="material-symbols-outlined text-[21px]" aria-hidden="true">library_music</span>
+      <span class="text-[10px] font-semibold mt-0.5 truncate max-w-full" data-i18n="nav.library">Kütüphane</span>
     </button>
-    <button type="button" aria-label="Arama" data-i18n-aria="nav.search" class="mobile-nav-item flex flex-col items-center justify-center min-w-0 w-full h-full py-1 px-0.5 text-on-surface-variant transition-colors" data-tab="arama" onclick="switchTab('arama')">
-      <span class="material-symbols-outlined text-[22px]" aria-hidden="true">search</span>
-      <span class="text-[11px] font-semibold mt-0.5 truncate max-w-full" data-i18n="nav.search">Arama</span>
+    <button type="button" aria-label="Arama" data-i18n-aria="nav.search" class="mobile-nav-item flex flex-col items-center justify-center min-w-0 w-full h-full py-1 px-0.5 transition-colors" data-tab="arama" onclick="switchTab('arama')">
+      <span class="material-symbols-outlined text-[21px]" aria-hidden="true">search</span>
+      <span class="text-[10px] font-semibold mt-0.5 truncate max-w-full" data-i18n="nav.search">Arama</span>
     </button>
-    <button type="button" aria-label="Sözler & EQ" data-i18n-aria="player.nav_lyrics_eq" class="mobile-nav-item flex flex-col items-center justify-center min-w-0 w-full h-full py-1 px-0.5 text-on-surface-variant transition-colors" data-tab="calma-listeleri" onclick="switchTab('calma-listeleri')">
-      <span class="material-symbols-outlined text-[22px]" aria-hidden="true">lyrics</span>
-      <span class="text-[11px] font-semibold mt-0.5 truncate max-w-full" data-i18n="player.nav_lyrics_eq">Sözler & EQ</span>
+    <button type="button" aria-label="Sözler & EQ" data-i18n-aria="player.nav_lyrics_eq" class="mobile-nav-item flex flex-col items-center justify-center min-w-0 w-full h-full py-1 px-0.5 transition-colors" data-tab="calma-listeleri" onclick="switchTab('calma-listeleri')">
+      <span class="material-symbols-outlined text-[21px]" aria-hidden="true">lyrics</span>
+      <span class="text-[10px] font-semibold mt-0.5 truncate max-w-full" data-i18n="player.nav_lyrics_short">Sözler</span>
+    </button>
+    <button type="button" aria-label="Ayarlar" data-i18n-aria="settings.title" id="mobile-nav-settings-btn" class="mobile-nav-item flex flex-col items-center justify-center min-w-0 w-full h-full py-1 px-0.5 transition-colors" onclick="openProfileModal('general')">
+      <span class="material-symbols-outlined text-[21px]" aria-hidden="true">settings</span>
+      <span class="text-[10px] font-semibold mt-0.5 truncate max-w-full" data-i18n="settings.title">Ayarlar</span>
     </button>
   </nav>
 
@@ -1765,7 +1896,7 @@
 
       <!-- Active Track Preview -->
       <div id="modal-track-preview" class="hidden flex items-center gap-3 p-2.5 rounded-2xl bg-surface-container-low border border-surface-container/60">
-        <img id="modal-preview-img" src="./kurfamuzik_logo.png" alt="" loading="lazy" class="w-11 h-11 rounded-xl object-cover bg-surface-container flex-shrink-0" onerror="this.onerror=null; this.src='./kurfamuzik_logo.png';">
+        <img id="modal-preview-img" src="./kurfamuzik_logo_96.webp" alt="" width="44" height="44" loading="lazy" fetchpriority="low" class="w-11 h-11 rounded-xl object-cover bg-surface-container flex-shrink-0" onerror="this.onerror=null; this.src='./kurfamuzik_logo.png';">
         <div class="min-w-0 flex-1">
           <p id="modal-preview-title" class="text-xs font-bold text-on-surface truncate"></p>
           <p id="modal-preview-artist" class="text-[11px] text-on-surface-variant truncate"></p>
@@ -1821,7 +1952,7 @@
 
       <!-- Track Card -->
       <div class="flex items-center gap-3 p-3 rounded-2xl bg-surface-container-low/80 border border-surface-container/60">
-        <img id="share-track-thumb" src="./kurfamuzik_logo.png" alt="Kapak" loading="lazy" class="w-14 h-14 rounded-xl object-cover shadow-sm flex-shrink-0" onerror="this.onerror=null; this.src='./kurfamuzik_logo.png';">
+        <img id="share-track-thumb" src="./kurfamuzik_logo_96.webp" alt="Kapak" width="56" height="56" loading="lazy" fetchpriority="low" class="w-14 h-14 rounded-xl object-cover shadow-sm flex-shrink-0" onerror="this.onerror=null; this.src='./kurfamuzik_logo.png';">
         <div class="flex flex-col min-w-0">
           <span id="share-track-title" class="text-sm font-bold text-on-surface truncate">Kurfamüzik</span>
           <span id="share-track-artist" class="text-xs text-on-surface-variant truncate mt-0.5">Şarkı</span>
@@ -1852,78 +1983,126 @@
       <!-- Header -->
       <div class="kurfa-settings-header">
         <div class="flex items-center gap-2.5 min-w-0">
-          <img src="./kurfamuzik_logo.png?v=20261120_v17" alt="Kurfamüzik" class="w-7 h-7 object-contain flex-shrink-0" onerror="this.onerror=null; this.src='./assets/kurfamuzik_logo.png?v=20261120_v17';">
+          <img src="./kurfamuzik_logo_96.webp" alt="Kurfamüzik" width="28" height="28" loading="lazy" fetchpriority="low" class="w-7 h-7 object-contain flex-shrink-0" onerror="this.onerror=null; this.src='./kurfamuzik_logo.png';">
           <div class="flex flex-col min-w-0">
             <h3 id="profile-modal-title" class="font-extrabold text-sm sm:text-base text-on-surface tracking-tight leading-tight truncate" data-i18n="settings.title">Ayarlar</h3>
             <span class="text-[11px] text-on-surface-variant truncate" data-i18n="settings.subtitle">Kurfamüzik • Kişiselleştirme ve Sistem</span>
           </div>
         </div>
-        <button type="button" aria-label="Kapat" class="w-8 h-8 rounded-full flex items-center justify-center hover:bg-surface-container text-on-surface-variant transition-colors flex-shrink-0" onclick="closeProfileModal()">
-          <span class="material-symbols-outlined text-[20px]" aria-hidden="true">close</span>
-        </button>
+        <div class="flex items-center gap-2 flex-shrink-0">
+          <span class="kurfa-settings-ver-badge">v1.3.1</span>
+          <button type="button" aria-label="Kapat" class="w-8 h-8 rounded-full flex items-center justify-center hover:bg-surface-container text-on-surface-variant transition-colors flex-shrink-0" onclick="closeProfileModal()">
+            <span class="material-symbols-outlined text-[20px]" aria-hidden="true">close</span>
+          </button>
+        </div>
       </div>
 
-      <!-- 2-Column Body (Desktop Left Sidebar 196px + Right Content; Mobile Horizontal Pills) -->
+      <!-- 2-Column Body (Desktop Left Sidebar 224px + Right Content; Mobile Smooth Scrollable Pill Rail) -->
       <div class="kurfa-settings-body">
-        <nav id="settings-tab-nav" class="kurfa-settings-sidebar scrollbar-none" aria-label="Ayarlar Kategorileri">
-          <button type="button" class="kurfa-settings-tab-btn active" data-settings-tab="general" onclick="switchSettingsTab('general')">
-            <span class="material-symbols-outlined text-[17px]" aria-hidden="true">tune</span>
-            <span class="hidden md:inline" data-i18n="settings.tab_general">Genel &amp; Görünüm</span>
-            <span class="md:hidden" data-i18n="settings.tab_general_short">Genel</span>
+        <div class="kurfa-scroll-rail-wrap kurfa-settings-sidebar-wrap" data-scroll-rail>
+          <nav id="settings-tab-nav" class="kurfa-settings-sidebar scrollbar-none" aria-label="Ayarlar Kategorileri">
+            <button type="button" class="kurfa-settings-tab-btn active" data-settings-tab="general" onclick="switchSettingsTab('general')">
+              <span class="material-symbols-outlined text-[17px]" aria-hidden="true">tune</span>
+              <span class="hidden md:inline" data-i18n="settings.tab_general">Genel &amp; Görünüm</span>
+              <span class="md:hidden" data-i18n="settings.tab_general_short">Genel</span>
+            </button>
+            <button type="button" class="kurfa-settings-tab-btn" data-settings-tab="playback" onclick="switchSettingsTab('playback')">
+              <span class="material-symbols-outlined text-[17px]" aria-hidden="true">graphic_eq</span>
+              <span class="hidden md:inline" data-i18n="settings.tab_playback">Oynatma &amp; Ses</span>
+              <span class="md:hidden" data-i18n="settings.tab_playback_short">Ses</span>
+            </button>
+            <button type="button" class="kurfa-settings-tab-btn" data-settings-tab="app" onclick="switchSettingsTab('app')">
+              <span class="material-symbols-outlined text-[17px]" aria-hidden="true">install_desktop</span>
+              <span class="hidden md:inline" data-i18n="settings.tab_app">Uygulama &amp; İndirmeler</span>
+              <span class="md:hidden" data-i18n="settings.tab_app_short">Uygulama</span>
+            </button>
+            <button type="button" class="kurfa-settings-tab-btn" data-settings-tab="data" onclick="switchSettingsTab('data')">
+              <span class="material-symbols-outlined text-[17px]" aria-hidden="true">database</span>
+              <span class="hidden md:inline" data-i18n="settings.tab_data">Veri &amp; Yedekleme</span>
+              <span class="md:hidden" data-i18n="settings.tab_data_short">Yedek</span>
+            </button>
+            <button type="button" class="kurfa-settings-tab-btn" data-settings-tab="about" onclick="switchSettingsTab('about')">
+              <span class="material-symbols-outlined text-[17px]" aria-hidden="true">person_pin</span>
+              <span class="hidden md:inline" data-i18n="settings.tab_about">Hakkımda</span>
+              <span class="md:hidden" data-i18n="settings.tab_about_short">Hakkımda</span>
+            </button>
+          </nav>
+          <button type="button" class="kurfa-rail-hint kurfa-rail-hint-right md:hidden" aria-label="Sağa kaydır" onclick="scrollKurfaRail(this, 140)">
+            <span class="material-symbols-outlined text-[15px]" aria-hidden="true">chevron_right</span>
           </button>
-          <button type="button" class="kurfa-settings-tab-btn" data-settings-tab="playback" onclick="switchSettingsTab('playback')">
-            <span class="material-symbols-outlined text-[17px]" aria-hidden="true">graphic_eq</span>
-            <span class="hidden md:inline" data-i18n="settings.tab_playback">Oynatma &amp; Ses</span>
-            <span class="md:hidden" data-i18n="settings.tab_playback_short">Ses</span>
-          </button>
-          <button type="button" class="kurfa-settings-tab-btn" data-settings-tab="app" onclick="switchSettingsTab('app')">
-            <span class="material-symbols-outlined text-[17px]" aria-hidden="true">install_desktop</span>
-            <span class="hidden md:inline" data-i18n="settings.tab_app">Uygulama &amp; İndirmeler</span>
-            <span class="md:hidden" data-i18n="settings.tab_app_short">Uygulama</span>
-          </button>
-          <button type="button" class="kurfa-settings-tab-btn" data-settings-tab="data" onclick="switchSettingsTab('data')">
-            <span class="material-symbols-outlined text-[17px]" aria-hidden="true">database</span>
-            <span class="hidden md:inline" data-i18n="settings.tab_data">Veri &amp; Yedekleme</span>
-            <span class="md:hidden" data-i18n="settings.tab_data_short">Yedek</span>
-          </button>
-          <button type="button" class="kurfa-settings-tab-btn" data-settings-tab="about" onclick="switchSettingsTab('about')">
-            <span class="material-symbols-outlined text-[17px]" aria-hidden="true">person_pin</span>
-            <span class="hidden md:inline" data-i18n="settings.tab_about">Hakkımda</span>
-            <span class="md:hidden" data-i18n="settings.tab_about_short">Hakkımda</span>
-          </button>
-        </nav>
+        </div>
 
         <!-- Right Content Panel -->
         <div id="settings-content-panel" class="kurfa-settings-content scrollbar-none">
           <!-- TAB 1: GENEL & GÖRÜNÜM -->
           <div id="settings-pane-general" class="kurfa-settings-pane">
             <div class="kurfa-settings-group-title" data-i18n="settings.sec_profile">Dinleyici Profili</div>
-            <div class="kurfa-settings-card">
-              <div class="flex flex-col gap-1.5">
-                <label for="profile-nickname-input" class="text-[11px] font-bold text-on-surface-variant" data-i18n="settings.nickname">Dinleyici Adı</label>
-                <input type="text" id="profile-nickname-input" placeholder="Adınız..." data-i18n-placeholder="settings.nickname_placeholder" class="w-full h-9 px-3 rounded-xl bg-surface-container-lowest border border-surface-container/60 text-xs sm:text-sm font-medium text-on-surface focus:outline-none focus:ring-2 focus:ring-primary">
+            <div class="kurfa-settings-card kurfa-profile-hero-card">
+              <div class="flex items-center gap-3.5">
+                <div id="profile-avatar-monogram" class="kurfa-avatar-monogram w-12 h-12 rounded-2xl text-white font-black text-lg flex items-center justify-center flex-shrink-0">D</div>
+                <div class="flex flex-col gap-1 min-w-0 flex-1">
+                  <label for="profile-nickname-input" class="text-[11px] font-bold text-on-surface-variant" data-i18n="settings.nickname">Dinleyici Adı</label>
+                  <div class="relative">
+                    <input type="text" id="profile-nickname-input" placeholder="Adınız..." data-i18n-placeholder="settings.nickname_placeholder" class="kurfa-settings-nick-input w-full h-9 pl-3 pr-8 rounded-xl text-xs sm:text-sm font-semibold text-on-surface focus:outline-none">
+                    <span class="material-symbols-outlined text-[15px] text-on-surface-variant/65 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" aria-hidden="true">edit</span>
+                  </div>
+                </div>
               </div>
-              <div class="grid grid-cols-3 gap-2 rounded-xl bg-surface-container-lowest border border-surface-container/50 py-2.5 text-center">
-                <div>
-                  <span class="text-sm font-extrabold text-primary block" id="stat-listening-minutes">0 dk</span>
-                  <span class="text-[10px] text-on-surface-variant" data-i18n="settings.stat_listening">Dinleme</span>
+              <div class="kurfa-settings-stat-strip grid grid-cols-3 text-center">
+                <div class="kurfa-settings-stat-cell py-2">
+                  <span class="text-sm font-extrabold text-primary block tabular-nums" id="stat-listening-minutes">0 dk</span>
+                  <span class="text-[10px] text-on-surface-variant font-medium" data-i18n="settings.stat_listening">Dinleme</span>
                 </div>
-                <div>
-                  <span class="text-sm font-extrabold text-secondary block" id="stat-tracks-played">0</span>
-                  <span class="text-[10px] text-on-surface-variant" data-i18n="settings.stat_played">Çalınan</span>
+                <div class="kurfa-settings-stat-cell py-2">
+                  <span class="text-sm font-extrabold text-secondary block tabular-nums" id="stat-tracks-played">0</span>
+                  <span class="text-[10px] text-on-surface-variant font-medium" data-i18n="settings.stat_played">Çalınan</span>
                 </div>
-                <div>
-                  <span class="text-sm font-extrabold text-tertiary block" id="stat-downloads-count">0</span>
-                  <span class="text-[10px] text-on-surface-variant" data-i18n="settings.stat_downloads">İndirilen</span>
+                <div class="kurfa-settings-stat-cell py-2">
+                  <span class="text-sm font-extrabold text-tertiary block tabular-nums" id="stat-downloads-count">0</span>
+                  <span class="text-[10px] text-on-surface-variant font-medium" data-i18n="settings.stat_downloads">İndirilen</span>
                 </div>
               </div>
             </div>
 
             <div class="kurfa-settings-group-title" data-i18n="settings.sec_appearance">Görünüm &amp; Dil</div>
             <div class="kurfa-settings-card">
-              <div class="kurfa-settings-row">
+              <!-- Visual Theme Mode Selector Cards -->
+              <div class="grid grid-cols-2 gap-2.5">
+                <button type="button" id="btn-theme-card-dark" onclick="if(!state.profile.darkMode) toggleDarkMode();" class="kurfa-theme-preview-card active flex items-center gap-2.5 text-left">
+                  <span class="kurfa-theme-swatch-dark" aria-hidden="true">
+                    <span class="kurfa-swatch-nav"></span>
+                    <span class="kurfa-swatch-body">
+                      <span class="kurfa-swatch-bar"></span>
+                      <span class="kurfa-swatch-line"></span>
+                    </span>
+                  </span>
+                  <span class="flex flex-col min-w-0 flex-1">
+                    <span class="text-xs font-bold text-on-surface truncate" data-i18n="settings.theme_dark">Karanlık</span>
+                    <span class="text-[10px] text-on-surface-variant truncate" data-i18n="settings.theme_dark_sub">Obsidyen &amp; Cam</span>
+                  </span>
+                  <span class="kurfa-theme-check material-symbols-outlined text-[15px]" aria-hidden="true">check_circle</span>
+                </button>
+                <button type="button" id="btn-theme-card-light" onclick="if(state.profile.darkMode) toggleDarkMode();" class="kurfa-theme-preview-card flex items-center gap-2.5 text-left">
+                  <span class="kurfa-theme-swatch-light" aria-hidden="true">
+                    <span class="kurfa-swatch-nav"></span>
+                    <span class="kurfa-swatch-body">
+                      <span class="kurfa-swatch-bar"></span>
+                      <span class="kurfa-swatch-line"></span>
+                    </span>
+                  </span>
+                  <span class="flex flex-col min-w-0 flex-1">
+                    <span class="text-xs font-bold text-on-surface truncate" data-i18n="settings.theme_light">Açık</span>
+                    <span class="text-[10px] text-on-surface-variant truncate" data-i18n="settings.theme_light_sub">Net &amp; Ferah</span>
+                  </span>
+                  <span class="kurfa-theme-check material-symbols-outlined text-[15px]" aria-hidden="true">check_circle</span>
+                </button>
+              </div>
+
+              <div class="kurfa-settings-row kurfa-settings-row-divider">
                 <div class="flex items-center gap-2.5 min-w-0">
-                  <span class="material-symbols-outlined text-[19px] text-secondary flex-shrink-0" aria-hidden="true">dark_mode</span>
+                  <span class="kurfa-set-icon kurfa-set-icon-indigo">
+                    <span class="material-symbols-outlined text-[17px]" aria-hidden="true">dark_mode</span>
+                  </span>
                   <div class="flex flex-col min-w-0">
                     <span class="text-xs font-semibold text-on-surface truncate" data-i18n="settings.dark_theme">Karanlık Tema</span>
                     <span class="text-[11px] text-on-surface-variant truncate" data-i18n="settings.dark_theme_desc">Göz yormayan derin gece arayüzü</span>
@@ -1936,7 +2115,9 @@
 
               <div class="kurfa-settings-row kurfa-settings-row-divider">
                 <div class="flex items-center gap-2.5 min-w-0">
-                  <span class="material-symbols-outlined text-[19px] text-primary flex-shrink-0" aria-hidden="true">gradient</span>
+                  <span class="kurfa-set-icon kurfa-set-icon-rose">
+                    <span class="material-symbols-outlined text-[17px]" aria-hidden="true">gradient</span>
+                  </span>
                   <div class="flex flex-col min-w-0">
                     <span class="text-xs font-semibold text-on-surface truncate" data-i18n="settings.dynamic_bg">Dinamik Ortam Rengi</span>
                     <span class="text-[11px] text-on-surface-variant truncate" data-i18n="settings.dynamic_bg_desc">Çalan şarkı kapağına göre hafif arka plan ışıltısı</span>
@@ -1949,10 +2130,12 @@
 
               <div class="kurfa-settings-row kurfa-settings-row-divider flex-wrap" id="settings-lang-row">
                 <div class="flex items-center gap-2.5 min-w-0">
-                  <span class="material-symbols-outlined text-[19px] text-primary flex-shrink-0" aria-hidden="true">translate</span>
+                  <span class="kurfa-set-icon kurfa-set-icon-sky">
+                    <span class="material-symbols-outlined text-[17px]" aria-hidden="true">translate</span>
+                  </span>
                   <span class="text-xs font-semibold text-on-surface" data-i18n="settings.language">Dil</span>
                 </div>
-                <div class="inline-flex p-0.5 rounded-full bg-surface-container border border-surface-container/60 gap-0.5">
+                <div class="kurfa-lang-seg inline-flex p-0.5 rounded-full gap-0.5">
                   <button type="button" id="btn-lang-system" onclick="setLanguageSystem()" class="px-2.5 py-1 rounded-full text-[11px] font-bold transition-colors text-on-surface-variant hover:text-on-surface" data-i18n="settings.lang_system">Sistem</button>
                   <button type="button" id="btn-lang-tr" onclick="applyAppLanguage('tr', true)" class="px-2.5 py-1 rounded-full text-[11px] font-bold transition-colors bg-primary text-on-primary">Türkçe</button>
                   <button type="button" id="btn-lang-en" onclick="applyAppLanguage('en', true)" class="px-2.5 py-1 rounded-full text-[11px] font-bold transition-colors text-on-surface-variant hover:text-on-surface">English</button>
@@ -1967,7 +2150,9 @@
             <div class="kurfa-settings-card">
               <div class="kurfa-settings-row">
                 <div class="flex items-center gap-2.5 min-w-0">
-                  <span class="material-symbols-outlined text-[19px] text-emerald-500 flex-shrink-0" aria-hidden="true">fast_forward</span>
+                  <span class="kurfa-set-icon kurfa-set-icon-emerald">
+                    <span class="material-symbols-outlined text-[17px]" aria-hidden="true">fast_forward</span>
+                  </span>
                   <div class="flex flex-col min-w-0">
                     <span class="text-xs font-semibold text-on-surface truncate" data-i18n="settings.sponsorblock">SponsorBlock (Klip Konuşmalarını Atla)</span>
                     <span class="text-[11px] text-on-surface-variant truncate" data-i18n="settings.sponsorblock_desc">Video intro ve sponsorlu konuşmaları otomatik geç</span>
@@ -1980,7 +2165,9 @@
 
               <div id="settings-adwarn-row" class="kurfa-settings-row kurfa-settings-row-divider">
                 <div class="flex items-center gap-2.5 min-w-0">
-                  <span class="material-symbols-outlined text-[19px] text-amber-500 flex-shrink-0" aria-hidden="true">gpp_maybe</span>
+                  <span class="kurfa-set-icon kurfa-set-icon-amber">
+                    <span class="material-symbols-outlined text-[17px]" aria-hidden="true">gpp_maybe</span>
+                  </span>
                   <div class="flex flex-col min-w-0">
                     <span class="text-xs font-semibold text-on-surface truncate" data-i18n="settings.ad_warning">Reklam Uyarısı</span>
                     <span class="text-[11px] text-on-surface-variant truncate" data-i18n="settings.ad_warning_desc">Tarayıcı modunda YouTube reklam koruması önerisi</span>
@@ -1995,33 +2182,37 @@
             <div class="kurfa-settings-group-title" data-i18n="sleep.title">Uyku Zamanlayıcı</div>
             <div class="kurfa-settings-card">
               <div class="flex items-center justify-between gap-2">
-                <div class="flex items-center gap-2">
-                  <span class="material-symbols-outlined text-[19px] text-indigo-400" aria-hidden="true">bedtime</span>
+                <div class="flex items-center gap-2.5">
+                  <span class="kurfa-set-icon kurfa-set-icon-indigo">
+                    <span class="material-symbols-outlined text-[17px]" aria-hidden="true">bedtime</span>
+                  </span>
                   <span class="text-xs font-semibold text-on-surface" data-i18n="sleep.title">Uyku Zamanlayıcı</span>
                 </div>
-                <span id="settings-sleep-status" class="px-2 py-0.5 rounded-full bg-primary/10 text-[11px] font-mono font-bold text-primary" data-i18n="settings.off">Kapalı</span>
+                <span id="settings-sleep-status" class="px-2.5 py-0.5 rounded-full bg-primary/10 text-[11px] font-mono font-bold text-primary" data-i18n="settings.off">Kapalı</span>
               </div>
               <div class="kurfa-sleep-grid">
-                <button type="button" data-sleep-opt="15" onclick="setSleepTimer(15)" class="h-8 rounded-xl bg-surface-container hover:bg-surface-container-high text-[11px] font-bold text-on-surface transition-colors">15d</button>
-                <button type="button" data-sleep-opt="30" onclick="setSleepTimer(30)" class="h-8 rounded-xl bg-surface-container hover:bg-surface-container-high text-[11px] font-bold text-on-surface transition-colors">30d</button>
-                <button type="button" data-sleep-opt="45" onclick="setSleepTimer(45)" class="h-8 rounded-xl bg-surface-container hover:bg-surface-container-high text-[11px] font-bold text-on-surface transition-colors">45d</button>
-                <button type="button" data-sleep-opt="60" onclick="setSleepTimer(60)" class="h-8 rounded-xl bg-surface-container hover:bg-surface-container-high text-[11px] font-bold text-on-surface transition-colors">60d</button>
-                <button type="button" data-sleep-opt="track" onclick="setSleepTimer('end_of_track')" class="h-8 rounded-xl bg-surface-container hover:bg-surface-container-high text-[11px] font-bold text-on-surface truncate px-1 transition-colors" data-i18n="sleep.end_track_short">Sonu</button>
-                <button type="button" data-sleep-opt="off" onclick="setSleepTimer('off')" class="h-8 rounded-xl bg-surface-container hover:bg-surface-container-high text-[11px] font-bold text-error transition-colors" data-i18n="sleep.off">Kapat</button>
+                <button type="button" data-sleep-opt="15" onclick="setSleepTimer(15)" class="kurfa-sleep-chip h-8 rounded-xl text-[11px] font-bold text-on-surface transition-colors">15d</button>
+                <button type="button" data-sleep-opt="30" onclick="setSleepTimer(30)" class="kurfa-sleep-chip h-8 rounded-xl text-[11px] font-bold text-on-surface transition-colors">30d</button>
+                <button type="button" data-sleep-opt="45" onclick="setSleepTimer(45)" class="kurfa-sleep-chip h-8 rounded-xl text-[11px] font-bold text-on-surface transition-colors">45d</button>
+                <button type="button" data-sleep-opt="60" onclick="setSleepTimer(60)" class="kurfa-sleep-chip h-8 rounded-xl text-[11px] font-bold text-on-surface transition-colors">60d</button>
+                <button type="button" data-sleep-opt="track" onclick="setSleepTimer('end_of_track')" class="kurfa-sleep-chip h-8 rounded-xl text-[11px] font-bold text-on-surface truncate px-1 transition-colors" data-i18n="sleep.end_track_short">Sonu</button>
+                <button type="button" data-sleep-opt="off" onclick="setSleepTimer('off')" class="kurfa-sleep-chip h-8 rounded-xl text-[11px] font-bold text-error transition-colors" data-i18n="sleep.off">Kapat</button>
               </div>
             </div>
 
             <div class="kurfa-settings-group-title" data-i18n="settings.sec_audio_fx">Ses Motoru &amp; Ekolayzır</div>
-            <div class="kurfa-settings-card">
-              <div class="kurfa-settings-row">
-                <div class="flex items-center gap-2.5 min-w-0">
-                  <span class="material-symbols-outlined text-[19px] text-primary flex-shrink-0" aria-hidden="true">equalizer</span>
+            <div class="kurfa-settings-card kurfa-settings-eq-hero">
+              <div class="flex items-center justify-between gap-3">
+                <div class="flex items-center gap-3 min-w-0">
+                  <span class="kurfa-set-icon kurfa-set-icon-rose">
+                    <span class="material-symbols-outlined text-[18px]" aria-hidden="true">equalizer</span>
+                  </span>
                   <div class="flex flex-col min-w-0">
-                    <span class="text-xs font-semibold text-on-surface truncate" data-i18n="settings.open_eq_fx">Hızlı EQ &amp; FX Stüdyosu</span>
+                    <span class="text-xs font-bold text-on-surface truncate" data-i18n="settings.open_eq_fx">Hızlı EQ &amp; FX Stüdyosu</span>
                     <span class="text-[11px] text-on-surface-variant truncate" data-i18n="settings.open_eq_fx_desc">5-bant stüdyo ekolayzır, tempo ve ses dengeleme</span>
                   </div>
                 </div>
-                <button type="button" onclick="openAudioFxFromSettings()" class="px-3.5 py-1.5 rounded-full bg-primary/12 hover:bg-primary/20 text-primary text-xs font-bold flex items-center gap-1 flex-shrink-0 transition-colors active:scale-95">
+                <button type="button" onclick="openAudioFxFromSettings()" class="px-4 py-2 rounded-full bg-primary text-on-primary text-xs font-bold flex items-center gap-1.5 flex-shrink-0 shadow-sm hover:opacity-95 transition-all active:scale-95">
                   <span class="material-symbols-outlined text-[15px]">tune</span>
                   <span data-i18n="settings.open_eq_btn">EQ Aç</span>
                 </button>
@@ -2032,10 +2223,12 @@
           <!-- TAB 3: UYGULAMA & İNDİRMELER -->
           <div id="settings-pane-app" class="kurfa-settings-pane hidden">
             <div class="kurfa-settings-group-title" data-i18n="settings.version">Sürüm</div>
-            <div class="kurfa-settings-card">
+            <div class="kurfa-settings-card kurfa-settings-app-hero">
               <div class="flex items-center justify-between gap-2">
-                <div class="flex items-center gap-2 min-w-0">
-                  <span class="material-symbols-outlined text-[18px] text-primary flex-shrink-0">verified</span>
+                <div class="flex items-center gap-2.5 min-w-0">
+                  <span class="kurfa-set-icon kurfa-set-icon-rose">
+                    <span class="material-symbols-outlined text-[17px]" aria-hidden="true">verified</span>
+                  </span>
                   <span class="text-xs sm:text-sm font-bold text-on-surface whitespace-nowrap" data-i18n="settings.version">Sürüm</span>
                   <span id="settings-app-version-pill" class="px-2 py-0.5 rounded-full text-[11px] font-bold bg-surface-container text-on-surface whitespace-nowrap">...</span>
                 </div>
@@ -2054,17 +2247,22 @@
               </button>
 
               <!-- Android Güncelleme Denetimi -->
-              <div id="android-app-settings-card" class="hidden pt-2.5 border-t border-surface-container/50">
-                <button type="button" onclick="window.kurfaCheckAppUpdate && window.kurfaCheckAppUpdate()" class="w-full h-9 px-3 rounded-xl bg-surface-container hover:bg-surface-container-high text-on-surface text-xs font-bold flex items-center justify-center gap-1.5 transition-colors active:scale-95">
+              <div id="android-app-settings-card" class="hidden kurfa-settings-row-divider">
+                <button type="button" onclick="window.kurfaCheckAppUpdate && window.kurfaCheckAppUpdate()" class="kurfa-settings-action-tile w-full h-9 px-3 rounded-xl text-on-surface text-xs font-bold flex items-center justify-center gap-1.5 transition-colors active:scale-95">
                   <span class="material-symbols-outlined text-[16px] text-primary">sync</span>
                   <span data-i18n="settings.check_update">Güncelleme Denetle</span>
                 </button>
               </div>
 
               <!-- Tarayıcı Kurulum Seçenekleri -->
-              <div id="settings-browser-install-card" class="pt-2.5 border-t border-surface-container/50 flex items-center justify-between gap-3">
-                <span class="text-xs text-on-surface-variant" data-i18n="settings.adfree_apps">Reklamsız APK &amp; EXE</span>
-                <button type="button" class="px-3.5 py-1.5 rounded-full bg-primary text-on-primary text-xs font-bold hover:bg-primary-container transition-all flex-shrink-0 active:scale-95 whitespace-nowrap" onclick="closeProfileModal(); openAppInstallModal();" data-i18n="settings.apps_btn">
+              <div id="settings-browser-install-card" class="kurfa-settings-row kurfa-settings-row-divider">
+                <div class="flex items-center gap-2.5 min-w-0">
+                  <span class="kurfa-set-icon kurfa-set-icon-indigo">
+                    <span class="material-symbols-outlined text-[17px]" aria-hidden="true">install_desktop</span>
+                  </span>
+                  <span class="text-xs font-semibold text-on-surface truncate" data-i18n="settings.adfree_apps">Reklamsız APK &amp; EXE</span>
+                </div>
+                <button type="button" class="px-4 py-1.5 rounded-full bg-primary text-on-primary text-xs font-bold hover:opacity-95 transition-all flex-shrink-0 active:scale-95 whitespace-nowrap" onclick="closeProfileModal(); openAppInstallModal();" data-i18n="settings.apps_btn">
                   Uygulamalar
                 </button>
               </div>
@@ -2077,7 +2275,7 @@
                 <span id="desktop-app-version" class="hidden"></span>
               </div>
 
-              <div class="flex items-center justify-between gap-2 p-2.5 rounded-xl bg-surface-container-lowest border border-surface-container/60">
+              <div class="kurfa-settings-inset-row flex items-center justify-between gap-2 p-2.5 rounded-xl">
                 <div class="flex flex-col min-w-0">
                   <span class="text-xs font-semibold text-on-surface" data-i18n="settings.dl_folder">İndirme Klasörü</span>
                   <span id="desktop-download-dir" class="text-[11px] text-on-surface-variant truncate" data-i18n="dl.folder_default">İndirilenler</span>
@@ -2115,11 +2313,11 @@
               </div>
 
               <div class="grid grid-cols-2 gap-2 pt-1">
-                <button type="button" onclick="openDesktopInstallFolder()" class="w-full py-2 px-3 rounded-xl bg-surface-container hover:bg-surface-container-high text-on-surface text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors active:scale-95">
+                <button type="button" onclick="openDesktopInstallFolder()" class="kurfa-settings-action-tile w-full py-2 px-3 rounded-xl text-on-surface text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors active:scale-95">
                   <span class="material-symbols-outlined text-[16px]">folder_open</span>
                   <span data-i18n="settings.open_folder">Klasörü Aç</span>
                 </button>
-                <button type="button" id="btn-desktop-check-update" onclick="triggerDesktopUpdateCheck()" class="w-full py-2 px-3 rounded-xl bg-surface-container hover:bg-surface-container-high text-on-surface text-xs font-bold flex items-center justify-center gap-1.5 transition-colors active:scale-95">
+                <button type="button" id="btn-desktop-check-update" onclick="triggerDesktopUpdateCheck()" class="kurfa-settings-action-tile w-full py-2 px-3 rounded-xl text-on-surface text-xs font-bold flex items-center justify-center gap-1.5 transition-colors active:scale-95">
                   <span id="btn-desktop-check-update-icon" class="material-symbols-outlined text-[16px] text-primary">sync</span>
                   <span id="btn-desktop-check-update-label" data-i18n="settings.check_update">Güncelleme Denetle</span>
                 </button>
@@ -2131,27 +2329,32 @@
           <div id="settings-pane-data" class="kurfa-settings-pane hidden">
             <div class="kurfa-settings-group-title" data-i18n="settings.sec_backup_summary">Özet</div>
             <div class="kurfa-settings-card">
-              <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-center">
-                <div class="p-2.5 rounded-xl bg-surface-container-lowest border border-surface-container/60">
+              <div class="kurfa-settings-stat-strip grid grid-cols-2 sm:grid-cols-4 text-center">
+                <div class="kurfa-settings-stat-cell py-2.5 px-1">
                   <span class="text-sm font-extrabold text-on-surface block tabular-nums" id="backup-stat-favs">0</span>
                   <span class="text-[10px] text-on-surface-variant font-semibold" data-i18n="settings.bk_favs">Favori</span>
                 </div>
-                <div class="p-2.5 rounded-xl bg-surface-container-lowest border border-surface-container/60">
+                <div class="kurfa-settings-stat-cell py-2.5 px-1">
                   <span class="text-sm font-extrabold text-on-surface block tabular-nums" id="backup-stat-lists">0</span>
                   <span class="text-[10px] text-on-surface-variant font-semibold" data-i18n="settings.bk_lists">Liste</span>
                 </div>
-                <div class="p-2.5 rounded-xl bg-surface-container-lowest border border-surface-container/60">
+                <div class="kurfa-settings-stat-cell py-2.5 px-1">
                   <span class="text-sm font-extrabold text-on-surface block tabular-nums" id="backup-stat-dl">0</span>
                   <span class="text-[10px] text-on-surface-variant font-semibold" data-i18n="settings.stat_downloads">İndirilen</span>
                 </div>
-                <div class="p-2.5 rounded-xl bg-surface-container-lowest border border-surface-container/60">
+                <div class="kurfa-settings-stat-cell py-2.5 px-1">
                   <span class="text-sm font-extrabold text-on-surface block tabular-nums" id="backup-stat-size">0 KB</span>
                   <span class="text-[10px] text-on-surface-variant font-semibold" data-i18n="settings.bk_storage">Depolama</span>
                 </div>
               </div>
-              <button type="button" onclick="closeProfileModal(); switchTab('kutuphanem'); switchKutuphaneSubTab('istatistik');" class="w-full py-2.5 px-3 rounded-xl bg-surface-container-lowest hover:bg-surface-container border border-surface-container/60 text-xs font-bold text-on-surface flex items-center justify-center gap-1.5 transition-colors">
-                <span class="material-symbols-outlined text-[16px]">bar_chart</span>
-                <span data-i18n="stats.view_detailed">Detaylı Dinleme İstatistikleri</span>
+              <button type="button" onclick="closeProfileModal(); switchTab('kutuphanem'); switchKutuphaneSubTab('istatistik');" class="kurfa-settings-row kurfa-settings-row-divider w-full text-left group">
+                <div class="flex items-center gap-2.5 min-w-0">
+                  <span class="kurfa-set-icon kurfa-set-icon-indigo">
+                    <span class="material-symbols-outlined text-[17px]" aria-hidden="true">bar_chart</span>
+                  </span>
+                  <span class="text-xs font-bold text-on-surface group-hover:text-primary transition-colors truncate" data-i18n="stats.view_detailed">Detaylı Dinleme İstatistikleri</span>
+                </div>
+                <span class="material-symbols-outlined text-[18px] text-on-surface-variant flex-shrink-0">chevron_right</span>
               </button>
             </div>
 
@@ -2161,43 +2364,60 @@
                 Favorileriniz, özel listeleriniz ve tercihleriniz tek bir JSON dosyasına kaydedilir.
               </p>
               <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                <button type="button" class="h-10 px-3 rounded-xl bg-surface-container hover:bg-surface-container-high border border-surface-container/80 text-xs font-bold text-on-surface flex items-center justify-center gap-1.5 min-w-0 transition-colors active:scale-95" onclick="exportLibraryBackup()">
-                  <span class="material-symbols-outlined text-[16px] flex-shrink-0">download</span>
-                  <span class="truncate" data-i18n="settings.backup_export">Verileri Yedekle (JSON)</span>
+                <button type="button" class="kurfa-settings-choice-card flex items-center gap-3 text-left" onclick="exportLibraryBackup()">
+                  <span class="kurfa-set-icon kurfa-set-icon-emerald">
+                    <span class="material-symbols-outlined text-[18px]" aria-hidden="true">download</span>
+                  </span>
+                  <span class="flex flex-col min-w-0 flex-1">
+                    <span class="text-xs font-bold text-on-surface truncate" data-i18n="settings.backup_export">Verileri Yedekle (JSON)</span>
+                    <span class="text-[10px] text-on-surface-variant truncate" data-i18n="settings.backup_export_sub">Arşiv ve ayarları indir</span>
+                  </span>
                 </button>
-                <label class="h-10 px-3 rounded-xl bg-surface-container-lowest hover:bg-surface-container border border-surface-container/60 text-xs font-bold text-on-surface flex items-center justify-center gap-1.5 min-w-0 cursor-pointer transition-colors active:scale-95">
-                  <span class="material-symbols-outlined text-[16px] text-on-surface-variant flex-shrink-0">upload</span>
-                  <span class="truncate" data-i18n="settings.backup_import">Yedekten Geri Yükle</span>
+                <label class="kurfa-settings-choice-card flex items-center gap-3 text-left cursor-pointer">
+                  <span class="kurfa-set-icon kurfa-set-icon-sky">
+                    <span class="material-symbols-outlined text-[18px]" aria-hidden="true">upload</span>
+                  </span>
+                  <span class="flex flex-col min-w-0 flex-1">
+                    <span class="text-xs font-bold text-on-surface truncate" data-i18n="settings.backup_import">Yedekten Geri Yükle</span>
+                    <span class="text-[10px] text-on-surface-variant truncate" data-i18n="settings.backup_import_sub">JSON dosyasından yükle</span>
+                  </span>
                   <input type="file" id="profile-backup-input" accept=".json" class="hidden" onchange="importLibraryBackup(event)">
                 </label>
               </div>
-              <div class="pt-2 border-t border-surface-container/60 flex items-center justify-between gap-2">
-                <div class="flex flex-col min-w-0">
-                  <span class="text-xs font-semibold text-on-surface" data-i18n="settings.clear_cache">Önbelleği Temizle</span>
-                  <span class="text-[10px] text-on-surface-variant" data-i18n="settings.clear_cache_desc">Favori ve listelere dokunmadan önbelleği sıfırlar</span>
+              <div class="kurfa-settings-row kurfa-settings-row-divider">
+                <div class="flex items-center gap-2.5 min-w-0">
+                  <span class="kurfa-set-icon kurfa-set-icon-amber">
+                    <span class="material-symbols-outlined text-[17px]" aria-hidden="true">cleaning_services</span>
+                  </span>
+                  <div class="flex flex-col min-w-0">
+                    <span class="text-xs font-semibold text-on-surface truncate" data-i18n="settings.clear_cache">Önbelleği Temizle</span>
+                    <span class="text-[10px] text-on-surface-variant truncate" data-i18n="settings.clear_cache_desc">Favori ve listelere dokunmadan önbelleği sıfırlar</span>
+                  </div>
                 </div>
-                <button type="button" onclick="clearKurfaAppCaches()" class="px-3 py-1.5 rounded-full bg-surface-container hover:bg-surface-container-high text-[11px] font-bold text-on-surface flex-shrink-0 transition-colors active:scale-95" data-i18n="settings.clear_cache_btn">Temizle</button>
+                <button type="button" onclick="clearKurfaAppCaches()" class="px-3.5 py-1.5 rounded-full bg-surface-container hover:bg-surface-container-high text-[11px] font-bold text-on-surface flex-shrink-0 transition-colors active:scale-95" data-i18n="settings.clear_cache_btn">Temizle</button>
               </div>
             </div>
           </div>
 
           <!-- TAB 5: HAKKIMDA -->
           <div id="settings-pane-about" class="kurfa-settings-pane hidden">
-            <div class="kurfa-about-hero rounded-2xl p-4 flex items-center gap-3.5">
-              <div class="w-12 h-12 rounded-2xl bg-surface-container-lowest border border-surface-container/80 flex items-center justify-center p-2 flex-shrink-0">
-                <img src="./kurfamuzik_logo.png?v=20261120_v17" alt="Kurfamüzik" class="w-full h-full object-contain" onerror="this.onerror=null; this.src='./assets/kurfamuzik_logo.png?v=20261120_v17';">
-              </div>
-              <div class="flex flex-col min-w-0 flex-1">
-                <h4 class="text-base font-extrabold text-on-surface tracking-tight">Ozan Sarsılmaz</h4>
-                <p class="text-xs text-on-surface-variant mt-0.5">Kurfamüzik</p>
+            <div class="kurfa-settings-card kurfa-about-hero-card">
+              <div class="flex items-center gap-3.5">
+                <div class="kurfa-about-icon-tile w-12 h-12 rounded-2xl flex items-center justify-center p-2.5 flex-shrink-0">
+                  <img src="./kurfamuzik_logo_96.webp" alt="Kurfamüzik" width="48" height="48" loading="lazy" fetchpriority="low" class="w-full h-full object-contain" onerror="this.onerror=null; this.src='./kurfamuzik_logo.png';">
+                </div>
+                <div class="flex flex-col min-w-0 flex-1">
+                  <h4 class="text-base font-black text-on-surface tracking-tight">Ozan Sarsılmaz</h4>
+                  <p class="text-[11px] font-semibold text-on-surface-variant mt-0.5 truncate" data-i18n="about.role_sub">Kurfamüzik Geliştiricisi • Tasarım &amp; Yazılım</p>
+                </div>
               </div>
             </div>
 
             <div class="kurfa-settings-group-title" data-i18n="about.links_title">İletişim &amp; Bağlantılar</div>
             <div class="kurfa-settings-card">
               <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                <a href="https://github.com/KurfaCore" target="_blank" rel="noopener noreferrer" class="kurfa-about-link-card flex items-center gap-3 p-3 rounded-xl transition-all">
-                  <div class="w-9 h-9 rounded-xl bg-surface-container-lowest border border-surface-container/70 text-on-surface flex items-center justify-center flex-shrink-0">
+                <a href="https://github.com/KurfaCore" target="_blank" rel="noopener noreferrer" class="kurfa-settings-choice-card flex items-center gap-3 transition-all">
+                  <div class="kurfa-about-icon-tile w-9 h-9 rounded-xl text-on-surface flex items-center justify-center flex-shrink-0">
                     <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
                   </div>
                   <div class="flex flex-col min-w-0 flex-1">
@@ -2207,8 +2427,8 @@
                   <span class="material-symbols-outlined text-[16px] text-on-surface-variant">open_in_new</span>
                 </a>
 
-                <a href="https://www.instagram.com/5o.z.a.n6/" target="_blank" rel="noopener noreferrer" class="kurfa-about-link-card flex items-center gap-3 p-3 rounded-xl transition-all">
-                  <div class="w-9 h-9 rounded-xl bg-surface-container-lowest border border-surface-container/70 text-on-surface flex items-center justify-center flex-shrink-0">
+                <a href="https://www.instagram.com/5o.z.a.n6/" target="_blank" rel="noopener noreferrer" class="kurfa-settings-choice-card flex items-center gap-3 transition-all">
+                  <div class="kurfa-about-icon-tile w-9 h-9 rounded-xl text-on-surface flex items-center justify-center flex-shrink-0">
                     <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
                   </div>
                   <div class="flex flex-col min-w-0 flex-1">
@@ -2218,8 +2438,8 @@
                   <span class="material-symbols-outlined text-[16px] text-on-surface-variant">open_in_new</span>
                 </a>
 
-                <a href="mailto:kurfa.dev@outlook.com" class="kurfa-about-link-card flex items-center gap-3 p-3 rounded-xl transition-all">
-                  <div class="w-9 h-9 rounded-xl bg-surface-container-lowest border border-surface-container/70 text-on-surface flex items-center justify-center flex-shrink-0">
+                <a href="mailto:kurfa.dev@outlook.com" class="kurfa-settings-choice-card flex items-center gap-3 transition-all">
+                  <div class="kurfa-about-icon-tile w-9 h-9 rounded-xl text-on-surface flex items-center justify-center flex-shrink-0">
                     <span class="material-symbols-outlined text-[18px]">mail</span>
                   </div>
                   <div class="flex flex-col min-w-0 flex-1">
@@ -2229,8 +2449,8 @@
                   <span class="material-symbols-outlined text-[16px] text-on-surface-variant">arrow_outward</span>
                 </a>
 
-                <a href="https://kurfanova.github.io/" target="_blank" rel="noopener noreferrer" class="kurfa-about-link-card flex items-center gap-3 p-3 rounded-xl transition-all">
-                  <div class="w-9 h-9 rounded-xl bg-surface-container-lowest border border-surface-container/70 text-on-surface flex items-center justify-center flex-shrink-0">
+                <a href="https://kurfanova.github.io/" target="_blank" rel="noopener noreferrer" class="kurfa-settings-choice-card flex items-center gap-3 transition-all">
+                  <div class="kurfa-about-icon-tile w-9 h-9 rounded-xl text-on-surface flex items-center justify-center flex-shrink-0">
                     <span class="material-symbols-outlined text-[18px]">language</span>
                   </div>
                   <div class="flex flex-col min-w-0 flex-1">
@@ -2252,7 +2472,7 @@
           <span data-i18n="settings.tab_about">Hakkımda</span>
         </button>
         <button type="button" class="px-5 py-2 rounded-full bg-primary text-on-primary text-xs font-bold hover:bg-primary-container shadow-sm transition-all whitespace-nowrap flex-shrink-0 active:scale-95" onclick="saveProfileData()" data-i18n="settings.save_close">
-          Kaydet & Kapat
+          Kaydet &amp; Kapat
         </button>
       </div>
     </div>
@@ -2306,7 +2526,7 @@
 
       <!-- Target Track Preview -->
       <div class="flex items-center gap-2.5 p-2 rounded-xl bg-surface-container-low">
-        <img id="atp-track-thumb" src="./kurfamuzik_logo.png" alt="Cover" loading="lazy" class="w-10 h-10 rounded-lg object-cover flex-shrink-0" onerror="this.onerror=null; this.src='./assets/kurfamuzik_logo.png';">
+        <img id="atp-track-thumb" src="./kurfamuzik_logo_96.webp" alt="Cover" width="40" height="40" loading="lazy" fetchpriority="low" class="w-10 h-10 rounded-lg object-cover flex-shrink-0" onerror="this.onerror=null; this.src='./kurfamuzik_logo.png';">
         <div class="flex flex-col min-w-0 flex-1">
           <span id="atp-track-title" class="text-xs font-bold text-on-surface truncate">Şarkı Başlığı</span>
           <span id="atp-track-artist" class="text-[10px] text-on-surface-variant truncate">Sanatçı</span>
@@ -2378,7 +2598,7 @@
       <!-- Modal Header -->
       <div class="flex items-center justify-between pb-3 border-b border-surface-container">
         <div class="flex items-center gap-3">
-          <img src="./kurfamuzik_logo.png?v=20261120_v17" alt="Kurfamüzik" class="w-10 h-10 object-contain flex-shrink-0" onerror="this.onerror=null; this.src='./assets/kurfamuzik_logo.png?v=20261120_v17';">
+          <img src="./kurfamuzik_logo_96.webp" alt="Kurfamüzik" width="40" height="40" loading="lazy" fetchpriority="low" class="w-10 h-10 object-contain flex-shrink-0" onerror="this.onerror=null; this.src='./kurfamuzik_logo.png';">
           <div>
             <h3 class="font-bold text-base text-on-surface leading-tight" data-i18n="install.title">Kurfamüzik Uygulamaları</h3>
             <p class="text-[11px] text-on-surface-variant" data-i18n="install.subtitle">Reklamsız masaüstü ve mobil kurulumlar</p>
@@ -2539,7 +2759,7 @@
       <!-- Pending Track Mini-Preview Pill + Concise Explanation -->
       <div class="flex flex-col gap-2.5">
         <div id="ad-warn-track-card" class="flex items-center gap-3 p-2.5 rounded-2xl bg-surface-container-low border border-surface-container">
-          <img id="ad-warn-track-thumb" src="./kurfamuzik_logo.png" alt="" class="w-11 h-11 rounded-xl object-cover flex-shrink-0 bg-surface-container" />
+          <img id="ad-warn-track-thumb" src="./kurfamuzik_logo_96.webp" alt="" width="44" height="44" loading="lazy" fetchpriority="low" class="w-11 h-11 rounded-xl object-cover flex-shrink-0 bg-surface-container" />
           <div class="min-w-0 flex-1">
             <p id="ad-warn-track-title" class="text-xs font-bold text-on-surface truncate">Parça Yükleniyor</p>
             <p id="ad-warn-track-artist" class="text-[11px] text-on-surface-variant truncate">Sanatçı</p>
@@ -2642,81 +2862,87 @@
   </div>
 
   <!-- ===================================================================== -->
-  <!-- 14. SPOTIFY-STYLE PICTURE-IN-PICTURE (PIP) FLOATING MINI PLAYER       -->
+  <!-- 14. DUAL-MODE FLOATING MINI PLAYER (METROLIST COVER FOCUS ↔ COMPACT BAR) -->
   <!-- ===================================================================== -->
-  <div id="kurfa-floating-pip" class="hidden fixed bottom-24 right-4 z-50 w-72 rounded-2xl overflow-hidden bg-[#121212] text-white shadow-[0_12px_40px_rgba(0,0,0,0.6)] border border-cyan-400/80 select-none transition-all duration-200">
-    <!-- PiP Title Bar (Photo 1 Ref) -->
-    <div class="h-9 px-3 bg-[#181818] flex items-center justify-between text-xs text-zinc-300 border-b border-zinc-800">
-      <div class="flex items-center gap-1.5 text-zinc-400">
-        <span class="material-symbols-outlined text-[16px] text-cyan-400">tune</span>
-        <span class="text-[11px] font-mono tracking-tight text-zinc-200 truncate max-w-[150px]">Kurfamüzik</span>
-      </div>
-      <div class="flex items-center gap-1">
-        <button type="button" class="w-6 h-6 rounded flex items-center justify-center hover:bg-zinc-700 text-zinc-400 hover:text-white" onclick="expandFloatingPipToFull()" title="Tam Ekrana Genişlet" data-i18n-title="pip.expand">
-          <span class="material-symbols-outlined text-[14px]">open_in_full</span>
+  <div id="kurfa-floating-pip" data-mode="cover" hidden class="kurfa-floating-pip fixed bottom-24 right-4 z-50 text-white select-none" role="region" aria-label="Mini Oynatıcı">
+    <!-- Top Floating Drag Strip & Window Actions -->
+    <div id="pip-drag-handle" class="kurfa-pip-topbar">
+      <div class="kurfa-pip-win-actions">
+        <button type="button" id="pip-mode-toggle-btn" class="kurfa-pip-icon-btn" onclick="toggleFloatingPipMode()" title="Kompakt / Kapak Modu">
+          <span id="pip-mode-toggle-icon" class="material-symbols-outlined text-[15px]" aria-hidden="true">view_agenda</span>
         </button>
-        <button type="button" class="w-6 h-6 rounded flex items-center justify-center hover:bg-zinc-700 text-zinc-400 hover:text-white" onclick="closeFloatingPip()" title="Kapat" data-i18n-title="pip.close">
-          <span class="material-symbols-outlined text-[16px]">close</span>
+        <button type="button" class="kurfa-pip-icon-btn" onclick="openAddToPlaylistModal(state.currentTrack)" title="Çalma Listesine Ekle" data-i18n-title="atp.title">
+          <span class="material-symbols-outlined text-[15px]" aria-hidden="true">playlist_add</span>
+        </button>
+        <button type="button" class="kurfa-pip-icon-btn" onclick="expandFloatingPipToFull()" title="Tam Ekrana Genişlet" data-i18n-title="pip.expand">
+          <span class="material-symbols-outlined text-[15px]" aria-hidden="true">open_in_full</span>
+        </button>
+        <button type="button" class="kurfa-pip-icon-btn kurfa-pip-close-btn" onclick="closeFloatingPip()" title="Kapat" data-i18n-title="pip.close">
+          <span class="material-symbols-outlined text-[15px]" aria-hidden="true">close</span>
         </button>
       </div>
     </div>
 
-    <!-- Center: Large Artwork with Interactive Hover Overlay (Photo 1 & 2 Ref) -->
-    <div class="relative w-full aspect-square bg-zinc-900 group overflow-hidden cursor-pointer" id="pip-art-container">
-      <img id="pip-cover-art" src="./kurfamuzik_logo.png" alt="PiP Cover" loading="lazy" class="w-full h-full object-cover" onerror="this.onerror=null; this.src='./assets/kurfamuzik_logo.png';">
+    <!-- Cover Art Surface -->
+    <div class="kurfa-pip-art-wrap" id="pip-art-container">
+      <img id="pip-cover-art" src="./kurfamuzik_logo_256.webp" alt="PiP Kapak" width="256" height="256" loading="lazy" fetchpriority="low" class="kurfa-pip-cover-img" onerror="this.onerror=null; this.src='./kurfamuzik_logo.png';">
+    </div>
 
-      <!-- Hover Overlay (Photo 2 Ref) -->
-      <div class="absolute inset-0 bg-black/75 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex flex-col justify-between p-3.5" id="pip-hover-overlay">
-        <!-- Top Spacer -->
-        <div></div>
+    <!-- Ambient Reactive Backdrop Scrim -->
+    <div class="kurfa-pip-scrim" aria-hidden="true"></div>
 
-        <!-- Center Controls Row -->
-        <div class="flex items-center justify-center gap-2">
-          <button type="button" class="w-7 h-7 rounded-full flex items-center justify-center text-zinc-300 hover:text-white" onclick="toggleMute()" title="Sessiz" data-i18n-title="player.mute">
-            <span class="material-symbols-outlined text-[18px]">volume_up</span>
-          </button>
-          <button type="button" id="pip-btn-shuffle" class="w-7 h-7 rounded-full flex items-center justify-center text-zinc-300 hover:text-white" onclick="toggleShuffle()" title="Karıştır" data-i18n-title="player.shuffle">
-            <span class="material-symbols-outlined text-[18px]">shuffle</span>
-          </button>
-          <button type="button" class="w-7 h-7 rounded-full flex items-center justify-center text-zinc-200 hover:text-white" onclick="playPrevTrack()" title="Önceki" data-i18n-title="player.prev_song">
-            <span class="material-symbols-outlined text-[20px]">skip_previous</span>
-          </button>
-          <button type="button" class="w-10 h-10 rounded-full bg-white text-black flex items-center justify-center shadow-lg hover:scale-105 active:scale-95 transition-all" onclick="togglePlay()" title="Oynat/Durdur" data-i18n-title="player.play_pause">
-            <span id="pip-play-icon" class="material-symbols-outlined text-[24px] filled">play_arrow</span>
-          </button>
-          <button type="button" class="w-7 h-7 rounded-full flex items-center justify-center text-zinc-200 hover:text-white" onclick="playNextTrack()" title="Sonraki" data-i18n-title="player.next_song">
-            <span class="material-symbols-outlined text-[20px]">skip_next</span>
-          </button>
-          <button type="button" id="pip-btn-repeat" class="w-7 h-7 rounded-full flex items-center justify-center text-zinc-300 hover:text-white" onclick="toggleRepeat()" title="Tekrar" data-i18n-title="player.repeat">
-            <span class="material-symbols-outlined text-[18px]">repeat</span>
-          </button>
-          <button type="button" class="w-7 h-7 rounded-full flex items-center justify-center text-zinc-300 hover:text-white" onclick="openShareModal()" title="Paylaş" data-i18n-title="nav.share_track">
-            <span class="material-symbols-outlined text-[18px]">share</span>
-          </button>
-        </div>
+    <!-- Track Metadata + Controls + Hover-Expanding Volume HUD -->
+    <div class="kurfa-pip-hud" id="pip-hover-overlay">
+      <div class="kurfa-pip-meta">
+        <span id="pip-track-title" class="kurfa-pip-title">Kurfa Müzik</span>
+        <span id="pip-track-artist" class="kurfa-pip-artist">Bir parça seçin</span>
+      </div>
 
-        <!-- Scrubber Progress Bar -->
-        <div class="w-full flex flex-col gap-1">
-          <div class="flex items-center justify-between text-[10px] font-mono text-zinc-400">
-            <span id="pip-time-cur">0:00</span>
-            <span id="pip-time-dur">3:30</span>
+      <div class="kurfa-pip-controls">
+        <button type="button" id="pip-btn-shuffle" class="kurfa-pip-ctrl-btn kurfa-pip-hide-cover" onclick="toggleShuffle()" title="Karıştır" data-i18n-title="player.shuffle">
+          <span class="material-symbols-outlined text-[16px]" aria-hidden="true">shuffle</span>
+        </button>
+        <button type="button" class="kurfa-pip-ctrl-btn" onclick="playPrevTrack()" title="Önceki" data-i18n-title="player.prev_song">
+          <span class="material-symbols-outlined text-[20px]" aria-hidden="true">skip_previous</span>
+        </button>
+        <button type="button" class="kurfa-pip-play-btn" onclick="togglePlay()" title="Oynat/Durdur" data-i18n-title="player.play_pause">
+          <span id="pip-play-icon" class="material-symbols-outlined text-[24px] filled" aria-hidden="true">play_arrow</span>
+        </button>
+        <button type="button" class="kurfa-pip-ctrl-btn" onclick="playNextTrack()" title="Sonraki" data-i18n-title="player.next_song">
+          <span class="material-symbols-outlined text-[20px]" aria-hidden="true">skip_next</span>
+        </button>
+        <button type="button" id="pip-btn-repeat" class="kurfa-pip-ctrl-btn kurfa-pip-hide-cover" onclick="toggleRepeat()" title="Tekrar" data-i18n-title="player.repeat">
+          <span class="material-symbols-outlined text-[16px]" aria-hidden="true">repeat</span>
+        </button>
+      </div>
+
+      <!-- Bottom HUD: Expanding Volume Bar (Left) + Duration (Right) -->
+      <div class="kurfa-pip-bottom-row">
+        <div class="kurfa-pip-vol-group" id="pip-vol-group">
+          <button type="button" id="pip-mute-btn" class="kurfa-pip-ctrl-btn" onclick="toggleMute()" title="Sessize Al / Aç (Orta tuş veya tekerlek)" data-i18n-title="player.mute">
+            <span id="pip-vol-icon" class="material-symbols-outlined text-[18px]" aria-hidden="true">volume_up</span>
+          </button>
+          <div class="kurfa-pip-vol-expand">
+            <input type="range" id="pip-volume-range" class="kurfa-pip-vol-range" min="0" max="100" step="1" value="80" aria-label="Ses Seviyesi" aria-valuetext="80%">
+            <span id="pip-volume-pct" class="kurfa-pip-vol-pct">80%</span>
           </div>
-          <div id="pip-seek-track" class="relative w-full h-1.5 bg-zinc-700 rounded-full cursor-pointer overflow-hidden">
-            <div id="pip-seek-fill" class="h-full bg-white rounded-full transition-all" style="width: 0%;"></div>
-          </div>
         </div>
+        <div class="kurfa-pip-times">
+          <span id="pip-time-cur">0:00</span>
+          <span>/</span>
+          <span id="pip-time-dur">0:00</span>
+        </div>
+      </div>
+
+      <!-- Seekbar -->
+      <div id="pip-seek-track" class="kurfa-pip-seek-track" role="slider" aria-label="Şarkı İlerlemesi" tabindex="0">
+        <div id="pip-seek-fill" class="kurfa-pip-seek-fill" style="width: 0%;"></div>
       </div>
     </div>
 
-    <!-- Bottom Bar (Track Info & Add to Playlist Button - Photo 1 & 2 Ref) -->
-    <div class="p-3 bg-[#121212] flex items-center justify-between">
-      <div class="flex flex-col min-w-0 pr-2">
-        <span id="pip-track-title" class="text-sm font-bold text-white truncate">Kurfa Müzik</span>
-        <span id="pip-track-artist" class="text-xs text-zinc-400 truncate">Sanatçı</span>
-      </div>
-      <button type="button" class="w-8 h-8 rounded-full flex items-center justify-center text-zinc-300 hover:text-white hover:scale-110 transition-transform flex-shrink-0" onclick="openAddToPlaylistModal()" title="Çalma Listesine Ekle" data-i18n-title="atp.title">
-        <span class="material-symbols-outlined text-[24px]">add_circle</span>
-      </button>
+    <!-- Ultra-thin Edge Hairline Visible in Idle Cover Mode -->
+    <div id="pip-hairline-track" class="kurfa-pip-hairline-track" aria-hidden="true">
+      <div id="pip-hairline-fill" class="kurfa-pip-hairline-fill" style="width: 0%;"></div>
     </div>
   </div>
 
@@ -2802,51 +3028,73 @@
     <span class="material-symbols-outlined text-[14px] opacity-40 hover:opacity-100 transition-opacity ml-1" aria-hidden="true">close</span>
   </div>
 
-  <!-- Album Detail Modal (Ambient Hero + Clean Tracklist) -->
+  <!-- Album Detail Modal (Ambient Hero + Seamless Blending + Concentric Cover Geometry) -->
   <div id="album-detail-modal" role="dialog" aria-modal="true" class="fixed inset-0 bg-black/70 backdrop-blur-md z-50 flex items-center justify-center p-2.5 sm:p-5 opacity-0 pointer-events-none transition-opacity duration-200" onclick="if (event.target === this) closeAlbumDetail();">
-    <div id="album-detail-modal-card" class="kurfa-album-modal-card rounded-3xl max-w-2xl w-full shadow-2xl flex flex-col overflow-hidden transform scale-95 transition-transform duration-200 max-h-[90vh]">
-      <div class="relative overflow-hidden p-4 sm:p-6 flex flex-col gap-4 border-b border-white/10">
-        <div id="album-detail-hero-bg" class="absolute inset-0 bg-cover bg-center scale-110 blur-2xl opacity-45 pointer-events-none"></div>
-        <div class="kurfa-album-hero-scrim absolute inset-0 pointer-events-none"></div>
-        <button type="button" aria-label="Kapat" onclick="closeAlbumDetail()" class="absolute top-3.5 right-3.5 z-20 w-8 h-8 rounded-full flex items-center justify-center bg-black/30 hover:bg-black/50 text-white/85 hover:text-white transition-colors">
+    <div id="album-detail-modal-card" class="kurfa-album-modal-card rounded-3xl w-full shadow-2xl flex flex-col overflow-hidden transform scale-95 transition-transform duration-200 max-h-[90vh]">
+      <div id="album-detail-hero" class="kurfa-album-hero relative flex flex-col gap-4 flex-shrink-0">
+        <div class="kurfa-album-hero-bg-clip" aria-hidden="true">
+          <div id="album-detail-hero-bg" class="kurfa-album-hero-bg-blur absolute inset-0 bg-cover bg-center pointer-events-none"></div>
+          <div class="kurfa-album-hero-scrim absolute inset-0 pointer-events-none"></div>
+        </div>
+        <button type="button" id="album-detail-close-btn" aria-label="Kapat" data-i18n-aria="modal.close" onclick="closeAlbumDetail()" class="kurfa-album-close-btn flex items-center justify-center transition-colors">
           <span class="material-symbols-outlined text-[18px]">close</span>
         </button>
-        <div class="relative z-10 flex flex-col sm:flex-row items-center sm:items-end gap-4 sm:gap-5 pr-6">
-          <div class="w-28 h-28 sm:w-36 sm:h-36 rounded-2xl overflow-hidden shadow-2xl border border-white/15 bg-surface-container-high flex-shrink-0">
-            <img id="album-detail-cover" src="./kurfamuzik_logo.png" alt="Albüm Kapağı" referrerpolicy="no-referrer" class="w-full h-full object-cover" onerror="this.onerror=null; this.src='./kurfamuzik_logo.png';">
+        <div class="relative z-10 flex flex-row items-center sm:items-end gap-4 sm:gap-6 pr-10">
+          <div class="kurfa-album-cover-frame rounded-2xl overflow-hidden flex-shrink-0">
+            <img id="album-detail-cover" src="./kurfamuzik_logo_256.webp" alt="Albüm Kapağı" width="144" height="144" loading="lazy" fetchpriority="low" referrerpolicy="no-referrer" class="w-full h-full object-cover" onerror="this.onerror=null; this.src='./kurfamuzik_logo_256.webp';">
           </div>
-          <div class="flex flex-col items-center sm:items-start text-center sm:text-left min-w-0 flex-1 gap-1.5">
-            <div class="flex flex-wrap items-center justify-center sm:justify-start gap-2">
-              <span id="album-detail-type" class="px-2.5 py-0.5 rounded-full bg-white/15 backdrop-blur-md text-[10px] font-extrabold uppercase tracking-wider text-white" data-i18n="album.badge">Albüm</span>
+          <div class="flex flex-col items-start text-left min-w-0 flex-1 gap-1.5">
+            <div class="flex flex-wrap items-center gap-1.5 sm:gap-2">
+              <span id="album-detail-type" class="kurfa-album-type-chip" data-i18n="album.badge">Albüm</span>
               <span id="album-detail-meta" class="text-[11px] font-semibold text-white/75"></span>
             </div>
-            <h2 id="album-detail-title" class="text-xl sm:text-2xl font-black text-white leading-tight line-clamp-2 max-w-full drop-shadow-sm">Albüm</h2>
-            <button type="button" id="album-detail-artist-btn" class="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/10 text-xs font-bold text-white transition-colors mt-0.5">
-              <span class="material-symbols-outlined text-[15px] opacity-80">person</span>
-              <span id="album-detail-artist-label" class="truncate max-w-[200px]">Sanatçı</span>
-              <span class="material-symbols-outlined text-[14px] opacity-65">chevron_right</span>
+            <h2 id="album-detail-title" class="kurfa-album-title-text font-black text-white leading-tight line-clamp-2 max-w-full drop-shadow-sm">Albüm</h2>
+            <button type="button" id="album-detail-artist-btn" class="kurfa-album-artist-link inline-flex items-center gap-1 px-2.5 py-1 -ml-2.5 rounded-full text-[12px] sm:text-[13px] font-bold text-white/85 hover:text-white hover:bg-white/10 transition-colors max-w-full">
+              <span id="album-detail-artist-label" class="truncate max-w-[180px] sm:max-w-[280px]">Sanatçı</span>
+              <span class="material-symbols-outlined text-[15px] opacity-75 flex-shrink-0">chevron_right</span>
             </button>
-            <div class="flex flex-wrap items-center justify-center sm:justify-start gap-2 mt-2">
-              <button type="button" id="album-detail-play-all" class="flex items-center gap-1.5 px-5 py-2 rounded-full bg-white text-slate-950 hover:bg-white/90 text-xs font-extrabold shadow-lg transition-all active:scale-95">
-                <span class="material-symbols-outlined text-[18px] filled">play_arrow</span>
-                <span data-i18n="album.play_all">Tümünü Oynat</span>
-              </button>
-              <button type="button" id="album-detail-queue-all" class="flex items-center gap-1.5 px-3.5 py-2 rounded-full bg-white/15 hover:bg-white/25 backdrop-blur-md text-white text-xs font-bold border border-white/15 transition-all active:scale-95">
-                <span class="material-symbols-outlined text-[17px]">playlist_add</span>
-                <span data-i18n="album.queue_all">Sıraya Ekle</span>
-              </button>
-            </div>
           </div>
         </div>
+        <div class="kurfa-album-actions-row relative z-10 flex items-center flex-nowrap gap-2 pt-0.5">
+          <button type="button" id="album-detail-play-all" class="kurfa-album-play-cta flex items-center gap-1.5 px-4 sm:px-5 py-2 rounded-full text-xs transition-all active:scale-95 flex-shrink-0">
+            <span class="material-symbols-outlined text-[17px] filled">play_arrow</span>
+            <span class="sm:hidden" data-i18n="album.play_short">Oynat</span>
+            <span class="hidden sm:inline" data-i18n="album.play_all">Tümünü Oynat</span>
+          </button>
+          <button type="button" id="album-detail-shuffle-all" class="kurfa-album-ghost-pill flex items-center gap-1.5 px-3.5 py-2 rounded-full text-xs font-bold transition-all active:scale-95 flex-shrink-0">
+            <span class="material-symbols-outlined text-[16px]">shuffle</span>
+            <span data-i18n="album.shuffle">Karıştır</span>
+          </button>
+          <button type="button" id="album-detail-queue-all" class="kurfa-album-icon-pill flex items-center justify-center gap-1.5 w-9 h-9 sm:w-auto sm:h-auto sm:px-3.5 sm:py-2 rounded-full text-xs font-bold transition-all active:scale-95 flex-shrink-0" aria-label="Sıraya Ekle" data-i18n-aria="album.queue_all" title="Sıraya Ekle" data-i18n-title="album.queue_all">
+            <span class="material-symbols-outlined text-[17px]">playlist_add</span>
+            <span class="hidden sm:inline" data-i18n="album.queue_all">Sıraya Ekle</span>
+          </button>
+          <button type="button" id="album-detail-save-btn" class="kurfa-album-icon-pill w-9 h-9 rounded-full flex items-center justify-center transition-all active:scale-95 flex-shrink-0" aria-label="Albümü Kütüphaneye Kaydet" data-i18n-aria="album.save_title" title="Albümü Kütüphaneye Kaydet" data-i18n-title="album.save_title">
+            <span id="album-detail-save-icon" class="material-symbols-outlined text-[17px]">bookmark_border</span>
+          </button>
+        </div>
       </div>
-      <div class="flex-1 overflow-y-auto px-3 sm:px-5 py-3 flex flex-col gap-0.5" id="album-detail-tracks">
+
+      <!-- Seamless Inline Album Filter & Track Order Controls -->
+      <div class="kurfa-album-controls-bar flex items-center justify-between gap-2 flex-shrink-0">
+        <div class="relative flex-1 min-w-0">
+          <span class="material-symbols-outlined text-[16px] text-on-surface-variant absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none">search</span>
+          <input type="text" id="album-detail-filter-input" placeholder="Parça ara..." data-i18n-placeholder="album.filter_placeholder" aria-label="Parça ara" data-i18n-aria="album.filter_placeholder" class="w-full rounded-full text-xs text-on-surface placeholder:text-on-surface-variant focus:outline-none" oninput="filterAlbumDetailTracks(this.value)">
+        </div>
+        <div class="inline-flex items-center gap-0.5 p-0.5 rounded-full text-[11px] font-semibold flex-shrink-0" id="album-sort-pills">
+          <button type="button" data-alb-sort="original" onclick="setAlbumDetailSort('original')" class="px-2.5 py-1 rounded-full bg-surface-container-lowest text-primary font-bold shadow-xs transition-all" data-i18n="album.sort_original">Orijinal</button>
+          <button type="button" data-alb-sort="title" onclick="setAlbumDetailSort('title')" class="px-2.5 py-1 rounded-full text-on-surface-variant hover:text-on-surface transition-all" data-i18n="album.sort_title">Başlık</button>
+          <button type="button" data-alb-sort="duration" onclick="setAlbumDetailSort('duration')" class="px-2.5 py-1 rounded-full text-on-surface-variant hover:text-on-surface transition-all" data-i18n="album.sort_duration">Süre</button>
+        </div>
+      </div>
+
+      <div class="flex-1 overflow-y-auto px-3 sm:px-6 pb-4 pt-1 flex flex-col" id="album-detail-tracks">
         <!-- Populated dynamically -->
       </div>
     </div>
   </div>
 
-  <!-- Scripts (App loads immediately; YouTube IFrame API loads async after so phones never stall on boot) -->
-  <script src="./app.js?v=20261124_v38c"></script>
-  <script src="https://www.youtube.com/iframe_api" async defer></script>
+  <!-- Scripts (Deferred & minified; YouTube IFrame API loads lazily on demand) -->
+  <script defer fetchpriority="high" src="./app.min.js?v=20261126_v131"></script>
 </body>
 </html>
