@@ -5277,10 +5277,15 @@ body.dark-mode .kurfa-queue-filter-input {
 
 /* 1. Desktop Sidebar (#desktop-sidebar) — Photographic Volumetric Ambilight */
 body.dark-mode #desktop-sidebar.kurfa-sidebar-rail {
-  background: #090c14 !important;
-  border-right: 1px solid rgba(255, 255, 255, 0.06) !important;
-  box-shadow: none !important;
+  background:
+    linear-gradient(180deg, rgba(var(--kurfa-track-rgb), 0.065) 0%, rgba(var(--kurfa-track-rgb-2), 0.04) 100%),
+    rgba(18, 25, 40, 0.92) !important;
+  backdrop-filter: blur(24px) saturate(160%);
+  -webkit-backdrop-filter: blur(24px) saturate(160%);
+  border-right: 1px solid rgba(var(--kurfa-track-rgb), 0.16) !important;
+  box-shadow: inset -1px 0 0 rgba(255, 255, 255, 0.05) !important;
   contain: layout style paint;
+  transition: background 0.9s ease, border-color 0.9s ease;
 }
 
 html:not(.dark-mode) #desktop-sidebar.kurfa-sidebar-rail {
@@ -5290,46 +5295,126 @@ html:not(.dark-mode) #desktop-sidebar.kurfa-sidebar-rail {
   contain: layout style paint;
 }
 
-/* Restrained single-tone directional left-edge glow matching L-contour */
-.kurfa-sidebar-edge-glow {
+/* Contained Multi-Animation Architectural Cove-LED (Sidebar Right Edge -> Leftward) */
+@keyframes kurfaCoveSweepY {
+  0%, 100% {
+    transform: translate3d(0, -18%, 0) scaleY(0.92);
+  }
+  50% {
+    transform: translate3d(0, 128%, 0) scaleY(1.12);
+  }
+}
+
+@keyframes kurfaCoveSweepX {
+  0%, 100% {
+    transform: translate3d(-15%, 0, 0) scaleX(0.95);
+  }
+  50% {
+    transform: translate3d(210%, 0, 0) scaleX(1.14);
+  }
+}
+
+.kurfa-sidebar-cove,
+.kurfa-bar-cove {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.kurfa-cove-base {
   position: absolute;
   top: 0;
   bottom: 0;
-  left: 0;
-  width: 108px;
-  pointer-events: none;
-  z-index: 0;
+  right: 0;
+  width: 185px;
   background: linear-gradient(
-    90deg,
-    rgba(var(--kurfa-track-rgb), 0.24) 0%,
-    rgba(var(--kurfa-track-rgb), 0.10) 36%,
-    rgba(var(--kurfa-track-rgb), 0.025) 72%,
+    270deg,
+    rgba(var(--kurfa-track-rgb), 0.22) 0%,
+    rgba(var(--kurfa-track-rgb), 0.10) 38%,
+    rgba(var(--kurfa-track-rgb-2), 0.035) 72%,
     transparent 100%
   );
-  transform-origin: left center;
+  transform-origin: right center;
   transform: scaleX(0.92) translateZ(0);
-  opacity: 0.42;
+  opacity: 0.48;
   will-change: transform, opacity;
   transition: opacity 0.16s linear, transform 0.22s ease-out, background 0.9s ease;
 }
 
-body.is-playing-live .kurfa-sidebar-edge-glow {
-  opacity: calc(0.45 + var(--kurfa-bass, 0) * 0.55);
-  transform: scaleX(calc(0.92 + var(--kurfa-bass, 0) * 0.22)) translateZ(0);
+body.is-playing-live .kurfa-cove-base {
+  opacity: calc(0.46 + var(--kurfa-bass, 0) * 0.44);
+  transform: scaleX(calc(0.90 + var(--kurfa-bass, 0) * 0.24)) translateZ(0);
 }
 
-html:not(.dark-mode) .kurfa-sidebar-edge-glow {
+.kurfa-cove-sweep {
+  position: absolute;
+  top: 0;
+  right: -34px;
+  width: 135px;
+  height: 48%;
+  border-radius: 9999px;
+  filter: blur(34px);
+  background: radial-gradient(
+    ellipse at right center,
+    rgba(var(--kurfa-track-rgb), 0.40) 0%,
+    rgba(var(--kurfa-track-rgb-2), 0.14) 52%,
+    transparent 78%
+  );
+  opacity: 0.48;
+  will-change: transform, opacity;
+  animation: kurfaCoveSweepY 9s ease-in-out infinite;
+  transition: opacity 0.22s ease, background 0.9s ease;
+}
+
+body.is-playing-live .kurfa-cove-sweep {
+  opacity: calc(0.50 + var(--kurfa-mid, 0) * 0.34);
+  animation-duration: 4.8s;
+}
+
+.kurfa-cove-pulse {
+  position: absolute;
+  right: -20px;
+  bottom: -30px;
+  width: 190px;
+  height: 200px;
+  border-radius: 9999px;
+  filter: blur(42px);
+  background: radial-gradient(circle, rgba(var(--kurfa-track-rgb), 0.32) 0%, transparent 72%);
+  transform: scale(0.92) translateZ(0);
+  opacity: 0.36;
+  will-change: transform, opacity;
+  transition: opacity 0.14s linear, transform 0.20s ease-out, background 0.9s ease;
+}
+
+body.is-playing-live .kurfa-cove-pulse {
+  opacity: calc(0.38 + var(--kurfa-bass, 0) * 0.44);
+  transform: scale(calc(0.92 + var(--kurfa-bass, 0) * 0.26)) translateZ(0);
+}
+
+html:not(.dark-mode) .kurfa-cove-base {
   background: linear-gradient(
-    90deg,
-    rgba(var(--kurfa-track-rgb), 0.12) 0%,
-    rgba(var(--kurfa-track-rgb), 0.04) 48%,
+    270deg,
+    rgba(var(--kurfa-track-rgb), 0.14) 0%,
+    rgba(var(--kurfa-track-rgb-2), 0.05) 48%,
     transparent 100%
   );
 }
 
-html.ambient-disabled .kurfa-sidebar-edge-glow,
-html.ambient-disabled .kurfa-bar-floor-glow {
+html:not(.dark-mode) .kurfa-cove-sweep,
+html:not(.dark-mode) .kurfa-cove-pulse {
+  opacity: 0.28;
+}
+
+html.ambient-disabled .kurfa-sidebar-cove,
+html.ambient-disabled .kurfa-bar-cove {
   opacity: 0 !important;
+}
+
+html.ambient-disabled .kurfa-cove-sweep,
+html.ambient-disabled .kurfa-bar-cove-sweep {
+  animation-play-state: paused !important;
 }
 
 .kurfa-brand-logo {
@@ -5558,7 +5643,8 @@ body.dark-mode .kurfa-install-badge {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .kurfa-amb-zone-mid,
+  .kurfa-cove-sweep,
+  .kurfa-bar-cove-sweep,
   body.is-playing-live .kurfa-nav-live-wave i {
     animation: none !important;
   }
@@ -5567,7 +5653,7 @@ body.dark-mode .kurfa-install-badge {
   }
 }
 
-/* 2. Desktop Bottom Player Bar (#desktop-player-bar) — Restrained Bottom Floor Edge Glow */
+/* 2. Desktop Bottom Player Bar (#desktop-player-bar) — Contained Top-Edge Cove-LED */
 #desktop-player-bar {
   background: rgba(255, 255, 255, 0.92);
   backdrop-filter: blur(24px) saturate(170%);
@@ -5578,42 +5664,133 @@ body.dark-mode .kurfa-install-badge {
 }
 
 body.dark-mode #desktop-player-bar {
-  background: #0b0f19 !important;
-  border-top: 1px solid rgba(255, 255, 255, 0.06) !important;
-  box-shadow: 0 -10px 34px rgba(0, 0, 0, 0.52) !important;
+  background:
+    linear-gradient(90deg, rgba(var(--kurfa-track-rgb), 0.07) 0%, rgba(var(--kurfa-track-rgb-2), 0.045) 55%, rgba(var(--kurfa-track-rgb), 0.055) 100%),
+    rgba(18, 25, 40, 0.92) !important;
+  backdrop-filter: blur(26px) saturate(165%);
+  -webkit-backdrop-filter: blur(26px) saturate(165%);
+  border-top: 1px solid rgba(var(--kurfa-track-rgb), 0.16) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    0 -10px 32px rgba(4, 7, 15, 0.45) !important;
+  transition: background 0.9s ease, border-color 0.9s ease;
 }
 
-.kurfa-bar-floor-glow {
+.kurfa-bar-cove-base {
   position: absolute;
   left: 0;
   right: 0;
-  bottom: 0;
-  height: 52px;
-  pointer-events: none;
-  z-index: 0;
-  background:
-    radial-gradient(260px 52px at 10% 100%, rgba(var(--kurfa-track-rgb), 0.28) 0%, transparent 78%),
-    radial-gradient(460px 50px at 50% 100%, rgba(var(--kurfa-track-rgb), 0.24) 0%, transparent 78%),
-    linear-gradient(0deg, rgba(var(--kurfa-track-rgb), 0.22) 0%, rgba(var(--kurfa-track-rgb), 0.07) 48%, transparent 100%);
-  transform-origin: center bottom;
+  top: 0;
+  height: 82px;
+  background: linear-gradient(
+    180deg,
+    rgba(var(--kurfa-track-rgb), 0.22) 0%,
+    rgba(var(--kurfa-track-rgb), 0.09) 46%,
+    rgba(var(--kurfa-track-rgb-2), 0.03) 78%,
+    transparent 100%
+  );
+  transform-origin: center top;
   transform: scaleY(0.90) translateZ(0);
-  opacity: 0.42;
+  opacity: 0.48;
   will-change: transform, opacity;
   transition: opacity 0.16s linear, transform 0.22s ease-out, background 0.9s ease;
 }
 
-body.is-playing-live .kurfa-bar-floor-glow {
-  opacity: calc(0.45 + var(--kurfa-beat, 0) * 0.55);
-  transform: scaleY(calc(0.88 + var(--kurfa-bass, 0) * 0.28)) translateZ(0);
+body.is-playing-live .kurfa-bar-cove-base {
+  opacity: calc(0.46 + var(--kurfa-beat, 0) * 0.44);
+  transform: scaleY(calc(0.88 + var(--kurfa-bass, 0) * 0.26)) translateZ(0);
 }
 
-html:not(.dark-mode) .kurfa-bar-floor-glow {
-  background:
-    radial-gradient(260px 52px at 10% 100%, rgba(var(--kurfa-track-rgb), 0.12) 0%, transparent 78%),
-    linear-gradient(0deg, rgba(var(--kurfa-track-rgb), 0.10) 0%, transparent 100%);
+.kurfa-bar-cove-sweep {
+  position: absolute;
+  top: -28px;
+  left: 0;
+  width: 38%;
+  height: 96px;
+  border-radius: 9999px;
+  filter: blur(32px);
+  background: radial-gradient(
+    ellipse at top center,
+    rgba(var(--kurfa-track-rgb), 0.40) 0%,
+    rgba(var(--kurfa-track-rgb-2), 0.15) 54%,
+    transparent 78%
+  );
+  opacity: 0.48;
+  will-change: transform, opacity;
+  animation: kurfaCoveSweepX 11s ease-in-out infinite;
+  transition: opacity 0.22s ease, background 0.9s ease;
 }
 
-#desktop-player-bar > div:not(.kurfa-bar-floor-glow) {
+body.is-playing-live .kurfa-bar-cove-sweep {
+  opacity: calc(0.50 + var(--kurfa-high, 0) * 0.34);
+  animation-duration: 5.6s;
+}
+
+.kurfa-bar-cove-pulse {
+  position: absolute;
+  top: -28px;
+  left: 160px;
+  width: 280px;
+  height: 100px;
+  border-radius: 9999px;
+  filter: blur(40px);
+  background: radial-gradient(circle, rgba(var(--kurfa-track-rgb-2), 0.32) 0%, transparent 72%);
+  transform: scale(0.92) translateZ(0);
+  opacity: 0.34;
+  will-change: transform, opacity;
+  transition: opacity 0.14s linear, transform 0.20s ease-out, background 0.9s ease;
+}
+
+body.is-playing-live .kurfa-bar-cove-pulse {
+  opacity: calc(0.36 + var(--kurfa-mid, 0) * 0.42);
+  transform: scale(calc(0.92 + var(--kurfa-mid, 0) * 0.22)) translateZ(0);
+}
+
+html:not(.dark-mode) .kurfa-bar-cove-base {
+  background: linear-gradient(
+    180deg,
+    rgba(var(--kurfa-track-rgb), 0.13) 0%,
+    rgba(var(--kurfa-track-rgb-2), 0.04) 55%,
+    transparent 100%
+  );
+}
+
+html:not(.dark-mode) .kurfa-bar-cove-sweep,
+html:not(.dark-mode) .kurfa-bar-cove-pulse {
+  opacity: 0.24;
+}
+
+/* Volume slider crisp contrast (fixes pitch-black dark-mode hover bug) */
+#player-vol-fill.kurfa-vol-fill {
+  background-color: #475569;
+  transition: background-color 0.16s ease;
+}
+
+#player-vol-track:hover #player-vol-fill.kurfa-vol-fill,
+#player-vol-track.dragging #player-vol-fill.kurfa-vol-fill {
+  background-color: #0f172a;
+}
+
+body.dark-mode #player-vol-fill.kurfa-vol-fill {
+  background-color: rgba(255, 255, 255, 0.72) !important;
+}
+
+body.dark-mode #player-vol-track:hover #player-vol-fill.kurfa-vol-fill,
+body.dark-mode #player-vol-track.dragging #player-vol-fill.kurfa-vol-fill {
+  background-color: #ffffff !important;
+}
+
+#player-vol-track .vol-knob.kurfa-vol-knob {
+  background-color: #0f172a;
+  box-shadow: 0 0 8px rgba(15, 23, 42, 0.35);
+}
+
+body.dark-mode #player-vol-track .vol-knob.kurfa-vol-knob {
+  background-color: #ffffff !important;
+  box-shadow: 0 0 10px rgba(var(--kurfa-track-rgb), 0.55) !important;
+}
+
+#desktop-player-bar > div:not(.kurfa-bar-cove) {
   position: relative;
   z-index: 2;
 }

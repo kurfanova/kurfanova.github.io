@@ -1,5 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
+import crypto from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 import { createRequire } from 'node:module';
 
@@ -43,6 +44,29 @@ const sharp = require('C:\\Users\\ozans\\Documents\\kurfa-ai-pro\\node_modules\\
     charset: 'utf8'
   });
 
+  // Content-hash cache busting so normal F5 never pairs new index.html with stale SW-cached CSS/JS
+  const hash8 = (filePath) => crypto.createHash('sha256').update(fs.readFileSync(filePath)).digest('hex').slice(0, 8);
+  const jsHash = hash8(path.join(ROOT, 'app.min.js'));
+  const cssHash = hash8(path.join(ROOT, 'style.min.css'));
+  const swVer = `${cssHash}_${jsHash}`;
+
+  const indexPath = path.join(ROOT, 'index.html');
+  let indexHtml = fs.readFileSync(indexPath, 'utf8');
+  indexHtml = indexHtml
+    .replace(/(\.\/style\.min\.css\?v=)[^"']+/g, `$1${cssHash}`)
+    .replace(/(\.\/app\.min\.js\?v=)[^"']+/g, `$1${jsHash}`);
+  fs.writeFileSync(indexPath, indexHtml, 'utf8');
+
+  const swPath = path.join(ROOT, 'sw.js');
+  if (fs.existsSync(swPath)) {
+    let swCode = fs.readFileSync(swPath, 'utf8');
+    swCode = swCode
+      .replace(/(const CACHE_NAME = ')kurfanova-shell-[^']+(')/, `$1kurfanova-shell-${swVer}$2`)
+      .replace(/(\.\/style\.min\.css\?v=)[^"']+/g, `$1${cssHash}`)
+      .replace(/(\.\/app\.min\.js\?v=)[^"']+/g, `$1${jsHash}`);
+    fs.writeFileSync(swPath, swCode, 'utf8');
+  }
+
   const stats = [
     ['kurfamuzik_logo.png', srcPng],
     ['kurfamuzik_logo_96.webp', out96],
@@ -53,5 +77,5 @@ const sharp = require('C:\\Users\\ozans\\Documents\\kurfa-ai-pro\\node_modules\\
     ['style.min.css', path.join(ROOT, 'style.min.css')]
   ].map(([name, p]) => `${name}: ${(fs.statSync(p).size / 1024).toFixed(1)} KiB`);
 
-  console.log('PERF_BUILD_COMPLETE\n' + stats.join('\n'));
+  console.log(`PERF_BUILD_COMPLETE (css=${cssHash}, js=${jsHash})\n` + stats.join('\n'));
 })();

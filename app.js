@@ -14275,7 +14275,7 @@ function syncSongThemeAccent(primaryRgb, secondaryRgb) {
 window.syncSongThemeAccent = syncSongThemeAccent;
 
 function syncAmbientCoverArt() {
-  // No-op stub: sidebar and bar use restrained single-tone directional edge glow via --kurfa-track-rgb
+  // Contained sidebar and bar cove-LED layers track --kurfa-track-rgb and --kurfa-bass/--kurfa-mid/--kurfa-high
 }
 window.syncAmbientCoverArt = syncAmbientCoverArt;
 
@@ -14296,12 +14296,14 @@ const FxReactiveStudio = {
     const palettes = [
       '56, 189, 248',
       '99, 102, 241',
-      '16, 185, 129',
-      '245, 158, 11',
+      '244, 63, 94',
       '139, 92, 246',
-      '20, 184, 166',
+      '16, 185, 129',
       '59, 130, 246',
-      '249, 115, 22'
+      '217, 70, 239',
+      '20, 184, 166',
+      '251, 113, 133',
+      '14, 165, 233'
     ];
     let h = 2166136261;
     const s = String(seedStr || 'kurfa');
@@ -14312,9 +14314,9 @@ const FxReactiveStudio = {
     return palettes[Math.abs(h) % palettes.length];
   },
 
-  applyRgb(rgbStr, track) {
+  applyRgb(rgbStr, track, secondaryRgbStr = null) {
     this._currentRgb = rgbStr;
-    syncSongThemeAccent(rgbStr);
+    syncSongThemeAccent(rgbStr, secondaryRgbStr);
     const card = document.getElementById('audio-fx-card');
     if (card) {
       card.style.setProperty('--fx-rgb', rgbStr);
@@ -14355,7 +14357,12 @@ const FxReactiveStudio = {
     const url = thumbUrl || getTrackThumbnail(track);
     syncAmbientCoverArt(url);
     if (this._paletteCache.has(url)) {
-      this.applyRgb(this._paletteCache.get(url), track);
+      const cached = this._paletteCache.get(url);
+      if (cached && typeof cached === 'object') {
+        this.applyRgb(cached.primary, track, cached.secondary);
+      } else {
+        this.applyRgb(cached, track);
+      }
       return;
     }
     // Immediate cover-hash tint first so transition feels instant
@@ -14364,57 +14371,64 @@ const FxReactiveStudio = {
 
     if (!url || url.includes('kurfamuzik_logo') || !url.startsWith('http')) return;
     try {
+      let sampleUrl = url;
+      try {
+        const uObj = new URL(url);
+        const proxyable = /(?:ytimg\.com|youtube\.com|googleusercontent\.com|ggpht\.com|scdn\.co|mzstatic\.com|dzcdn\.net)$/i.test(uObj.hostname);
+        if (proxyable && typeof API_BASE === 'string' && API_BASE.startsWith('http')) {
+          sampleUrl = `${API_BASE}/api/cover?url=${encodeURIComponent(url)}`;
+        }
+      } catch (_) {}
+
       const img = new Image();
       img.crossOrigin = 'anonymous';
       img.onload = () => {
         try {
           const cv = document.createElement('canvas');
-          cv.width = 20;
-          cv.height = 20;
+          cv.width = 24;
+          cv.height = 24;
           const ctx = cv.getContext('2d', { willReadFrequently: true });
           if (!ctx) return;
-          ctx.drawImage(img, 0, 0, 20, 20);
-          const px = ctx.getImageData(0, 0, 20, 20).data;
-          let rSum = 0, gSum = 0, bSum = 0, weightSum = 0;
+          ctx.drawImage(img, 0, 0, 24, 24);
+          const px = ctx.getImageData(0, 0, 24, 24).data;
+          // 12 hue buckets (30 deg each) to find TRUE dominant primary + secondary cover colors
+          const buckets = Array.from({ length: 12 }, () => ({ w: 0, r: 0, g: 0, b: 0 }));
           for (let i = 0; i < px.length; i += 4) {
-            const r = px[i], g = px[i + 1], b = px[i + 2];
-            const maxC = Math.max(r, g, b);
-            const minC = Math.min(r, g, b);
-            const sat = maxC === 0 ? 0 : (maxC - minC) / maxC;
-            const lum = (r * 0.299 + g * 0.587 + b * 0.114);
-            if (lum < 32 || lum > 235) continue;
-            const w = 0.25 + sat * 2.5;
-            rSum += r * w;
-            gSum += g * w;
-            bSum += b * w;
-            weightSum += w;
+            const r = px[i], g = px[i + 1], b = px[i + 2], a = px[i + 3];
+            if (a < 128) continue;
+            const lum = r * 0.299 + g * 0.587 + b * 0.114;
+            if (lum < 26 || lum > 238) continue;
+            const [h, sat] = rgbToHsl01(r, g, b);
+            if (sat < 0.12) continue;
+            const bi = Math.min(11, Math.floor(h * 12));
+            const w = 0.25 + Math.pow(sat, 1.55) * 3.4;
+            buckets[bi].w += w;
+            buckets[bi].r += r * w;
+            buckets[bi].g += g * w;
+            buckets[bi].b += b * w;
           }
-          if (weightSum > 0) {
-            let rAvg = Math.round(rSum / weightSum);
-            let gAvg = Math.round(gSum / weightSum);
-            let bAvg = Math.round(bSum / weightSum);
-            // Boost brightness slightly so dark album covers stay luminous on dark studio console
-            const maxCh = Math.max(rAvg, gAvg, bAvg, 1);
-            if (maxCh < 155) {
-              const boost = 175 / maxCh;
-              rAvg = Math.min(255, Math.round(rAvg * boost));
-              gAvg = Math.min(255, Math.round(gAvg * boost));
-              bAvg = Math.min(255, Math.round(bAvg * boost));
-            }
-            const avgCh = (rAvg + gAvg + bAvg) / 3;
-            const satBoost = 1.32;
-            rAvg = Math.max(0, Math.min(255, Math.round(avgCh + (rAvg - avgCh) * satBoost)));
-            gAvg = Math.max(0, Math.min(255, Math.round(avgCh + (gAvg - avgCh) * satBoost)));
-            bAvg = Math.max(0, Math.min(255, Math.round(avgCh + (bAvg - avgCh) * satBoost)));
-            const sampled = `${rAvg}, ${gAvg}, ${bAvg}`;
-            this._paletteCache.set(url, sampled);
+          const ranked = buckets
+            .map((bk, idx) => ({ idx, ...bk }))
+            .filter(bk => bk.w > 0)
+            .sort((a, b) => b.w - a.w);
+          if (ranked.length > 0) {
+            const b1 = ranked[0];
+            const pRgb = `${Math.round(b1.r / b1.w)}, ${Math.round(b1.g / b1.w)}, ${Math.round(b1.b / b1.w)}`;
+            const b2 = ranked.find(bk => {
+              const dist = Math.min(Math.abs(bk.idx - b1.idx), 12 - Math.abs(bk.idx - b1.idx));
+              return dist >= 2 && bk.w >= b1.w * 0.16;
+            });
+            const sRgb = b2
+              ? `${Math.round(b2.r / b2.w)}, ${Math.round(b2.g / b2.w)}, ${Math.round(b2.b / b2.w)}`
+              : null;
+            this._paletteCache.set(url, { primary: pRgb, secondary: sRgb });
             if (state.currentTrack && (state.currentTrack.id === track.id || state.currentTrack.title === track.title)) {
-              this.applyRgb(sampled, track);
+              this.applyRgb(pRgb, track, sRgb);
             }
           }
         } catch (_) {}
       };
-      img.src = url;
+      img.src = sampleUrl;
     } catch (_) {}
   },
 

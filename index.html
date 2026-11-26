@@ -145,7 +145,7 @@
     }
   </style>
   <link rel="stylesheet" href="./tailwind.min.css?v=20261120_v17">
-  <link rel="stylesheet" href="./style.min.css?v=20261126_v131">
+  <link rel="stylesheet" href="./style.min.css?v=c027eab0">
 </head>
 <body class="bg-background font-sans text-on-surface antialiased min-h-screen">
   <script>
@@ -190,7 +190,11 @@
   <!-- 1. LEFT SIDEBAR NAVIGATION                                            -->
   <!-- ===================================================================== -->
   <aside id="desktop-sidebar" class="kurfa-sidebar-rail fixed left-0 top-0 h-[calc(100vh-5.5rem)] w-64 bg-surface-container-lowest z-40 flex flex-col justify-between overflow-y-auto overflow-x-hidden hidden md:flex">
-    <div class="kurfa-sidebar-edge-glow" aria-hidden="true"></div>
+    <div class="kurfa-sidebar-cove" aria-hidden="true">
+      <span class="kurfa-cove-base"></span>
+      <span class="kurfa-cove-sweep"></span>
+      <span class="kurfa-cove-pulse"></span>
+    </div>
 
     <div class="p-space-lg relative z-10">
       
@@ -1689,10 +1693,14 @@
   <!-- ===================================================================== -->
   <!-- 4. PERSISTENT MUSIC PLAYER DECKS (DESKTOP & MOBILE)                   -->
   <!-- ===================================================================== -->
-  
+
   <!-- DESKTOP FOOTER DECK (Hidden on mobile) -->
   <footer id="desktop-player-bar" class="hidden md:flex fixed bottom-0 left-0 right-0 h-[5.5rem] z-50 px-4 md:px-space-lg items-center justify-between">
-    <div class="kurfa-bar-floor-glow" aria-hidden="true"></div>
+    <div class="kurfa-bar-cove" aria-hidden="true">
+      <span class="kurfa-bar-cove-base"></span>
+      <span class="kurfa-bar-cove-sweep"></span>
+      <span class="kurfa-bar-cove-pulse"></span>
+    </div>
     
     <!-- Left: Track Metadata -->
     <div class="flex items-center gap-3 w-1/4 min-w-[210px]">
@@ -1784,9 +1792,9 @@
         </button>
         <div id="player-vol-track" class="vol-track w-16 md:w-20 h-3 flex items-center cursor-pointer relative group" aria-label="Ses Seviyesi">
           <div class="w-full h-1 group-hover:h-1.5 transition-all bg-surface-container-high rounded-full overflow-hidden relative">
-            <div id="player-vol-fill" class="h-full w-[80%] bg-on-surface-variant group-hover:bg-on-surface transition-colors"></div>
+            <div id="player-vol-fill" class="kurfa-vol-fill h-full w-[80%] transition-colors"></div>
           </div>
-          <div class="vol-knob absolute top-1/2 w-3 h-3 bg-on-surface rounded-full shadow-sm pointer-events-none" style="left: 80%;"></div>
+          <div class="vol-knob kurfa-vol-knob absolute top-1/2 w-3 h-3 rounded-full shadow-sm pointer-events-none" style="left: 80%;"></div>
         </div>
       </div>
     </div>
@@ -3153,6 +3161,6 @@
   </div>
 
   <!-- Scripts (Deferred & minified; YouTube IFrame API loads lazily on demand) -->
-  <script defer fetchpriority="high" src="./app.min.js?v=20261126_v131"></script>
+  <script defer fetchpriority="high" src="./app.min.js?v=d49c07bd"></script>
 </body>
 </html>
