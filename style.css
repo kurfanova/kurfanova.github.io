@@ -5246,3 +5246,916 @@ body.dark-mode .kurfa-queue-filter-input {
     padding-bottom: 130px !important;
   }
 }
+
+/* ==========================================================================
+   V135 DIM BEAT-REACTIVE AMBIENT LED, FRAMELESS PLAYER BAR,
+   LYRICS THEATER POLISH & PRECISION STUDIO EQUALIZER (ZERO GOLD/SLOP)
+   ========================================================================== */
+
+:root {
+  --kurfa-track-rgb: 244, 63, 94;
+  --kurfa-track-rgb-2: 99, 102, 241;
+  --kurfa-beat: 0;
+  --kurfa-bass: 0;
+  --kurfa-mid: 0;
+  --kurfa-high: 0;
+}
+
+@keyframes kurfaSidebarDrift {
+  0%, 100% {
+    transform: translate3d(-4%, -3%, 0) scale(1);
+  }
+  50% {
+    transform: translate3d(6%, 8%, 0) scale(1.08);
+  }
+}
+
+@keyframes kurfaNavWave {
+  0%, 100% { transform: scaleY(0.32) translateZ(0); }
+  50% { transform: scaleY(1) translateZ(0); }
+}
+
+/* 1. Desktop Sidebar (#desktop-sidebar) — Photographic Volumetric Ambilight */
+body.dark-mode #desktop-sidebar.kurfa-sidebar-rail {
+  background: #090c14 !important;
+  border-right: 1px solid rgba(255, 255, 255, 0.06) !important;
+  box-shadow: none !important;
+  contain: layout style paint;
+}
+
+html:not(.dark-mode) #desktop-sidebar.kurfa-sidebar-rail {
+  background: #fafbfd !important;
+  border-right: 1px solid rgba(15, 23, 42, 0.07) !important;
+  box-shadow: none !important;
+  contain: layout style paint;
+}
+
+/* Restrained single-tone directional left-edge glow matching L-contour */
+.kurfa-sidebar-edge-glow {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 108px;
+  pointer-events: none;
+  z-index: 0;
+  background: linear-gradient(
+    90deg,
+    rgba(var(--kurfa-track-rgb), 0.24) 0%,
+    rgba(var(--kurfa-track-rgb), 0.10) 36%,
+    rgba(var(--kurfa-track-rgb), 0.025) 72%,
+    transparent 100%
+  );
+  transform-origin: left center;
+  transform: scaleX(0.92) translateZ(0);
+  opacity: 0.42;
+  will-change: transform, opacity;
+  transition: opacity 0.16s linear, transform 0.22s ease-out, background 0.9s ease;
+}
+
+body.is-playing-live .kurfa-sidebar-edge-glow {
+  opacity: calc(0.45 + var(--kurfa-bass, 0) * 0.55);
+  transform: scaleX(calc(0.92 + var(--kurfa-bass, 0) * 0.22)) translateZ(0);
+}
+
+html:not(.dark-mode) .kurfa-sidebar-edge-glow {
+  background: linear-gradient(
+    90deg,
+    rgba(var(--kurfa-track-rgb), 0.12) 0%,
+    rgba(var(--kurfa-track-rgb), 0.04) 48%,
+    transparent 100%
+  );
+}
+
+html.ambient-disabled .kurfa-sidebar-edge-glow,
+html.ambient-disabled .kurfa-bar-floor-glow {
+  opacity: 0 !important;
+}
+
+.kurfa-brand-logo {
+  transition: transform 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.kurfa-sidebar-brand:hover .kurfa-brand-logo {
+  transform: scale(1.06);
+}
+
+.kurfa-brand-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 9999px;
+  flex-shrink: 0;
+  background: rgba(15, 23, 42, 0.42);
+  opacity: 0.72;
+  transition: background-color 0.3s ease, opacity 0.3s ease, transform 0.3s ease;
+}
+
+body.dark-mode .kurfa-brand-dot {
+  background: rgba(255, 255, 255, 0.45);
+}
+
+body.is-playing-live .kurfa-brand-dot {
+  background: #0f172a;
+  opacity: 1;
+  transform: scale(1.12);
+}
+
+body.dark-mode.is-playing-live .kurfa-brand-dot {
+  background: #ffffff;
+}
+
+/* Sliding Borderless Neutral Active Pill + Monochrome Nav Items */
+#desktop-sidebar #sidebar-main-nav {
+  position: relative;
+}
+
+#sidebar-nav-pill.kurfa-nav-sliding-pill {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 40px;
+  border-radius: 12px;
+  pointer-events: none;
+  z-index: 1;
+  opacity: 0;
+  will-change: transform;
+  background: rgba(15, 23, 42, 0.065);
+  transition: transform 0.34s cubic-bezier(0.22, 1, 0.36, 1), height 0.25s ease, opacity 0.2s ease;
+}
+
+body.dark-mode #sidebar-nav-pill.kurfa-nav-sliding-pill {
+  background: rgba(255, 255, 255, 0.085);
+}
+
+#desktop-sidebar #sidebar-main-nav .nav-item {
+  position: relative;
+  z-index: 2;
+  padding-left: 12px;
+  padding-right: 12px;
+  gap: 10px;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  transition: background-color 0.18s ease, color 0.18s ease;
+}
+
+#desktop-sidebar #sidebar-main-nav .nav-item:not(.active):hover {
+  background: rgba(15, 23, 42, 0.045) !important;
+  color: #0f172a !important;
+}
+
+body.dark-mode #desktop-sidebar #sidebar-main-nav .nav-item:not(.active):hover {
+  background: rgba(255, 255, 255, 0.045) !important;
+  color: #ffffff !important;
+}
+
+#desktop-sidebar #sidebar-main-nav .nav-item.active {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  color: #0f172a !important;
+  font-weight: 600;
+}
+
+body.dark-mode #desktop-sidebar #sidebar-main-nav .nav-item.active {
+  background: transparent !important;
+  color: #ffffff !important;
+}
+
+#desktop-sidebar #sidebar-main-nav .nav-item .material-symbols-outlined {
+  transition: color 0.25s ease;
+}
+
+#desktop-sidebar #sidebar-main-nav .nav-item.active .material-symbols-outlined {
+  color: #0f172a !important;
+}
+
+body.dark-mode #desktop-sidebar #sidebar-main-nav .nav-item.active .material-symbols-outlined {
+  color: #ffffff !important;
+}
+
+.kurfa-nav-live-wave {
+  display: inline-flex;
+  align-items: flex-end;
+  gap: 2px;
+  width: 0;
+  height: 12px;
+  overflow: hidden;
+  flex-shrink: 0;
+  opacity: 0;
+  transform: scale(0.8);
+  transition: opacity 0.25s ease, transform 0.25s ease, width 0.25s ease;
+}
+
+.kurfa-nav-live-wave i {
+  display: block;
+  width: 2.5px;
+  height: 100%;
+  border-radius: 9999px;
+  background: #0f172a;
+  transform-origin: bottom center;
+  transform: scaleY(0.32) translateZ(0);
+}
+
+body.dark-mode .kurfa-nav-live-wave i {
+  background: #ffffff;
+}
+
+body.is-playing-live .kurfa-nav-live-wave {
+  width: 11px;
+  opacity: 1;
+  transform: scale(1);
+}
+
+body.is-playing-live .kurfa-nav-live-wave i:nth-child(1) {
+  animation: kurfaNavWave 0.72s ease-in-out infinite;
+}
+
+body.is-playing-live .kurfa-nav-live-wave i:nth-child(2) {
+  animation: kurfaNavWave 0.58s ease-in-out 0.14s infinite;
+}
+
+body.is-playing-live .kurfa-nav-live-wave i:nth-child(3) {
+  animation: kurfaNavWave 0.82s ease-in-out 0.28s infinite;
+}
+
+/* Understated Monochrome Quick Actions */
+#desktop-sidebar .quick-action-btn {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  transition: background-color 0.18s ease, color 0.18s ease;
+}
+
+#desktop-sidebar .quick-action-btn:hover {
+  background: rgba(15, 23, 42, 0.045) !important;
+  color: #0f172a !important;
+  box-shadow: none !important;
+}
+
+body.dark-mode #desktop-sidebar .quick-action-btn:hover {
+  background: rgba(255, 255, 255, 0.045) !important;
+  color: #ffffff !important;
+  box-shadow: none !important;
+}
+
+#desktop-sidebar .quick-action-btn .material-symbols-outlined {
+  transition: color 0.18s ease;
+}
+
+#desktop-sidebar .quick-action-btn:hover .material-symbols-outlined {
+  color: #0f172a;
+}
+
+body.dark-mode #desktop-sidebar .quick-action-btn:hover .material-symbols-outlined {
+  color: #ffffff;
+}
+
+/* Flat Neutral Glass Install Card */
+.kurfa-sidebar-spotlight {
+  background: rgba(15, 23, 42, 0.03);
+  border: 1px solid rgba(15, 23, 42, 0.07);
+  transition: background-color 0.22s ease, border-color 0.22s ease;
+}
+
+.kurfa-sidebar-spotlight:hover {
+  background: rgba(15, 23, 42, 0.055);
+  border-color: rgba(15, 23, 42, 0.14);
+}
+
+body.dark-mode .kurfa-sidebar-spotlight {
+  background: rgba(255, 255, 255, 0.028);
+  border-color: rgba(255, 255, 255, 0.065);
+}
+
+body.dark-mode .kurfa-sidebar-spotlight:hover {
+  background: rgba(255, 255, 255, 0.055);
+  border-color: rgba(255, 255, 255, 0.13);
+}
+
+.kurfa-install-icon {
+  background: rgba(15, 23, 42, 0.06);
+  color: #334155;
+  border: 1px solid rgba(15, 23, 42, 0.09);
+  transition: transform 0.2s ease, background-color 0.2s ease;
+}
+
+body.dark-mode .kurfa-install-icon {
+  background: rgba(255, 255, 255, 0.06);
+  color: #e2e8f0;
+  border-color: rgba(255, 255, 255, 0.09);
+}
+
+.kurfa-install-badge {
+  background: rgba(15, 23, 42, 0.06);
+  color: #334155;
+}
+
+body.dark-mode .kurfa-install-badge {
+  background: rgba(255, 255, 255, 0.07);
+  color: #cbd5e1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kurfa-amb-zone-mid,
+  body.is-playing-live .kurfa-nav-live-wave i {
+    animation: none !important;
+  }
+  #sidebar-nav-pill.kurfa-nav-sliding-pill {
+    transition: opacity 0.15s ease;
+  }
+}
+
+/* 2. Desktop Bottom Player Bar (#desktop-player-bar) — Restrained Bottom Floor Edge Glow */
+#desktop-player-bar {
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(24px) saturate(170%);
+  -webkit-backdrop-filter: blur(24px) saturate(170%);
+  border-top: 1px solid rgba(15, 23, 42, 0.07);
+  box-shadow: 0 -8px 28px rgba(15, 23, 42, 0.06);
+  contain: layout style paint;
+}
+
+body.dark-mode #desktop-player-bar {
+  background: #0b0f19 !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.06) !important;
+  box-shadow: 0 -10px 34px rgba(0, 0, 0, 0.52) !important;
+}
+
+.kurfa-bar-floor-glow {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 52px;
+  pointer-events: none;
+  z-index: 0;
+  background:
+    radial-gradient(260px 52px at 10% 100%, rgba(var(--kurfa-track-rgb), 0.28) 0%, transparent 78%),
+    radial-gradient(460px 50px at 50% 100%, rgba(var(--kurfa-track-rgb), 0.24) 0%, transparent 78%),
+    linear-gradient(0deg, rgba(var(--kurfa-track-rgb), 0.22) 0%, rgba(var(--kurfa-track-rgb), 0.07) 48%, transparent 100%);
+  transform-origin: center bottom;
+  transform: scaleY(0.90) translateZ(0);
+  opacity: 0.42;
+  will-change: transform, opacity;
+  transition: opacity 0.16s linear, transform 0.22s ease-out, background 0.9s ease;
+}
+
+body.is-playing-live .kurfa-bar-floor-glow {
+  opacity: calc(0.45 + var(--kurfa-beat, 0) * 0.55);
+  transform: scaleY(calc(0.88 + var(--kurfa-bass, 0) * 0.28)) translateZ(0);
+}
+
+html:not(.dark-mode) .kurfa-bar-floor-glow {
+  background:
+    radial-gradient(260px 52px at 10% 100%, rgba(var(--kurfa-track-rgb), 0.12) 0%, transparent 78%),
+    linear-gradient(0deg, rgba(var(--kurfa-track-rgb), 0.10) 0%, transparent 100%);
+}
+
+#desktop-player-bar > div:not(.kurfa-bar-floor-glow) {
+  position: relative;
+  z-index: 2;
+}
+
+.kurfa-deck-thumb {
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  transition: transform 0.2s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+body.dark-mode .kurfa-deck-thumb {
+  border-color: rgba(255, 255, 255, 0.10);
+}
+
+.kurfa-deck-thumb:hover {
+  transform: scale(1.04);
+}
+
+.kurfa-deck-play-cta {
+  background: #0f172a !important;
+  color: #ffffff !important;
+  box-shadow: 0 6px 18px rgba(15, 23, 42, 0.28);
+  transition: transform 0.16s ease, box-shadow 0.2s ease, opacity 0.16s ease;
+}
+
+body.dark-mode .kurfa-deck-play-cta {
+  background: #ffffff !important;
+  color: #0a0d16 !important;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.45);
+}
+
+.kurfa-deck-play-cta:hover {
+  transform: scale(1.06);
+}
+
+.kurfa-deck-play-cta:active {
+  transform: scale(0.95);
+}
+
+#player-seek-fill,
+#player-seek-knob {
+  background-color: #0f172a !important;
+}
+
+body.dark-mode #player-seek-fill,
+body.dark-mode #player-seek-knob {
+  background-color: #ffffff !important;
+}
+
+.kurfa-deck-divider {
+  width: 1px;
+  height: 18px;
+  background: rgba(15, 23, 42, 0.10);
+  margin: 0 4px;
+  flex-shrink: 0;
+}
+
+body.dark-mode .kurfa-deck-divider {
+  background: rgba(255, 255, 255, 0.10);
+}
+
+.kurfa-deck-icon-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 9999px;
+  transition: transform 0.16s ease, background-color 0.16s ease, color 0.16s ease;
+}
+
+.kurfa-deck-icon-btn:hover {
+  background: rgba(15, 23, 42, 0.065);
+}
+
+body.dark-mode .kurfa-deck-icon-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+/* 3. Precision Dark Studio Equalizer & FX Console (#audio-fx-card — Zero Gold Wash) */
+#audio-fx-card.kurfa-fx-studio-card {
+  border-radius: 26px !important;
+  contain: layout style paint;
+  background: rgba(255, 255, 255, 0.94) !important;
+  border: 1px solid rgba(15, 23, 42, 0.08) !important;
+  box-shadow: 0 14px 36px -16px rgba(15, 23, 42, 0.12) !important;
+}
+
+body.dark-mode #audio-fx-card.kurfa-fx-studio-card {
+  background: #0b0f19 !important;
+  border: 1px solid rgba(255, 255, 255, 0.075) !important;
+  box-shadow: 0 22px 54px -18px rgba(0, 0, 0, 0.72), inset 0 1px 0 rgba(255, 255, 255, 0.04) !important;
+}
+
+#audio-fx-card .kurfa-fx-ambient-wash {
+  background: radial-gradient(520px 180px at 16% 0%, rgba(56, 189, 248, 0.06), transparent 70%) !important;
+}
+
+#audio-fx-card .kurfa-fx-accent-icon {
+  background: rgba(15, 23, 42, 0.06) !important;
+  border: 1px solid rgba(15, 23, 42, 0.09) !important;
+  color: #0f172a !important;
+}
+
+body.dark-mode #audio-fx-card .kurfa-fx-accent-icon {
+  background: rgba(255, 255, 255, 0.065) !important;
+  border-color: rgba(255, 255, 255, 0.10) !important;
+  color: #38bdf8 !important;
+}
+
+#audio-fx-card #fx-reactive-dot {
+  background-color: #38bdf8 !important;
+  box-shadow: 0 0 8px rgba(56, 189, 248, 0.55) !important;
+}
+
+#audio-fx-card .kurfa-fx-preset-badge {
+  background: rgba(15, 23, 42, 0.055) !important;
+  border: 1px solid rgba(15, 23, 42, 0.09) !important;
+  color: #0f172a !important;
+}
+
+body.dark-mode #audio-fx-card .kurfa-fx-preset-badge {
+  background: rgba(255, 255, 255, 0.075) !important;
+  border-color: rgba(255, 255, 255, 0.10) !important;
+  color: #f8fafc !important;
+}
+
+#audio-fx-card .kurfa-eq-bay {
+  position: relative;
+  border-radius: 18px !important;
+  padding: 14px 16px !important;
+  background: rgba(15, 23, 42, 0.035) !important;
+  border: 1px solid rgba(15, 23, 42, 0.065) !important;
+  box-shadow: none !important;
+}
+
+body.dark-mode #audio-fx-card .kurfa-eq-bay {
+  background: #070a12 !important;
+  border: 1px solid rgba(255, 255, 255, 0.065) !important;
+  box-shadow: inset 0 2px 14px rgba(0, 0, 0, 0.50) !important;
+}
+
+.kurfa-eq-curve-box {
+  position: relative;
+  width: 100%;
+  height: 80px;
+  border-radius: 14px;
+  overflow: hidden;
+  background: rgba(15, 23, 42, 0.03);
+  border: 1px solid rgba(15, 23, 42, 0.055);
+}
+
+body.dark-mode .kurfa-eq-curve-box {
+  background: rgba(255, 255, 255, 0.02);
+  border-color: rgba(255, 255, 255, 0.06);
+}
+
+.kurfa-eq-curve-svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.kurfa-eq-vgrid {
+  stroke: rgba(15, 23, 42, 0.055);
+  stroke-width: 1;
+}
+
+body.dark-mode .kurfa-eq-vgrid {
+  stroke: rgba(255, 255, 255, 0.055);
+}
+
+.kurfa-eq-ref-line {
+  stroke: rgba(15, 23, 42, 0.08);
+  stroke-width: 1;
+  stroke-dasharray: 3 4;
+}
+
+body.dark-mode .kurfa-eq-ref-line {
+  stroke: rgba(255, 255, 255, 0.08);
+}
+
+.kurfa-eq-zero-line {
+  stroke: rgba(15, 23, 42, 0.14);
+  stroke-width: 1;
+}
+
+body.dark-mode .kurfa-eq-zero-line {
+  stroke: rgba(255, 255, 255, 0.14);
+}
+
+.kurfa-eq-curve-path {
+  fill: none;
+  stroke: #0f172a;
+  stroke-width: 2;
+  stroke-linecap: round;
+  transition: d 0.18s ease-out;
+}
+
+body.dark-mode .kurfa-eq-curve-path {
+  stroke: #e2e8f0;
+}
+
+.kurfa-eq-curve-area {
+  transition: d 0.18s ease-out;
+}
+
+.kurfa-eq-node {
+  fill: #ffffff;
+  stroke: #38bdf8;
+  stroke-width: 2;
+  transition: cy 0.18s ease-out;
+}
+
+.kurfa-eq-node.is-active {
+  r: 4.5;
+}
+
+/* Slim vertical peak-meter spectrum bars */
+#audio-fx-card .kurfa-fx-spectrum {
+  height: 26px;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 10px;
+  justify-content: space-between;
+  contain: layout style paint;
+}
+
+#audio-fx-card .kurfa-fx-spectrum span {
+  max-width: 4px;
+  border-radius: 3px;
+  background: linear-gradient(180deg, #38bdf8 0%, rgba(148, 163, 184, 0.24) 100%) !important;
+  will-change: transform;
+  transform: scaleY(var(--bar, 0.18)) translateZ(0);
+  transition: transform 0.09s ease-out;
+}
+
+body.dark-mode #audio-fx-card .kurfa-fx-spectrum span {
+  background: linear-gradient(180deg, #f8fafc 0%, rgba(56, 189, 248, 0.30) 100%) !important;
+}
+
+#audio-fx-card .kurfa-studio-fader-track {
+  width: 3px;
+  height: 92px;
+}
+
+#audio-fx-card .kurfa-studio-fader-fill {
+  background: linear-gradient(180deg, #38bdf8 0%, #64748b 100%) !important;
+  box-shadow: none !important;
+}
+
+body.dark-mode #audio-fx-card .kurfa-studio-fader-fill {
+  background: linear-gradient(180deg, #f8fafc 0%, rgba(56, 189, 248, 0.55) 100%) !important;
+  box-shadow: none !important;
+}
+
+#audio-fx-card .kurfa-studio-fader-thumb {
+  width: 14px;
+  height: 14px;
+  background: #ffffff !important;
+  border: 2px solid #0f172a !important;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35) !important;
+}
+
+body.dark-mode #audio-fx-card .kurfa-studio-fader-thumb {
+  background: #f8fafc !important;
+  border: 2px solid #38bdf8 !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.65) !important;
+}
+
+#audio-fx-card input[type="range"].kurfa-studio-range {
+  background: linear-gradient(
+    90deg,
+    #38bdf8 0%,
+    #38bdf8 var(--range-pct, 0%),
+    rgba(15, 23, 42, 0.12) var(--range-pct, 0%),
+    rgba(15, 23, 42, 0.12) 100%
+  ) !important;
+}
+
+body.dark-mode #audio-fx-card input[type="range"].kurfa-studio-range {
+  background: linear-gradient(
+    90deg,
+    #e2e8f0 0%,
+    #38bdf8 var(--range-pct, 0%),
+    rgba(255, 255, 255, 0.11) var(--range-pct, 0%),
+    rgba(255, 255, 255, 0.11) 100%
+  ) !important;
+}
+
+#audio-fx-card input[type="range"].kurfa-studio-range::-webkit-slider-thumb {
+  background: #ffffff !important;
+  border: 2px solid #38bdf8 !important;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.40) !important;
+}
+
+#audio-fx-card input[type="range"].kurfa-studio-range::-moz-range-thumb {
+  background: #ffffff !important;
+  border: 2px solid #38bdf8 !important;
+}
+
+#audio-fx-card .eq-preset-btn.active,
+#audio-fx-card .fx-pill-btn.active {
+  background: #0f172a !important;
+  color: #ffffff !important;
+  border-color: transparent !important;
+  box-shadow: none !important;
+}
+
+body.dark-mode #audio-fx-card .eq-preset-btn.active,
+body.dark-mode #audio-fx-card .fx-pill-btn.active {
+  background: #ffffff !important;
+  color: #0a0d16 !important;
+  box-shadow: none !important;
+}
+
+.kurfa-eq-db-pill {
+  padding: 0 4px;
+  background: transparent;
+  color: #64748b;
+  transition: color 0.16s ease;
+}
+
+body.dark-mode .kurfa-eq-db-pill {
+  background: transparent;
+  color: #94a3b8;
+}
+
+.kurfa-eq-db-pill.is-boosted {
+  background: transparent;
+  color: #0284c7;
+}
+
+body.dark-mode .kurfa-eq-db-pill.is-boosted {
+  color: #38bdf8;
+}
+
+/* 4. Now Playing Stage & Live Lyrics Theater Polish */
+#deck-main-card {
+  background: rgba(255, 255, 255, 0.90) !important;
+  border: 1px solid rgba(15, 23, 42, 0.07) !important;
+}
+
+body.dark-mode #deck-main-card {
+  background:
+    radial-gradient(520px 380px at 22% 45%, rgba(var(--kurfa-track-rgb), 0.10), transparent 72%),
+    rgba(10, 13, 22, 0.94) !important;
+  border: 1px solid rgba(255, 255, 255, 0.065) !important;
+}
+
+@media (min-width: 1280px) {
+  .kurfa-stage-cover-card {
+    width: 240px;
+    height: 240px;
+    border-radius: 22px !important;
+  }
+}
+
+.kurfa-stage-art-halo {
+  position: absolute;
+  inset: -18px;
+  border-radius: 9999px;
+  background: radial-gradient(circle, rgba(var(--kurfa-track-rgb), 0.24) 0%, transparent 68%);
+  opacity: 0.25;
+  filter: blur(22px);
+  pointer-events: none;
+  z-index: 0;
+  transition: opacity 0.25s ease, background 1.1s ease;
+}
+
+body.is-playing-live .kurfa-stage-art-halo {
+  opacity: calc(0.28 + var(--kurfa-beat, 0) * 0.48);
+}
+
+.kurfa-stage-quick-actions {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin-top: 12px;
+}
+
+.kurfa-stage-qa-btn {
+  width: 34px;
+  height: 34px;
+  border-radius: 9999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: 1px solid transparent;
+  color: #64748b;
+  cursor: pointer;
+  transition: background-color 0.16s ease, color 0.16s ease;
+}
+
+.kurfa-stage-qa-btn:hover {
+  background: rgba(15, 23, 42, 0.065);
+  color: #0f172a;
+}
+
+body.dark-mode .kurfa-stage-qa-btn {
+  color: #94a3b8;
+}
+
+body.dark-mode .kurfa-stage-qa-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: #ffffff;
+}
+
+.kurfa-lyrics-sync-capsule {
+  padding: 4px;
+  border-radius: 14px;
+  background: rgba(15, 23, 42, 0.04);
+  border: 1px solid rgba(15, 23, 42, 0.06);
+  grid-template-columns: repeat(5, minmax(0, 1fr)) minmax(64px, 1.38fr);
+}
+
+@media (max-width: 480px) {
+  .kurfa-lyrics-sync-capsule {
+    grid-template-columns: repeat(5, minmax(0, 1fr)) minmax(62px, 1.45fr);
+  }
+  .kurfa-lyrics-sync-capsule button {
+    font-size: 10.5px;
+  }
+}
+
+body.dark-mode .kurfa-lyrics-sync-capsule {
+  background: rgba(255, 255, 255, 0.032);
+  border-color: rgba(255, 255, 255, 0.06);
+}
+
+#lyrics-offset-controls .kurfa-lyrics-sync-now {
+  background: rgba(15, 23, 42, 0.10) !important;
+  color: #0f172a !important;
+}
+
+#lyrics-offset-controls .kurfa-lyrics-sync-now:hover {
+  background: rgba(15, 23, 42, 0.16) !important;
+}
+
+body.dark-mode #lyrics-offset-controls .kurfa-lyrics-sync-now {
+  background: rgba(255, 255, 255, 0.12) !important;
+  color: #f8fafc !important;
+}
+
+body.dark-mode #lyrics-offset-controls .kurfa-lyrics-sync-now:hover {
+  background: rgba(255, 255, 255, 0.20) !important;
+}
+
+#deck-lyrics-lines {
+  gap: 8px !important;
+}
+
+body.dark-mode #deck-lyrics-lines .lyric-line {
+  color: rgba(255, 255, 255, 0.34);
+  font-size: 17px;
+  line-height: 1.5;
+  transition: color 0.22s ease, transform 0.22s ease, opacity 0.22s ease;
+}
+
+body.dark-mode #deck-lyrics-lines .lyric-line:hover {
+  color: rgba(255, 255, 255, 0.72);
+}
+
+#deck-cover-img[src*="hqdefault.jpg"],
+#player-thumb[src*="hqdefault.jpg"] {
+  transform: scale(1.34);
+}
+
+body.dark-mode #deck-lyrics-lines .lyric-line.active,
+body.dark-mode #deck-lyrics-lines .lyric-line.active-lyric {
+  color: #ffffff !important;
+  opacity: 1 !important;
+  font-size: 22px;
+  font-weight: 800;
+  text-shadow: 0 0 24px rgba(255, 255, 255, 0.22);
+}
+
+@media (min-width: 1024px) {
+  body.dark-mode #deck-lyrics-lines .lyric-line {
+    font-size: 19px;
+  }
+  body.dark-mode #deck-lyrics-lines .lyric-line.active,
+  body.dark-mode #deck-lyrics-lines .lyric-line.active-lyric {
+    font-size: 25px;
+  }
+}
+
+/* 5. Settings Modal 5-Tab Polish Extras */
+.kurfa-profile-hero-card {
+  background:
+    radial-gradient(240px 120px at 8% 15%, rgba(var(--kurfa-accent-rgb, 244, 63, 94), 0.10), transparent 72%),
+    rgba(248, 250, 252, 0.88) !important;
+}
+
+body.dark-mode .kurfa-profile-hero-card {
+  background:
+    radial-gradient(240px 120px at 8% 15%, rgba(var(--kurfa-accent-rgb, 244, 63, 94), 0.15), transparent 72%),
+    rgba(255, 255, 255, 0.035) !important;
+}
+
+.kurfa-mini-eq-bars {
+  display: inline-flex;
+  align-items: flex-end;
+  gap: 3px;
+  height: 18px;
+  padding: 0 6px;
+}
+
+.kurfa-mini-eq-bars span {
+  width: 3px;
+  border-radius: 9999px;
+  background: rgba(var(--kurfa-accent-rgb, 244, 63, 94), 0.72);
+}
+
+.kurfa-status-live-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 9999px;
+  background: #10b981;
+  box-shadow: 0 0 8px rgba(16, 185, 129, 0.65);
+  display: inline-block;
+  flex-shrink: 0;
+}
+
+.kurfa-backup-progress-track {
+  width: 100%;
+  height: 5px;
+  border-radius: 9999px;
+  background: rgba(15, 23, 42, 0.07);
+  overflow: hidden;
+}
+
+body.dark-mode .kurfa-backup-progress-track {
+  background: rgba(255, 255, 255, 0.07);
+}
+
+.kurfa-backup-progress-fill {
+  height: 100%;
+  border-radius: 9999px;
+  background: linear-gradient(90deg, #f43f5e, #8b5cf6);
+  transition: width 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.kurfa-about-gh:hover { border-color: rgba(148, 163, 184, 0.45) !important; }
+.kurfa-about-ig:hover { border-color: rgba(244, 63, 94, 0.45) !important; }
+.kurfa-about-mail:hover { border-color: rgba(56, 189, 248, 0.45) !important; }
+.kurfa-about-web:hover { border-color: rgba(99, 102, 241, 0.45) !important; }

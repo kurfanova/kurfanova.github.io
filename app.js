@@ -1689,7 +1689,7 @@ function updateLocalEngineStatusUI() {
     sidebarPill.textContent = isAdFreeEnv ? t('nav.active_badge') : t('nav.ad_free');
     sidebarPill.className = isAdFreeEnv
       ? 'px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-emerald-500/15 text-emerald-500 whitespace-nowrap flex-shrink-0 leading-none'
-      : 'px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-primary/15 text-primary whitespace-nowrap flex-shrink-0 leading-none';
+      : 'kurfa-install-badge px-1.5 py-0.5 rounded-full text-[9px] font-bold whitespace-nowrap flex-shrink-0 leading-none';
   }
 
   const detectedStore = detectBrowserExtensionStore();
@@ -3946,6 +3946,26 @@ function switchNowPlayingMobilePane(pane) {
 }
 window.switchNowPlayingMobilePane = switchNowPlayingMobilePane;
 
+function updateSidebarNavPill() {
+  const nav = document.getElementById('sidebar-main-nav');
+  const pill = document.getElementById('sidebar-nav-pill');
+  const activeItem = nav ? nav.querySelector('.nav-item.active') : null;
+  if (!nav || !pill || !activeItem) return;
+  const h = activeItem.offsetHeight;
+  if (h > 0) {
+    pill.style.transform = `translate3d(0, ${activeItem.offsetTop}px, 0)`;
+    pill.style.height = `${h}px`;
+    pill.style.opacity = '1';
+  }
+}
+window.updateSidebarNavPill = updateSidebarNavPill;
+if (typeof window !== 'undefined') {
+  window.addEventListener('resize', updateSidebarNavPill, { passive: true });
+}
+if (typeof document !== 'undefined') {
+  document.addEventListener('DOMContentLoaded', () => requestAnimationFrame(updateSidebarNavPill));
+}
+
 function switchTab(tabId, shouldScroll = true, opts = {}) {
   state.currentTab = tabId;
   if (document.body) {
@@ -3967,6 +3987,7 @@ function switchTab(tabId, shouldScroll = true, opts = {}) {
       item.classList.remove('active');
     }
   });
+  requestAnimationFrame(updateSidebarNavPill);
 
   // Mobile bottom nav
   document.querySelectorAll('.mobile-nav-item').forEach(item => {
@@ -6709,6 +6730,9 @@ function updatePlayerTrackUI(track) {
 }
 
 function updatePlayPauseUI(playing) {
+  if (document.body) {
+    document.body.classList.toggle('is-playing-live', Boolean(playing));
+  }
   // Desktop
   if (DOM.playerPlayIcon) {
     DOM.playerPlayIcon.textContent = playing ? 'pause' : 'play_arrow';
@@ -13975,10 +13999,48 @@ const KurfaDSP = {
       }
       if (val) {
         val.textContent = db > 0 ? `+${db}dB` : `${db}dB`;
+        val.classList.toggle('is-boosted', db !== 0);
       }
     });
+    updateEqResponseCurveSvg(this.gains);
   }
 };
+
+function updateEqResponseCurveSvg(gains) {
+  const pathEl = document.getElementById('fx-eq-curve-path');
+  const areaEl = document.getElementById('fx-eq-curve-area');
+  if (!pathEl) return;
+  const g = Array.isArray(gains) ? gains : [0, 0, 0, 0, 0];
+  const pts = [50, 150, 250, 350, 450].map((x, idx) => {
+    const db = Math.max(-12, Math.min(12, Number(g[idx] || 0)));
+    const y = 60 - (db / 12) * 46;
+    const node = document.getElementById(`fx-eq-node-${idx}`);
+    if (node) {
+      node.setAttribute('cy', y.toFixed(1));
+      node.classList.toggle('is-active', Math.abs(db) >= 1);
+    }
+    return { x, y };
+  });
+
+  // Smooth Catmull-Rom to cubic Bezier spline across the 5 bands
+  let d = `M 0 ${pts[0].y.toFixed(1)} L ${pts[0].x} ${pts[0].y.toFixed(1)}`;
+  for (let i = 0; i < pts.length - 1; i++) {
+    const p0 = pts[i > 0 ? i - 1 : i];
+    const p1 = pts[i];
+    const p2 = pts[i + 1];
+    const p3 = pts[i + 2 < pts.length ? i + 2 : i + 1];
+    const cp1x = p1.x + (p2.x - p0.x) / 6;
+    const cp1y = Math.max(8, Math.min(112, p1.y + (p2.y - p0.y) / 6));
+    const cp2x = p2.x - (p3.x - p1.x) / 6;
+    const cp2y = Math.max(8, Math.min(112, p2.y - (p3.y - p1.y) / 6));
+    d += ` C ${cp1x.toFixed(1)} ${cp1y.toFixed(1)}, ${cp2x.toFixed(1)} ${cp2y.toFixed(1)}, ${p2.x} ${p2.y.toFixed(1)}`;
+  }
+  d += ` L 500 ${pts[4].y.toFixed(1)}`;
+  pathEl.setAttribute('d', d);
+  if (areaEl) {
+    areaEl.setAttribute('d', `${d} L 500 120 L 0 120 Z`);
+  }
+}
 
 function updateFxEngineNote() {
   const noteEl = document.getElementById('fx-engine-note');
@@ -14126,6 +14188,97 @@ function toggleAudioFxPanel(forceState = null) {
 }
 window.toggleAudioFxPanel = toggleAudioFxPanel;
 
+function rgbToHsl01(r, g, b) {
+  r /= 255; g /= 255; b /= 255;
+  const max = Math.max(r, g, b), min = Math.min(r, g, b);
+  let h = 0, s = 0;
+  const l = (max + min) / 2;
+  if (max !== min) {
+    const d = max - min;
+    s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+    switch (max) {
+      case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+      case g: h = (b - r) / d + 2; break;
+      case b: h = (r - g) / d + 4; break;
+    }
+    h /= 6;
+  }
+  return [h, s, l];
+}
+
+function hsl01ToRgb(h, s, l) {
+  if (s <= 0) {
+    const v = Math.round(l * 255);
+    return [v, v, v];
+  }
+  const hue2rgb = (p, q, t) => {
+    if (t < 0) t += 1;
+    if (t > 1) t -= 1;
+    if (t < 1 / 6) return p + (q - p) * 6 * t;
+    if (t < 1 / 2) return q;
+    if (t < 2 / 3) return p + (q - p) * (2 / 3 - t) * 6;
+    return p;
+  };
+  const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+  const p = 2 * l - q;
+  return [
+    Math.round(hue2rgb(p, q, h + 1 / 3) * 255),
+    Math.round(hue2rgb(p, q, h) * 255),
+    Math.round(hue2rgb(p, q, h - 1 / 3) * 255)
+  ];
+}
+
+function normalizeSongAccentTriplet(input) {
+  let parts = null;
+  if (Array.isArray(input) && input.length >= 3) {
+    parts = [Number(input[0]), Number(input[1]), Number(input[2])];
+  } else if (typeof input === 'string') {
+    const m = input.match(/\d+/g);
+    if (m && m.length >= 3) parts = [Number(m[0]), Number(m[1]), Number(m[2])];
+  }
+  if (!parts || parts.some(n => !Number.isFinite(n))) return null;
+  const [r, g, b] = parts.map(v => Math.max(0, Math.min(255, Math.round(v))));
+  let [h, s, l] = rgbToHsl01(r, g, b);
+  if (s < 0.08) h = 210 / 360;
+  if (s < 0.35) {
+    s = Math.max(0.64, Math.min(0.86, s * 1.45));
+  } else {
+    s = Math.max(0.58, Math.min(0.88, s));
+  }
+  l = Math.max(0.50, Math.min(0.62, l));
+  return hsl01ToRgb(h, s, l);
+}
+
+function syncSongThemeAccent(primaryRgb, secondaryRgb) {
+  if (typeof document === 'undefined' || !document.documentElement) return;
+  const rootStyle = document.documentElement.style;
+  const dynamicEnabled = !state.proSettings || state.proSettings.dynamicBg !== false;
+  if (!dynamicEnabled || !primaryRgb) {
+    rootStyle.setProperty('--kurfa-track-rgb', '244, 63, 94');
+    rootStyle.setProperty('--kurfa-track-rgb-2', '139, 92, 246');
+    return;
+  }
+  const p = normalizeSongAccentTriplet(primaryRgb);
+  if (!p) {
+    rootStyle.setProperty('--kurfa-track-rgb', '244, 63, 94');
+    rootStyle.setProperty('--kurfa-track-rgb-2', '139, 92, 246');
+    return;
+  }
+  let s = normalizeSongAccentTriplet(secondaryRgb);
+  if (!s) {
+    const [h, sat, lum] = rgbToHsl01(p[0], p[1], p[2]);
+    s = hsl01ToRgb((h + 0.1) % 1, sat, lum);
+  }
+  rootStyle.setProperty('--kurfa-track-rgb', `${p[0]}, ${p[1]}, ${p[2]}`);
+  rootStyle.setProperty('--kurfa-track-rgb-2', `${s[0]}, ${s[1]}, ${s[2]}`);
+}
+window.syncSongThemeAccent = syncSongThemeAccent;
+
+function syncAmbientCoverArt() {
+  // No-op stub: sidebar and bar use restrained single-tone directional edge glow via --kurfa-track-rgb
+}
+window.syncAmbientCoverArt = syncAmbientCoverArt;
+
 // Song-Reactive Dynamic Color Palette + Real-Time 16-Bar Audio Visualizer for #audio-fx-card
 const FxReactiveStudio = {
   _paletteCache: new Map(),
@@ -14134,6 +14287,10 @@ const FxReactiveStudio = {
   _freqBuf: null,
   _phase: 0,
   _lastDrawMs: 0,
+  _beatSmooth: 0,
+  _bassSmooth: 0,
+  _midSmooth: 0,
+  _highSmooth: 0,
 
   hashColorRgb(seedStr) {
     const palettes = [
@@ -14157,10 +14314,15 @@ const FxReactiveStudio = {
 
   applyRgb(rgbStr, track) {
     this._currentRgb = rgbStr;
+    syncSongThemeAccent(rgbStr);
     const card = document.getElementById('audio-fx-card');
     if (card) {
       card.style.setProperty('--fx-rgb', rgbStr);
     }
+    const bar = document.getElementById('desktop-player-bar');
+    if (bar) bar.style.setProperty('--fx-rgb', rgbStr);
+    const stageCard = document.getElementById('deck-main-card');
+    if (stageCard) stageCard.style.setProperty('--fx-rgb', rgbStr);
     const mini = document.getElementById('mobile-mini-player');
     if (mini) mini.style.setProperty('--mini-rgb', rgbStr);
     const bridge = document.getElementById('mobile-dock-bridge');
@@ -14185,11 +14347,13 @@ const FxReactiveStudio = {
 
   onTrackChange(track, thumbUrl = '') {
     if (!track) {
+      syncAmbientCoverArt('');
       this.applyRgb('99, 102, 241', null);
       return;
     }
     const seed = `${track.title || ''}_${track.artist || ''}`;
     const url = thumbUrl || getTrackThumbnail(track);
+    syncAmbientCoverArt(url);
     if (this._paletteCache.has(url)) {
       this.applyRgb(this._paletteCache.get(url), track);
       return;
@@ -14255,6 +14419,17 @@ const FxReactiveStudio = {
   },
 
   drawIdleShape() {
+    this._beatSmooth = 0;
+    this._bassSmooth = 0;
+    this._midSmooth = 0;
+    this._highSmooth = 0;
+    if (typeof document !== 'undefined' && document.documentElement) {
+      const st = document.documentElement.style;
+      st.setProperty('--kurfa-beat', '0');
+      st.setProperty('--kurfa-bass', '0');
+      st.setProperty('--kurfa-mid', '0');
+      st.setProperty('--kurfa-high', '0');
+    }
     const bars = document.querySelectorAll('#fx-live-spectrum > span');
     if (!bars.length) return;
     const eq = Array.isArray(state.eqGains) ? state.eqGains : [0, 0, 0, 0, 0];
@@ -14316,6 +14491,50 @@ const FxReactiveStudio = {
               }
               bar.style.setProperty('--bar', Math.max(0.14, Math.min(1.0, h)).toFixed(3));
             });
+          }
+          // 3-band volumetric audio energy (--kurfa-bass, --kurfa-mid, --kurfa-high, --kurfa-beat)
+          if (typeof document !== 'undefined' && document.documentElement) {
+            const st = document.documentElement.style;
+            const dynamicOn = !state.proSettings || state.proSettings.dynamicBg !== false;
+            if (dynamicOn) {
+              let rawBass = 0, rawMid = 0, rawHigh = 0;
+              if (this._freqBuf && typeof KurfaDSP !== 'undefined' && KurfaDSP.analyserNode && KurfaDSP.isConnected) {
+                const len = this._freqBuf.length;
+                const avgRange = (start, end, denom) => {
+                  const s = Math.min(start, len), e = Math.min(end, len);
+                  if (e <= s) return 0;
+                  let sum = 0;
+                  for (let b = s; b < e; b++) sum += this._freqBuf[b];
+                  return Math.max(0, Math.min(1, sum / ((e - s) * denom)));
+                };
+                rawBass = avgRange(0, 8, 205);
+                rawMid = avgRange(8, 25, 195);
+                rawHigh = avgRange(25, 49, 175);
+              }
+              if (rawBass === 0 && rawMid === 0 && rawHigh === 0) {
+                const p = this._phase;
+                rawBass = Math.pow(Math.sin(p * 1.15) * 0.5 + 0.5, 2.4);
+                rawMid = 0.35 + 0.65 * (Math.sin(p * 0.72 + 1.1) * 0.5 + 0.5);
+                rawHigh = Math.pow(Math.cos(p * 2.1 - 0.6) * 0.5 + 0.5, 1.8);
+              }
+              this._bassSmooth = this._bassSmooth * 0.58 + rawBass * 0.42;
+              this._midSmooth = this._midSmooth * 0.72 + rawMid * 0.28;
+              this._highSmooth = this._highSmooth * 0.65 + rawHigh * 0.35;
+              this._beatSmooth = this._bassSmooth * 0.6 + this._midSmooth * 0.4;
+              st.setProperty('--kurfa-bass', this._bassSmooth.toFixed(3));
+              st.setProperty('--kurfa-mid', this._midSmooth.toFixed(3));
+              st.setProperty('--kurfa-high', this._highSmooth.toFixed(3));
+              st.setProperty('--kurfa-beat', this._beatSmooth.toFixed(3));
+            } else if (this._beatSmooth !== 0) {
+              this._beatSmooth = 0;
+              this._bassSmooth = 0;
+              this._midSmooth = 0;
+              this._highSmooth = 0;
+              st.setProperty('--kurfa-beat', '0');
+              st.setProperty('--kurfa-bass', '0');
+              st.setProperty('--kurfa-mid', '0');
+              st.setProperty('--kurfa-high', '0');
+            }
           }
           // Low-cost ~11fps reactive loudness tint on mobile Dynamic Island pill
           if (typeof window !== 'undefined' && window.innerWidth < 768 && (!this._lastMiniEnergyMs || (now - this._lastMiniEnergyMs >= 88))) {
@@ -14786,6 +15005,7 @@ const LiquidBackground = {
         document.documentElement.classList.add('ambient-disabled');
       }
     }
+    syncSongThemeAccent(enabled ? [r, g, b] : null);
   },
 
   applyPalette(colors, rgb) {
@@ -14813,12 +15033,14 @@ const LiquidBackground = {
     }
     const btn = document.getElementById('btn-dynamic-bg-toggle');
     syncIosSwitchBtn(btn, enabled);
+    syncSongThemeAccent(enabled ? this.lastRgb : null);
   },
 
   updateForTrack(track, thumbUrl) {
     this.syncToggleState();
     if (!track || (state.proSettings && state.proSettings.dynamicBg === false)) return;
     const url = thumbUrl || getTrackThumbnail(track);
+    if (typeof syncAmbientCoverArt === 'function') syncAmbientCoverArt(url);
     const seed = track.id || track.title || 'kurfa';
     const fallback = this.deterministicPalette(seed);
     const fallbackRgb = this.hslToRgb(this.deterministicHue(seed), 78, 54);
@@ -15478,6 +15700,11 @@ function updateSettingsDataSummary() {
       }
       const kb = Math.max(1, Math.round((totalChars * 2) / 1024));
       sizeEl.textContent = `${kb} KB`;
+      const bar = document.getElementById('backup-storage-bar');
+      if (bar) {
+        const pct = Math.max(4, Math.min(100, Math.round((kb / 5120) * 100)));
+        bar.style.width = `${pct}%`;
+      }
     }
   } catch (_) {}
 }
@@ -21169,19 +21396,6 @@ async function refreshDesktopBridgeSettings() {
 window.refreshDesktopBridgeSettings = refreshDesktopBridgeSettings;
 
 let __kurfaLatestVersionsCache = { data: null, fetchedAt: 0 };
-
-function compareSemverStrings(a, b) {
-  const pa = String(a || '').replace(/^v/i, '').split('.').map((n) => parseInt(n, 10) || 0);
-  const pb = String(b || '').replace(/^v/i, '').split('.').map((n) => parseInt(n, 10) || 0);
-  const len = Math.max(pa.length, pb.length, 3);
-  for (let i = 0; i < len; i++) {
-    const va = pa[i] || 0;
-    const vb = pb[i] || 0;
-    if (va > vb) return 1;
-    if (va < vb) return -1;
-  }
-  return 0;
-}
 
 async function fetchLatestPublishedAppVersions(force = false) {
   const now = Date.now();
