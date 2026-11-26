@@ -3280,9 +3280,6 @@ const state = {
   baseSearchQuery: '',
   searchCategoryFilter: 'all',
   currentGenreFilter: 'all',
-  libraryViewMode: (function() {
-    try { return localStorage.getItem('kurfa_lib_view') === 'list' ? 'list' : 'grid'; } catch (_) { return 'grid'; }
-  })(),
   savedAlbums: safeGetJSON('kurfa_saved_albums', []),
   customPlaylists: safeGetJSON('kurfa_custom_playlists', []),
   activeCustomPlaylistId: null,
@@ -3893,7 +3890,7 @@ function updatePageSeoMeta(opts = {}) {
 
 function updateKurfaScrollRailState(wrap) {
   if (!wrap) return;
-  const scroller = wrap.querySelector('#search-filter-chips, #kutuphane-subtabs, #settings-tab-nav');
+  const scroller = wrap.querySelector('#search-filter-chips, #kutuphane-subtabs, #kesfet-subtabs, #settings-tab-nav');
   if (!scroller) return;
   const maxScroll = Math.max(0, scroller.scrollWidth - scroller.clientWidth);
   const canLeft = maxScroll > 6 && scroller.scrollLeft > 4;
@@ -3905,7 +3902,7 @@ function updateKurfaScrollRailState(wrap) {
 function scrollKurfaRail(btn, delta = 160) {
   const wrap = btn ? btn.closest('[data-scroll-rail]') : null;
   if (!wrap) return;
-  const scroller = wrap.querySelector('#search-filter-chips, #kutuphane-subtabs, #settings-tab-nav');
+  const scroller = wrap.querySelector('#search-filter-chips, #kutuphane-subtabs, #kesfet-subtabs, #settings-tab-nav');
   if (!scroller) return;
   scroller.scrollBy({ left: delta, behavior: 'smooth' });
   setTimeout(() => updateKurfaScrollRailState(wrap), 260);
@@ -3916,7 +3913,7 @@ let __kurfaScrollRailsBound = false;
 function initKurfaScrollRails() {
   const wraps = document.querySelectorAll('[data-scroll-rail]');
   wraps.forEach((wrap) => {
-    const scroller = wrap.querySelector('#search-filter-chips, #kutuphane-subtabs, #settings-tab-nav');
+    const scroller = wrap.querySelector('#search-filter-chips, #kutuphane-subtabs, #kesfet-subtabs, #settings-tab-nav');
     if (scroller && !scroller.dataset.railBound) {
       scroller.dataset.railBound = '1';
       scroller.addEventListener('scroll', () => updateKurfaScrollRailState(wrap), { passive: true });
@@ -4194,19 +4191,6 @@ function updateKutuphaneBadges() {
 
   const bentoDev = document.getElementById('bento-device-count');
   if (bentoDev) bentoDev.textContent = `${devLen} Parça`;
-
-  const viewIcon = document.getElementById('library-view-toggle-icon');
-  if (viewIcon) {
-    viewIcon.textContent = state.libraryViewMode === 'list' ? 'grid_view' : 'view_list';
-  }
-}
-
-function toggleLibraryViewMode() {
-  state.libraryViewMode = state.libraryViewMode === 'list' ? 'grid' : 'list';
-  safeSetStorage('kurfa_lib_view', state.libraryViewMode);
-  updateKutuphaneBadges();
-  renderCustomPlaylistsGrid();
-  renderSavedAlbumsGrid();
 }
 
 function isAlbumSaved(albumId) {
@@ -4259,7 +4243,6 @@ function renderSavedAlbumsGrid() {
   const grid = document.getElementById('saved-albums-grid');
   if (!grid) return;
   grid.innerHTML = '';
-  grid.classList.toggle('kurfa-lib-list-mode', state.libraryViewMode === 'list');
   const list = Array.isArray(state.savedAlbums) ? state.savedAlbums : [];
   if (list.length === 0) {
     grid.innerHTML = `
@@ -16373,7 +16356,6 @@ function renderCustomPlaylistsGrid(filterText) {
   const grid = document.getElementById('custom-playlists-grid');
   if (!grid) return;
   grid.innerHTML = '';
-  grid.classList.toggle('kurfa-lib-list-mode', state.libraryViewMode === 'list');
 
   const filterInput = document.getElementById('library-playlist-filter-input');
   const cleanFilter = String(filterText !== undefined ? filterText : (filterInput ? filterInput.value : '')).trim().toLowerCase();
@@ -20947,7 +20929,6 @@ window.closeArtistDetail = closeArtistDetail;
 window.toggleSavedAlbum = toggleSavedAlbum;
 window.filterAlbumDetailTracks = filterAlbumDetailTracks;
 window.setAlbumDetailSort = setAlbumDetailSort;
-window.toggleLibraryViewMode = toggleLibraryViewMode;
 window.renderSavedAlbumsGrid = renderSavedAlbumsGrid;
 
 // =========================================================================

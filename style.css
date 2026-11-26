@@ -3544,6 +3544,22 @@ body.dark-mode .kurfa-ios-switch.is-on {
   border-radius: 16px;
 }
 
+#btn-refresh-explore {
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+@media (min-width: 640px) {
+  #btn-refresh-explore {
+    width: auto !important;
+    height: 36px !important;
+    padding: 0 14px !important;
+  }
+}
+
 #filter-container {
   padding-top: 2px;
   padding-bottom: 4px;
@@ -3566,12 +3582,13 @@ body.dark-mode .kurfa-ios-switch.is-on {
   }
 
   #kesfet-subtabs {
-    width: 100%;
-    justify-content: space-between;
+    flex: 1 1 auto;
+    min-width: 0;
+    justify-content: flex-start;
   }
 
   #kesfet-subtabs .sub-tab-pill {
-    flex: 1 1 auto;
+    flex: 0 0 auto;
     justify-content: center;
     padding: 0.5rem 0.75rem;
     font-size: 11.5px;
@@ -4337,28 +4354,6 @@ body.dark-mode .kurfa-lib-bento-card {
   border-color: rgba(var(--kurfa-accent-rgb, 244, 63, 94), 0.32);
 }
 
-.kurfa-lib-list-mode {
-  display: flex !important;
-  flex-direction: column !important;
-  gap: 10px !important;
-}
-
-.kurfa-lib-list-mode > * {
-  display: flex !important;
-  flex-direction: row !important;
-  align-items: center !important;
-  gap: 14px !important;
-  padding: 10px 14px !important;
-}
-
-.kurfa-lib-list-mode > * img,
-.kurfa-lib-list-mode > * > div:first-child {
-  width: 56px !important;
-  height: 56px !important;
-  flex-shrink: 0 !important;
-  margin-bottom: 0 !important;
-}
-
 /* 3. Album Detail Modal (#album-detail-modal) */
 #album-detail-modal-card {
   max-width: 740px !important;
@@ -4818,9 +4813,16 @@ body.dark-mode .kurfa-theme-preview-card {
 }
 
 .kurfa-scroll-rail-wrap > #search-filter-chips,
-.kurfa-scroll-rail-wrap > #kutuphane-subtabs {
+.kurfa-scroll-rail-wrap > #kutuphane-subtabs,
+.kurfa-scroll-rail-wrap > #kesfet-subtabs {
   padding-right: 30px;
   scroll-behavior: smooth;
+}
+
+@media (max-width: 767px) {
+  .kurfa-scroll-rail-wrap > #kesfet-subtabs {
+    width: 100%;
+  }
 }
 
 .kurfa-scroll-rail-wrap.can-scroll-right > div,
