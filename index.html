@@ -110,12 +110,8 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="preconnect" href="https://i.ytimg.com" crossorigin>
   <link rel="dns-prefetch" href="https://kurfanova.kurfa.workers.dev">
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" media="print" onload="this.media='all'"/>
-  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL@24,400,0..1&display=swap" rel="stylesheet" media="print" onload="this.media='all'"/>
-  <noscript>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
-    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL@24,400,0..1&display=swap" rel="stylesheet"/>
-  </noscript>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL@24,400,0..1&display=block" rel="stylesheet"/>
 
   <!-- Precompiled Static Tailwind CSS & Stylesheets -->
   <style>
@@ -130,6 +126,10 @@
       line-height: 1;
       vertical-align: middle;
       flex-shrink: 0;
+    }
+    html:not(.icons-ready) .material-symbols-outlined {
+      color: transparent !important;
+      user-select: none;
     }
     .sr-only, .seo-rich-content {
       position: absolute !important;
@@ -146,6 +146,21 @@
   </style>
   <link rel="stylesheet" href="./tailwind.min.css?v=20261120_v17">
   <link rel="stylesheet" href="./style.min.css?v=eda7659f">
+  <script>
+    (function() {
+      var markReady = function() { document.documentElement.classList.add('icons-ready'); };
+      var timer = setTimeout(markReady, 1500);
+      if (document.fonts && typeof document.fonts.load === 'function') {
+        Promise.race([
+          document.fonts.load('24px "Material Symbols Outlined"'),
+          document.fonts.ready
+        ]).then(function() { clearTimeout(timer); markReady(); }).catch(function() { clearTimeout(timer); markReady(); });
+      } else {
+        clearTimeout(timer);
+        markReady();
+      }
+    })();
+  </script>
 </head>
 <body class="bg-background font-sans text-on-surface antialiased min-h-screen">
   <script>
@@ -2314,15 +2329,17 @@
           <div id="settings-pane-app" class="kurfa-settings-pane hidden">
             <div class="kurfa-settings-group-title" data-i18n="settings.version">Sürüm</div>
             <div class="kurfa-settings-card kurfa-settings-app-hero">
-              <div class="flex items-center justify-between gap-2">
-                <div class="flex items-center gap-2.5 min-w-0">
-                  <span class="kurfa-set-icon kurfa-set-icon-rose">
+              <div class="flex items-center justify-between gap-3">
+                <div class="flex items-center gap-2.5 min-w-0 flex-1">
+                  <span class="kurfa-set-icon kurfa-set-icon-rose flex-shrink-0">
                     <span class="material-symbols-outlined text-[17px]" aria-hidden="true">verified</span>
                   </span>
-                  <span class="text-xs sm:text-sm font-bold text-on-surface whitespace-nowrap" data-i18n="settings.version">Sürüm</span>
-                  <span id="settings-app-version-pill" class="px-2 py-0.5 rounded-full text-[11px] font-bold bg-surface-container text-on-surface whitespace-nowrap">...</span>
+                  <div class="flex flex-col min-w-0">
+                    <span class="text-xs sm:text-sm font-bold text-on-surface leading-tight truncate" data-i18n="settings.version">Sürüm</span>
+                    <span id="settings-app-version-pill" class="text-[11px] font-semibold text-on-surface-variant truncate mt-0.5">...</span>
+                  </div>
                 </div>
-                <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-surface-container text-on-surface-variant whitespace-nowrap flex-shrink-0">
+                <span id="settings-engine-badge" class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-surface-container text-on-surface-variant whitespace-nowrap flex-shrink-0">
                   <span class="kurfa-status-live-dot" aria-hidden="true"></span>
                   <span id="settings-engine-status" class="text-[11px] font-bold" data-i18n="settings.browser">Tarayıcı</span>
                 </span>
@@ -3191,6 +3208,6 @@
   </div>
 
   <!-- Scripts (Deferred & minified; YouTube IFrame API loads lazily on demand) -->
-  <script defer fetchpriority="high" src="./app.min.js?v=752d3985"></script>
+  <script defer fetchpriority="high" src="./app.min.js?v=584b964a"></script>
 </body>
 </html>

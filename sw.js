@@ -1,12 +1,13 @@
 // Kurfanova PWA Service Worker
-const CACHE_NAME = 'kurfanova-shell-eda7659f_752d3985';
+const CACHE_NAME = 'kurfanova-shell-eda7659f_584b964a';
+const FONT_CACHE_NAME = 'kurfanova-fonts-v1';
 
 const SHELL_ASSETS = [
   './',
   './index.html',
   './tailwind.min.css?v=20261120_v17',
   './style.min.css?v=eda7659f',
-  './app.min.js?v=752d3985',
+  './app.min.js?v=584b964a',
   './kurfamuzik_logo_96.webp',
   './manifest.json'
 ];
@@ -102,7 +103,7 @@ self.addEventListener('activate', (event) => {
       .then((keys) =>
         Promise.all(
           keys.map((key) => {
-            if (key !== CACHE_NAME && (key.startsWith('kurfa-') || key.startsWith('kurfanova-'))) {
+            if (key !== CACHE_NAME && key !== FONT_CACHE_NAME && (key.startsWith('kurfa-') || key.startsWith('kurfanova-'))) {
               return caches.delete(key);
             }
             return Promise.resolve(false);
@@ -125,6 +126,23 @@ self.addEventListener('fetch', (event) => {
   }
 
   if (url.protocol !== 'http:' && url.protocol !== 'https:') return;
+  if (url.hostname === 'fonts.googleapis.com' || url.hostname === 'fonts.gstatic.com') {
+    event.respondWith((async () => {
+      const cache = await caches.open(FONT_CACHE_NAME);
+      const cached = await cache.match(request);
+      if (cached) return cached;
+      try {
+        const netRes = await fetch(request);
+        if (netRes && (netRes.ok || netRes.type === 'opaque')) {
+          cache.put(request, netRes.clone()).catch(() => {});
+        }
+        return netRes;
+      } catch (_) {
+        return new Response('', { status: 503, statusText: 'Service Unavailable' });
+      }
+    })());
+    return;
+  }
   if (url.pathname.startsWith('/__kurfa_local_audio/')) return;
   if (url.pathname.startsWith('/__kurfa_native_audio__/')) return;
   if (url.pathname.startsWith('/__kurfa_native_video__/')) return;

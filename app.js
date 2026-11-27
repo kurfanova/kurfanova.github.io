@@ -20396,7 +20396,7 @@ function initApp() {
     hydrateFeaturedArtistsFromApi();
   }
   if (typeof runOneShotStartupUpdateCheck === 'function') {
-    setTimeout(() => runOneShotStartupUpdateCheck(), 3500);
+    setTimeout(() => runOneShotStartupUpdateCheck(), 1800);
   }
 
   KurfaDSP.init(DOM.audioEngine);
@@ -20420,8 +20420,16 @@ function initApp() {
       } catch (_) {}
     }, 1000);
   }
+  let _lastAndroidAutoScanAt = 0;
   document.addEventListener('visibilitychange', () => {
     if (typeof LyricsClock !== 'undefined') LyricsClock.syncState();
+    if (!document.hidden && typeof isAndroidNativeEngine === 'function' && isAndroidNativeEngine() && typeof scanLocalDeviceAudio === 'function') {
+      const nowMs = Date.now();
+      if (nowMs - _lastAndroidAutoScanAt >= 30000) {
+        _lastAndroidAutoScanAt = nowMs;
+        scanLocalDeviceAudio(false, true);
+      }
+    }
   });
   document.addEventListener('click', (e) => {
     const pop = document.getElementById('sleep-timer-popover');
@@ -20436,6 +20444,12 @@ function initApp() {
   if (typeof restoreWebLocalAudioFromDB === 'function') {
     restoreWebLocalAudioFromDB();
   }
+  setTimeout(() => {
+    if (typeof isAndroidNativeEngine === 'function' && isAndroidNativeEngine() && typeof scanLocalDeviceAudio === 'function') {
+      _lastAndroidAutoScanAt = Date.now();
+      scanLocalDeviceAudio(false, true);
+    }
+  }, 900);
   syncPersistentPlayerPosition();
   window.addEventListener('resize', () => {
     scheduleSyncPersistentPlayerPosition();
@@ -21532,10 +21546,23 @@ async function runOneShotStartupUpdateCheck() {
     sessionStorage.setItem('kurfa_update_checked_v130', '1');
   } catch (_) {}
 
-  // Native Android APK already executes ApkAutoUpdater.checkInBackground once on launch
-  if (typeof isAndroidNativeApp === 'function' && isAndroidNativeApp()) return;
-
   try {
+    if (typeof isAndroidNativeEngine === 'function' && isAndroidNativeEngine()) {
+      const aInfo = getAndroidBridgeVersionInfo();
+      const latest = await fetchLatestPublishedAppVersions();
+      const remoteName = String(latest?.android?.versionName || '').replace(/^v/i, '');
+      const remoteCode = Number(latest?.android?.versionCode || 0);
+      const hasNewByCode = remoteCode > 0 && aInfo.versionCode > 0 && remoteCode > aInfo.versionCode;
+      const hasNewByName = remoteName && aInfo.versionName && compareSemverStrings(remoteName, aInfo.versionName) > 0;
+      if (hasNewByCode || (!aInfo.versionCode && hasNewByName)) {
+        const verTag = remoteName ? `v${remoteName}` : `#${remoteCode}`;
+        const lineEl = document.getElementById('settings-update-check-line');
+        if (lineEl) lineEl.textContent = `Yeni sürüm mevcut: ${verTag} (İndirmek için tıklayın)`;
+        showUpdateAvailableBanner(verTag);
+      }
+      return;
+    }
+
     const extMode = typeof getBrowserExtensionMode === 'function' ? getBrowserExtensionMode() : '';
     if (extMode && extMode.startsWith('desktop')) {
       const res = await callExtensionBridge('CHECK_DESKTOP_UPDATE', {}, 4000).catch(() => null);
@@ -22023,13 +22050,15 @@ async function refreshAppVersionAndUpdateStatus() {
     pillEl.textContent = installedVer ? `${platformLabel} v${installedVer}` : platformLabel;
   }
 
+  const engineBadgeEl = document.getElementById('settings-engine-badge');
   if (engineEl) {
-    if (isNativeApp || extMode || isBrowserAdBlockerActive()) {
-      engineEl.textContent = t('nav.ad_free');
-      engineEl.className = 'px-2.5 py-1 rounded-full text-[11px] font-bold bg-emerald-500/15 text-emerald-500 flex-shrink-0';
-    } else {
-      engineEl.textContent = t('settings.browser');
-      engineEl.className = 'px-2.5 py-1 rounded-full text-[11px] font-bold bg-surface-container text-on-surface-variant flex-shrink-0';
+    const adFree = Boolean(isNativeApp || extMode || isBrowserAdBlockerActive());
+    engineEl.textContent = adFree ? t('nav.ad_free') : t('settings.browser');
+    engineEl.className = 'text-[11px] font-bold';
+    if (engineBadgeEl) {
+      engineBadgeEl.className = adFree
+        ? 'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/15 text-emerald-500 whitespace-nowrap flex-shrink-0'
+        : 'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-surface-container text-on-surface-variant whitespace-nowrap flex-shrink-0';
     }
   }
 
