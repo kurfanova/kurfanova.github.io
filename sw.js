@@ -1,12 +1,12 @@
 // Kurfanova PWA Service Worker
-const CACHE_NAME = 'kurfanova-shell-c8791528_32632ecf';
+const CACHE_NAME = 'kurfanova-shell-52fffb96_752d3985';
 
 const SHELL_ASSETS = [
   './',
   './index.html',
   './tailwind.min.css?v=20261120_v17',
-  './style.min.css?v=c8791528',
-  './app.min.js?v=32632ecf',
+  './style.min.css?v=52fffb96',
+  './app.min.js?v=752d3985',
   './kurfamuzik_logo_96.webp',
   './manifest.json'
 ];

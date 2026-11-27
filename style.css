@@ -6636,12 +6636,46 @@ body.dark-mode .kurfa-backup-progress-track {
 .kurfa-about-web:hover { border-color: rgba(99, 102, 241, 0.45) !important; }
 
 /* 6. Device Music Pane (#kutuphane-pane-cihaz) */
-.kurfa-device-header {
+.kurfa-device-stage {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  padding: 2px 2px 0;
+  padding: 12px 14px;
+  border-radius: 16px;
+  background:
+    radial-gradient(280px 120px at 8% 12%, rgba(var(--kurfa-track-rgb, 244, 63, 94), 0.08), transparent 72%),
+    rgba(255, 255, 255, 0.86);
+  border: 1px solid rgba(15, 23, 42, 0.065);
+  box-shadow: 0 2px 12px rgba(15, 23, 42, 0.03);
+}
+
+body.dark-mode .kurfa-device-stage {
+  background:
+    radial-gradient(280px 120px at 8% 12%, rgba(var(--kurfa-track-rgb, 244, 63, 94), 0.13), transparent 72%),
+    rgba(19, 27, 43, 0.72);
+  border-color: rgba(255, 255, 255, 0.065);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+.kurfa-device-stage-badge {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  background: rgba(var(--kurfa-track-rgb, 244, 63, 94), 0.12);
+  color: rgb(var(--kurfa-track-rgb, 244, 63, 94));
+}
+
+@media (max-width: 520px) {
+  .kurfa-device-stage {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
 }
 
 .kurfa-device-play-btn {
@@ -6913,21 +6947,44 @@ body.dark-mode .kurfa-device-sort-select option {
 }
 
 .kurfa-device-list-shell {
-  border-radius: 14px;
-  background: transparent;
-  padding: 0;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.78);
+  border: 1px solid rgba(15, 23, 42, 0.06);
+  padding: 6px;
+}
+
+body.dark-mode .kurfa-device-list-shell {
+  background: rgba(17, 24, 39, 0.56);
+  border-color: rgba(255, 255, 255, 0.06);
 }
 
 @media (max-width: 768px) {
   .kurfa-device-list-shell {
-    padding-bottom: 104px;
+    margin-bottom: 96px;
+  }
+
+  /* Strip late-cascade backdrop-filter & blur passes on mobile Android WebView for 60fps scroll */
+  .kurfa-apple-dock,
+  .kurfa-suggest-dropdown,
+  .kurfa-device-stage,
+  #desktop-sidebar,
+  #desktop-player-bar {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+
+  #desktop-sidebar,
+  #desktop-player-bar,
+  .kurfa-sidebar-cove,
+  .kurfa-bar-cove {
+    display: none !important;
   }
 }
 
 #device-audio-list .track-row {
-  padding: 9px 8px;
+  padding: 9px 10px;
   border-radius: 11px;
-  border-bottom: 1px solid rgba(15, 23, 42, 0.05);
+  border-bottom: 1px solid rgba(15, 23, 42, 0.045);
 }
 
 #device-audio-list .track-row:last-child {
@@ -6935,29 +6992,37 @@ body.dark-mode .kurfa-device-sort-select option {
 }
 
 body.dark-mode #device-audio-list .track-row {
-  border-bottom-color: rgba(255, 255, 255, 0.045);
+  border-bottom-color: rgba(255, 255, 255, 0.04);
+}
+
+#device-audio-list .track-row:hover {
+  background: rgba(15, 23, 42, 0.035);
+}
+
+body.dark-mode #device-audio-list .track-row:hover {
+  background: rgba(255, 255, 255, 0.04);
 }
 
 #device-audio-list .track-row.active {
-  background: rgba(var(--kurfa-track-rgb, 244, 63, 94), 0.09);
+  background: rgba(var(--kurfa-track-rgb, 244, 63, 94), 0.10);
   border-bottom-color: transparent;
 }
 
 .kurfa-device-art {
   width: 40px;
   height: 40px;
-  border-radius: 10px;
+  border-radius: 11px;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  background: rgba(var(--dev-hue-rgb, 99, 102, 241), 0.12);
+  background: linear-gradient(135deg, rgba(var(--dev-hue-rgb, 99, 102, 241), 0.18), rgba(var(--dev-hue-rgb, 99, 102, 241), 0.07));
   color: rgb(var(--dev-hue-rgb, 99, 102, 241));
   border: none;
-  transition: transform 0.18s ease, background-color 0.18s ease;
+  transition: transform 0.16s ease, background-color 0.16s ease;
 }
 
 .track-row.active .kurfa-device-art {
-  background: rgba(var(--kurfa-track-rgb, 244, 63, 94), 0.16);
+  background: linear-gradient(135deg, rgba(var(--kurfa-track-rgb, 244, 63, 94), 0.24), rgba(var(--kurfa-track-rgb, 244, 63, 94), 0.10));
   color: rgb(var(--kurfa-track-rgb, 244, 63, 94));
 }

@@ -145,7 +145,7 @@
     }
   </style>
   <link rel="stylesheet" href="./tailwind.min.css?v=20261120_v17">
-  <link rel="stylesheet" href="./style.min.css?v=c8791528">
+  <link rel="stylesheet" href="./style.min.css?v=52fffb96">
 </head>
 <body class="bg-background font-sans text-on-surface antialiased min-h-screen">
   <script>
@@ -1167,17 +1167,22 @@
           </div>
         </div>
 
-        <!-- KÜTÜPHANE PANE 3: CİHAZDAKİ MÜZİKLERİM (Sade & Temiz Liste) -->
+        <!-- KÜTÜPHANE PANE 3: CİHAZDAKİ MÜZİKLERİM (Rafine & Temiz Tasarım) -->
         <div id="kutuphane-pane-cihaz" class="flex flex-col gap-3 hidden">
-          <div class="kurfa-device-header">
-            <div class="min-w-0">
-              <h2 class="text-[15px] sm:text-base font-extrabold text-on-surface tracking-tight truncate" data-i18n="library.device_title">Cihazdaki Müzikler</h2>
-              <p class="text-[11px] text-on-surface-variant font-medium mt-0.5 truncate" id="device-audio-count-text">0 Parça • 0 dk</p>
+          <div class="kurfa-device-stage">
+            <div class="flex items-center gap-3 min-w-0">
+              <div class="kurfa-device-stage-badge" aria-hidden="true">
+                <span class="material-symbols-outlined text-[20px] filled">library_music</span>
+              </div>
+              <div class="min-w-0">
+                <h2 class="text-[15px] sm:text-base font-extrabold text-on-surface tracking-tight truncate" data-i18n="library.device_title">Cihazdaki Müzikler</h2>
+                <p class="text-[11px] text-on-surface-variant font-medium mt-0.5 truncate" id="device-audio-count-text">0 Parça • 0 dk</p>
+              </div>
             </div>
             <div class="flex items-center gap-1.5 flex-shrink-0">
               <button type="button" class="kurfa-device-play-btn" onclick="playAllDeviceAudio()">
                 <span class="material-symbols-outlined text-[16px] filled">play_arrow</span>
-                <span data-i18n="library.device_play_seq">Çal</span>
+                <span data-i18n="library.device_play_seq">Sırayla Çal</span>
               </button>
               <button type="button" class="kurfa-device-icon-btn" onclick="shufflePlayDeviceAudio()" title="Karışık Çal" aria-label="Karışık Çal">
                 <span class="material-symbols-outlined text-[17px]">shuffle</span>
@@ -3195,6 +3200,6 @@
   </div>
 
   <!-- Scripts (Deferred & minified; YouTube IFrame API loads lazily on demand) -->
-  <script defer fetchpriority="high" src="./app.min.js?v=32632ecf"></script>
+  <script defer fetchpriority="high" src="./app.min.js?v=752d3985"></script>
 </body>
 </html>

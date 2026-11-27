@@ -4043,6 +4043,9 @@ function switchTab(tabId, shouldScroll = true, opts = {}) {
     if (typeof LyricsClock !== 'undefined' && typeof LyricsClock.syncState === 'function') {
       LyricsClock.syncState();
     }
+    if (typeof FxReactiveStudio !== 'undefined' && state.isPlaying && !state.userPaused) {
+      FxReactiveStudio.syncPlaybackState(true);
+    }
   } else if (tabId === 'kesfet') {
     // Only build DOM if not rendered yet or active track changed while dormant
     const activeId = state.currentTrack ? state.currentTrack.id : null;
@@ -4843,11 +4846,14 @@ function seekPlaybackToSeconds(targetSec) {
     try { state.ytPlayer.seekTo(targetSec, true); } catch(e) {}
   }
 
-  // 3. Immediately update UI and lyrics for silky responsiveness
+  // 3. Immediately update UI, Android MediaSession timing, and lyrics for silky responsiveness
   if (typeof getActiveMediaDuration === 'function') {
     const dur = getActiveMediaDuration();
     if (dur > 0 && typeof updateSeekbarUI === 'function') {
       updateSeekbarUI(targetSec, dur);
+    }
+    if (typeof syncAndroidAndMediaPositionState === 'function') {
+      syncAndroidAndMediaPositionState(targetSec, dur, true);
     }
     if (window.__kurfaDesktopMiniPlayerOpen && typeof syncDesktopMiniPlayerState === 'function') {
       syncDesktopMiniPlayerState(targetSec, dur || 0);
@@ -6233,6 +6239,9 @@ function resumePlayback() {
         state.isPlaying = true;
         updatePlayPauseUI(true);
         syncNativeAppPlaybackState(true);
+        if (typeof syncAndroidAndMediaPositionState === 'function') {
+          syncAndroidAndMediaPositionState(getActiveMediaCurrentTime(), getActiveMediaDuration(), true);
+        }
         if (typeof startSeekbarTicker === 'function') startSeekbarTicker();
         return;
       } catch (e) {}
@@ -6340,7 +6349,7 @@ function resumePlayback() {
   }
 }
 
-function pausePlayback() {
+function pausePlayback(immediate = false) {
   state.userPaused = true;
   clearTimeout(state._guardianResumeTimer);
   clearTimeout(state._errorSkipTimer);
@@ -6360,7 +6369,8 @@ function pausePlayback() {
     } catch (_) {}
   }
   if (DOM.audioEngine) {
-    if (!DOM.audioEngine.paused && DOM.audioEngine.getAttribute('src') && typeof startSmoothFade === 'function') {
+    const inBackground = immediate || (typeof document !== 'undefined' && document.hidden);
+    if (!inBackground && !DOM.audioEngine.paused && DOM.audioEngine.getAttribute('src') && typeof startSmoothFade === 'function') {
       startSmoothFade(typeof state._smoothFadeGain === 'number' ? state._smoothFadeGain : 1, 0, 120, () => {
         if (!state.userPaused) return;
         try { DOM.audioEngine.pause(); } catch (e) {}
@@ -6368,12 +6378,18 @@ function pausePlayback() {
         if (typeof applyEffectiveVolume === 'function') applyEffectiveVolume();
       });
     } else {
+      if (typeof cancelSmoothFade === 'function') cancelSmoothFade();
       try { DOM.audioEngine.pause(); } catch(e) {}
+      state._smoothFadeGain = 1;
+      if (typeof applyEffectiveVolume === 'function') applyEffectiveVolume();
     }
   }
   syncNativeAppPlaybackState(false, true);
   state.isPlaying = false;
   updatePlayPauseUI(false);
+  if (typeof syncAndroidAndMediaPositionState === 'function') {
+    syncAndroidAndMediaPositionState(getActiveMediaCurrentTime(), getActiveMediaDuration(), true);
+  }
   if (typeof syncPipState === 'function') {
     syncPipState();
   }
@@ -6616,6 +6632,37 @@ function toggleRepeat() {
 // 7. UI SYNC & PLAYER DECK UPDATES (DESKTOP & MOBILE)
 // =============================================================================
 
+function syncAndroidAndMediaPositionState(cur, dur, force = false) {
+  const safeDur = Number(dur) || 0;
+  const safeCur = Math.max(0, safeDur > 0 ? Math.min(safeDur, Number(cur) || 0) : (Number(cur) || 0));
+  const nowMs = Date.now();
+  const tid = state.currentTrack ? (state.currentTrack.id || '') : '';
+  const due = force || window._lastAndroidTimingTrackId !== tid || !window._lastAndroidTimingSyncAt || (nowMs - window._lastAndroidTimingSyncAt) >= 3500;
+  if (!due) return;
+
+  window._lastAndroidTimingTrackId = tid;
+  window._lastAndroidTimingSyncAt = nowMs;
+
+  if (safeDur > 0 && 'mediaSession' in navigator && typeof navigator.mediaSession.setPositionState === 'function') {
+    try {
+      const rate = state.isPlaying ? Math.max(0.25, Number(state.proSettings?.playbackSpeed) || 1.0) : 0.0;
+      navigator.mediaSession.setPositionState({
+        duration: safeDur,
+        playbackRate: rate,
+        position: safeCur
+      });
+    } catch (_) {}
+  }
+
+  try {
+    if (typeof isAndroidNativeEngine === 'function' && isAndroidNativeEngine() && window.KurfaAndroidBridge) {
+      if (typeof window.KurfaAndroidBridge.updatePlaybackTiming === 'function') {
+        window.KurfaAndroidBridge.updatePlaybackTiming(Math.floor(safeCur), Math.floor(safeDur));
+      }
+    }
+  } catch (_) {}
+}
+
 function updateMediaSession(track) {
   if (!('mediaSession' in navigator) || !track) return;
   try {
@@ -6629,8 +6676,14 @@ function updateMediaSession(track) {
       ]
     });
 
-    navigator.mediaSession.setActionHandler('play', () => togglePlay());
-    navigator.mediaSession.setActionHandler('pause', () => togglePlay());
+    navigator.mediaSession.setActionHandler('play', () => {
+      if (typeof window.kurfaNativePlay === 'function') window.kurfaNativePlay();
+      else resumePlayback();
+    });
+    navigator.mediaSession.setActionHandler('pause', () => {
+      if (typeof window.kurfaNativePause === 'function') window.kurfaNativePause();
+      else pausePlayback(true);
+    });
     navigator.mediaSession.setActionHandler('previoustrack', () => playPrevTrack());
     navigator.mediaSession.setActionHandler('nexttrack', () => playNextTrack());
     navigator.mediaSession.setActionHandler('seekto', (details) => {
@@ -6638,6 +6691,10 @@ function updateMediaSession(track) {
         seekPlaybackToSeconds(details.seekTime);
       }
     });
+    const knownDur = parseDurationToSec(track.duration) || 0;
+    if (knownDur > 0) {
+      syncAndroidAndMediaPositionState(state.currentPlayheadTime || 0, knownDur, true);
+    }
   } catch (e) {
     console.warn("MediaSession API hatası:", e);
   }
@@ -6690,8 +6747,13 @@ function updatePlayerTrackUI(track) {
 
   // Native Android Foreground MediaService & Lockscreen Sync
   try {
-    if (window.KurfaAndroidBridge && typeof window.KurfaAndroidBridge.updateNowPlayingMetadata === 'function') {
-      window.KurfaAndroidBridge.updateNowPlayingMetadata(cleanTitle || "Kurfamüzik", cleanArtist, safeThumb);
+    const metaDurSec = Math.floor(Number(track.durationSec) || parseDurationToSec(track.duration) || 0);
+    if (window.KurfaAndroidBridge) {
+      if (typeof window.KurfaAndroidBridge.updateNowPlayingMetadataWithDuration === 'function') {
+        window.KurfaAndroidBridge.updateNowPlayingMetadataWithDuration(cleanTitle || "Kurfamüzik", cleanArtist, safeThumb, metaDurSec);
+      } else if (typeof window.KurfaAndroidBridge.updateNowPlayingMetadata === 'function') {
+        window.KurfaAndroidBridge.updateNowPlayingMetadata(cleanTitle || "Kurfamüzik", cleanArtist, safeThumb);
+      }
     }
   } catch (e) {}
 
@@ -6949,32 +7011,45 @@ function getActiveMediaCurrentTime() {
 }
 window.getActiveMediaCurrentTime = getActiveMediaCurrentTime;
 
+let _lastSeekCurStr = '';
+let _lastSeekDurStr = '';
+let _cachedFloatingPip = null;
 function updateSeekbarUI(cur, dur) {
   if (!dur || dur <= 0) return;
   const pct = Math.min(100, Math.max(0, (cur / dur) * 100));
+  const curWhole = Math.floor(cur);
+  const durWhole = Math.floor(dur);
   const timeCurStr = formatTime(cur);
   const timeDurStr = formatTime(dur);
 
   // Desktop seekbar
-  if (DOM.playerSeekFill) DOM.playerSeekFill.style.width = `${pct}%`;
-  if (DOM.playerSeekKnob) DOM.playerSeekKnob.style.left = `${pct}%`;
-  if (DOM.playerTimeCur) DOM.playerTimeCur.textContent = timeCurStr;
-  if (DOM.playerTimeDur) DOM.playerTimeDur.textContent = timeDurStr;
+  if (DOM.playerSeekFill) DOM.playerSeekFill.style.width = `${pct.toFixed(2)}%`;
+  if (DOM.playerSeekKnob) DOM.playerSeekKnob.style.left = `${pct.toFixed(2)}%`;
+  if (DOM.playerTimeCur && timeCurStr !== _lastSeekCurStr) {
+    _lastSeekCurStr = timeCurStr;
+    DOM.playerTimeCur.textContent = timeCurStr;
+  }
+  if (DOM.playerTimeDur && timeDurStr !== _lastSeekDurStr) {
+    _lastSeekDurStr = timeDurStr;
+    DOM.playerTimeDur.textContent = timeDurStr;
+  }
 
   // Mobile mini seekbar (skip overwriting while user is actively finger-scrubbing)
   if (DOM.playerMobileSeekFill && !window.__kurfaMobileMiniScrubbing) {
     updateMobileMiniArcProgress(pct);
   }
 
-  // Floating PiP window seekbar (always keep updated)
-  const floatingPipEl = document.getElementById('kurfa-floating-pip');
-  if (floatingPipEl && !floatingPipEl.hidden) {
+  // Floating PiP window seekbar (only query & mutate if visible)
+  if (!_cachedFloatingPip || !_cachedFloatingPip.isConnected) {
+    _cachedFloatingPip = document.getElementById('kurfa-floating-pip');
+  }
+  if (_cachedFloatingPip && !_cachedFloatingPip.hidden) {
     const pipSeekFill = document.getElementById('pip-seek-fill');
     const pipHairlineFill = document.getElementById('pip-hairline-fill');
     const pipCur = document.getElementById('pip-time-cur');
     const pipDur = document.getElementById('pip-time-dur');
-    if (pipSeekFill) pipSeekFill.style.width = `${pct}%`;
-    if (pipHairlineFill) pipHairlineFill.style.width = `${pct}%`;
+    if (pipSeekFill) pipSeekFill.style.width = `${pct.toFixed(2)}%`;
+    if (pipHairlineFill) pipHairlineFill.style.width = `${pct.toFixed(2)}%`;
     if (pipCur) pipCur.textContent = timeCurStr;
     if (pipDur) pipDur.textContent = timeDurStr;
   }
@@ -6985,8 +7060,8 @@ function updateSeekbarUI(cur, dur) {
     const extHairFill = pipWindowInstance.document.getElementById('pip-ext-hairline-fill');
     const extCur = pipWindowInstance.document.getElementById('pip-ext-cur');
     const extDur = pipWindowInstance.document.getElementById('pip-ext-dur');
-    if (extSeekFill) extSeekFill.style.width = `${pct}%`;
-    if (extHairFill) extHairFill.style.width = `${pct}%`;
+    if (extSeekFill) extSeekFill.style.width = `${pct.toFixed(2)}%`;
+    if (extHairFill) extHairFill.style.width = `${pct.toFixed(2)}%`;
     if (extCur) extCur.textContent = timeCurStr;
     if (extDur) extDur.textContent = timeDurStr;
   }
@@ -7002,19 +7077,8 @@ function updateSeekbarUI(cur, dur) {
     }
   } catch (_) {}
 
-  // Android MediaSession timer & progress bar sync (immediate on track change, throttled every 4s)
-  try {
-    if (state.isPlaying && typeof isAndroidNativeEngine === 'function' && isAndroidNativeEngine() &&
-        window.KurfaAndroidBridge && typeof window.KurfaAndroidBridge.updatePlaybackTiming === 'function') {
-      const nowMs = Date.now();
-      const tid = state.currentTrack ? (state.currentTrack.id || '') : '';
-      if (window._lastAndroidTimingTrackId !== tid || !window._lastAndroidTimingSyncAt || (nowMs - window._lastAndroidTimingSyncAt) >= 4000) {
-        window._lastAndroidTimingTrackId = tid;
-        window._lastAndroidTimingSyncAt = nowMs;
-        window.KurfaAndroidBridge.updatePlaybackTiming(Math.floor(cur || 0), Math.floor(dur || 0));
-      }
-    }
-  } catch (_) {}
+  // Android MediaSession & Browser PositionState timer sync
+  syncAndroidAndMediaPositionState(curWhole, durWhole, false);
 }
 window.updateSeekbarUI = updateSeekbarUI;
 
@@ -14600,19 +14664,30 @@ const FxReactiveStudio = {
   },
 
   syncPlaybackState(playing) {
+    const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
+    const onLyricsTab = state.currentTab === 'calma-listeleri';
+    // On phones outside Sözler & EQ, skip continuous rAF loop & root style mutations for 60fps scrolling
+    if (playing && isMobile && !onLyricsTab) {
+      if (this._rafId) {
+        cancelAnimationFrame(this._rafId);
+        this._rafId = null;
+      }
+      return;
+    }
     if (playing && !this._rafId && (typeof document === 'undefined' || !document.hidden)) {
       const loop = (ts) => {
-        if (!state.isPlaying || state.userPaused || (typeof document !== 'undefined' && document.hidden)) {
+        const curMobile = typeof window !== 'undefined' && window.innerWidth < 768;
+        if (!state.isPlaying || state.userPaused || (typeof document !== 'undefined' && document.hidden) || (curMobile && state.currentTab !== 'calma-listeleri')) {
           this._rafId = null;
-          this.drawIdleShape();
+          if (!state.isPlaying || state.userPaused) this.drawIdleShape();
           return;
         }
         const now = typeof ts === 'number' ? ts : performance.now();
-        if (now - this._lastDrawMs >= 40) {
+        if (now - this._lastDrawMs >= 50) {
           this._lastDrawMs = now;
           this._phase += 0.16;
-          const bars = document.querySelectorAll('#fx-live-spectrum > span');
-          if (bars.length > 0) {
+          const bars = state.currentTab === 'calma-listeleri' ? document.querySelectorAll('#fx-live-spectrum > span') : null;
+          if (bars && bars.length > 0) {
             let liveBytes = null;
             if (typeof KurfaDSP !== 'undefined' && KurfaDSP.analyserNode && KurfaDSP.isConnected) {
               try {
@@ -14645,8 +14720,9 @@ const FxReactiveStudio = {
               bar.style.setProperty('--bar', Math.max(0.14, Math.min(1.0, h)).toFixed(3));
             });
           }
-          // Human-like 4-band + volume/silence + continuous velocity audio intelligence
-          if (typeof document !== 'undefined' && document.documentElement) {
+          // Desktop Cove-LED variable intelligence (~14fps throttled; never run full-document :root mutations on mobile)
+          if (!curMobile && typeof document !== 'undefined' && document.documentElement && (!this._lastCoveCssMs || (now - this._lastCoveCssMs) >= 68)) {
+            this._lastCoveCssMs = now;
             const st = document.documentElement.style;
             const dtSec = Math.min(0.12, Math.max(0.016, (now - (this._lastTickMs || now)) / 1000));
             this._lastTickMs = now;
@@ -15102,9 +15178,6 @@ function startSmoothFade(fromGain, toGain, durationMs, onDone) {
         _smoothFadeTimer = setTimeout(() => tick(performance.now()), 30);
       } else {
         _smoothFadeRaf = requestAnimationFrame(tick);
-        _smoothFadeTimer = setTimeout(() => {
-          if (seq === _smoothFadeSeq) tick(performance.now());
-        }, 70);
       }
     } else {
       state._smoothFadeGain = to;
@@ -15118,9 +15191,6 @@ function startSmoothFade(fromGain, toGain, durationMs, onDone) {
     _smoothFadeTimer = setTimeout(() => tick(performance.now()), 30);
   } else {
     _smoothFadeRaf = requestAnimationFrame(tick);
-    _smoothFadeTimer = setTimeout(() => {
-      if (seq === _smoothFadeSeq) tick(performance.now());
-    }, 70);
   }
   return seq;
 }
@@ -18279,11 +18349,11 @@ async function handleGoogleSignIn() {
 
 let __syncDeckRafPending = false;
 function scheduleSyncPersistentPlayerPosition() {
+  if (state.deckVisualMode !== 'video' || state.currentTab !== 'calma-listeleri') {
+    return;
+  }
   const pDeck = document.getElementById('persistent-player-deck');
-  const needsPositioning = typeof supportsDeckVideo === 'function' &&
-    supportsDeckVideo(state.currentTrack) &&
-    state.currentTab === 'calma-listeleri' &&
-    state.deckVisualMode === 'video';
+  const needsPositioning = typeof supportsDeckVideo === 'function' && supportsDeckVideo(state.currentTrack);
   if (!needsPositioning && (!pDeck || pDeck.dataset.deckPosMode === 'silent')) return;
   if (__syncDeckRafPending) return;
   __syncDeckRafPending = true;
@@ -18821,25 +18891,35 @@ async function toggleDocumentPipPlayer() {
   await openDocumentPipPlayer();
 }
 
+let _arcCachedLen = 0;
+let _arcCachedPct = -1;
+let _arcMiniWidth = 0;
+if (typeof window !== 'undefined') {
+  window.addEventListener('resize', () => { _arcMiniWidth = 0; _arcCachedLen = 0; }, { passive: true });
+}
 function updateMobileMiniArcProgress(pct) {
   const clamped = Math.max(0, Math.min(100, Number(pct) || 0));
   const fill = (typeof DOM !== 'undefined' && DOM.playerMobileSeekFill) || document.getElementById('player-mobile-seek-fill');
   if (!fill) return;
   if (fill.tagName && fill.tagName.toLowerCase() === 'path') {
-    fill.style.strokeDashoffset = (100 - clamped).toFixed(3);
+    if (Math.abs(clamped - _arcCachedPct) < 0.2 && clamped > 0 && clamped < 100) return;
+    _arcCachedPct = clamped;
+    fill.style.strokeDashoffset = (100 - clamped).toFixed(2);
     fill.style.opacity = clamped > 0.05 ? '1' : '0';
     const thumb = document.getElementById('mobile-mini-arc-thumb');
     if (thumb && typeof fill.getTotalLength === 'function' && typeof fill.getPointAtLength === 'function') {
-      const total = fill.getTotalLength();
-      if (total > 0) {
-        const pt = fill.getPointAtLength((clamped / 100) * total);
-        thumb.setAttribute('cx', pt.x.toFixed(2));
-        thumb.setAttribute('cy', pt.y.toFixed(2));
-        const tip = document.getElementById('mobile-mini-seek-tooltip');
+      if (!_arcCachedLen) _arcCachedLen = fill.getTotalLength() || 0;
+      if (_arcCachedLen > 0) {
+        const pt = fill.getPointAtLength((clamped / 100) * _arcCachedLen);
+        thumb.setAttribute('cx', pt.x.toFixed(1));
+        thumb.setAttribute('cy', pt.y.toFixed(1));
+        const tip = window.__kurfaMobileMiniScrubbing ? document.getElementById('mobile-mini-seek-tooltip') : null;
         if (tip) {
-          const mini = document.getElementById('mobile-mini-player');
-          const maxW = (mini && mini.clientWidth) ? mini.clientWidth : 340;
-          const clampedX = Math.max(40, Math.min(maxW - 40, pt.x));
+          if (!_arcMiniWidth) {
+            const mini = document.getElementById('mobile-mini-player');
+            _arcMiniWidth = (mini && mini.clientWidth) ? mini.clientWidth : 340;
+          }
+          const clampedX = Math.max(40, Math.min(_arcMiniWidth - 40, pt.x));
           tip.style.left = `${clampedX.toFixed(1)}px`;
         }
       }
@@ -19972,6 +20052,9 @@ function setupEventListeners() {
       const d = DOM.audioEngine.duration;
       if (Number.isFinite(d) && d > 0) {
         if (DOM.playerTimeDur) DOM.playerTimeDur.textContent = formatTime(d);
+        if (typeof syncAndroidAndMediaPositionState === 'function') {
+          syncAndroidAndMediaPositionState(DOM.audioEngine.currentTime || 0, d, true);
+        }
       }
     };
     DOM.audioEngine.addEventListener('loadedmetadata', syncNativeDurFromAudio);
@@ -19989,16 +20072,9 @@ function setupEventListeners() {
         if ((cur >= 4 || (dur > 0 && (dur - cur) <= 15)) && typeof prefetchNextTrackStream === 'function') {
           prefetchNextTrackStream();
         }
-        // Keep Android notification progress accurate even when screen is off / app is backgrounded
-        if (document.hidden && state.isPlaying && typeof isAndroidNativeEngine === 'function' && isAndroidNativeEngine() &&
-            window.KurfaAndroidBridge && typeof window.KurfaAndroidBridge.updatePlaybackTiming === 'function') {
-          const nowMs = Date.now();
-          const tid = state.currentTrack ? (state.currentTrack.id || '') : '';
-          if (window._lastAndroidTimingTrackId !== tid || !window._lastAndroidTimingSyncAt || (nowMs - window._lastAndroidTimingSyncAt) >= 4000) {
-            window._lastAndroidTimingTrackId = tid;
-            window._lastAndroidTimingSyncAt = nowMs;
-            try { window.KurfaAndroidBridge.updatePlaybackTiming(Math.floor(cur), Math.floor(dur || 0)); } catch (_) {}
-          }
+        // Keep Android notification & MediaSession position accurate in background
+        if (document.hidden && state.isPlaying && typeof syncAndroidAndMediaPositionState === 'function') {
+          syncAndroidAndMediaPositionState(cur, dur || 0, false);
         }
       }
     });
@@ -20557,9 +20633,12 @@ window.__kurfaNativeExoEvent = function(rawPayload) {
         state._nativeExoCurrentTime = Number(evt.currentTime);
         state.currentPlayheadTime = Number(evt.currentTime);
       }
+      if (typeof evt.userPaused === 'boolean') {
+        state.userPaused = evt.userPaused;
+      }
       if (Boolean(evt.playing)) {
         state._activeTrackConfirmedPlaying = true;
-        state.userPaused = false;
+        if (typeof evt.userPaused !== 'boolean') state.userPaused = false;
       } else if (!state.userPaused && !playing && !evt.buffering) {
         const sinceReq = Date.now() - (state._nativeExoPlayRequestedAt || 0);
         if (sinceReq < 2500) {
@@ -20731,13 +20810,7 @@ window.kurfaNativePlay = function() {
   if (typeof resumePlayback === 'function') resumePlayback();
 };
 window.kurfaNativePause = function() {
-  const activeHtmlAudio = (state._activeMediaEngine === 'audio' || state._activeMediaEngine === 'native-video') &&
-    DOM.audioEngine && DOM.audioEngine.getAttribute('src') && !DOM.audioEngine.paused && !DOM.audioEngine.ended;
-  const sinceHtmlStart = Date.now() - (state._htmlMediaStartedAt || 0);
-  if (activeHtmlAudio && sinceHtmlStart < 3500 && !state.userPaused && (typeof document === 'undefined' || !document.hidden)) {
-    return;
-  }
-  if (typeof pausePlayback === 'function') pausePlayback();
+  if (typeof pausePlayback === 'function') pausePlayback(true);
   syncNativeAppPlaybackState(false, true);
 };
 window.kurfaNativeNextTrack = function() {
@@ -21253,10 +21326,14 @@ function renderDeviceAudioList(filterText = '') {
     const isPlayingCur = state.currentTrack && state.currentTrack.id === track.id;
     const isAnimating = isPlayingCur && state.isPlaying;
     const cleanMeta = cleanLocalTrackMeta(track);
+    const fmtTag = formatDeviceFormatTag(track);
     const dateTag = formatDeviceDateTag(track);
     const hueRgb = getDeviceHueRgb(track.id || cleanMeta.title);
     const artistLabel = track.artist || t('library.device_title');
-    const subLine = dateTag ? `${artistLabel} · ${dateTag}` : artistLabel;
+    const subParts = [artistLabel];
+    if (dateTag) subParts.push(dateTag);
+    if (fmtTag) subParts.push(fmtTag);
+    const subLine = subParts.join(' · ');
     const row = document.createElement('div');
     row.className = `track-row flex items-center justify-between gap-2 cursor-pointer transition-colors ${isPlayingCur ? 'active' : ''}`;
     row.dataset.trackId = track.id;
@@ -21269,7 +21346,7 @@ function renderDeviceAudioList(filterText = '') {
         </div>
         <div class="flex flex-col min-w-0 flex-1 overflow-hidden">
           <div class="flex items-center gap-1.5 min-w-0 track-title-wrap">
-            <span class="kurfa-row-title text-[13px] font-bold truncate block track-title-text ${isPlayingCur ? 'text-primary' : 'text-on-surface'}">${escapeHtml(cleanMeta.title || (isEn ? 'Track' : 'Parça'))}</span>
+            <span class="kurfa-row-title text-[13px] font-semibold truncate block track-title-text ${isPlayingCur ? 'text-primary' : 'text-on-surface'}">${escapeHtml(cleanMeta.title || (isEn ? 'Track' : 'Parça'))}</span>
           </div>
           <span class="kurfa-row-artist text-[11px] text-on-surface-variant truncate block mt-0.5">${escapeHtml(subLine)}</span>
         </div>
