@@ -145,7 +145,7 @@
     }
   </style>
   <link rel="stylesheet" href="./tailwind.min.css?v=20261120_v17">
-  <link rel="stylesheet" href="./style.min.css?v=52fffb96">
+  <link rel="stylesheet" href="./style.min.css?v=eda7659f">
 </head>
 <body class="bg-background font-sans text-on-surface antialiased min-h-screen">
   <script>
@@ -1167,38 +1167,19 @@
           </div>
         </div>
 
-        <!-- KÜTÜPHANE PANE 3: CİHAZDAKİ MÜZİKLERİM (Rafine & Temiz Tasarım) -->
-        <div id="kutuphane-pane-cihaz" class="flex flex-col gap-3 hidden">
-          <div class="kurfa-device-stage">
-            <div class="flex items-center gap-3 min-w-0">
-              <div class="kurfa-device-stage-badge" aria-hidden="true">
-                <span class="material-symbols-outlined text-[20px] filled">library_music</span>
-              </div>
-              <div class="min-w-0">
-                <h2 class="text-[15px] sm:text-base font-extrabold text-on-surface tracking-tight truncate" data-i18n="library.device_title">Cihazdaki Müzikler</h2>
-                <p class="text-[11px] text-on-surface-variant font-medium mt-0.5 truncate" id="device-audio-count-text">0 Parça • 0 dk</p>
-              </div>
-            </div>
-            <div class="flex items-center gap-1.5 flex-shrink-0">
-              <button type="button" class="kurfa-device-play-btn" onclick="playAllDeviceAudio()">
-                <span class="material-symbols-outlined text-[16px] filled">play_arrow</span>
-                <span data-i18n="library.device_play_seq">Sırayla Çal</span>
-              </button>
-              <button type="button" class="kurfa-device-icon-btn" onclick="shufflePlayDeviceAudio()" title="Karışık Çal" aria-label="Karışık Çal">
-                <span class="material-symbols-outlined text-[17px]">shuffle</span>
-              </button>
-              <button type="button" class="kurfa-device-icon-btn" onclick="scanLocalDeviceAudio(true)" title="Tara / Seç" aria-label="Tara / Seç">
-                <span class="material-symbols-outlined text-[17px]">refresh</span>
-              </button>
-            </div>
-          </div>
-
+        <!-- KÜTÜPHANE PANE 3: CİHAZDAKİ MÜZİKLERİM (Kompakt & Şık Liste) -->
+        <div id="kutuphane-pane-cihaz" class="flex flex-col gap-2.5 hidden">
           <div class="kurfa-device-toolbar flex flex-col gap-2 min-w-0">
-            <div class="kurfa-device-search-wrap">
-              <span class="material-symbols-outlined kurfa-device-search-icon">search</span>
-              <input type="text" id="device-audio-filter" placeholder="Cihazdaki şarkılarda ara..." data-i18n-placeholder="library.device_filter_placeholder" aria-label="Cihazdaki şarkılarda ara" data-i18n-aria="library.device_filter_placeholder" class="kurfa-device-search-input" oninput="renderDeviceAudioList(this.value)">
-              <button type="button" id="device-audio-clear-btn" aria-label="Aramayı temizle" onclick="clearDeviceAudioFilter()" class="kurfa-device-search-clear hidden">
-                <span class="material-symbols-outlined text-[16px]">close</span>
+            <div class="flex items-center gap-2 min-w-0">
+              <div class="kurfa-device-search-wrap flex-1 min-w-0">
+                <span class="material-symbols-outlined kurfa-device-search-icon">search</span>
+                <input type="text" id="device-audio-filter" placeholder="Cihazdaki şarkılarda ara..." data-i18n-placeholder="library.device_filter_placeholder" aria-label="Cihazdaki şarkılarda ara" data-i18n-aria="library.device_filter_placeholder" class="kurfa-device-search-input" oninput="renderDeviceAudioList(this.value)">
+                <button type="button" id="device-audio-clear-btn" aria-label="Aramayı temizle" onclick="clearDeviceAudioFilter()" class="kurfa-device-search-clear hidden">
+                  <span class="material-symbols-outlined text-[16px]">close</span>
+                </button>
+              </div>
+              <button type="button" class="kurfa-device-scan-btn" onclick="scanLocalDeviceAudio(true)" title="Tara / Seç" aria-label="Tara / Seç">
+                <span class="material-symbols-outlined text-[18px]">refresh</span>
               </button>
             </div>
             <div class="kurfa-device-controls-row">
@@ -1207,20 +1188,30 @@
                 <button type="button" data-filter="recent" onclick="setDeviceAudioFilterMode('recent')" class="kurfa-device-seg-btn">Son</button>
                 <button type="button" data-filter="long" onclick="setDeviceAudioFilterMode('long')" class="kurfa-device-seg-btn">3+ dk</button>
               </div>
-              <div class="kurfa-device-sort-wrap">
-                <span class="material-symbols-outlined kurfa-device-sort-icon" aria-hidden="true">swap_vert</span>
-                <select id="device-audio-sort-select" class="kurfa-device-sort-select" aria-label="Sıralama" onchange="setDeviceAudioSort(this.value)">
-                  <option value="newest">En Yeni</option>
-                  <option value="oldest">En Eski</option>
-                  <option value="title_asc">A-Z</option>
-                  <option value="artist_asc">Sanatçı</option>
-                  <option value="duration_desc">Süre</option>
-                </select>
-                <span class="material-symbols-outlined kurfa-device-sort-caret" aria-hidden="true">expand_more</span>
+              <div class="flex items-center gap-1.5 flex-shrink-0">
+                <div class="kurfa-device-sort-wrap">
+                  <span class="material-symbols-outlined kurfa-device-sort-icon" aria-hidden="true">swap_vert</span>
+                  <select id="device-audio-sort-select" class="kurfa-device-sort-select" aria-label="Sıralama" onchange="setDeviceAudioSort(this.value)">
+                    <option value="newest">En Yeni</option>
+                    <option value="oldest">En Eski</option>
+                    <option value="title_asc">A-Z</option>
+                    <option value="artist_asc">Sanatçı</option>
+                    <option value="duration_desc">Süre</option>
+                  </select>
+                  <span class="material-symbols-outlined kurfa-device-sort-caret" aria-hidden="true">expand_more</span>
+                </div>
+                <button type="button" class="kurfa-device-mini-btn" onclick="shufflePlayDeviceAudio()" title="Karışık Çal" aria-label="Karışık Çal">
+                  <span class="material-symbols-outlined text-[16px]">shuffle</span>
+                </button>
+                <button type="button" class="kurfa-device-play-compact" onclick="playAllDeviceAudio()" title="Sırayla Çal" aria-label="Sırayla Çal">
+                  <span class="material-symbols-outlined text-[16px] filled">play_arrow</span>
+                  <span class="kurfa-device-play-label">Çal</span>
+                </button>
               </div>
             </div>
           </div>
 
+          <div class="kurfa-device-list-meta" id="device-audio-count-text">0 Parça • 0 dk</div>
           <input type="file" id="device-audio-file-picker" accept="audio/*" multiple class="hidden" onchange="handleWebLocalAudioFiles(this.files)">
           <div class="kurfa-device-list-shell flex flex-col" id="device-audio-list">
             <!-- Injected by JavaScript -->
