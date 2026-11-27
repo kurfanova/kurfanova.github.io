@@ -21176,11 +21176,15 @@ function getFilteredSortedDeviceTracks(filterText = '') {
 
 function syncDeviceSortFilterChips() {
   const bar = document.getElementById('device-audio-sort-bar');
-  if (!bar) return;
   const sortKey = state.deviceAudioSort || 'newest';
   const mode = state.deviceAudioFilterMode || 'all';
-  bar.querySelectorAll('[data-sort]').forEach(btn => btn.classList.toggle('active', btn.dataset.sort === sortKey));
-  bar.querySelectorAll('[data-filter]').forEach(btn => btn.classList.toggle('active', btn.dataset.filter === mode));
+  if (bar) {
+    bar.querySelectorAll('[data-filter]').forEach(btn => btn.classList.toggle('active', btn.dataset.filter === mode));
+  }
+  const sortSelect = document.getElementById('device-audio-sort-select');
+  if (sortSelect && sortSelect.value !== sortKey) {
+    sortSelect.value = sortKey;
+  }
 }
 
 function setDeviceAudioSort(sortKey) {
@@ -21249,11 +21253,12 @@ function renderDeviceAudioList(filterText = '') {
     const isPlayingCur = state.currentTrack && state.currentTrack.id === track.id;
     const isAnimating = isPlayingCur && state.isPlaying;
     const cleanMeta = cleanLocalTrackMeta(track);
-    const fmtTag = formatDeviceFormatTag(track);
     const dateTag = formatDeviceDateTag(track);
     const hueRgb = getDeviceHueRgb(track.id || cleanMeta.title);
+    const artistLabel = track.artist || t('library.device_title');
+    const subLine = dateTag ? `${artistLabel} · ${dateTag}` : artistLabel;
     const row = document.createElement('div');
-    row.className = `track-row flex items-center justify-between gap-2 p-2.5 rounded-xl cursor-pointer transition-colors ${isPlayingCur ? 'active' : ''}`;
+    row.className = `track-row flex items-center justify-between gap-2 cursor-pointer transition-colors ${isPlayingCur ? 'active' : ''}`;
     row.dataset.trackId = track.id;
     row.dataset.trackIdx = String(idx + 1);
     row.innerHTML = `
@@ -21264,18 +21269,13 @@ function renderDeviceAudioList(filterText = '') {
         </div>
         <div class="flex flex-col min-w-0 flex-1 overflow-hidden">
           <div class="flex items-center gap-1.5 min-w-0 track-title-wrap">
-            <span class="kurfa-row-title text-xs font-bold truncate block track-title-text text-on-surface">${escapeHtml(cleanMeta.title || (isEn ? 'Track' : 'Parça'))}</span>
-            ${isPlayingCur ? renderPlayingPillHtml() : ''}
+            <span class="kurfa-row-title text-[13px] font-bold truncate block track-title-text ${isPlayingCur ? 'text-primary' : 'text-on-surface'}">${escapeHtml(cleanMeta.title || (isEn ? 'Track' : 'Parça'))}</span>
           </div>
-          <div class="flex items-center gap-1.5 min-w-0 mt-0.5">
-            <span class="kurfa-row-artist text-[11px] text-on-surface-variant truncate block">${escapeHtml(track.artist || t('library.device_title'))}</span>
-            <span class="kurfa-device-meta-tag">${escapeHtml(fmtTag)}</span>
-            ${dateTag ? `<span class="kurfa-device-meta-tag hidden sm:inline-flex">${escapeHtml(dateTag)}</span>` : ''}
-          </div>
+          <span class="kurfa-row-artist text-[11px] text-on-surface-variant truncate block mt-0.5">${escapeHtml(subLine)}</span>
         </div>
       </div>
       <div class="flex items-center gap-1.5 flex-shrink-0 pl-1">
-        <button type="button" class="kurfa-dev-queue-btn w-7 h-7 rounded-lg flex items-center justify-center text-on-surface-variant hover:text-primary hover:bg-surface-container transition-colors" title="Sıraya Ekle" aria-label="Sıraya Ekle">
+        <button type="button" class="kurfa-dev-queue-btn w-7 h-7 rounded-lg flex items-center justify-center text-on-surface-variant opacity-70 hover:opacity-100 hover:text-primary transition-all" title="Sıraya Ekle" aria-label="Sıraya Ekle">
           <span class="material-symbols-outlined text-[16px]">playlist_add</span>
         </button>
         <span class="text-[11px] text-on-surface-variant font-mono tabular-nums w-9 text-right track-duration-text">${escapeHtml(track.duration || '3:30')}</span>
@@ -21345,17 +21345,13 @@ function syncActiveTrackRowInDeviceAudio() {
     }
     const titleEl = row.querySelector('.track-title-text');
     if (titleEl) {
-      titleEl.classList.remove('text-primary');
-      titleEl.classList.add('text-on-surface');
+      titleEl.classList.toggle('text-primary', isCur);
+      titleEl.classList.toggle('text-on-surface', !isCur);
     }
     const titleWrap = row.querySelector('.track-title-wrap');
     if (titleWrap) {
       const existingPill = titleWrap.querySelector('.kurfa-playing-pill');
-      if (isCur && !existingPill) {
-        titleWrap.insertAdjacentHTML('beforeend', renderPlayingPillHtml());
-      } else if (!isCur && existingPill) {
-        existingPill.remove();
-      }
+      if (existingPill) existingPill.remove();
     }
   });
 }

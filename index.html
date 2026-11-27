@@ -145,7 +145,7 @@
     }
   </style>
   <link rel="stylesheet" href="./tailwind.min.css?v=20261120_v17">
-  <link rel="stylesheet" href="./style.min.css?v=555ad8c4">
+  <link rel="stylesheet" href="./style.min.css?v=c8791528">
 </head>
 <body class="bg-background font-sans text-on-surface antialiased min-h-screen">
   <script>
@@ -1167,38 +1167,28 @@
           </div>
         </div>
 
-        <!-- KÜTÜPHANE PANE 3: CİHAZDAKİ MÜZİKLERİM (Gelişmiş Çevrimdışı Kütüphane) -->
-        <div id="kutuphane-pane-cihaz" class="flex flex-col gap-3.5 hidden">
-          <div class="kurfa-device-hero rounded-2xl p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3.5">
-            <div class="flex items-center gap-3.5 min-w-0">
-              <div class="kurfa-device-hero-icon w-11 h-11 rounded-2xl flex items-center justify-center flex-shrink-0">
-                <span class="material-symbols-outlined text-[22px] filled">library_music</span>
-              </div>
-              <div class="flex flex-col min-w-0">
-                <div class="flex items-center gap-2 min-w-0">
-                  <h2 class="text-sm sm:text-base font-extrabold text-on-surface tracking-tight truncate" data-i18n="library.device_title">Cihazdaki Müzikler</h2>
-                  <span class="kurfa-device-offline-pill px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider flex-shrink-0">Çevrimdışı</span>
-                </div>
-                <span class="text-xs text-on-surface-variant font-medium truncate mt-0.5" id="device-audio-count-text">0 Parça • 0 dk</span>
-              </div>
+        <!-- KÜTÜPHANE PANE 3: CİHAZDAKİ MÜZİKLERİM (Sade & Temiz Liste) -->
+        <div id="kutuphane-pane-cihaz" class="flex flex-col gap-3 hidden">
+          <div class="kurfa-device-header">
+            <div class="min-w-0">
+              <h2 class="text-[15px] sm:text-base font-extrabold text-on-surface tracking-tight truncate" data-i18n="library.device_title">Cihazdaki Müzikler</h2>
+              <p class="text-[11px] text-on-surface-variant font-medium mt-0.5 truncate" id="device-audio-count-text">0 Parça • 0 dk</p>
             </div>
-            <div class="flex items-center flex-wrap gap-2 flex-shrink-0">
-              <button type="button" class="px-3.5 py-2 rounded-full bg-primary text-on-primary text-xs font-bold shadow-xs hover:bg-primary-container transition-all flex items-center gap-1.5" onclick="playAllDeviceAudio()">
+            <div class="flex items-center gap-1.5 flex-shrink-0">
+              <button type="button" class="kurfa-device-play-btn" onclick="playAllDeviceAudio()">
                 <span class="material-symbols-outlined text-[16px] filled">play_arrow</span>
-                <span data-i18n="library.device_play_seq">Sırayla Çal</span>
+                <span data-i18n="library.device_play_seq">Çal</span>
               </button>
-              <button type="button" class="kurfa-device-sec-btn px-3 py-2 rounded-full text-xs font-semibold transition-all flex items-center gap-1.5" onclick="shufflePlayDeviceAudio()">
-                <span class="material-symbols-outlined text-[15px]">shuffle</span>
-                <span>Karışık</span>
+              <button type="button" class="kurfa-device-icon-btn" onclick="shufflePlayDeviceAudio()" title="Karışık Çal" aria-label="Karışık Çal">
+                <span class="material-symbols-outlined text-[17px]">shuffle</span>
               </button>
-              <button type="button" class="kurfa-device-sec-btn px-3 py-2 rounded-full text-xs font-semibold transition-all flex items-center gap-1.5" onclick="scanLocalDeviceAudio(true)">
-                <span class="material-symbols-outlined text-[15px]">refresh</span>
-                <span data-i18n="library.device_scan">Tara / Seç</span>
+              <button type="button" class="kurfa-device-icon-btn" onclick="scanLocalDeviceAudio(true)" title="Tara / Seç" aria-label="Tara / Seç">
+                <span class="material-symbols-outlined text-[17px]">refresh</span>
               </button>
             </div>
           </div>
 
-          <div class="kurfa-device-toolbar flex flex-col gap-2.5 min-w-0">
+          <div class="kurfa-device-toolbar flex flex-col gap-2 min-w-0">
             <div class="kurfa-device-search-wrap">
               <span class="material-symbols-outlined kurfa-device-search-icon">search</span>
               <input type="text" id="device-audio-filter" placeholder="Cihazdaki şarkılarda ara..." data-i18n-placeholder="library.device_filter_placeholder" aria-label="Cihazdaki şarkılarda ara" data-i18n-aria="library.device_filter_placeholder" class="kurfa-device-search-input" oninput="renderDeviceAudioList(this.value)">
@@ -1206,21 +1196,28 @@
                 <span class="material-symbols-outlined text-[16px]">close</span>
               </button>
             </div>
-            <div class="kurfa-device-pill-bar flex items-center gap-1.5 pb-0.5" id="device-audio-sort-bar">
-              <button type="button" data-sort="newest" onclick="setDeviceAudioSort('newest')" class="kurfa-device-chip active">En Yeni</button>
-              <button type="button" data-sort="oldest" onclick="setDeviceAudioSort('oldest')" class="kurfa-device-chip">En Eski</button>
-              <button type="button" data-sort="title_asc" onclick="setDeviceAudioSort('title_asc')" class="kurfa-device-chip">A-Z</button>
-              <button type="button" data-sort="artist_asc" onclick="setDeviceAudioSort('artist_asc')" class="kurfa-device-chip">Sanatçı</button>
-              <button type="button" data-sort="duration_desc" onclick="setDeviceAudioSort('duration_desc')" class="kurfa-device-chip">Süre</button>
-              <span class="kurfa-device-chip-sep" aria-hidden="true"></span>
-              <button type="button" data-filter="all" onclick="setDeviceAudioFilterMode('all')" class="kurfa-device-chip active">Tümü</button>
-              <button type="button" data-filter="recent" onclick="setDeviceAudioFilterMode('recent')" class="kurfa-device-chip">Son Eklenenler</button>
-              <button type="button" data-filter="long" onclick="setDeviceAudioFilterMode('long')" class="kurfa-device-chip">3+ dk</button>
+            <div class="kurfa-device-controls-row">
+              <div class="kurfa-device-seg" id="device-audio-sort-bar">
+                <button type="button" data-filter="all" onclick="setDeviceAudioFilterMode('all')" class="kurfa-device-seg-btn active">Tümü</button>
+                <button type="button" data-filter="recent" onclick="setDeviceAudioFilterMode('recent')" class="kurfa-device-seg-btn">Son</button>
+                <button type="button" data-filter="long" onclick="setDeviceAudioFilterMode('long')" class="kurfa-device-seg-btn">3+ dk</button>
+              </div>
+              <div class="kurfa-device-sort-wrap">
+                <span class="material-symbols-outlined kurfa-device-sort-icon" aria-hidden="true">swap_vert</span>
+                <select id="device-audio-sort-select" class="kurfa-device-sort-select" aria-label="Sıralama" onchange="setDeviceAudioSort(this.value)">
+                  <option value="newest">En Yeni</option>
+                  <option value="oldest">En Eski</option>
+                  <option value="title_asc">A-Z</option>
+                  <option value="artist_asc">Sanatçı</option>
+                  <option value="duration_desc">Süre</option>
+                </select>
+                <span class="material-symbols-outlined kurfa-device-sort-caret" aria-hidden="true">expand_more</span>
+              </div>
             </div>
           </div>
 
           <input type="file" id="device-audio-file-picker" accept="audio/*" multiple class="hidden" onchange="handleWebLocalAudioFiles(this.files)">
-          <div class="kurfa-device-list-shell bg-surface-container-lowest rounded-2xl p-2 sm:p-2.5 shadow-sm border border-surface-container/60 flex flex-col gap-1" id="device-audio-list">
+          <div class="kurfa-device-list-shell flex flex-col" id="device-audio-list">
             <!-- Injected by JavaScript -->
           </div>
         </div>
@@ -3198,6 +3195,6 @@
   </div>
 
   <!-- Scripts (Deferred & minified; YouTube IFrame API loads lazily on demand) -->
-  <script defer fetchpriority="high" src="./app.min.js?v=b116d0e8"></script>
+  <script defer fetchpriority="high" src="./app.min.js?v=32632ecf"></script>
 </body>
 </html>

@@ -6636,59 +6636,62 @@ body.dark-mode .kurfa-backup-progress-track {
 .kurfa-about-web:hover { border-color: rgba(99, 102, 241, 0.45) !important; }
 
 /* 6. Device Music Pane (#kutuphane-pane-cihaz) */
-.kurfa-device-hero {
-  background:
-    radial-gradient(320px 140px at 6% 12%, rgba(var(--kurfa-track-rgb, 244, 63, 94), 0.10), transparent 72%),
-    rgba(255, 255, 255, 0.88);
-  border: 1px solid rgba(15, 23, 42, 0.07);
-  backdrop-filter: blur(20px) saturate(160%);
-  -webkit-backdrop-filter: blur(20px) saturate(160%);
-  box-shadow: 0 4px 20px rgba(15, 23, 42, 0.04);
+.kurfa-device-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 2px 2px 0;
 }
 
-body.dark-mode .kurfa-device-hero {
-  background:
-    radial-gradient(340px 150px at 6% 12%, rgba(var(--kurfa-track-rgb, 244, 63, 94), 0.16), transparent 72%),
-    rgba(21, 29, 46, 0.82);
-  border: 1px solid rgba(255, 255, 255, 0.07);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05), 0 8px 26px rgba(2, 6, 16, 0.34);
+.kurfa-device-play-btn {
+  height: 34px;
+  padding: 0 14px;
+  border-radius: 9999px;
+  background: rgb(var(--kurfa-track-rgb, 244, 63, 94));
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  transition: transform 0.14s ease, filter 0.14s ease;
+  cursor: pointer;
 }
 
-.kurfa-device-hero-icon {
-  background: rgba(var(--kurfa-track-rgb, 244, 63, 94), 0.12);
-  color: rgb(var(--kurfa-track-rgb, 244, 63, 94));
-  border: 1px solid rgba(var(--kurfa-track-rgb, 244, 63, 94), 0.20);
+.kurfa-device-play-btn:hover {
+  filter: brightness(1.06);
 }
 
-.kurfa-device-offline-pill {
-  background: rgba(16, 185, 129, 0.12);
-  color: #059669;
-  border: 1px solid rgba(16, 185, 129, 0.22);
+.kurfa-device-play-btn:active {
+  transform: scale(0.97);
 }
 
-body.dark-mode .kurfa-device-offline-pill {
-  background: rgba(16, 185, 129, 0.14);
-  color: #34d399;
-  border-color: rgba(52, 211, 153, 0.24);
-}
-
-.kurfa-device-sec-btn {
+.kurfa-device-icon-btn {
+  width: 34px;
+  height: 34px;
+  border-radius: 9999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #475569;
   background: rgba(15, 23, 42, 0.05);
-  color: #1e293b;
-  border: 1px solid rgba(15, 23, 42, 0.08);
+  transition: background-color 0.15s ease, color 0.15s ease;
+  cursor: pointer;
 }
 
-.kurfa-device-sec-btn:hover {
+.kurfa-device-icon-btn:hover {
+  color: #0f172a;
   background: rgba(15, 23, 42, 0.09);
 }
 
-body.dark-mode .kurfa-device-sec-btn {
+body.dark-mode .kurfa-device-icon-btn {
+  color: #cbd5e1;
   background: rgba(255, 255, 255, 0.06);
-  color: #e2e8f0;
-  border: 1px solid rgba(255, 255, 255, 0.09);
 }
 
-body.dark-mode .kurfa-device-sec-btn:hover {
+body.dark-mode .kurfa-device-icon-btn:hover {
+  color: #ffffff;
   background: rgba(255, 255, 255, 0.11);
 }
 
@@ -6709,10 +6712,10 @@ body.dark-mode .kurfa-device-sec-btn:hover {
 
 .kurfa-device-search-icon {
   position: absolute;
-  left: 14px;
+  left: 13px;
   top: 50%;
   transform: translateY(-50%);
-  font-size: 18px !important;
+  font-size: 17px !important;
   color: #64748b;
   pointer-events: none;
   z-index: 2;
@@ -6727,15 +6730,15 @@ body.dark-mode .kurfa-device-search-icon {
   max-width: 100%;
   min-width: 0;
   box-sizing: border-box;
-  height: 42px;
-  padding: 0 38px 0 42px !important;
-  border-radius: 13px;
+  height: 40px;
+  padding: 0 36px 0 40px !important;
+  border-radius: 12px;
   font-size: 13px;
   color: #0f172a;
-  background: rgba(255, 255, 255, 0.92);
-  border: 1px solid rgba(15, 23, 42, 0.09);
+  background: rgba(15, 23, 42, 0.04);
+  border: 1px solid rgba(15, 23, 42, 0.07);
   outline: none;
-  transition: border-color 0.16s ease, box-shadow 0.16s ease;
+  transition: border-color 0.16s ease, box-shadow 0.16s ease, background-color 0.16s ease;
 }
 
 .kurfa-device-search-input::placeholder {
@@ -6743,14 +6746,19 @@ body.dark-mode .kurfa-device-search-icon {
 }
 
 .kurfa-device-search-input:focus {
-  border-color: rgb(var(--kurfa-track-rgb, 244, 63, 94));
-  box-shadow: 0 0 0 3px rgba(var(--kurfa-track-rgb, 244, 63, 94), 0.12);
+  background: rgba(255, 255, 255, 0.96);
+  border-color: rgba(var(--kurfa-track-rgb, 244, 63, 94), 0.55);
+  box-shadow: 0 0 0 3px rgba(var(--kurfa-track-rgb, 244, 63, 94), 0.10);
 }
 
 body.dark-mode .kurfa-device-search-input {
   color: #f8fafc;
-  background: rgba(17, 24, 39, 0.72);
-  border-color: rgba(255, 255, 255, 0.09);
+  background: rgba(255, 255, 255, 0.045);
+  border-color: rgba(255, 255, 255, 0.07);
+}
+
+body.dark-mode .kurfa-device-search-input:focus {
+  background: rgba(255, 255, 255, 0.07);
 }
 
 body.dark-mode .kurfa-device-search-input::placeholder {
@@ -6759,12 +6767,12 @@ body.dark-mode .kurfa-device-search-input::placeholder {
 
 .kurfa-device-search-clear {
   position: absolute;
-  right: 8px;
+  right: 7px;
   top: 50%;
   transform: translateY(-50%);
-  width: 28px;
-  height: 28px;
-  border-radius: 8px;
+  width: 26px;
+  height: 26px;
+  border-radius: 7px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -6786,102 +6794,170 @@ body.dark-mode .kurfa-device-search-clear:hover {
   display: none !important;
 }
 
-.kurfa-device-pill-bar {
-  overflow-x: auto;
-  scrollbar-width: none;
-  -ms-overflow-style: none;
+.kurfa-device-controls-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-width: 0;
 }
 
-.kurfa-device-pill-bar::-webkit-scrollbar {
-  display: none;
-}
-
-.kurfa-device-chip {
+.kurfa-device-seg {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px;
+  border-radius: 10px;
+  background: rgba(15, 23, 42, 0.045);
   flex-shrink: 0;
-  padding: 5px 12px;
-  border-radius: 9999px;
+}
+
+body.dark-mode .kurfa-device-seg {
+  background: rgba(255, 255, 255, 0.045);
+}
+
+.kurfa-device-seg-btn {
+  padding: 5px 10px;
+  border-radius: 7px;
   font-size: 11px;
   font-weight: 600;
+  color: #64748b;
   white-space: nowrap;
-  color: #475569;
-  background: rgba(15, 23, 42, 0.045);
-  border: 1px solid rgba(15, 23, 42, 0.07);
-  transition: background-color 0.16s ease, color 0.16s ease, border-color 0.16s ease;
+  transition: background-color 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
+  cursor: pointer;
 }
 
-.kurfa-device-chip:hover {
+.kurfa-device-seg-btn:hover {
   color: #0f172a;
+}
+
+.kurfa-device-seg-btn.active {
+  background: #ffffff;
+  color: #0f172a;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.08);
+}
+
+body.dark-mode .kurfa-device-seg-btn {
+  color: #94a3b8;
+}
+
+body.dark-mode .kurfa-device-seg-btn:hover {
+  color: #f8fafc;
+}
+
+body.dark-mode .kurfa-device-seg-btn.active {
+  background: rgba(255, 255, 255, 0.11);
+  color: #f8fafc;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
+}
+
+.kurfa-device-sort-wrap {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.kurfa-device-sort-icon {
+  position: absolute;
+  left: 10px;
+  font-size: 14px !important;
+  color: #64748b;
+  pointer-events: none;
+}
+
+.kurfa-device-sort-caret {
+  position: absolute;
+  right: 8px;
+  font-size: 15px !important;
+  color: #64748b;
+  pointer-events: none;
+}
+
+body.dark-mode .kurfa-device-sort-icon,
+body.dark-mode .kurfa-device-sort-caret {
+  color: #94a3b8;
+}
+
+.kurfa-device-sort-select {
+  height: 32px;
+  border-radius: 10px;
+  padding: 0 26px 0 28px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #334155;
+  background: rgba(15, 23, 42, 0.045);
+  border: none;
+  outline: none;
+  appearance: none;
+  -webkit-appearance: none;
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.kurfa-device-sort-select:hover {
   background: rgba(15, 23, 42, 0.08);
 }
 
-.kurfa-device-chip.active {
+body.dark-mode .kurfa-device-sort-select {
+  color: #e2e8f0;
+  background: rgba(255, 255, 255, 0.055);
+}
+
+body.dark-mode .kurfa-device-sort-select:hover {
+  background: rgba(255, 255, 255, 0.09);
+}
+
+body.dark-mode .kurfa-device-sort-select option {
   background: #0f172a;
-  color: #ffffff;
-  border-color: #0f172a;
-  font-weight: 700;
-}
-
-body.dark-mode .kurfa-device-chip {
-  color: #94a3b8;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.07);
-}
-
-body.dark-mode .kurfa-device-chip:hover {
   color: #f8fafc;
-  background: rgba(255, 255, 255, 0.085);
 }
 
-body.dark-mode .kurfa-device-chip.active {
-  background: rgba(var(--kurfa-track-rgb, 244, 63, 94), 0.18);
-  color: #ffffff;
-  border-color: rgba(var(--kurfa-track-rgb, 244, 63, 94), 0.42);
+.kurfa-device-list-shell {
+  border-radius: 14px;
+  background: transparent;
+  padding: 0;
 }
 
-.kurfa-device-chip-sep {
-  flex-shrink: 0;
-  width: 1px;
-  height: 16px;
-  margin: 0 3px;
-  background: rgba(15, 23, 42, 0.12);
+@media (max-width: 768px) {
+  .kurfa-device-list-shell {
+    padding-bottom: 104px;
+  }
 }
 
-body.dark-mode .kurfa-device-chip-sep {
-  background: rgba(255, 255, 255, 0.12);
+#device-audio-list .track-row {
+  padding: 9px 8px;
+  border-radius: 11px;
+  border-bottom: 1px solid rgba(15, 23, 42, 0.05);
+}
+
+#device-audio-list .track-row:last-child {
+  border-bottom: none;
+}
+
+body.dark-mode #device-audio-list .track-row {
+  border-bottom-color: rgba(255, 255, 255, 0.045);
+}
+
+#device-audio-list .track-row.active {
+  background: rgba(var(--kurfa-track-rgb, 244, 63, 94), 0.09);
+  border-bottom-color: transparent;
 }
 
 .kurfa-device-art {
-  width: 38px;
-  height: 38px;
-  border-radius: 11px;
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
   background: rgba(var(--dev-hue-rgb, 99, 102, 241), 0.12);
   color: rgb(var(--dev-hue-rgb, 99, 102, 241));
-  border: 1px solid rgba(var(--dev-hue-rgb, 99, 102, 241), 0.22);
-  transition: transform 0.18s ease, box-shadow 0.18s ease;
+  border: none;
+  transition: transform 0.18s ease, background-color 0.18s ease;
 }
 
 .track-row.active .kurfa-device-art {
-  box-shadow: 0 0 0 1px rgba(var(--kurfa-track-rgb, 244, 63, 94), 0.42);
-}
-
-.kurfa-device-meta-tag {
-  display: inline-flex;
-  align-items: center;
-  padding: 1px 6px;
-  border-radius: 6px;
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 0.02em;
-  background: rgba(15, 23, 42, 0.055);
-  color: #475569;
-  flex-shrink: 0;
-}
-
-body.dark-mode .kurfa-device-meta-tag {
-  background: rgba(255, 255, 255, 0.065);
-  color: #cbd5e1;
+  background: rgba(var(--kurfa-track-rgb, 244, 63, 94), 0.16);
+  color: rgb(var(--kurfa-track-rgb, 244, 63, 94));
 }
