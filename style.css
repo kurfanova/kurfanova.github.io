@@ -4981,6 +4981,9 @@ body.dark-mode .kurfa-about-hero-card {
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 6px;
   padding: 4px;
+  width: 100%;
+  box-sizing: border-box;
+  overflow: hidden;
   border-radius: 9999px;
   background: rgba(15, 23, 42, 0.055);
   border: 1px solid rgba(15, 23, 42, 0.06);
@@ -5019,6 +5022,14 @@ body.dark-mode .kurfa-np-mobile-tabs {
 
 body.dark-mode .kurfa-np-tab-btn {
   color: #94a3b8;
+}
+
+@media (max-width: 480px) {
+  .kurfa-np-tab-btn {
+    font-size: 11px;
+    padding: 7px 4px;
+    gap: 4px;
+  }
 }
 
 .kurfa-np-tab-btn.active {
@@ -5170,7 +5181,58 @@ body.dark-mode .kurfa-stage-seg {
 }
 
 .kurfa-lyrics-header-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  overflow: hidden;
   border-bottom: 1px solid rgba(15, 23, 42, 0.07);
+}
+
+.kurfa-lyrics-status-text {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.kurfa-lyrics-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  max-width: 65%;
+  flex-shrink: 1;
+}
+
+#btn-lyrics-provider-cycle {
+  min-width: 0;
+  max-width: 175px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+}
+
+#lyrics-source-badge {
+  display: block;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@media (max-width: 480px) {
+  .kurfa-lyrics-header-actions {
+    max-width: 66%;
+  }
+  #btn-lyrics-provider-cycle {
+    max-width: 132px;
+  }
 }
 
 body.dark-mode .kurfa-lyrics-header-bar {
@@ -5301,13 +5363,51 @@ body.dark-mode #desktop-sidebar.kurfa-sidebar-rail {
 }
 
 html:not(.dark-mode) #desktop-sidebar.kurfa-sidebar-rail {
-  background: linear-gradient(90deg, rgba(255, 255, 255, 0.96) 0%, rgba(248, 250, 254, 0.92) 100%) !important;
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.96) 0%,
+    rgba(247, 249, 254, 0.95) 56%,
+    rgba(var(--kurfa-track-rgb), 0.055) 100%
+  ) !important;
   backdrop-filter: blur(28px) saturate(190%);
   -webkit-backdrop-filter: blur(28px) saturate(190%);
-  border-right: 1px solid rgba(15, 23, 42, 0.065) !important;
-  box-shadow: inset -1px 0 0 rgba(255, 255, 255, 0.9) !important;
+  border-right: 1px solid rgba(var(--kurfa-track-rgb), 0.16) !important;
+  box-shadow:
+    inset -1px 0 0 rgba(255, 255, 255, 0.92),
+    4px 0 24px rgba(15, 23, 42, 0.045) !important;
   contain: layout style paint;
-  transition: background 0.9s ease, border-color 0.9s ease;
+  transition: background 0.9s ease, border-color 0.9s ease, box-shadow 0.9s ease;
+}
+
+#desktop-sidebar.kurfa-sidebar-rail::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: 0;
+  width: 2.5px;
+  pointer-events: none;
+  z-index: 20;
+  background: radial-gradient(
+    4px 260px at 50% var(--kurfa-rim-y, 35%),
+    rgba(var(--kurfa-track-rgb), 0.92) 0%,
+    rgba(var(--kurfa-track-rgb-2), 0.52) 48%,
+    rgba(var(--kurfa-track-rgb-3), 0.16) 80%,
+    transparent 100%
+  );
+  opacity: 0.42;
+  filter: hue-rotate(var(--kurfa-hue-shift, 0deg));
+  transition: opacity 0.22s ease, filter 0.35s ease;
+}
+
+body.is-playing-live #desktop-sidebar.kurfa-sidebar-rail::after {
+  opacity: calc(0.55 + var(--kurfa-beat, 0) * 0.45);
+}
+
+body.kurfa-drop-active #desktop-sidebar.kurfa-sidebar-rail::after {
+  width: 3px;
+  opacity: 1;
+  box-shadow: 0 0 14px rgba(var(--kurfa-track-rgb), 0.65);
 }
 
 /* Contained Multi-Animation Architectural Cove-LED (Sidebar Right Edge -> Leftward) */
@@ -5365,47 +5465,52 @@ html:not(.dark-mode) #desktop-sidebar.kurfa-sidebar-rail {
   z-index: 0;
 }
 
+body.dark-mode .kurfa-sidebar-cove > span,
+body.dark-mode .kurfa-bar-cove > span {
+  mix-blend-mode: screen;
+}
+
 .kurfa-cove-base {
   position: absolute;
   top: 0;
   bottom: 0;
-  right: -12px;
-  width: 150px;
-  filter: blur(18px);
+  right: -10px;
+  width: 175px;
+  filter: blur(20px) hue-rotate(var(--kurfa-hue-shift, 0deg));
   background: linear-gradient(
     270deg,
-    rgba(var(--kurfa-track-rgb), 0.20) 0%,
-    rgba(var(--kurfa-track-rgb), 0.09) 38%,
-    rgba(var(--kurfa-track-rgb-4), 0.05) 72%,
+    rgba(var(--kurfa-track-rgb), 0.36) 0%,
+    rgba(var(--kurfa-track-rgb-2), 0.14) 42%,
+    rgba(var(--kurfa-track-rgb-4), 0.06) 76%,
     transparent 100%
   );
   transform-origin: right center;
-  transform: scaleX(0.92) translateZ(0);
-  opacity: 0.48;
+  transform: scaleX(0.94) translateZ(0);
+  opacity: 0.56;
   will-change: transform, opacity;
   transition: opacity 0.16s linear, transform 0.22s ease-out, background 0.9s ease;
 }
 
 body.is-playing-live .kurfa-cove-base {
-  opacity: calc(0.42 + var(--kurfa-bass, 0) * 0.40 + var(--kurfa-surge, 0) * 0.16);
-  transform: scaleX(calc(0.90 + var(--kurfa-bass, 0) * 0.22 + var(--kurfa-surge, 0) * 0.12)) translateZ(0);
+  opacity: calc(0.56 + var(--kurfa-bass, 0) * 0.36 + var(--kurfa-surge, 0) * 0.18);
+  transform: scaleX(calc(0.92 + var(--kurfa-bass, 0) * 0.26 + var(--kurfa-surge, 0) * 0.14)) translateZ(0);
 }
 
 .kurfa-cove-sweep {
   position: absolute;
   top: 0;
-  right: -34px;
-  width: 124px;
-  height: 46%;
+  right: -30px;
+  width: 142px;
+  height: 48%;
   border-radius: 9999px;
-  filter: blur(40px);
+  filter: blur(36px) hue-rotate(var(--kurfa-hue-shift, 0deg));
   background: radial-gradient(
     ellipse at right center,
-    rgba(var(--kurfa-track-rgb), 0.36) 0%,
-    rgba(var(--kurfa-track-rgb-2), 0.12) 54%,
-    transparent 78%
+    rgba(var(--kurfa-track-rgb), 0.50) 0%,
+    rgba(var(--kurfa-track-rgb-2), 0.18) 54%,
+    transparent 80%
   );
-  opacity: 0.48;
+  opacity: 0.55;
   will-change: transform, opacity;
   animation: kurfaCoveSweepY 9s ease-in-out infinite;
   transition: opacity 0.22s ease, background 0.9s ease;
@@ -5413,26 +5518,26 @@ body.is-playing-live .kurfa-cove-base {
 
 body.is-playing-live .kurfa-cove-sweep {
   animation: none;
-  opacity: calc(0.42 + var(--kurfa-vocal, 0) * 0.34 + var(--kurfa-surge, 0) * 0.16);
-  transform: translate3d(0, var(--kurfa-y1, 20%), 0) scaleY(calc(0.92 + var(--kurfa-loudness, 0) * 0.22));
+  opacity: calc(0.52 + var(--kurfa-vocal, 0) * 0.34 + var(--kurfa-surge, 0) * 0.18);
+  transform: translate3d(0, var(--kurfa-y1, 20%), 0) scaleY(calc(0.92 + var(--kurfa-loudness, 0) * 0.26));
   transition: transform 0.08s linear, opacity 0.22s ease, background 0.9s ease;
 }
 
 .kurfa-cove-sweep-2 {
   position: absolute;
   top: 0;
-  right: -30px;
-  width: 108px;
-  height: 38%;
+  right: -28px;
+  width: 124px;
+  height: 42%;
   border-radius: 9999px;
-  filter: blur(38px);
+  filter: blur(34px) hue-rotate(var(--kurfa-hue-shift, 0deg));
   background: radial-gradient(
     ellipse at right center,
-    rgba(var(--kurfa-track-rgb-2), 0.30) 0%,
-    rgba(var(--kurfa-track-rgb), 0.09) 56%,
-    transparent 80%
+    rgba(var(--kurfa-track-rgb-2), 0.42) 0%,
+    rgba(var(--kurfa-track-rgb), 0.12) 56%,
+    transparent 82%
   );
-  opacity: 0.40;
+  opacity: 0.48;
   will-change: transform, opacity;
   animation: kurfaCoveCounterY 8.2s ease-in-out infinite;
   transition: opacity 0.22s ease, background 0.9s ease;
@@ -5440,26 +5545,26 @@ body.is-playing-live .kurfa-cove-sweep {
 
 body.is-playing-live .kurfa-cove-sweep-2 {
   animation: none;
-  opacity: calc(0.38 + var(--kurfa-high, 0) * 0.36 + var(--kurfa-surge, 0) * 0.14);
-  transform: translate3d(0, var(--kurfa-y2, 75%), 0) scaleY(calc(0.90 + var(--kurfa-tension, 0) * 0.20));
+  opacity: calc(0.46 + var(--kurfa-high, 0) * 0.36 + var(--kurfa-surge, 0) * 0.18);
+  transform: translate3d(0, var(--kurfa-y2, 75%), 0) scaleY(calc(0.90 + var(--kurfa-tension, 0) * 0.24));
   transition: transform 0.08s linear, opacity 0.22s ease, background 0.9s ease;
 }
 
 .kurfa-cove-chroma {
   position: absolute;
   top: 22%;
-  right: -36px;
-  width: 145px;
-  height: 52%;
+  right: -32px;
+  width: 158px;
+  height: 54%;
   border-radius: 9999px;
-  filter: blur(44px);
+  filter: blur(40px) hue-rotate(var(--kurfa-hue-shift, 0deg));
   background: radial-gradient(
     ellipse at right center,
-    rgba(var(--kurfa-track-rgb-3), 0.28) 0%,
-    rgba(var(--kurfa-track-rgb-4), 0.08) 58%,
+    rgba(var(--kurfa-track-rgb-3), 0.38) 0%,
+    rgba(var(--kurfa-track-rgb-4), 0.12) 58%,
     transparent 82%
   );
-  opacity: 0.32;
+  opacity: 0.40;
   will-change: transform, opacity;
   animation: kurfaCoveDrift3 10.5s ease-in-out infinite;
   transition: opacity 0.22s ease, background 0.9s ease;
@@ -5467,8 +5572,8 @@ body.is-playing-live .kurfa-cove-sweep-2 {
 
 body.is-playing-live .kurfa-cove-chroma {
   animation: none;
-  opacity: calc(0.28 + var(--kurfa-bright, 0.35) * 0.34 + var(--kurfa-surge, 0) * 0.24);
-  transform: translate3d(-4px, var(--kurfa-d3y, 0%), 0) scale(calc(0.94 + var(--kurfa-surge, 0) * 0.18));
+  opacity: calc(0.38 + var(--kurfa-bright, 0.35) * 0.36 + var(--kurfa-surge, 0) * 0.26);
+  transform: translate3d(-4px, var(--kurfa-d3y, 0%), 0) scale(calc(0.95 + var(--kurfa-surge, 0) * 0.22));
   transition: transform 0.09s linear, opacity 0.22s ease, background 0.9s ease;
 }
 
@@ -5476,20 +5581,20 @@ body.is-playing-live .kurfa-cove-chroma {
   position: absolute;
   right: -24px;
   bottom: -32px;
-  width: 175px;
-  height: 185px;
+  width: 190px;
+  height: 200px;
   border-radius: 9999px;
-  filter: blur(42px);
-  background: radial-gradient(circle, rgba(var(--kurfa-track-rgb), 0.32) 0%, transparent 72%);
+  filter: blur(38px) hue-rotate(var(--kurfa-hue-shift, 0deg));
+  background: radial-gradient(circle, rgba(var(--kurfa-track-rgb), 0.44) 0%, transparent 72%);
   transform: scale(0.92) translateZ(0);
-  opacity: 0.36;
+  opacity: 0.45;
   will-change: transform, opacity;
   transition: opacity 0.14s linear, transform 0.20s ease-out, background 0.9s ease;
 }
 
 body.is-playing-live .kurfa-cove-pulse {
-  opacity: calc(0.36 + var(--kurfa-bass, 0) * 0.42 + var(--kurfa-surge, 0) * 0.18);
-  transform: scale(calc(0.92 + var(--kurfa-bass, 0) * 0.24 + var(--kurfa-surge, 0) * 0.14)) translateZ(0);
+  opacity: calc(0.48 + var(--kurfa-bass, 0) * 0.42 + var(--kurfa-surge, 0) * 0.18);
+  transform: scale(calc(0.94 + var(--kurfa-bass, 0) * 0.28 + var(--kurfa-surge, 0) * 0.16)) translateZ(0);
 }
 
 /* Human Silence / Muted Relaxation */
@@ -5499,62 +5604,62 @@ body.kurfa-audio-silent .kurfa-bar-cove > span {
   transition: opacity 0.65s ease, transform 0.65s ease !important;
 }
 
-/* Light Mode — Crisp Apple-Style Pastel Prism Glass (High Specificity over is-playing-live) */
+/* Light Mode — Crisp Apple-Style Pastel Aurora Prism (High Specificity over is-playing-live) */
 html:not(.dark-mode) .kurfa-cove-base,
 html:not(.dark-mode) body.is-playing-live .kurfa-cove-base {
-  width: 118px;
-  right: -16px;
-  filter: blur(24px) saturate(1.35);
+  width: 144px;
+  right: -12px;
+  filter: blur(22px) saturate(1.45) hue-rotate(var(--kurfa-hue-shift, 0deg));
   background: linear-gradient(
     270deg,
-    rgba(var(--kurfa-track-rgb), 0.14) 0%,
-    rgba(var(--kurfa-track-rgb-2), 0.055) 44%,
+    rgba(var(--kurfa-track-rgb), 0.26) 0%,
+    rgba(var(--kurfa-track-rgb-2), 0.11) 46%,
     transparent 100%
   );
-  opacity: calc(0.24 + var(--kurfa-loudness, 0) * 0.24);
+  opacity: calc(0.45 + var(--kurfa-loudness, 0) * 0.36 + var(--kurfa-surge, 0) * 0.14);
 }
 
 html:not(.dark-mode) .kurfa-cove-sweep,
 html:not(.dark-mode) body.is-playing-live .kurfa-cove-sweep {
-  filter: blur(36px) saturate(1.35);
+  filter: blur(30px) saturate(1.45) hue-rotate(var(--kurfa-hue-shift, 0deg));
   background: radial-gradient(
     ellipse at right center,
-    rgba(var(--kurfa-track-rgb), 0.22) 0%,
-    rgba(var(--kurfa-track-rgb-2), 0.08) 54%,
-    transparent 80%
+    rgba(var(--kurfa-track-rgb), 0.38) 0%,
+    rgba(var(--kurfa-track-rgb-2), 0.14) 56%,
+    transparent 82%
   );
-  opacity: calc(0.22 + var(--kurfa-loudness, 0) * 0.24);
+  opacity: calc(0.42 + var(--kurfa-vocal, 0) * 0.34 + var(--kurfa-surge, 0) * 0.16);
 }
 
 html:not(.dark-mode) .kurfa-cove-sweep-2,
 html:not(.dark-mode) body.is-playing-live .kurfa-cove-sweep-2 {
-  filter: blur(36px) saturate(1.35);
+  filter: blur(30px) saturate(1.45) hue-rotate(var(--kurfa-hue-shift, 0deg));
   background: radial-gradient(
     ellipse at right center,
-    rgba(var(--kurfa-track-rgb-2), 0.18) 0%,
-    rgba(var(--kurfa-track-rgb-3), 0.07) 56%,
+    rgba(var(--kurfa-track-rgb-2), 0.30) 0%,
+    rgba(var(--kurfa-track-rgb-3), 0.12) 56%,
     transparent 82%
   );
-  opacity: calc(0.20 + var(--kurfa-high, 0) * 0.22);
+  opacity: calc(0.36 + var(--kurfa-high, 0) * 0.32 + var(--kurfa-surge, 0) * 0.14);
 }
 
 html:not(.dark-mode) .kurfa-cove-chroma,
 html:not(.dark-mode) body.is-playing-live .kurfa-cove-chroma {
-  filter: blur(38px) saturate(1.35);
+  filter: blur(32px) saturate(1.45) hue-rotate(var(--kurfa-hue-shift, 0deg));
   background: radial-gradient(
     ellipse at right center,
-    rgba(var(--kurfa-track-rgb-3), 0.18) 0%,
-    rgba(var(--kurfa-track-rgb), 0.06) 58%,
+    rgba(var(--kurfa-track-rgb-3), 0.28) 0%,
+    rgba(var(--kurfa-track-rgb), 0.10) 58%,
     transparent 82%
   );
-  opacity: calc(0.18 + var(--kurfa-bright, 0.35) * 0.22);
+  opacity: calc(0.32 + var(--kurfa-bright, 0.35) * 0.30 + var(--kurfa-surge, 0) * 0.16);
 }
 
 html:not(.dark-mode) .kurfa-cove-pulse,
 html:not(.dark-mode) body.is-playing-live .kurfa-cove-pulse {
-  filter: blur(36px) saturate(1.35);
-  background: radial-gradient(circle, rgba(var(--kurfa-track-rgb), 0.18) 0%, transparent 72%);
-  opacity: calc(0.18 + var(--kurfa-bass, 0) * 0.24);
+  filter: blur(30px) saturate(1.45) hue-rotate(var(--kurfa-hue-shift, 0deg));
+  background: radial-gradient(circle, rgba(var(--kurfa-track-rgb), 0.30) 0%, transparent 72%);
+  opacity: calc(0.34 + var(--kurfa-bass, 0) * 0.34 + var(--kurfa-surge, 0) * 0.14);
 }
 
 html.ambient-disabled .kurfa-sidebar-cove,
@@ -5621,15 +5726,27 @@ body.dark-mode.is-playing-live .kurfa-brand-dot {
   z-index: 1;
   opacity: 0;
   will-change: transform;
-  background: linear-gradient(90deg, rgba(var(--kurfa-track-rgb), 0.10) 0%, rgba(15, 23, 42, 0.04) 100%);
-  border: 1px solid rgba(var(--kurfa-track-rgb), 0.14);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.85), 0 2px 10px rgba(15, 23, 42, 0.04);
+  background: linear-gradient(90deg, rgba(var(--kurfa-track-rgb), 0.16) 0%, rgba(var(--kurfa-track-rgb-2), 0.06) 100%);
+  border: 1px solid rgba(var(--kurfa-track-rgb), 0.22);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9), 0 4px 14px rgba(var(--kurfa-track-rgb), 0.10);
   transition: transform 0.34s cubic-bezier(0.22, 1, 0.36, 1), height 0.25s ease, opacity 0.2s ease, background 0.6s ease, border-color 0.6s ease, box-shadow 0.6s ease;
 }
 
+#sidebar-nav-pill.kurfa-nav-sliding-pill::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 7px;
+  bottom: 7px;
+  width: 3px;
+  border-radius: 9999px;
+  background: rgb(var(--kurfa-track-rgb));
+  box-shadow: 0 0 10px rgba(var(--kurfa-track-rgb), 0.45);
+}
+
 body.dark-mode #sidebar-nav-pill.kurfa-nav-sliding-pill {
-  background: linear-gradient(90deg, rgba(var(--kurfa-track-rgb), 0.12) 0%, rgba(255, 255, 255, 0.065) 100%);
-  border: 1px solid rgba(255, 255, 255, 0.075);
+  background: linear-gradient(90deg, rgba(var(--kurfa-track-rgb), 0.16) 0%, rgba(255, 255, 255, 0.065) 100%);
+  border: 1px solid rgba(var(--kurfa-track-rgb), 0.22);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 4px 14px rgba(0, 0, 0, 0.22);
 }
 
@@ -5673,7 +5790,7 @@ body.dark-mode #desktop-sidebar #sidebar-main-nav .nav-item.active {
 }
 
 #desktop-sidebar #sidebar-main-nav .nav-item.active .material-symbols-outlined {
-  color: #0f172a !important;
+  color: rgb(var(--kurfa-track-rgb)) !important;
 }
 
 body.dark-mode #desktop-sidebar #sidebar-main-nav .nav-item.active .material-symbols-outlined {
@@ -5823,15 +5940,51 @@ body.dark-mode .kurfa-install-badge {
 
 /* 2. Desktop Bottom Player Bar (#desktop-player-bar) — Sculpted Upper-Rim Volumetric Cove-LED */
 html:not(.dark-mode) #desktop-player-bar {
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.94) 0%, rgba(248, 250, 253, 0.98) 100%) !important;
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.94) 0%,
+    rgba(246, 248, 253, 0.97) 75%,
+    rgba(var(--kurfa-track-rgb), 0.04) 100%
+  ) !important;
   backdrop-filter: blur(28px) saturate(190%);
   -webkit-backdrop-filter: blur(28px) saturate(190%);
-  border-top: 1px solid rgba(15, 23, 42, 0.065) !important;
+  border-top: 1px solid rgba(var(--kurfa-track-rgb), 0.15) !important;
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.95),
-    0 -6px 24px rgba(15, 23, 42, 0.05) !important;
+    0 -8px 28px rgba(15, 23, 42, 0.055) !important;
   contain: layout style paint;
   transition: background 0.9s ease, border-color 0.9s ease, box-shadow 0.9s ease;
+}
+
+#desktop-player-bar::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  pointer-events: none;
+  z-index: 20;
+  background: radial-gradient(
+    340px 4px at var(--kurfa-rim-x, 50%) 50%,
+    rgba(var(--kurfa-track-rgb), 0.92) 0%,
+    rgba(var(--kurfa-track-rgb-2), 0.50) 48%,
+    rgba(var(--kurfa-track-rgb-3), 0.16) 80%,
+    transparent 100%
+  );
+  opacity: 0.42;
+  filter: hue-rotate(var(--kurfa-hue-shift, 0deg));
+  transition: opacity 0.22s ease, filter 0.35s ease;
+}
+
+body.is-playing-live #desktop-player-bar::before {
+  opacity: calc(0.55 + var(--kurfa-beat, 0) * 0.45);
+}
+
+body.kurfa-drop-active #desktop-player-bar::before {
+  height: 2.5px;
+  opacity: 1;
+  box-shadow: 0 0 14px rgba(var(--kurfa-track-rgb), 0.65);
 }
 
 #desktop-player-bar {
@@ -5847,18 +6000,19 @@ body.dark-mode #desktop-player-bar {
   background: linear-gradient(180deg, rgba(16, 22, 36, 0.96) 0%, rgba(10, 14, 24, 0.98) 58%, rgba(8, 11, 20, 0.99) 100%) !important;
   backdrop-filter: blur(26px) saturate(165%);
   -webkit-backdrop-filter: blur(26px) saturate(165%);
-  border-top: 1px solid rgba(255, 255, 255, 0.055) !important;
+  border-top: 1px solid rgba(var(--kurfa-track-rgb), 0.14) !important;
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.045),
     0 -12px 36px rgba(2, 5, 12, 0.56) !important;
   transition: background 0.9s ease, border-color 0.9s ease, box-shadow 0.9s ease;
 }
 
-body.dark-mode.is-playing-live #desktop-player-bar .kurfa-deck-thumb {
+body.is-playing-live #desktop-player-bar .kurfa-deck-thumb {
   box-shadow:
-    0 0 0 1px rgba(var(--kurfa-track-rgb), 0.32),
-    0 4px 18px rgba(var(--kurfa-track-rgb), 0.18);
-  transition: box-shadow 0.6s ease;
+    0 0 0 1.5px rgba(var(--kurfa-track-rgb), 0.35),
+    0 4px 16px rgba(var(--kurfa-track-rgb), calc(0.16 + var(--kurfa-bass, 0) * 0.24));
+  transform: scale(calc(1 + var(--kurfa-surge, 0) * 0.035));
+  transition: box-shadow 0.25s ease, transform 0.2s ease;
 }
 
 .kurfa-bar-cove-base {
@@ -5866,42 +6020,42 @@ body.dark-mode.is-playing-live #desktop-player-bar .kurfa-deck-thumb {
   left: 0;
   right: 0;
   top: -6px;
-  height: 44px;
-  filter: blur(14px);
+  height: 52px;
+  filter: blur(16px) hue-rotate(var(--kurfa-hue-shift, 0deg));
   background: linear-gradient(
     180deg,
-    rgba(var(--kurfa-track-rgb), 0.20) 0%,
-    rgba(var(--kurfa-track-rgb), 0.08) 45%,
-    rgba(var(--kurfa-track-rgb-4), 0.03) 78%,
+    rgba(var(--kurfa-track-rgb), 0.34) 0%,
+    rgba(var(--kurfa-track-rgb-2), 0.14) 45%,
+    rgba(var(--kurfa-track-rgb-4), 0.05) 78%,
     transparent 100%
   );
   transform-origin: center top;
-  transform: scaleY(0.90) translateZ(0);
-  opacity: 0.48;
+  transform: scaleY(0.92) translateZ(0);
+  opacity: 0.55;
   will-change: transform, opacity;
   transition: opacity 0.16s linear, transform 0.22s ease-out, background 0.9s ease;
 }
 
 body.is-playing-live .kurfa-bar-cove-base {
-  opacity: calc(0.42 + var(--kurfa-beat, 0) * 0.40 + var(--kurfa-surge, 0) * 0.16);
-  transform: scaleY(calc(0.88 + var(--kurfa-bass, 0) * 0.22 + var(--kurfa-surge, 0) * 0.10)) translateZ(0);
+  opacity: calc(0.55 + var(--kurfa-beat, 0) * 0.38 + var(--kurfa-surge, 0) * 0.18);
+  transform: scaleY(calc(0.90 + var(--kurfa-bass, 0) * 0.26 + var(--kurfa-surge, 0) * 0.14)) translateZ(0);
 }
 
 .kurfa-bar-cove-sweep {
   position: absolute;
-  top: -22px;
+  top: -20px;
   left: 0;
-  width: 34%;
-  height: 50px;
+  width: 38%;
+  height: 54px;
   border-radius: 9999px;
-  filter: blur(28px);
+  filter: blur(28px) hue-rotate(var(--kurfa-hue-shift, 0deg));
   background: radial-gradient(
     ellipse at top center,
-    rgba(var(--kurfa-track-rgb), 0.36) 0%,
-    rgba(var(--kurfa-track-rgb-2), 0.12) 55%,
+    rgba(var(--kurfa-track-rgb), 0.48) 0%,
+    rgba(var(--kurfa-track-rgb-2), 0.18) 55%,
     transparent 80%
   );
-  opacity: 0.48;
+  opacity: 0.54;
   will-change: transform, opacity;
   animation: kurfaCoveSweepX 11s ease-in-out infinite;
   transition: opacity 0.22s ease, background 0.9s ease;
@@ -5909,26 +6063,26 @@ body.is-playing-live .kurfa-bar-cove-base {
 
 body.is-playing-live .kurfa-bar-cove-sweep {
   animation: none;
-  opacity: calc(0.42 + var(--kurfa-high, 0) * 0.34 + var(--kurfa-surge, 0) * 0.16);
-  transform: translate3d(var(--kurfa-x1, 45%), 0, 0) scaleX(calc(0.92 + var(--kurfa-loudness, 0) * 0.22));
+  opacity: calc(0.52 + var(--kurfa-high, 0) * 0.36 + var(--kurfa-surge, 0) * 0.18);
+  transform: translate3d(var(--kurfa-x1, 45%), 0, 0) scaleX(calc(0.92 + var(--kurfa-loudness, 0) * 0.26));
   transition: transform 0.08s linear, opacity 0.22s ease, background 0.9s ease;
 }
 
 .kurfa-bar-cove-sweep-2 {
   position: absolute;
-  top: -22px;
+  top: -20px;
   left: 0;
-  width: 28%;
-  height: 48px;
+  width: 32%;
+  height: 52px;
   border-radius: 9999px;
-  filter: blur(30px);
+  filter: blur(28px) hue-rotate(var(--kurfa-hue-shift, 0deg));
   background: radial-gradient(
     ellipse at top center,
-    rgba(var(--kurfa-track-rgb-2), 0.30) 0%,
-    rgba(var(--kurfa-track-rgb), 0.08) 56%,
+    rgba(var(--kurfa-track-rgb-2), 0.40) 0%,
+    rgba(var(--kurfa-track-rgb), 0.12) 56%,
     transparent 80%
   );
-  opacity: 0.40;
+  opacity: 0.46;
   will-change: transform, opacity;
   animation: kurfaCoveCounterX 9.5s ease-in-out infinite;
   transition: opacity 0.22s ease, background 0.9s ease;
@@ -5936,26 +6090,26 @@ body.is-playing-live .kurfa-bar-cove-sweep {
 
 body.is-playing-live .kurfa-bar-cove-sweep-2 {
   animation: none;
-  opacity: calc(0.38 + var(--kurfa-bass, 0) * 0.36 + var(--kurfa-surge, 0) * 0.14);
-  transform: translate3d(var(--kurfa-x2, 120%), 0, 0) scaleX(calc(0.90 + var(--kurfa-tension, 0) * 0.20));
+  opacity: calc(0.46 + var(--kurfa-bass, 0) * 0.38 + var(--kurfa-surge, 0) * 0.18);
+  transform: translate3d(var(--kurfa-x2, 120%), 0, 0) scaleX(calc(0.90 + var(--kurfa-tension, 0) * 0.24));
   transition: transform 0.08s linear, opacity 0.22s ease, background 0.9s ease;
 }
 
 .kurfa-bar-cove-chroma {
   position: absolute;
-  top: -20px;
+  top: -18px;
   left: 28%;
-  width: 42%;
-  height: 46px;
+  width: 44%;
+  height: 50px;
   border-radius: 9999px;
-  filter: blur(32px);
+  filter: blur(30px) hue-rotate(var(--kurfa-hue-shift, 0deg));
   background: radial-gradient(
     ellipse at top center,
-    rgba(var(--kurfa-track-rgb-3), 0.28) 0%,
-    rgba(var(--kurfa-track-rgb-4), 0.07) 58%,
+    rgba(var(--kurfa-track-rgb-3), 0.38) 0%,
+    rgba(var(--kurfa-track-rgb-4), 0.12) 58%,
     transparent 82%
   );
-  opacity: 0.30;
+  opacity: 0.38;
   will-change: transform, opacity;
   animation: kurfaCoveSweepX 12.5s ease-in-out reverse infinite;
   transition: opacity 0.22s ease, background 0.9s ease;
@@ -5963,95 +6117,95 @@ body.is-playing-live .kurfa-bar-cove-sweep-2 {
 
 body.is-playing-live .kurfa-bar-cove-chroma {
   animation: none;
-  opacity: calc(0.28 + var(--kurfa-bright, 0.35) * 0.32 + var(--kurfa-surge, 0) * 0.24);
-  transform: translate3d(calc(var(--kurfa-d3y, 0%) * 1.4), 0, 0) scale(calc(0.94 + var(--kurfa-surge, 0) * 0.18));
+  opacity: calc(0.36 + var(--kurfa-bright, 0.35) * 0.36 + var(--kurfa-surge, 0) * 0.26);
+  transform: translate3d(calc(var(--kurfa-d3y, 0%) * 1.4), 0, 0) scale(calc(0.95 + var(--kurfa-surge, 0) * 0.22));
   transition: transform 0.09s linear, opacity 0.22s ease, background 0.9s ease;
 }
 
 .kurfa-bar-cove-pulse {
   position: absolute;
-  top: -24px;
+  top: -22px;
   left: 170px;
-  width: 240px;
-  height: 52px;
+  width: 260px;
+  height: 56px;
   border-radius: 9999px;
-  filter: blur(30px);
-  background: radial-gradient(circle, rgba(var(--kurfa-track-rgb-2), 0.28) 0%, transparent 72%);
+  filter: blur(28px) hue-rotate(var(--kurfa-hue-shift, 0deg));
+  background: radial-gradient(circle, rgba(var(--kurfa-track-rgb-2), 0.40) 0%, transparent 72%);
   transform: scale(0.92) translateZ(0);
-  opacity: 0.34;
+  opacity: 0.42;
   will-change: transform, opacity;
   transition: opacity 0.14s linear, transform 0.20s ease-out, background 0.9s ease;
 }
 
 body.is-playing-live .kurfa-bar-cove-pulse {
-  opacity: calc(0.36 + var(--kurfa-mid, 0) * 0.40 + var(--kurfa-surge, 0) * 0.16);
-  transform: scale(calc(0.92 + var(--kurfa-mid, 0) * 0.20 + var(--kurfa-surge, 0) * 0.12)) translateZ(0);
+  opacity: calc(0.44 + var(--kurfa-mid, 0) * 0.42 + var(--kurfa-surge, 0) * 0.18);
+  transform: scale(calc(0.94 + var(--kurfa-mid, 0) * 0.24 + var(--kurfa-surge, 0) * 0.16)) translateZ(0);
 }
 
-/* Light Mode Bottom Player Bar — Strictly Upper 38px Clean Pastel Prism */
+/* Light Mode Bottom Player Bar — Crisp Upper 42px Pastel Aurora Prism */
 html:not(.dark-mode) .kurfa-bar-cove-base,
 html:not(.dark-mode) body.is-playing-live .kurfa-bar-cove-base {
   top: -4px;
-  height: 38px;
-  filter: blur(18px) saturate(1.35);
+  height: 44px;
+  filter: blur(18px) saturate(1.45) hue-rotate(var(--kurfa-hue-shift, 0deg));
   background: linear-gradient(
     180deg,
-    rgba(var(--kurfa-track-rgb), 0.14) 0%,
-    rgba(var(--kurfa-track-rgb-2), 0.05) 52%,
+    rgba(var(--kurfa-track-rgb), 0.24) 0%,
+    rgba(var(--kurfa-track-rgb-2), 0.10) 52%,
     transparent 100%
   );
-  opacity: calc(0.24 + var(--kurfa-loudness, 0) * 0.22);
+  opacity: calc(0.42 + var(--kurfa-loudness, 0) * 0.34 + var(--kurfa-surge, 0) * 0.14);
 }
 
 html:not(.dark-mode) .kurfa-bar-cove-sweep,
 html:not(.dark-mode) body.is-playing-live .kurfa-bar-cove-sweep {
-  top: -20px;
-  height: 38px;
-  filter: blur(28px) saturate(1.35);
+  top: -18px;
+  height: 44px;
+  filter: blur(26px) saturate(1.45) hue-rotate(var(--kurfa-hue-shift, 0deg));
   background: radial-gradient(
     ellipse at top center,
-    rgba(var(--kurfa-track-rgb), 0.22) 0%,
-    rgba(var(--kurfa-track-rgb-2), 0.08) 55%,
-    transparent 80%
+    rgba(var(--kurfa-track-rgb), 0.34) 0%,
+    rgba(var(--kurfa-track-rgb-2), 0.14) 55%,
+    transparent 82%
   );
-  opacity: calc(0.22 + var(--kurfa-loudness, 0) * 0.24);
+  opacity: calc(0.38 + var(--kurfa-loudness, 0) * 0.32 + var(--kurfa-surge, 0) * 0.14);
 }
 
 html:not(.dark-mode) .kurfa-bar-cove-sweep-2,
 html:not(.dark-mode) body.is-playing-live .kurfa-bar-cove-sweep-2 {
-  top: -20px;
-  height: 36px;
-  filter: blur(28px) saturate(1.35);
+  top: -18px;
+  height: 42px;
+  filter: blur(26px) saturate(1.45) hue-rotate(var(--kurfa-hue-shift, 0deg));
   background: radial-gradient(
     ellipse at top center,
-    rgba(var(--kurfa-track-rgb-2), 0.18) 0%,
-    rgba(var(--kurfa-track-rgb-3), 0.06) 56%,
+    rgba(var(--kurfa-track-rgb-2), 0.28) 0%,
+    rgba(var(--kurfa-track-rgb-3), 0.10) 56%,
     transparent 82%
   );
-  opacity: calc(0.20 + var(--kurfa-high, 0) * 0.22);
+  opacity: calc(0.34 + var(--kurfa-high, 0) * 0.30 + var(--kurfa-surge, 0) * 0.14);
 }
 
 html:not(.dark-mode) .kurfa-bar-cove-chroma,
 html:not(.dark-mode) body.is-playing-live .kurfa-bar-cove-chroma {
-  top: -20px;
-  height: 36px;
-  filter: blur(30px) saturate(1.35);
+  top: -18px;
+  height: 42px;
+  filter: blur(28px) saturate(1.45) hue-rotate(var(--kurfa-hue-shift, 0deg));
   background: radial-gradient(
     ellipse at top center,
-    rgba(var(--kurfa-track-rgb-3), 0.18) 0%,
-    rgba(var(--kurfa-track-rgb), 0.05) 58%,
+    rgba(var(--kurfa-track-rgb-3), 0.28) 0%,
+    rgba(var(--kurfa-track-rgb), 0.08) 58%,
     transparent 82%
   );
-  opacity: calc(0.18 + var(--kurfa-bright, 0.35) * 0.20);
+  opacity: calc(0.30 + var(--kurfa-bright, 0.35) * 0.28 + var(--kurfa-surge, 0) * 0.16);
 }
 
 html:not(.dark-mode) .kurfa-bar-cove-pulse,
 html:not(.dark-mode) body.is-playing-live .kurfa-bar-cove-pulse {
-  top: -22px;
-  height: 38px;
-  filter: blur(28px) saturate(1.35);
-  background: radial-gradient(circle, rgba(var(--kurfa-track-rgb-2), 0.18) 0%, transparent 72%);
-  opacity: calc(0.18 + var(--kurfa-bass, 0) * 0.22);
+  top: -20px;
+  height: 44px;
+  filter: blur(26px) saturate(1.45) hue-rotate(var(--kurfa-hue-shift, 0deg));
+  background: radial-gradient(circle, rgba(var(--kurfa-track-rgb-2), 0.28) 0%, transparent 72%);
+  opacity: calc(0.32 + var(--kurfa-bass, 0) * 0.30 + var(--kurfa-surge, 0) * 0.14);
 }
 
 html:not(.dark-mode) body.is-playing-live .kurfa-nav-live-wave i {
@@ -6127,14 +6281,24 @@ body.dark-mode .kurfa-deck-play-cta {
   transform: scale(0.95);
 }
 
-#player-seek-fill,
-#player-seek-knob {
-  background-color: #0f172a !important;
+#player-seek-fill {
+  background: linear-gradient(90deg, rgb(var(--kurfa-track-rgb)), rgb(var(--kurfa-track-rgb-2))) !important;
+  box-shadow: 0 0 8px rgba(var(--kurfa-track-rgb), 0.32);
 }
 
-body.dark-mode #player-seek-fill,
+#player-seek-knob {
+  background-color: rgb(var(--kurfa-track-rgb)) !important;
+  box-shadow: 0 0 8px rgba(var(--kurfa-track-rgb), 0.55) !important;
+}
+
+body.dark-mode #player-seek-fill {
+  background: linear-gradient(90deg, rgb(var(--kurfa-track-rgb)), rgb(var(--kurfa-track-rgb-2))) !important;
+  box-shadow: 0 0 10px rgba(var(--kurfa-track-rgb), 0.45);
+}
+
 body.dark-mode #player-seek-knob {
   background-color: #ffffff !important;
+  box-shadow: 0 0 10px rgba(var(--kurfa-track-rgb), 0.72) !important;
 }
 
 .kurfa-deck-divider {
@@ -6460,11 +6624,14 @@ body.is-playing-live .kurfa-stage-art-halo {
 }
 
 .kurfa-stage-quick-actions {
+  position: relative;
+  z-index: 12;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 6px;
-  margin-top: 12px;
+  margin-top: 10px;
+  margin-bottom: 4px;
 }
 
 .kurfa-stage-qa-btn {

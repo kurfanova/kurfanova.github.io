@@ -14373,19 +14373,37 @@ function syncSongThemeAccent(primaryRgb, secondaryRgb, tertiaryRgb, deepRgb) {
   const [pHue, pSat, pLum] = rgbToHsl01(p[0], p[1], p[2]);
   const pChroma = (Math.max(p[0], p[1], p[2]) - Math.min(p[0], p[1], p[2])) / 255;
   const isMono = pChroma < 0.14 || pSat < 0.12;
+  let primaryOut = p;
   let s = normalizeSongAccentTriplet(secondaryRgb);
-  if (!s) {
-    s = isMono ? [188, 193, 200] : hsl01ToRgb((pHue + 0.10) % 1, pSat, pLum);
-  }
   let t = normalizeSongAccentTriplet(tertiaryRgb);
-  if (!t) {
-    t = isMono ? [148, 156, 168] : hsl01ToRgb((pHue + 0.86) % 1, Math.min(0.84, pSat), Math.min(0.66, pLum + 0.04));
-  }
   let d = normalizeSongAccentTriplet(deepRgb);
-  if (!d) {
-    d = isMono ? [110, 118, 132] : hsl01ToRgb((pHue + 0.04) % 1, Math.max(0.45, pSat * 0.85), 0.32);
+  if (isMono) {
+    const monoSeeds = [
+      [[99, 102, 241], [236, 72, 153], [14, 165, 233], [67, 56, 202]],
+      [[244, 63, 94], [139, 92, 246], [56, 189, 248], [136, 19, 55]],
+      [[14, 165, 233], [99, 102, 241], [45, 212, 191], [30, 64, 175]],
+      [[168, 85, 247], [244, 63, 94], [56, 189, 248], [88, 28, 135]]
+    ];
+    const seedKey = String((state.currentTrack && (state.currentTrack.title || state.currentTrack.id)) || p.join(','));
+    let mh = 0;
+    for (let i = 0; i < seedKey.length; i++) mh = (mh * 31 + seedKey.charCodeAt(i)) | 0;
+    const pick = monoSeeds[Math.abs(mh) % monoSeeds.length];
+    primaryOut = pick[0];
+    if (!s) s = pick[1];
+    if (!t) t = pick[2];
+    if (!d) d = pick[3];
+  } else {
+    if (!s) {
+      s = hsl01ToRgb((pHue + 0.10) % 1, pSat, pLum);
+    }
+    if (!t) {
+      t = hsl01ToRgb((pHue + 0.86) % 1, Math.min(0.84, pSat), Math.min(0.66, pLum + 0.04));
+    }
+    if (!d) {
+      d = hsl01ToRgb((pHue + 0.04) % 1, Math.max(0.45, pSat * 0.85), 0.32);
+    }
   }
-  rootStyle.setProperty('--kurfa-track-rgb', `${p[0]}, ${p[1]}, ${p[2]}`);
+  rootStyle.setProperty('--kurfa-track-rgb', `${primaryOut[0]}, ${primaryOut[1]}, ${primaryOut[2]}`);
   rootStyle.setProperty('--kurfa-track-rgb-2', `${s[0]}, ${s[1]}, ${s[2]}`);
   rootStyle.setProperty('--kurfa-track-rgb-3', `${t[0]}, ${t[1]}, ${t[2]}`);
   rootStyle.setProperty('--kurfa-track-rgb-4', `${d[0]}, ${d[1]}, ${d[2]}`);
@@ -14425,6 +14443,24 @@ const FxReactiveStudio = {
   _flow2: 1.7,
   _flow3: 3.1,
   _velSmooth: 0.4,
+  _trackProfile: { baseBpm: 112, energyScale: 1.0, waveMode: 'groove' },
+
+  detectTrackEnergyProfile(track) {
+    const raw = `${(track && track.title) || ''} ${(track && track.artist) || ''}`.toLowerCase();
+    if (/(phonk|drift|club|remix|edm|techno|trap|drill|bass\s*boost|party|workout|hyper)/i.test(raw)) {
+      return { baseBpm: 132, energyScale: 1.22, waveMode: 'punch' };
+    }
+    if (/(akustik|acoustic|lo-fi|lofi|piano|piyano|ballad|slow|yavaş|şiir|uyku|chill|ambient|unplugged)/i.test(raw)) {
+      return { baseBpm: 82, energyScale: 0.78, waveMode: 'silk' };
+    }
+    if (/(rock|metal|punk|live|konser|canlı)/i.test(raw)) {
+      return { baseBpm: 122, energyScale: 1.15, waveMode: 'sharp' };
+    }
+    if (/(rap|hip\s*hop|freestyle|beat)/i.test(raw)) {
+      return { baseBpm: 102, energyScale: 1.08, waveMode: 'punch' };
+    }
+    return { baseBpm: 112, energyScale: 1.0, waveMode: 'groove' };
+  },
 
   hashColorRgb(seedStr) {
     const palettes = [
@@ -14495,6 +14531,11 @@ const FxReactiveStudio = {
   },
 
   onTrackChange(track, thumbUrl = '') {
+    this._trackProfile = this.detectTrackEnergyProfile(track);
+    if (this._trackProfile && this._trackProfile.baseBpm) {
+      this._bpmSmooth = this._trackProfile.baseBpm;
+      this._ibiList = [];
+    }
     if (!track) {
       syncAmbientCoverArt('');
       this.applyRgb('99, 102, 241', null);
@@ -14642,6 +14683,9 @@ const FxReactiveStudio = {
         st.setProperty('--kurfa-x1', '0%');
         st.setProperty('--kurfa-x2', '0%');
         st.setProperty('--kurfa-d3y', '0%');
+        st.setProperty('--kurfa-hue-shift', '0deg');
+        st.setProperty('--kurfa-rim-y', '35%');
+        st.setProperty('--kurfa-rim-x', '50%');
       }
       if (document.body) {
         document.body.classList.remove('kurfa-drop-active', 'kurfa-audio-silent');
@@ -14752,17 +14796,23 @@ const FxReactiveStudio = {
                 if (rawVol === 0) {
                   rawBass = 0; rawVocal = 0; rawMid = 0; rawHigh = 0;
                 } else {
-                  const dur = Math.max(1, Number(state.duration) || 180);
-                  const pos = Math.max(0, Math.min(1, (Number(state.currentTime) || 0) / dur));
-                  let arcEnv = 0.68;
-                  if (pos < 0.10) arcEnv = 0.48;
-                  else if ((pos >= 0.30 && pos < 0.55) || (pos >= 0.68 && pos < 0.88)) arcEnv = 0.98;
-                  else if (pos >= 0.88) arcEnv = 0.42;
-                  const p = this._phase * speedMul;
-                  rawBass = Math.pow(Math.sin(p * 1.15) * 0.5 + 0.5, 2.2) * arcEnv;
-                  rawVocal = (0.36 + 0.64 * (Math.sin(p * 0.78 + 0.8) * 0.5 + 0.5)) * arcEnv;
-                  rawMid = (0.34 + 0.66 * (Math.sin(p * 0.68 + 1.2) * 0.5 + 0.5)) * arcEnv;
-                  rawHigh = Math.pow(Math.cos(p * 2.05 - 0.5) * 0.5 + 0.5, 1.7) * arcEnv;
+                  const prof = this._trackProfile || { baseBpm: 112, energyScale: 1.0, waveMode: 'groove' };
+                  const dur = Math.max(1, (typeof getActiveMediaDuration === 'function' ? getActiveMediaDuration() : 0) || 180);
+                  const curT = Math.max(0, Number(state.currentPlayheadTime) || 0);
+                  const pos = Math.max(0, Math.min(1, curT / dur));
+                  let arcEnv = 0.72;
+                  if (pos < 0.09) arcEnv = 0.46;
+                  else if (pos >= 0.22 && pos < 0.30) arcEnv = 0.84;
+                  else if ((pos >= 0.30 && pos < 0.54) || (pos >= 0.68 && pos < 0.90)) arcEnv = 1.02;
+                  else if (pos >= 0.54 && pos < 0.68) arcEnv = 0.64;
+                  else if (pos >= 0.90) arcEnv = 0.44;
+                  arcEnv = Math.min(1.18, arcEnv * (prof.energyScale || 1.0));
+                  const p = this._phase * speedMul * ((prof.baseBpm || 112) / 112);
+                  const kickExp = prof.waveMode === 'punch' ? 2.8 : (prof.waveMode === 'silk' ? 1.4 : 2.1);
+                  rawBass = Math.min(1, Math.pow(Math.sin(p * 1.18) * 0.5 + 0.5, kickExp) * arcEnv);
+                  rawVocal = Math.min(1, (0.34 + 0.66 * (Math.sin(p * 0.74 + 0.8) * 0.5 + 0.5)) * arcEnv);
+                  rawMid = Math.min(1, (0.32 + 0.68 * (Math.sin(p * 0.64 + 1.2) * 0.5 + 0.5)) * arcEnv);
+                  rawHigh = Math.min(1, Math.pow(Math.cos(p * 2.08 - 0.5) * 0.5 + 0.5, 1.65) * arcEnv);
                 }
               }
 
@@ -14843,6 +14893,11 @@ const FxReactiveStudio = {
               const x1 = 98 + Math.sin(this._flow1 * 0.85) * 112;
               const x2 = 98 + Math.cos(this._flow2 * 0.85) * 108;
               const d3y = Math.sin(this._flow3) * 22;
+              const hueShift = isSilent
+                ? 0
+                : Math.sin(this._flow3 * 0.65) * 10 + (this._brightSmooth - 0.4) * 18 + this._surgeSmooth * 10;
+              const rimY = 50 + Math.sin(this._flow1 * 0.9) * 34;
+              const rimX = 50 + Math.cos(this._flow2 * 0.8) * 38;
 
               st.setProperty('--kurfa-bass', this._bassSmooth.toFixed(3));
               st.setProperty('--kurfa-mid', this._midSmooth.toFixed(3));
@@ -14860,6 +14915,9 @@ const FxReactiveStudio = {
               st.setProperty('--kurfa-x1', `${x1.toFixed(2)}%`);
               st.setProperty('--kurfa-x2', `${x2.toFixed(2)}%`);
               st.setProperty('--kurfa-d3y', `${d3y.toFixed(2)}%`);
+              st.setProperty('--kurfa-hue-shift', `${hueShift.toFixed(1)}deg`);
+              st.setProperty('--kurfa-rim-y', `${rimY.toFixed(1)}%`);
+              st.setProperty('--kurfa-rim-x', `${rimX.toFixed(1)}%`);
               if (document.body) {
                 document.body.classList.toggle('kurfa-drop-active', !isSilent && this._surgeSmooth > 0.42);
               }

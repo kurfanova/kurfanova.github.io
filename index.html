@@ -145,7 +145,7 @@
     }
   </style>
   <link rel="stylesheet" href="./tailwind.min.css?v=20261120_v17">
-  <link rel="stylesheet" href="./style.min.css?v=eda7659f">
+  <link rel="stylesheet" href="./style.min.css?v=f52bb9e7">
   <script>
     (function() {
       var markReady = function() { document.documentElement.classList.add('icons-ready'); };
@@ -1297,15 +1297,18 @@
         <div id="nowplaying-mobile-tabs" class="kurfa-np-mobile-tabs xl:hidden" role="tablist" aria-label="Oynatıcı Görünümleri">
           <button type="button" role="tab" aria-selected="true" data-np-tab="stage" onclick="switchNowPlayingMobilePane('stage')" class="kurfa-np-tab-btn active">
             <span class="material-symbols-outlined text-[15px]" aria-hidden="true">lyrics</span>
-            <span data-i18n="player.mob_tab_stage">Çalan &amp; Sözler</span>
+            <span class="sm:hidden">Sözler</span>
+            <span class="hidden sm:inline" data-i18n="player.mob_tab_stage">Çalan &amp; Sözler</span>
           </button>
           <button type="button" role="tab" aria-selected="false" data-np-tab="queue" onclick="switchNowPlayingMobilePane('queue')" class="kurfa-np-tab-btn">
             <span class="material-symbols-outlined text-[15px]" aria-hidden="true">queue_music</span>
-            <span data-i18n="player.mob_tab_queue">Sıradaki Liste</span>
+            <span class="sm:hidden">Sıra</span>
+            <span class="hidden sm:inline" data-i18n="player.mob_tab_queue">Sıradaki Liste</span>
           </button>
           <button type="button" role="tab" aria-selected="false" data-np-tab="fx" onclick="switchNowPlayingMobilePane('fx')" class="kurfa-np-tab-btn">
             <span class="material-symbols-outlined text-[15px]" aria-hidden="true">graphic_eq</span>
-            <span data-i18n="player.mob_tab_fx">Ekolayzır &amp; Ses</span>
+            <span class="sm:hidden">Ekolayzır</span>
+            <span class="hidden sm:inline" data-i18n="player.mob_tab_fx">Ekolayzır &amp; Ses</span>
           </button>
         </div>
 
@@ -1410,15 +1413,15 @@
             <!-- Right Column: Spacious Live Lyrics Theater -->
             <div class="xl:col-span-7 flex flex-col w-full min-w-0 kurfa-stage-lyrics-col" id="karaoke-lyrics-card">
               <div class="flex items-center justify-between gap-2 pb-2.5 mb-2 kurfa-lyrics-header-bar">
-                <div class="flex items-center gap-2 min-w-0">
+                <div class="flex items-center gap-2 min-w-0 flex-1 overflow-hidden">
                   <span class="material-symbols-outlined text-[17px] text-primary flex-shrink-0" aria-hidden="true">lyrics</span>
-                  <span id="lyrics-status-label" class="text-xs sm:text-[13px] font-extrabold text-on-surface tracking-tight truncate" data-i18n="player.lyrics_title">Şarkı Sözleri</span>
+                  <span id="lyrics-status-label" class="kurfa-lyrics-status-text text-xs sm:text-[13px] font-extrabold text-on-surface tracking-tight truncate block min-w-0" data-i18n="player.lyrics_title">Şarkı Sözleri</span>
                 </div>
-                <div class="flex items-center gap-1.5 flex-shrink-0">
-                  <button type="button" id="btn-lyrics-provider-cycle" onclick="cycleLyricsProvider()" class="kurfa-stage-chip h-7 px-2.5 rounded-full text-[10.5px] font-bold transition-colors truncate max-w-[135px]" title="Şarkı Sözü Kaynağını Değiştir (Auto / LRCLIB / SimpMusic)">
+                <div class="kurfa-lyrics-header-actions">
+                  <button type="button" id="btn-lyrics-provider-cycle" onclick="cycleLyricsProvider()" class="kurfa-stage-chip h-7 px-2.5 rounded-full text-[10.5px] font-bold transition-colors" title="Şarkı Sözü Kaynağını Değiştir (Auto / LRCLIB / SimpMusic)">
                     <span id="lyrics-source-badge" data-i18n="player.lyrics_synced">Senkronize</span>
                   </button>
-                  <button type="button" id="btn-lyrics-share-mode" onclick="toggleLyricsShareSelectMode()" class="kurfa-stage-chip hidden h-7 px-2.5 rounded-full text-[11px] font-bold flex items-center gap-1 transition-all active:scale-95" title="Söz Kartı Paylaş" data-i18n-title="lyrics.share_btn">
+                  <button type="button" id="btn-lyrics-share-mode" onclick="toggleLyricsShareSelectMode()" class="kurfa-stage-chip hidden h-7 px-2.5 rounded-full text-[11px] font-bold flex items-center gap-1 flex-shrink-0 transition-all active:scale-95" title="Söz Kartı Paylaş" data-i18n-title="lyrics.share_btn">
                     <span class="material-symbols-outlined text-[13px]">ios_share</span>
                     <span data-i18n="lyrics.share_btn">Paylaş</span>
                   </button>
@@ -3208,6 +3211,6 @@
   </div>
 
   <!-- Scripts (Deferred & minified; YouTube IFrame API loads lazily on demand) -->
-  <script defer fetchpriority="high" src="./app.min.js?v=584b964a"></script>
+  <script defer fetchpriority="high" src="./app.min.js?v=4104d24e"></script>
 </body>
 </html>
