@@ -3233,7 +3233,7 @@ const state = {
   repeatMode: safeGetInt('kurfa_repeat', 0), // 0: off, 1: all, 2: one
   currentTab: localStorage.getItem('kurfa_last_tab') || 'kesfet',
   currentKesfetSubTab: localStorage.getItem('kurfa_last_kesfet_subtab') || 'trendler',
-  currentKutuphaneSubTab: localStorage.getItem('kurfa_last_kutuphane_subtab') || 'favoriler',
+  currentKutuphaneSubTab: localStorage.getItem('kurfa_last_kutuphane_subtab') || 'cihaz',
   favorites: safeGetJSON('kurfa_favs', []),
   downloads: safeGetJSON('kurfa_downloads', []),
   downloadQueue: [],
@@ -4024,6 +4024,12 @@ function switchTab(tabId, shouldScroll = true, opts = {}) {
     }
     if (!DOM.downloadsListTable || DOM.downloadsListTable.children.length === 0) {
       renderDownloadsTable();
+    }
+    if (state.currentKutuphaneSubTab === 'cihaz') {
+      if (typeof renderDeviceAudioList === 'function') renderDeviceAudioList();
+      if ((!Array.isArray(state.deviceAudioTracks) || state.deviceAudioTracks.length === 0) && typeof scanLocalDeviceAudio === 'function') {
+        scanLocalDeviceAudio(false, false);
+      }
     }
     updateKutuphaneBadges();
   } else if (tabId === 'calma-listeleri') {
@@ -5872,6 +5878,7 @@ function loadDirectAudioStream(streamUrl, startSeconds, token, ytFallbackId) {
     }
 
     state.isPlaying = true;
+    state._htmlMediaStartedAt = Date.now();
     updatePlayPauseUI(true);
     syncNativeAppPlaybackState(true);
     const playPromise = DOM.audioEngine.play();
@@ -5880,6 +5887,7 @@ function loadDirectAudioStream(streamUrl, startSeconds, token, ytFallbackId) {
         if (token !== currentPlaybackToken) return;
         state._activeMediaEngine = 'audio';
         state._activeTrackConfirmedPlaying = true;
+        state._htmlMediaStartedAt = Date.now();
         applyMediaPlaybackRate(DOM.audioEngine);
         if (typeof KurfaDSP !== 'undefined') {
           KurfaDSP.ensureConnected(DOM.audioEngine);
@@ -6184,10 +6192,14 @@ function resumePlayback() {
   if (isLocalTrack) {
     if (DOM.audioEngine && DOM.audioEngine.getAttribute('src') && !DOM.audioEngine.ended) {
       if (typeof KurfaDSP !== 'undefined') KurfaDSP.resumeContext();
+      state._activeMediaEngine = 'audio';
+      state._htmlMediaStartedAt = Date.now();
       state._smoothFadeGain = 0.02;
       if (typeof applyEffectiveVolume === 'function') applyEffectiveVolume();
+      syncNativeAppPlaybackState(true);
       DOM.audioEngine.play().then(() => {
         if (state.userPaused) return;
+        state._htmlMediaStartedAt = Date.now();
         if (typeof startSmoothFade === 'function') startSmoothFade(0.02, 1.0, 120);
         state.isPlaying = true;
         updatePlayPauseUI(true);
@@ -13287,6 +13299,27 @@ async function startDirectDownload(videoId, format, trackMeta) {
       renderDownloadsTable();
       updateKutuphaneBadges();
     }
+    if (!isMp4) {
+      if (typeof isAndroidNativeEngine === 'function' && isAndroidNativeEngine()) {
+        const prevDevCount = Array.isArray(state.deviceAudioTracks) ? state.deviceAudioTracks.length : 0;
+        setTimeout(() => {
+          if (typeof scanLocalDeviceAudio === 'function') {
+            scanLocalDeviceAudio(false, true).then(() => {
+              const curDevCount = Array.isArray(state.deviceAudioTracks) ? state.deviceAudioTracks.length : 0;
+              if (curDevCount <= prevDevCount) {
+                setTimeout(() => {
+                  if (typeof scanLocalDeviceAudio === 'function') scanLocalDeviceAudio(false, true);
+                }, 2300);
+              }
+            }).catch(() => {});
+          }
+        }, 1200);
+      } else if (typeof getBrowserExtensionMode === 'function' && getBrowserExtensionMode().startsWith('desktop')) {
+        setTimeout(() => {
+          if (typeof restoreWebLocalAudioFromDB === 'function') restoreWebLocalAudioFromDB();
+        }, 800);
+      }
+    }
   };
 
   try {
@@ -14319,6 +14352,15 @@ const FxReactiveStudio = {
   _rollingEnergy: 0.3,
   _surgeSmooth: 0,
   _brightSmooth: 0.4,
+  _loudnessSmooth: 0,
+  _vocalSmooth: 0,
+  _tensionSmooth: 0,
+  _silenceMs: 0,
+  _lastTickMs: 0,
+  _flow1: 0,
+  _flow2: 1.7,
+  _flow3: 3.1,
+  _velSmooth: 0.4,
 
   hashColorRgb(seedStr) {
     const palettes = [
@@ -14511,6 +14553,12 @@ const FxReactiveStudio = {
     this._prevBass = 0;
     this._surgeSmooth = 0;
     this._brightSmooth = 0.35;
+    this._loudnessSmooth = 0;
+    this._vocalSmooth = 0;
+    this._tensionSmooth = 0;
+    this._silenceMs = 0;
+    this._lastTickMs = 0;
+    this._velSmooth = 0.4;
     if (typeof document !== 'undefined') {
       if (document.documentElement) {
         const st = document.documentElement.style;
@@ -14521,9 +14569,18 @@ const FxReactiveStudio = {
         st.setProperty('--kurfa-surge', '0');
         st.setProperty('--kurfa-bright', '0.35');
         st.setProperty('--kurfa-tempo-s', '6.2s');
+        st.setProperty('--kurfa-loudness', '0');
+        st.setProperty('--kurfa-vocal', '0');
+        st.setProperty('--kurfa-tension', '0');
+        st.setProperty('--kurfa-vel', '0');
+        st.setProperty('--kurfa-y1', '0%');
+        st.setProperty('--kurfa-y2', '0%');
+        st.setProperty('--kurfa-x1', '0%');
+        st.setProperty('--kurfa-x2', '0%');
+        st.setProperty('--kurfa-d3y', '0%');
       }
       if (document.body) {
-        document.body.classList.remove('kurfa-drop-active');
+        document.body.classList.remove('kurfa-drop-active', 'kurfa-audio-silent');
       }
     }
     const bars = document.querySelectorAll('#fx-live-spectrum > span');
@@ -14588,12 +14645,18 @@ const FxReactiveStudio = {
               bar.style.setProperty('--bar', Math.max(0.14, Math.min(1.0, h)).toFixed(3));
             });
           }
-          // 3-band volumetric audio energy (--kurfa-bass, --kurfa-mid, --kurfa-high, --kurfa-beat)
+          // Human-like 4-band + volume/silence + continuous velocity audio intelligence
           if (typeof document !== 'undefined' && document.documentElement) {
             const st = document.documentElement.style;
+            const dtSec = Math.min(0.12, Math.max(0.016, (now - (this._lastTickMs || now)) / 1000));
+            this._lastTickMs = now;
             const dynamicOn = !state.proSettings || state.proSettings.dynamicBg !== false;
             if (dynamicOn) {
-              let rawBass = 0, rawMid = 0, rawHigh = 0;
+              const rawVol = state.isMuted ? 0 : Math.max(0, Math.min(1, Number(state.volume ?? 0.8)));
+              const volCurve = rawVol > 0 ? Math.pow(rawVol, 0.65) : 0;
+              const speedMul = Math.max(0.5, Math.min(2.0, Number(state.proSettings?.playbackSpeed) || 1.0));
+
+              let rawBass = 0, rawVocal = 0, rawMid = 0, rawHigh = 0, hasLiveFft = false;
               if (this._freqBuf && typeof KurfaDSP !== 'undefined' && KurfaDSP.analyserNode && KurfaDSP.isConnected) {
                 const len = this._freqBuf.length;
                 const avgRange = (start, end, denom) => {
@@ -14603,23 +14666,56 @@ const FxReactiveStudio = {
                   for (let b = s; b < e; b++) sum += this._freqBuf[b];
                   return Math.max(0, Math.min(1, sum / ((e - s) * denom)));
                 };
-                rawBass = avgRange(0, 8, 205);
-                rawMid = avgRange(8, 25, 195);
-                rawHigh = avgRange(25, 49, 175);
+                rawBass = avgRange(0, 6, 205);
+                rawVocal = avgRange(6, 24, 195);
+                rawMid = avgRange(8, 26, 195);
+                rawHigh = avgRange(24, 54, 175);
+                hasLiveFft = (rawBass + rawVocal + rawHigh) > 0.015;
               }
-              if (rawBass === 0 && rawMid === 0 && rawHigh === 0) {
-                const p = this._phase;
-                rawBass = Math.pow(Math.sin(p * 1.15) * 0.5 + 0.5, 2.4);
-                rawMid = 0.35 + 0.65 * (Math.sin(p * 0.72 + 1.1) * 0.5 + 0.5);
-                rawHigh = Math.pow(Math.cos(p * 2.1 - 0.6) * 0.5 + 0.5, 1.8);
+              if (!hasLiveFft) {
+                if (rawVol === 0) {
+                  rawBass = 0; rawVocal = 0; rawMid = 0; rawHigh = 0;
+                } else {
+                  const dur = Math.max(1, Number(state.duration) || 180);
+                  const pos = Math.max(0, Math.min(1, (Number(state.currentTime) || 0) / dur));
+                  let arcEnv = 0.68;
+                  if (pos < 0.10) arcEnv = 0.48;
+                  else if ((pos >= 0.30 && pos < 0.55) || (pos >= 0.68 && pos < 0.88)) arcEnv = 0.98;
+                  else if (pos >= 0.88) arcEnv = 0.42;
+                  const p = this._phase * speedMul;
+                  rawBass = Math.pow(Math.sin(p * 1.15) * 0.5 + 0.5, 2.2) * arcEnv;
+                  rawVocal = (0.36 + 0.64 * (Math.sin(p * 0.78 + 0.8) * 0.5 + 0.5)) * arcEnv;
+                  rawMid = (0.34 + 0.66 * (Math.sin(p * 0.68 + 1.2) * 0.5 + 0.5)) * arcEnv;
+                  rawHigh = Math.pow(Math.cos(p * 2.05 - 0.5) * 0.5 + 0.5, 1.7) * arcEnv;
+                }
               }
-              this._bassSmooth = this._bassSmooth * 0.58 + rawBass * 0.42;
-              this._midSmooth = this._midSmooth * 0.72 + rawMid * 0.28;
-              this._highSmooth = this._highSmooth * 0.65 + rawHigh * 0.35;
+
+              const rawLoud = rawBass * 0.35 + rawVocal * 0.42 + rawHigh * 0.23;
+              const effLoud = hasLiveFft ? (rawLoud * (0.25 + 0.75 * volCurve)) : (rawLoud * volCurve);
+              if (rawVol < 0.01 || effLoud < 0.032) {
+                this._silenceMs += dtSec * 1000;
+              } else {
+                this._silenceMs = 0;
+              }
+              const isSilent = rawVol < 0.01 || this._silenceMs > 420;
+              if (document.body) {
+                document.body.classList.toggle('kurfa-audio-silent', isSilent);
+              }
+
+              const targetBass = isSilent ? 0 : rawBass * volCurve;
+              const targetMid = isSilent ? 0 : rawMid * volCurve;
+              const targetHigh = isSilent ? 0 : rawHigh * volCurve;
+              const targetVocal = isSilent ? 0 : rawVocal * volCurve;
+
+              this._bassSmooth = this._bassSmooth * 0.58 + targetBass * 0.42;
+              this._midSmooth = this._midSmooth * 0.72 + targetMid * 0.28;
+              this._highSmooth = this._highSmooth * 0.65 + targetHigh * 0.35;
+              this._vocalSmooth = this._vocalSmooth * 0.66 + targetVocal * 0.34;
+              this._loudnessSmooth = this._loudnessSmooth * 0.70 + (isSilent ? 0 : effLoud) * 0.30;
               this._beatSmooth = this._bassSmooth * 0.6 + this._midSmooth * 0.4;
 
               // Beat Onset & Live BPM Tempo Lock (maps 60..180 BPM -> 7.4s..3.0s)
-              if ((rawBass - this._prevBass) > 0.12 && (now - this._lastBeatMs) > 250) {
+              if (!isSilent && (targetBass - this._prevBass) > 0.10 && (now - this._lastBeatMs) > 250) {
                 const dt = now - this._lastBeatMs;
                 this._lastBeatMs = now;
                 if (dt >= 300 && dt <= 1150) {
@@ -14631,13 +14727,16 @@ const FxReactiveStudio = {
                   this._bpmSmooth = this._bpmSmooth * 0.85 + estBpm * 0.15;
                 }
               }
-              this._prevBass = rawBass;
+              this._prevBass = targetBass;
               const tempoNorm = Math.max(0, Math.min(1, (this._bpmSmooth - 60) / 120));
-              const tempoSec = 7.4 - tempoNorm * 4.4;
+              const tempoSec = (7.4 - tempoNorm * 4.4) / speedMul;
 
-              // Chorus / Drop Surge Bloom Detector
+              // Tension & Chorus / Drop Surge Bloom Detector
+              const prevRolling = this._rollingEnergy;
               this._rollingEnergy = this._rollingEnergy * 0.965 + this._beatSmooth * 0.035;
-              const targetSurge = this._beatSmooth > (this._rollingEnergy * 1.32 + 0.09)
+              const slope = Math.max(0, (this._beatSmooth - prevRolling) * 2.5);
+              this._tensionSmooth = isSilent ? (this._tensionSmooth * 0.85) : Math.min(1, this._tensionSmooth * 0.88 + slope * 0.12);
+              const targetSurge = !isSilent && this._beatSmooth > (this._rollingEnergy * 1.30 + 0.08)
                 ? Math.min(1, (this._beatSmooth - this._rollingEnergy) * 2.4)
                 : 0;
               this._surgeSmooth = targetSurge > this._surgeSmooth
@@ -14648,17 +14747,47 @@ const FxReactiveStudio = {
               const rawBright = rawHigh / (rawBass + rawMid + rawHigh + 0.05);
               this._brightSmooth = this._brightSmooth * 0.8 + rawBright * 0.2;
 
+              // Zero-Jump Continuous Phase Velocity Integrator
+              const targetVel = isSilent
+                ? 0.06
+                : Math.max(0.18, Math.min(2.6,
+                    (0.35 + ((this._bpmSmooth - 60) / 140) * 0.65) *
+                    (0.45 + this._loudnessSmooth * 1.25) *
+                    (0.45 + volCurve * 0.75) *
+                    speedMul *
+                    (1 + this._surgeSmooth * 0.65)
+                  ));
+              this._velSmooth = this._velSmooth * 0.86 + targetVel * 0.14;
+              this._flow1 = (this._flow1 + dtSec * this._velSmooth * 1.15) % (Math.PI * 200);
+              this._flow2 = (this._flow2 - dtSec * this._velSmooth * 0.92) % (Math.PI * 200);
+              this._flow3 = (this._flow3 + dtSec * this._velSmooth * 0.68) % (Math.PI * 200);
+
+              const y1 = 55 + Math.sin(this._flow1) * 72;
+              const y2 = 55 + Math.cos(this._flow2) * 68;
+              const x1 = 98 + Math.sin(this._flow1 * 0.85) * 112;
+              const x2 = 98 + Math.cos(this._flow2 * 0.85) * 108;
+              const d3y = Math.sin(this._flow3) * 22;
+
               st.setProperty('--kurfa-bass', this._bassSmooth.toFixed(3));
               st.setProperty('--kurfa-mid', this._midSmooth.toFixed(3));
               st.setProperty('--kurfa-high', this._highSmooth.toFixed(3));
               st.setProperty('--kurfa-beat', this._beatSmooth.toFixed(3));
+              st.setProperty('--kurfa-vocal', this._vocalSmooth.toFixed(3));
+              st.setProperty('--kurfa-loudness', this._loudnessSmooth.toFixed(3));
+              st.setProperty('--kurfa-tension', this._tensionSmooth.toFixed(3));
               st.setProperty('--kurfa-surge', this._surgeSmooth.toFixed(3));
               st.setProperty('--kurfa-bright', this._brightSmooth.toFixed(3));
+              st.setProperty('--kurfa-vel', this._velSmooth.toFixed(3));
               st.setProperty('--kurfa-tempo-s', `${tempoSec.toFixed(2)}s`);
+              st.setProperty('--kurfa-y1', `${y1.toFixed(2)}%`);
+              st.setProperty('--kurfa-y2', `${y2.toFixed(2)}%`);
+              st.setProperty('--kurfa-x1', `${x1.toFixed(2)}%`);
+              st.setProperty('--kurfa-x2', `${x2.toFixed(2)}%`);
+              st.setProperty('--kurfa-d3y', `${d3y.toFixed(2)}%`);
               if (document.body) {
-                document.body.classList.toggle('kurfa-drop-active', this._surgeSmooth > 0.42);
+                document.body.classList.toggle('kurfa-drop-active', !isSilent && this._surgeSmooth > 0.42);
               }
-            } else if (this._beatSmooth !== 0 || this._surgeSmooth !== 0) {
+            } else if (this._beatSmooth !== 0 || this._surgeSmooth !== 0 || this._loudnessSmooth !== 0) {
               this._beatSmooth = 0;
               this._bassSmooth = 0;
               this._midSmooth = 0;
@@ -14666,14 +14795,22 @@ const FxReactiveStudio = {
               this._prevBass = 0;
               this._surgeSmooth = 0;
               this._brightSmooth = 0.35;
+              this._loudnessSmooth = 0;
+              this._vocalSmooth = 0;
+              this._tensionSmooth = 0;
+              this._silenceMs = 0;
               st.setProperty('--kurfa-beat', '0');
               st.setProperty('--kurfa-bass', '0');
               st.setProperty('--kurfa-mid', '0');
               st.setProperty('--kurfa-high', '0');
+              st.setProperty('--kurfa-loudness', '0');
+              st.setProperty('--kurfa-vocal', '0');
+              st.setProperty('--kurfa-tension', '0');
               st.setProperty('--kurfa-surge', '0');
               st.setProperty('--kurfa-bright', '0.35');
+              st.setProperty('--kurfa-vel', '0');
               st.setProperty('--kurfa-tempo-s', '6.2s');
-              if (document.body) document.body.classList.remove('kurfa-drop-active');
+              if (document.body) document.body.classList.remove('kurfa-drop-active', 'kurfa-audio-silent');
             }
           }
           // Low-cost ~11fps reactive loudness tint on mobile Dynamic Island pill
@@ -19895,6 +20032,7 @@ function setupEventListeners() {
     DOM.audioEngine.addEventListener('play', () => {
       _bgPauseRecoverCount = 0;
       clearAudioStallWatchdog();
+      state._htmlMediaStartedAt = Date.now();
       if (DOM.audioEngine && DOM.audioEngine.getAttribute('src')) {
         state._activeMediaEngine = 'audio';
         applyMediaPlaybackRate(DOM.audioEngine);
@@ -20593,6 +20731,12 @@ window.kurfaNativePlay = function() {
   if (typeof resumePlayback === 'function') resumePlayback();
 };
 window.kurfaNativePause = function() {
+  const activeHtmlAudio = (state._activeMediaEngine === 'audio' || state._activeMediaEngine === 'native-video') &&
+    DOM.audioEngine && DOM.audioEngine.getAttribute('src') && !DOM.audioEngine.paused && !DOM.audioEngine.ended;
+  const sinceHtmlStart = Date.now() - (state._htmlMediaStartedAt || 0);
+  if (activeHtmlAudio && sinceHtmlStart < 3500 && !state.userPaused && (typeof document === 'undefined' || !document.hidden)) {
+    return;
+  }
   if (typeof pausePlayback === 'function') pausePlayback();
   syncNativeAppPlaybackState(false, true);
 };
@@ -20658,11 +20802,11 @@ window.__kurfaNativeLocalAudioCallback = function(reqId, payload) {
   resolver(payload);
 };
 
-async function scanLocalDeviceAudio(userInitiated = false) {
+async function scanLocalDeviceAudio(userInitiated = false, silent = false) {
   const listEl = document.getElementById('device-audio-list');
   if (typeof isAndroidNativeEngine === 'function' && isAndroidNativeEngine() &&
       window.KurfaAndroidBridge && typeof window.KurfaAndroidBridge.scanLocalDeviceAudioAsync === 'function') {
-    if (listEl) {
+    if (listEl && !silent) {
       listEl.innerHTML = `<div class="py-8 text-center text-xs text-on-surface-variant flex items-center justify-center gap-2"><span class="material-symbols-outlined text-[18px] animate-spin text-primary">progress_activity</span><span>Cihazdaki müzikler taranıyor...</span></div>`;
     }
     const reqId = 'loc_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6);
@@ -20679,14 +20823,19 @@ async function scanLocalDeviceAudio(userInitiated = false) {
     });
 
     if (res && res.permissionDenied) {
-      if (listEl) {
+      if (listEl && !silent) {
         listEl.innerHTML = `<div class="py-8 px-4 text-center flex flex-col items-center gap-2"><span class="material-symbols-outlined text-3xl text-on-surface-variant/60">folder_off</span><p class="text-xs font-semibold text-on-surface">Müzik dosyalarına erişim izni verilmedi</p><button type="button" class="px-4 py-1.5 rounded-full bg-primary text-on-primary text-xs font-bold" onclick="scanLocalDeviceAudio(true)">İzin Ver ve Tara</button></div>`;
       }
       return;
     }
 
+    if (silent && (!res || !Array.isArray(res.tracks) || res.tracks.length === 0)) {
+      return;
+    }
+
     state.deviceAudioTracks = (Array.isArray(res?.tracks) ? res.tracks : []).map(cleanLocalTrackMeta);
     renderDeviceAudioList(document.getElementById('device-audio-filter')?.value || '');
+    if (typeof updateKutuphaneBadges === 'function') updateKutuphaneBadges();
     return;
   }
 
