@@ -20833,7 +20833,10 @@ async function scanLocalDeviceAudio(userInitiated = false, silent = false) {
       return;
     }
 
-    state.deviceAudioTracks = (Array.isArray(res?.tracks) ? res.tracks : []).map(cleanLocalTrackMeta);
+    state.deviceAudioTracks = (Array.isArray(res?.tracks) ? res.tracks : []).map((t, i) => ({
+      ...cleanLocalTrackMeta(t),
+      _scanOrder: i
+    }));
     renderDeviceAudioList(document.getElementById('device-audio-filter')?.value || '');
     if (typeof updateKutuphaneBadges === 'function') updateKutuphaneBadges();
     return;
@@ -20845,7 +20848,7 @@ async function scanLocalDeviceAudio(userInitiated = false, silent = false) {
       try {
         const res = await callExtensionBridge('PICK_LOCAL_AUDIO_FILES', {}, 120000);
         if (res && res.success && Array.isArray(res.tracks)) {
-          state.deviceAudioTracks = res.tracks.map(cleanLocalTrackMeta);
+          state.deviceAudioTracks = res.tracks.map((t, i) => ({ ...cleanLocalTrackMeta(t), _scanOrder: i }));
           state.deviceAudioRenderLimit = 80;
           renderDeviceAudioList(document.getElementById('device-audio-filter')?.value || '');
           if (typeof updateKutuphaneBadges === 'function') updateKutuphaneBadges();
@@ -20994,7 +20997,7 @@ async function restoreWebLocalAudioFromDB() {
     db.close();
     if (restored.length === 0) return;
     restored.sort((a, b) => (b.addedAt || 0) - (a.addedAt || 0));
-    state.deviceAudioTracks = restored.map(cleanLocalTrackMeta);
+    state.deviceAudioTracks = restored.map((t, i) => ({ ...cleanLocalTrackMeta(t), _scanOrder: i }));
     if (state.currentTrack && state.currentTrack.isLocal) {
       state.currentTrack.needsIdbBlob = true;
       state.currentTrack.streamUrl = null;
@@ -21072,22 +21075,169 @@ function handleWebLocalAudioFiles(fileList) {
 }
 window.handleWebLocalAudioFiles = handleWebLocalAudioFiles;
 
+state.deviceAudioSort = localStorage.getItem('kurfa_device_sort') || 'newest';
+state.deviceAudioFilterMode = 'all';
+
+function parseDeviceDurationSec(track) {
+  if (!track) return 0;
+  const direct = Number(track.durationSec);
+  if (Number.isFinite(direct) && direct > 0) return direct;
+  const str = String(track.duration || '').trim();
+  const parts = str.split(':').map(n => parseInt(n, 10));
+  if (parts.length === 2 && Number.isFinite(parts[0]) && Number.isFinite(parts[1])) {
+    return parts[0] * 60 + parts[1];
+  }
+  if (parts.length === 3 && parts.every(Number.isFinite)) {
+    return parts[0] * 3600 + parts[1] * 60 + parts[2];
+  }
+  return 0;
+}
+
+function getDeviceTrackTimestamp(track) {
+  if (!track) return 0;
+  const ts = Number(track.dateAdded || track.addedAt || 0);
+  if (Number.isFinite(ts) && ts > 0) return ts;
+  const mId = Number(track.mediaId || 0);
+  if (Number.isFinite(mId) && mId > 0) return mId;
+  return -(Number(track._scanOrder) || 0);
+}
+
+function formatDeviceDateTag(track) {
+  const ts = Number(track?.dateAdded || track?.addedAt || 0);
+  if (!Number.isFinite(ts) || ts <= 1000000000000) return '';
+  const now = new Date();
+  const d = new Date(ts);
+  const startToday = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+  const startDay = new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
+  const diffDays = Math.round((startToday - startDay) / 86400000);
+  if (diffDays <= 0) return 'Bugün';
+  if (diffDays === 1) return 'Dün';
+  if (diffDays < 7) return `${diffDays} gün önce`;
+  const months = ['Oca', 'Şub', 'Mar', 'Nis', 'May', 'Haz', 'Tem', 'Ağu', 'Eyl', 'Eki', 'Kas', 'Ara'];
+  return `${d.getDate()} ${months[d.getMonth()] || ''}`;
+}
+
+function formatDeviceFormatTag(track) {
+  const mime = String(track?.mimeType || '').toLowerCase();
+  const fn = String(track?.fileName || '').toLowerCase();
+  if (mime.includes('flac') || fn.endsWith('.flac')) return 'FLAC';
+  if (mime.includes('mp4') || mime.includes('m4a') || mime.includes('aac') || fn.endsWith('.m4a') || fn.endsWith('.aac')) return 'M4A';
+  if (mime.includes('ogg') || mime.includes('opus') || fn.endsWith('.ogg') || fn.endsWith('.opus')) return 'OGG';
+  if (mime.includes('wav') || fn.endsWith('.wav')) return 'WAV';
+  return 'MP3';
+}
+
+function getDeviceHueRgb(seed) {
+  const hues = ['244, 63, 94', '59, 130, 246', '16, 185, 129', '139, 92, 246', '6, 182, 212', '245, 158, 11', '236, 72, 153'];
+  let h = 0;
+  const s = String(seed || 'k');
+  for (let i = 0; i < s.length; i++) h = ((h << 5) - h + s.charCodeAt(i)) | 0;
+  return hues[Math.abs(h) % hues.length];
+}
+
+function getFilteredSortedDeviceTracks(filterText = '') {
+  const all = Array.isArray(state.deviceAudioTracks) ? state.deviceAudioTracks : [];
+  const q = String(filterText !== undefined && filterText !== null ? filterText : (document.getElementById('device-audio-filter')?.value || '')).trim().toLowerCase();
+  const mode = state.deviceAudioFilterMode || 'all';
+  const sortKey = state.deviceAudioSort || 'newest';
+  const thirtyDaysAgo = Date.now() - 30 * 86400000;
+
+  let list = all.filter(t => {
+    if (!t) return false;
+    if (q) {
+      const hay = `${t.title || ''} ${t.artist || ''} ${t.album || ''}`.toLowerCase();
+      if (!hay.includes(q)) return false;
+    }
+    if (mode === 'recent') {
+      const ts = Number(t.dateAdded || t.addedAt || 0);
+      if (ts > 1000000000000) return ts >= thirtyDaysAgo;
+      return (Number(t._scanOrder) || 0) < 30;
+    }
+    if (mode === 'long') {
+      return parseDeviceDurationSec(t) >= 180;
+    }
+    return true;
+  });
+
+  list = [...list];
+  if (sortKey === 'oldest') {
+    list.sort((a, b) => getDeviceTrackTimestamp(a) - getDeviceTrackTimestamp(b));
+  } else if (sortKey === 'title_asc') {
+    list.sort((a, b) => String(a.title || '').localeCompare(String(b.title || ''), 'tr'));
+  } else if (sortKey === 'artist_asc') {
+    list.sort((a, b) => String(a.artist || '').localeCompare(String(b.artist || ''), 'tr'));
+  } else if (sortKey === 'duration_desc') {
+    list.sort((a, b) => parseDeviceDurationSec(b) - parseDeviceDurationSec(a));
+  } else {
+    list.sort((a, b) => getDeviceTrackTimestamp(b) - getDeviceTrackTimestamp(a));
+  }
+  return list;
+}
+
+function syncDeviceSortFilterChips() {
+  const bar = document.getElementById('device-audio-sort-bar');
+  if (!bar) return;
+  const sortKey = state.deviceAudioSort || 'newest';
+  const mode = state.deviceAudioFilterMode || 'all';
+  bar.querySelectorAll('[data-sort]').forEach(btn => btn.classList.toggle('active', btn.dataset.sort === sortKey));
+  bar.querySelectorAll('[data-filter]').forEach(btn => btn.classList.toggle('active', btn.dataset.filter === mode));
+}
+
+function setDeviceAudioSort(sortKey) {
+  state.deviceAudioSort = sortKey || 'newest';
+  safeSetStorage('kurfa_device_sort', state.deviceAudioSort);
+  state.deviceAudioRenderLimit = 80;
+  renderDeviceAudioList(document.getElementById('device-audio-filter')?.value || '');
+}
+window.setDeviceAudioSort = setDeviceAudioSort;
+
+function setDeviceAudioFilterMode(mode) {
+  state.deviceAudioFilterMode = mode || 'all';
+  state.deviceAudioRenderLimit = 80;
+  renderDeviceAudioList(document.getElementById('device-audio-filter')?.value || '');
+}
+window.setDeviceAudioFilterMode = setDeviceAudioFilterMode;
+
+function clearDeviceAudioFilter() {
+  const inp = document.getElementById('device-audio-filter');
+  if (inp) inp.value = '';
+  state.deviceAudioFilterMode = 'all';
+  renderDeviceAudioList('');
+}
+window.clearDeviceAudioFilter = clearDeviceAudioFilter;
+
 function renderDeviceAudioList(filterText = '') {
   const listEl = document.getElementById('device-audio-list');
   const countEl = document.getElementById('device-audio-count-text');
   const badgeEl = document.getElementById('device-audio-badge-count');
+  const clearBtn = document.getElementById('device-audio-clear-btn');
   const all = Array.isArray(state.deviceAudioTracks) ? state.deviceAudioTracks : [];
   const isEn = getAppLanguage() === 'en';
 
+  const inpEl = document.getElementById('device-audio-filter');
+  const activeQuery = (filterText !== undefined && filterText !== null && filterText !== '') ? filterText : (inpEl?.value || '');
+  if (clearBtn) clearBtn.classList.toggle('hidden', !String(activeQuery).trim());
+  syncDeviceSortFilterChips();
+
+  const filtered = getFilteredSortedDeviceTracks(activeQuery);
+  const totalSec = filtered.reduce((acc, t) => acc + parseDeviceDurationSec(t), 0);
+  const totalMins = Math.round(totalSec / 60);
+  const durSummary = totalMins >= 60 ? `${Math.floor(totalMins / 60)} sa ${totalMins % 60} dk` : `${totalMins} dk`;
+
   if (badgeEl) badgeEl.textContent = String(all.length);
-  if (countEl) countEl.textContent = t('library.device_track_count', { count: all.length });
+  if (countEl) {
+    countEl.textContent = filtered.length === all.length
+      ? `${all.length} Parça • ${durSummary}`
+      : `${filtered.length}/${all.length} Parça • ${durSummary}`;
+  }
   if (!listEl) return;
 
-  const q = String(filterText || '').trim().toLowerCase();
-  const filtered = q ? all.filter(t => (t.title || '').toLowerCase().includes(q) || (t.artist || '').toLowerCase().includes(q)) : all;
-
   if (filtered.length === 0) {
-    listEl.innerHTML = `<div class="py-8 px-4 text-center flex flex-col items-center gap-2"><span class="material-symbols-outlined text-3xl text-on-surface-variant/60">library_music</span><p class="text-xs font-semibold text-on-surface">${escapeHtml(all.length === 0 ? t('library.device_empty_unscanned') : t('library.device_empty_search'))}</p><button type="button" class="px-4 py-1.5 rounded-full bg-primary text-on-primary text-xs font-bold" onclick="scanLocalDeviceAudio(true)">${escapeHtml(typeof isAndroidNativeEngine === 'function' && isAndroidNativeEngine() ? t('library.device_scan_btn') : t('library.device_pick_btn'))}</button></div>`;
+    const emptyMsg = all.length === 0 ? t('library.device_empty_unscanned') : t('library.device_empty_search');
+    const actionBtn = all.length === 0
+      ? `<button type="button" class="px-4 py-1.5 rounded-full bg-primary text-on-primary text-xs font-bold" onclick="scanLocalDeviceAudio(true)">${escapeHtml(typeof isAndroidNativeEngine === 'function' && isAndroidNativeEngine() ? t('library.device_scan_btn') : t('library.device_pick_btn'))}</button>`
+      : `<button type="button" class="px-4 py-1.5 rounded-full bg-surface-container-high text-on-surface text-xs font-bold" onclick="clearDeviceAudioFilter()">Filtreyi Temizle</button>`;
+    listEl.innerHTML = `<div class="py-10 px-4 text-center flex flex-col items-center gap-2.5"><span class="material-symbols-outlined text-3xl text-on-surface-variant/60">library_music</span><p class="text-xs font-semibold text-on-surface">${escapeHtml(emptyMsg)}</p>${actionBtn}</div>`;
     return;
   }
 
@@ -21098,28 +21248,48 @@ function renderDeviceAudioList(filterText = '') {
   visible.forEach((track, idx) => {
     const isPlayingCur = state.currentTrack && state.currentTrack.id === track.id;
     const isAnimating = isPlayingCur && state.isPlaying;
+    const cleanMeta = cleanLocalTrackMeta(track);
+    const fmtTag = formatDeviceFormatTag(track);
+    const dateTag = formatDeviceDateTag(track);
+    const hueRgb = getDeviceHueRgb(track.id || cleanMeta.title);
     const row = document.createElement('div');
     row.className = `track-row flex items-center justify-between gap-2 p-2.5 rounded-xl cursor-pointer transition-colors ${isPlayingCur ? 'active' : ''}`;
     row.dataset.trackId = track.id;
     row.dataset.trackIdx = String(idx + 1);
     row.innerHTML = `
-      <div class="flex items-center gap-2.5 min-w-0 flex-1 pr-3 overflow-hidden">
+      <div class="flex items-center gap-2.5 min-w-0 flex-1 pr-2 overflow-hidden">
         <span class="w-5 text-center text-[11px] font-mono tabular-nums track-idx-num flex items-center justify-center flex-shrink-0 text-on-surface-variant">${isPlayingCur ? renderMiniEqBarsHtml(isAnimating) : (idx + 1)}</span>
-        <div class="w-9 h-9 rounded-lg bg-surface-container-high flex items-center justify-center flex-shrink-0 text-on-surface-variant">
+        <div class="kurfa-device-art" style="--dev-hue-rgb: ${hueRgb}">
           <span class="material-symbols-outlined text-[18px] track-icon">${isAnimating ? 'graphic_eq' : 'music_note'}</span>
         </div>
         <div class="flex flex-col min-w-0 flex-1 overflow-hidden">
           <div class="flex items-center gap-1.5 min-w-0 track-title-wrap">
-            <span class="kurfa-row-title text-xs font-bold truncate block track-title-text text-on-surface">${escapeHtml(cleanLocalTrackMeta(track).title || (isEn ? 'Track' : 'Parça'))}</span>
+            <span class="kurfa-row-title text-xs font-bold truncate block track-title-text text-on-surface">${escapeHtml(cleanMeta.title || (isEn ? 'Track' : 'Parça'))}</span>
             ${isPlayingCur ? renderPlayingPillHtml() : ''}
           </div>
-          <span class="kurfa-row-artist text-[11px] text-on-surface-variant truncate block">${escapeHtml(track.artist || t('library.device_title'))}</span>
+          <div class="flex items-center gap-1.5 min-w-0 mt-0.5">
+            <span class="kurfa-row-artist text-[11px] text-on-surface-variant truncate block">${escapeHtml(track.artist || t('library.device_title'))}</span>
+            <span class="kurfa-device-meta-tag">${escapeHtml(fmtTag)}</span>
+            ${dateTag ? `<span class="kurfa-device-meta-tag hidden sm:inline-flex">${escapeHtml(dateTag)}</span>` : ''}
+          </div>
         </div>
       </div>
-      <span class="text-[11px] text-on-surface-variant font-mono flex-shrink-0 pl-2 track-duration-text">${escapeHtml(track.duration || '3:30')}</span>
+      <div class="flex items-center gap-1.5 flex-shrink-0 pl-1">
+        <button type="button" class="kurfa-dev-queue-btn w-7 h-7 rounded-lg flex items-center justify-center text-on-surface-variant hover:text-primary hover:bg-surface-container transition-colors" title="Sıraya Ekle" aria-label="Sıraya Ekle">
+          <span class="material-symbols-outlined text-[16px]">playlist_add</span>
+        </button>
+        <span class="text-[11px] text-on-surface-variant font-mono tabular-nums w-9 text-right track-duration-text">${escapeHtml(track.duration || '3:30')}</span>
+      </div>
     `;
+    const qBtn = row.querySelector('.kurfa-dev-queue-btn');
+    if (qBtn) {
+      qBtn.onclick = (e) => {
+        e.stopPropagation();
+        if (typeof addToUserQueue === 'function') addToUserQueue(track);
+      };
+    }
     row.onclick = () => {
-      setPlaybackQueueContext(all, track, t('library.device_title'), t('library.device_title').toUpperCase());
+      setPlaybackQueueContext(filtered, track, t('library.device_title'), t('library.device_title').toUpperCase());
       playTrackById(track.id, track);
     };
     frag.appendChild(row);
@@ -21131,7 +21301,7 @@ function renderDeviceAudioList(filterText = '') {
     moreBtn.textContent = t('library.show_more_remaining', { count: filtered.length - visible.length });
     moreBtn.onclick = () => {
       state.deviceAudioRenderLimit = limit + 100;
-      renderDeviceAudioList(filterText);
+      renderDeviceAudioList(activeQuery);
     };
     frag.appendChild(moreBtn);
   }
@@ -21149,8 +21319,7 @@ function syncActiveTrackRowInDeviceAudio() {
   const all = Array.isArray(state.deviceAudioTracks) ? state.deviceAudioTracks : [];
   if (curId && all.some(t => t && t.id === curId)) {
     const filterText = document.getElementById('device-audio-filter')?.value || '';
-    const q = String(filterText).trim().toLowerCase();
-    const filtered = q ? all.filter(t => (t.title || '').toLowerCase().includes(q) || (t.artist || '').toLowerCase().includes(q)) : all;
+    const filtered = getFilteredSortedDeviceTracks(filterText);
     const curIdxInFiltered = filtered.findIndex(t => t.id === curId);
     const limit = Math.max(80, Number(state.deviceAudioRenderLimit) || 80);
     if (curIdxInFiltered >= limit) {
@@ -21193,16 +21362,33 @@ function syncActiveTrackRowInDeviceAudio() {
 window.syncActiveTrackRowInDeviceAudio = syncActiveTrackRowInDeviceAudio;
 
 function playAllDeviceAudio() {
-  const all = Array.isArray(state.deviceAudioTracks) ? state.deviceAudioTracks : [];
-  if (all.length === 0) {
+  const list = getFilteredSortedDeviceTracks();
+  if (list.length === 0) {
     scanLocalDeviceAudio(true);
     return;
   }
-  setPlaybackQueueContext(all, 0, t('library.device_title'), t('library.device_title').toUpperCase());
+  setPlaybackQueueContext(list, 0, t('library.device_title'), t('library.device_title').toUpperCase());
   const firstTrack = state.queue[state.queueIndex] || state.queue[0];
   if (firstTrack) playTrackById(firstTrack.id, firstTrack);
 }
 window.playAllDeviceAudio = playAllDeviceAudio;
+
+function shufflePlayDeviceAudio() {
+  const list = getFilteredSortedDeviceTracks();
+  if (list.length === 0) {
+    scanLocalDeviceAudio(true);
+    return;
+  }
+  const shuffled = [...list];
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+  setPlaybackQueueContext(shuffled, 0, t('library.device_title'), t('library.device_title').toUpperCase());
+  const firstTrack = state.queue[0];
+  if (firstTrack) playTrackById(firstTrack.id, firstTrack);
+}
+window.shufflePlayDeviceAudio = shufflePlayDeviceAudio;
 let __startupUpdateCheckRan = false;
 
 function dismissUpdateAvailableBanner() {
