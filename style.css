@@ -5351,6 +5351,35 @@ body.dark-mode .kurfa-queue-filter-input {
   50% { transform: scaleY(1) translateZ(0); }
 }
 
+@keyframes kurfaCompassTilt {
+  0%, 100% { transform: rotate(0deg) scale(1) translateZ(0); }
+  35% { transform: rotate(-16deg) scale(1.06) translateZ(0); }
+  70% { transform: rotate(12deg) scale(1.04) translateZ(0); }
+}
+
+@keyframes kurfaLibFloat {
+  0%, 100% { transform: translateY(0) scale(1) translateZ(0); }
+  50% { transform: translateY(-2px) scale(1.05) translateZ(0); }
+}
+
+@keyframes kurfaSearchLook {
+  0%, 100% { transform: rotate(0deg) scale(1) translateZ(0); }
+  45% { transform: rotate(-10deg) translateX(1px) scale(1.06) translateZ(0); }
+}
+
+@keyframes kurfaQuickTilt {
+  0%, 100% { transform: scale(1) rotate(0deg) translateZ(0); }
+  50% { transform: scale(1.1) rotate(-8deg) translateZ(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #desktop-sidebar #sidebar-main-nav .nav-item .material-symbols-outlined,
+  #desktop-sidebar .quick-action-btn .material-symbols-outlined {
+    animation: none !important;
+    transition: color 0.15s ease !important;
+  }
+}
+
 /* 1. Desktop Sidebar (#desktop-sidebar) — Sculpted 3D Glass & 4-Layer Volumetric Cove-LED */
 body.dark-mode #desktop-sidebar.kurfa-sidebar-rail {
   background: linear-gradient(90deg, rgba(10, 14, 24, 0.97) 0%, rgba(16, 22, 36, 0.95) 100%) !important;
@@ -5363,20 +5392,19 @@ body.dark-mode #desktop-sidebar.kurfa-sidebar-rail {
 }
 
 html:not(.dark-mode) #desktop-sidebar.kurfa-sidebar-rail {
-  background: linear-gradient(
-    180deg,
-    rgba(255, 255, 255, 0.96) 0%,
-    rgba(247, 249, 254, 0.95) 56%,
-    rgba(var(--kurfa-track-rgb), 0.055) 100%
-  ) !important;
-  backdrop-filter: blur(28px) saturate(190%);
-  -webkit-backdrop-filter: blur(28px) saturate(190%);
-  border-right: 1px solid rgba(var(--kurfa-track-rgb), 0.16) !important;
-  box-shadow:
-    inset -1px 0 0 rgba(255, 255, 255, 0.92),
-    4px 0 24px rgba(15, 23, 42, 0.045) !important;
+  background: linear-gradient(180deg, #ffffff 0%, #f8fafd 100%) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  border-right: 1px solid rgba(15, 23, 42, 0.07) !important;
+  box-shadow: 2px 0 16px rgba(15, 23, 42, 0.03) !important;
   contain: layout style paint;
-  transition: background 0.9s ease, border-color 0.9s ease, box-shadow 0.9s ease;
+  transition: border-color 0.4s ease, box-shadow 0.4s ease;
+}
+
+html:not(.dark-mode) .kurfa-sidebar-cove,
+html:not(.dark-mode) .kurfa-bar-cove {
+  opacity: 0 !important;
+  display: none !important;
 }
 
 #desktop-sidebar.kurfa-sidebar-rail::after {
@@ -5726,28 +5754,16 @@ body.dark-mode.is-playing-live .kurfa-brand-dot {
   z-index: 1;
   opacity: 0;
   will-change: transform;
-  background: linear-gradient(90deg, rgba(var(--kurfa-track-rgb), 0.16) 0%, rgba(var(--kurfa-track-rgb-2), 0.06) 100%);
-  border: 1px solid rgba(var(--kurfa-track-rgb), 0.22);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9), 0 4px 14px rgba(var(--kurfa-track-rgb), 0.10);
-  transition: transform 0.34s cubic-bezier(0.22, 1, 0.36, 1), height 0.25s ease, opacity 0.2s ease, background 0.6s ease, border-color 0.6s ease, box-shadow 0.6s ease;
-}
-
-#sidebar-nav-pill.kurfa-nav-sliding-pill::before {
-  content: "";
-  position: absolute;
-  left: 0;
-  top: 7px;
-  bottom: 7px;
-  width: 3px;
-  border-radius: 9999px;
-  background: rgb(var(--kurfa-track-rgb));
-  box-shadow: 0 0 10px rgba(var(--kurfa-track-rgb), 0.45);
+  background: #ffffff;
+  border: 1px solid rgba(15, 23, 42, 0.075);
+  box-shadow: 0 2px 10px rgba(15, 23, 42, 0.06);
+  transition: transform 0.34s cubic-bezier(0.22, 1, 0.36, 1), height 0.25s ease, opacity 0.2s ease, background 0.4s ease, border-color 0.4s ease, box-shadow 0.4s ease;
 }
 
 body.dark-mode #sidebar-nav-pill.kurfa-nav-sliding-pill {
-  background: linear-gradient(90deg, rgba(var(--kurfa-track-rgb), 0.16) 0%, rgba(255, 255, 255, 0.065) 100%);
-  border: 1px solid rgba(var(--kurfa-track-rgb), 0.22);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 4px 14px rgba(0, 0, 0, 0.22);
+  background: rgba(255, 255, 255, 0.085);
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
 }
 
 #desktop-sidebar #sidebar-main-nav .nav-item {
@@ -5785,8 +5801,33 @@ body.dark-mode #desktop-sidebar #sidebar-main-nav .nav-item.active {
   color: #ffffff !important;
 }
 
-#desktop-sidebar #sidebar-main-nav .nav-item .material-symbols-outlined {
-  transition: color 0.25s ease;
+#desktop-sidebar #sidebar-main-nav .nav-item .material-symbols-outlined,
+#desktop-sidebar .quick-action-btn .material-symbols-outlined {
+  transition: color 0.25s ease, transform 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+  transform-origin: center center;
+}
+
+#desktop-sidebar #sidebar-main-nav .nav-item[data-tab="kesfet"].active .material-symbols-outlined,
+#desktop-sidebar #sidebar-main-nav .nav-item[data-tab="kesfet"]:hover .material-symbols-outlined {
+  animation: kurfaCompassTilt 3.4s cubic-bezier(0.22, 1, 0.36, 1) infinite;
+}
+
+#desktop-sidebar #sidebar-main-nav .nav-item[data-tab="kutuphanem"].active .material-symbols-outlined,
+#desktop-sidebar #sidebar-main-nav .nav-item[data-tab="kutuphanem"]:hover .material-symbols-outlined {
+  animation: kurfaLibFloat 2.8s ease-in-out infinite;
+}
+
+#desktop-sidebar #sidebar-main-nav .nav-item[data-tab="arama"].active .material-symbols-outlined,
+#desktop-sidebar #sidebar-main-nav .nav-item[data-tab="arama"]:hover .material-symbols-outlined {
+  animation: kurfaSearchLook 2.6s ease-in-out infinite;
+}
+
+#desktop-sidebar #sidebar-main-nav .nav-item[data-tab="calma-listeleri"]:hover .material-symbols-outlined {
+  transform: scale(1.08) translateZ(0);
+}
+
+#desktop-sidebar .quick-action-btn:hover .material-symbols-outlined {
+  animation: kurfaQuickTilt 0.55s cubic-bezier(0.22, 1, 0.36, 1) 1;
 }
 
 #desktop-sidebar #sidebar-main-nav .nav-item.active .material-symbols-outlined {
@@ -5940,20 +5981,13 @@ body.dark-mode .kurfa-install-badge {
 
 /* 2. Desktop Bottom Player Bar (#desktop-player-bar) — Sculpted Upper-Rim Volumetric Cove-LED */
 html:not(.dark-mode) #desktop-player-bar {
-  background: linear-gradient(
-    180deg,
-    rgba(255, 255, 255, 0.94) 0%,
-    rgba(246, 248, 253, 0.97) 75%,
-    rgba(var(--kurfa-track-rgb), 0.04) 100%
-  ) !important;
-  backdrop-filter: blur(28px) saturate(190%);
-  -webkit-backdrop-filter: blur(28px) saturate(190%);
-  border-top: 1px solid rgba(var(--kurfa-track-rgb), 0.15) !important;
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.95),
-    0 -8px 28px rgba(15, 23, 42, 0.055) !important;
+  background: #ffffff !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  border-top: 1px solid rgba(15, 23, 42, 0.08) !important;
+  box-shadow: 0 -4px 20px rgba(15, 23, 42, 0.045) !important;
   contain: layout style paint;
-  transition: background 0.9s ease, border-color 0.9s ease, box-shadow 0.9s ease;
+  transition: border-color 0.4s ease, box-shadow 0.4s ease;
 }
 
 #desktop-player-bar::before {
