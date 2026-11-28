@@ -335,6 +335,17 @@ const KURFA_I18N = {
     'settings.dark_theme_desc': 'Göz yormayan derin gece arayüzü',
     'settings.dynamic_bg_desc': 'Çalan şarkı kapağına göre hafif arka plan ışıltısı',
     'settings.lang_system': 'Sistem',
+    'settings.tour_title': 'Uygulama Tanıtım Turu',
+    'settings.tour_desc': 'Cihazına özel hızlı rehberi baştan başlat',
+    'settings.tour_btn': 'Turu Başlat',
+    'tour.badge_desktop': 'MASAÜSTÜ REHBERİ',
+    'tour.badge_mobile': 'MOBİL REHBERİ',
+    'tour.badge_apk': 'APK REHBERİ',
+    'tour.skip': 'Geç',
+    'tour.prev': 'Geri',
+    'tour.next': 'İleri',
+    'tour.done': 'Başla',
+    'tour.toast_done': 'Tanıtım turu tamamlandı. Ayarlar içinden tekrar başlatabilirsin.',
     'settings.sec_playback': 'Oynatma Tercihleri',
     'settings.sponsorblock_desc': 'Video intro ve sponsorlu konuşmaları otomatik geç',
     'settings.ad_warning_desc': 'Tarayıcı modunda YouTube reklam koruması önerisi',
@@ -956,6 +967,17 @@ const KURFA_I18N = {
     'settings.dark_theme_desc': 'Deep low-glare dark interface',
     'settings.dynamic_bg_desc': 'Subtle ambient glow tinted by current cover art',
     'settings.lang_system': 'System',
+    'settings.tour_title': 'Interactive App Tour',
+    'settings.tour_desc': 'Replay the guided walkthrough for your device',
+    'settings.tour_btn': 'Start Tour',
+    'tour.badge_desktop': 'DESKTOP GUIDE',
+    'tour.badge_mobile': 'MOBILE GUIDE',
+    'tour.badge_apk': 'ANDROID APP GUIDE',
+    'tour.skip': 'Skip',
+    'tour.prev': 'Back',
+    'tour.next': 'Next',
+    'tour.done': 'Done',
+    'tour.toast_done': 'Tour completed. You can replay it anytime from Settings.',
     'settings.sec_playback': 'Playback Preferences',
     'settings.sponsorblock_desc': 'Auto-skip music video intros and sponsor segments',
     'settings.ad_warning_desc': 'Ad-free protection notice in web browser mode',
@@ -2021,6 +2043,497 @@ window.kurfaRunFirstVisitOnboarding = kurfaRunFirstVisitOnboarding;
 window.kurfaHandleInitialVisit = kurfaHandleInitialVisit;
 
 // =============================================================================
+// 0.5b INTERACTIVE PLATFORM-AWARE ONBOARDING TOUR (DESKTOP & MOBILE / APK)
+// =============================================================================
+const TOUR_DONE_KEY = 'kurfa_tour_done_v1';
+
+const KurfaTour = {
+  active: false,
+  index: 0,
+  mode: 'desktop',
+  steps: [],
+  _repositionTimer: null,
+  _boundResize: null,
+  _boundKey: null,
+
+  isDone() {
+    try {
+      return localStorage.getItem(TOUR_DONE_KEY) === '1';
+    } catch (_) {
+      return false;
+    }
+  },
+
+  markDone() {
+    try {
+      localStorage.setItem(TOUR_DONE_KEY, '1');
+    } catch (_) {}
+  },
+
+  hasOpenBlockingModal() {
+    const modalIds = [
+      'profile-modal',
+      'app-install-modal',
+      'downloader-modal',
+      'album-detail-modal',
+      'lyrics-share-modal',
+      'ad-warning-modal',
+      'desktop-update-modal',
+      'create-playlist-modal',
+      'add-to-playlist-modal'
+    ];
+    return modalIds.some((id) => {
+      const m = document.getElementById(id);
+      return Boolean(m && m.classList.contains('opacity-100'));
+    });
+  },
+
+  getPlatformMode() {
+    return (typeof window !== 'undefined' && window.innerWidth < 768) ? 'mobile' : 'desktop';
+  },
+
+  buildSteps(mode) {
+    const isEn = typeof getAppLanguage === 'function' && getAppLanguage() === 'en';
+    if (mode === 'mobile') {
+      return [
+        {
+          selector: '#top-search-input',
+          fallback: '#mobile-top-header',
+          radius: 9999,
+          pad: 6,
+          title: isEn ? 'Instant Search' : 'Hızlı Arama',
+          desc: isEn
+            ? 'Search tracks, artists, albums or paste a YouTube link to play or download right away.'
+            : 'Şarkı, sanatçı, albüm arayın veya YouTube bağlantısı yapıştırıp hemen çalın.',
+          kbd: ''
+        },
+        {
+          selector: '#kesfet-hero-section',
+          fallback: '#tab-kesfet',
+          radius: 22,
+          pad: 6,
+          ensureTab: 'kesfet',
+          title: isEn ? 'Trending Showcase & Save' : 'Günün Trendleri & İndirme',
+          desc: isEn
+            ? 'Start trending tracks in one tap, add to your queue, or save offline audio to your device.'
+            : 'Öne çıkan parçaları tek dokunuşla başlatın, sıraya ekleyin veya cihazınıza kaydedin.',
+          kbd: ''
+        },
+        {
+          selector: '#mobile-bottom-nav',
+          radius: 24,
+          pad: 6,
+          title: isEn ? 'Five-Tab Dock Navigation' : '5 Sekmeli Alt Menü',
+          desc: isEn
+            ? 'Switch smoothly between Discover, Library, Search, Live Lyrics & Settings from anywhere.'
+            : 'Keşfet, Kütüphane, Arama, Sözler ve Ayarlar arasında tek dokunuşla gezinin.',
+          kbd: ''
+        },
+        {
+          selector: '#mobile-bottom-nav button[data-tab="calma-listeleri"]',
+          fallback: '#mobile-bottom-nav',
+          radius: 18,
+          pad: 6,
+          title: isEn ? 'Live Lyrics, Clip & 5-Band EQ' : 'Canlı Sözler & 5 Bant Ekolayzır',
+          desc: isEn
+            ? 'Follow word-synced lyrics, adjust sync timing, watch music clips or shape sound with EQ.'
+            : 'Kelime kelime canlı söz takibi, zaman ayarı, video modu ve stüdyo ekolayzır burada.',
+          kbd: ''
+        },
+        {
+          selector: '#mobile-nav-settings-btn',
+          fallback: '#mobile-bottom-nav',
+          radius: 18,
+          pad: 6,
+          title: isEn ? 'Settings & Replay Tour' : 'Ayarlar & Turu Tekrarla',
+          desc: isEn
+            ? 'Customize theme, language, data backups, or restart this guided tour anytime from Settings.'
+            : 'Tema, dil, veri yedekleme ve bu tanıtım turunu dilediğiniz an Ayarlar içinden açabilirsiniz.',
+          kbd: ''
+        }
+      ];
+    }
+
+    return [
+      {
+        selector: '#desktop-top-header .kurfa-topbar-search',
+        fallback: '#top-search-input',
+        radius: 9999,
+        pad: 6,
+        ensureTab: 'kesfet',
+        title: isEn ? 'Quick Search & Trends' : 'Akıllı Arama & Keşfet',
+        desc: isEn
+          ? 'Search songs, albums, artists or paste any YouTube link to play or download directly.'
+          : 'Şarkı, albüm, sanatçı arayın veya doğrudan YouTube linki yapıştırıp anında çalın.',
+        kbd: 'Ctrl + K'
+      },
+      {
+        selector: '#desktop-sidebar',
+        radius: 18,
+        pad: 4,
+        side: 'right',
+        title: isEn ? 'Resizable Smart Sidebar' : 'Esnek Sol Menü',
+        desc: isEn
+          ? 'Collapse into a compact icon rail from the header button, hover the logo to expand, or drag its edge.'
+          : 'Üstteki butonla daraltın, dar modda logonun üzerine gelerek büyütün veya sağ kenardan sürükleyin.',
+        kbd: ''
+      },
+      {
+        selector: '#btn-desktop-lyrics-panel',
+        fallback: '#desktop-player-bar',
+        radius: 14,
+        pad: 8,
+        side: 'top',
+        title: isEn ? 'Dockable Live Lyrics Panel' : 'Yan Panel: Canlı Şarkı Sözleri',
+        desc: isEn
+          ? 'Open synced lyrics without leaving your page, tweak timing offset, or share custom lyric cards.'
+          : 'Bulunduğunuz sayfadan ayrılmadan sözleri açın, zamanlamayı eşitleyin veya söz kartı paylaşın.',
+        kbd: 'Sözler Paneli'
+      },
+      {
+        selector: '#btn-desktop-queue-panel',
+        fallback: '#desktop-player-bar',
+        radius: 14,
+        pad: 8,
+        side: 'top',
+        title: isEn ? 'Queue & Auto Recommendations' : 'Çalma Sırası & Öneriler',
+        desc: isEn
+          ? 'Drag side panels to resize, reorder upcoming tracks cleanly, and add smart recommendations in one click.'
+          : 'Kenarından sürükleyerek boyutlandırın, sıradakileri düzenleyin ve önerilen parçaları tek tıkla ekleyin.',
+        kbd: ''
+      },
+      {
+        selector: '#desktop-player-bar',
+        radius: 16,
+        pad: 4,
+        side: 'top',
+        title: isEn ? 'Adaptive Ambient Player' : 'Ritimle Uyumlu Oynatıcı',
+        desc: isEn
+          ? 'Edge illumination breathes with your track colors and rhythm. Click the cover to enter Full Studio.'
+          : 'Çalan parçanın renklerine ve ses ritmine göre nefes alan oynatıcıdan ses, indirme ve sahneyi yönetin.',
+        kbd: ''
+      },
+      {
+        selector: '#btn-open-profile',
+        fallback: '#desktop-top-header',
+        radius: 9999,
+        pad: 6,
+        side: 'bottom',
+        title: isEn ? 'Settings, EQ & Tour Replay' : 'Ayarlar, Ekolayzır & Tur Tekrarı',
+        desc: isEn
+          ? 'Switch themes, tune 5-band audio FX, back up your library, or restart this tour anytime.'
+          : 'Tema, 5 bant ekolayzır, veri yedekleme ve bu tanıtım turunu dilediğiniz an buradan yeniden başlatın.',
+        kbd: ''
+      }
+    ];
+  },
+
+  autoStartIfFirstVisit() {
+    if (this.active || this.isDone()) return false;
+    if (typeof document === 'undefined' || document.hidden) return false;
+    if (this.hasOpenBlockingModal()) return false;
+    return this.start({ force: false });
+  },
+
+  start(opts = {}) {
+    if (typeof document === 'undefined') return false;
+    const force = Boolean(opts && opts.force);
+    if (!force && this.isDone()) return false;
+
+    this.mode = this.getPlatformMode();
+    this.steps = this.buildSteps(this.mode);
+    if (!this.steps || this.steps.length === 0) return false;
+
+    const overlay = document.getElementById('kurfa-tour-overlay');
+    if (!overlay) return false;
+
+    this.active = true;
+    this.index = 0;
+
+    if (typeof switchTab === 'function' && state.currentTab !== 'kesfet') {
+      switchTab('kesfet', false);
+    }
+
+    const platEl = document.getElementById('kurfa-tour-platform-label');
+    if (platEl) {
+      if (this.mode === 'mobile') {
+        platEl.textContent = (typeof isAndroidNativeEngine === 'function' && isAndroidNativeEngine())
+          ? t('tour.badge_apk')
+          : t('tour.badge_mobile');
+      } else {
+        platEl.textContent = t('tour.badge_desktop');
+      }
+    }
+
+    overlay.hidden = false;
+    requestAnimationFrame(() => overlay.classList.add('is-active'));
+
+    if (!this._boundResize) {
+      this._boundResize = () => {
+        if (!this.active) return;
+        const nextMode = this.getPlatformMode();
+        if (nextMode !== this.mode) {
+          this.mode = nextMode;
+          this.steps = this.buildSteps(this.mode);
+          this.index = Math.min(this.index, this.steps.length - 1);
+          const pEl = document.getElementById('kurfa-tour-platform-label');
+          if (pEl) pEl.textContent = this.mode === 'mobile' ? t('tour.badge_mobile') : t('tour.badge_desktop');
+        }
+        this._positionCurrentStep();
+      };
+      window.addEventListener('resize', this._boundResize, { passive: true });
+      window.addEventListener('scroll', this._boundResize, { passive: true });
+    }
+
+    if (!this._boundKey) {
+      this._boundKey = (e) => {
+        if (!this.active) return;
+        if (e.key === 'Escape') {
+          e.preventDefault();
+          this.skip();
+        } else if (e.key === 'ArrowRight' || e.key === 'Enter') {
+          e.preventDefault();
+          this.next();
+        } else if (e.key === 'ArrowLeft') {
+          e.preventDefault();
+          this.prev();
+        }
+      };
+      window.addEventListener('keydown', this._boundKey);
+    }
+
+    const backdrop = document.getElementById('kurfa-tour-backdrop');
+    if (backdrop && !backdrop._tourBound) {
+      backdrop._tourBound = true;
+      backdrop.addEventListener('click', () => this.skip());
+    }
+
+    this.showStep(0);
+    return true;
+  },
+
+  _resolveTarget(step) {
+    if (!step) return null;
+    const isUsable = (el) => {
+      if (!el) return false;
+      const cs = getComputedStyle(el);
+      if (cs.display === 'none' || cs.visibility === 'hidden' || cs.opacity === '0') return false;
+      const r = el.getBoundingClientRect();
+      return r.width >= 8 && r.height >= 8;
+    };
+    let el = step.selector ? document.querySelector(step.selector) : null;
+    if (!isUsable(el) && step.fallback) {
+      el = document.querySelector(step.fallback);
+    }
+    return isUsable(el) ? el : null;
+  },
+
+  showStep(idx) {
+    if (!this.active || !this.steps.length) return;
+    const safeIdx = Math.max(0, Math.min(this.steps.length - 1, idx));
+    this.index = safeIdx;
+    const step = this.steps[safeIdx];
+
+    if (step.ensureTab && typeof switchTab === 'function' && state.currentTab !== step.ensureTab) {
+      switchTab(step.ensureTab, false);
+    }
+
+    const titleEl = document.getElementById('kurfa-tour-title');
+    const descEl = document.getElementById('kurfa-tour-desc');
+    const badgeEl = document.getElementById('kurfa-tour-step-badge');
+    const kbdEl = document.getElementById('kurfa-tour-kbd');
+    const prevBtn = document.getElementById('kurfa-tour-prev-btn');
+    const nextBtn = document.getElementById('kurfa-tour-next-btn');
+    const dotsEl = document.getElementById('kurfa-tour-dots');
+
+    if (titleEl) titleEl.textContent = step.title || '';
+    if (descEl) descEl.textContent = step.desc || '';
+    if (badgeEl) badgeEl.textContent = `${safeIdx + 1} / ${this.steps.length}`;
+    if (kbdEl) {
+      if (step.kbd) {
+        kbdEl.textContent = step.kbd;
+        kbdEl.classList.remove('hidden');
+      } else {
+        kbdEl.textContent = '';
+        kbdEl.classList.add('hidden');
+      }
+    }
+    if (prevBtn) prevBtn.classList.toggle('hidden', safeIdx === 0);
+    if (nextBtn) {
+      nextBtn.textContent = (safeIdx === this.steps.length - 1) ? t('tour.done') : t('tour.next');
+    }
+    if (dotsEl) {
+      dotsEl.innerHTML = this.steps.map((_, i) => `<span class="${i === safeIdx ? 'is-active' : ''}"></span>`).join('');
+    }
+
+    const el = this._resolveTarget(step);
+    if (el) {
+      const r = el.getBoundingClientRect();
+      const vh = window.innerHeight || 800;
+      if (r.top < 20 || r.bottom > vh - 20) {
+        try {
+          el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        } catch (_) {}
+      }
+    }
+
+    requestAnimationFrame(() => this._positionCurrentStep());
+    if (this._repositionTimer) clearTimeout(this._repositionTimer);
+    this._repositionTimer = setTimeout(() => this._positionCurrentStep(), 240);
+  },
+
+  _positionCurrentStep() {
+    if (!this.active) return;
+    const step = this.steps[this.index];
+    const spotlight = document.getElementById('kurfa-tour-spotlight');
+    const card = document.getElementById('kurfa-tour-card');
+    if (!spotlight || !card || !step) return;
+
+    const vw = window.innerWidth || 1280;
+    const vh = window.innerHeight || 720;
+    const el = this._resolveTarget(step);
+
+    if (!el) {
+      spotlight.style.opacity = '0';
+      const cRect = card.getBoundingClientRect();
+      card.style.left = `${Math.max(12, Math.round((vw - (cRect.width || 320)) / 2))}px`;
+      card.style.top = `${Math.max(16, Math.round((vh - (cRect.height || 200)) / 2))}px`;
+      return;
+    }
+
+    const r = el.getBoundingClientRect();
+    const pad = Number(step.pad) || 6;
+    const sx = Math.max(4, r.left - pad);
+    const sy = Math.max(4, r.top - pad);
+    const sw = Math.min(vw - sx - 4, r.width + pad * 2);
+    const sh = Math.min(vh - sy - 4, r.height + pad * 2);
+
+    spotlight.style.opacity = '1';
+    spotlight.style.left = `${Math.round(sx)}px`;
+    spotlight.style.top = `${Math.round(sy)}px`;
+    spotlight.style.width = `${Math.max(24, Math.round(sw))}px`;
+    spotlight.style.height = `${Math.max(24, Math.round(sh))}px`;
+    spotlight.style.borderRadius = `${step.radius || 16}px`;
+
+    const cRect = card.getBoundingClientRect();
+    const cw = cRect.width || Math.min(344, vw - 24);
+    const ch = cRect.height || 200;
+    const gap = 14;
+
+    let cx = Math.round((vw - cw) / 2);
+    let cy = Math.round((vh - ch) / 2);
+
+    if (vw < 768) {
+      const targetMidY = sy + sh / 2;
+      if (targetMidY < vh * 0.52 && (sy + sh + gap + ch + 14) <= vh) {
+        cy = sy + sh + gap;
+      } else {
+        cy = Math.max(14, sy - ch - gap);
+      }
+      cx = Math.round((vw - cw) / 2);
+    } else {
+      const spaceRight = vw - (sx + sw + gap);
+      const spaceLeft = sx - gap;
+      const spaceBottom = vh - (sy + sh + gap);
+      const spaceTop = sy - gap;
+      const pref = step.side || 'bottom';
+
+      const trySlot = (side) => {
+        if (side === 'right' && spaceRight >= cw + 14) {
+          cx = sx + sw + gap;
+          cy = Math.max(16, Math.min(vh - ch - 16, sy + 12));
+          return true;
+        }
+        if (side === 'left' && spaceLeft >= cw + 14) {
+          cx = sx - cw - gap;
+          cy = Math.max(16, Math.min(vh - ch - 16, sy + 12));
+          return true;
+        }
+        if (side === 'bottom' && spaceBottom >= ch + 14) {
+          cx = Math.max(16, Math.min(vw - cw - 16, sx + sw / 2 - cw / 2));
+          cy = sy + sh + gap;
+          return true;
+        }
+        if (side === 'top' && spaceTop >= ch + 14) {
+          cx = Math.max(16, Math.min(vw - cw - 16, sx + sw / 2 - cw / 2));
+          cy = sy - ch - gap;
+          return true;
+        }
+        return false;
+      };
+
+      const order = [pref, 'bottom', 'top', 'right', 'left'];
+      let placed = false;
+      for (const s of order) {
+        if (trySlot(s)) { placed = true; break; }
+      }
+      if (!placed) {
+        cx = Math.max(16, Math.min(vw - cw - 16, sx + sw / 2 - cw / 2));
+        cy = sy + sh / 2 < vh / 2 ? Math.min(vh - ch - 16, sy + sh + gap) : Math.max(16, sy - ch - gap);
+      }
+    }
+
+    card.style.left = `${Math.round(Math.max(12, Math.min(vw - cw - 12, cx)))}px`;
+    card.style.top = `${Math.round(Math.max(12, Math.min(vh - ch - 12, cy)))}px`;
+  },
+
+  next() {
+    if (!this.active) return;
+    if (this.index >= this.steps.length - 1) {
+      this.finish(true);
+      return;
+    }
+    this.showStep(this.index + 1);
+  },
+
+  prev() {
+    if (!this.active || this.index <= 0) return;
+    this.showStep(this.index - 1);
+  },
+
+  skip() {
+    this.finish(false);
+  },
+
+  finish(completed) {
+    this.active = false;
+    this.markDone();
+    if (this._repositionTimer) {
+      clearTimeout(this._repositionTimer);
+      this._repositionTimer = null;
+    }
+    if (this._boundResize) {
+      window.removeEventListener('resize', this._boundResize);
+      window.removeEventListener('scroll', this._boundResize);
+      this._boundResize = null;
+    }
+    if (this._boundKey) {
+      window.removeEventListener('keydown', this._boundKey);
+      this._boundKey = null;
+    }
+    const overlay = document.getElementById('kurfa-tour-overlay');
+    if (overlay) {
+      overlay.classList.remove('is-active');
+      setTimeout(() => {
+        if (!this.active) overlay.hidden = true;
+      }, 220);
+    }
+    if (completed && typeof showToast === 'function') {
+      showToast(t('tour.toast_done'), 'success');
+    }
+  }
+};
+window.KurfaTour = KurfaTour;
+
+function restartInteractiveTourFromSettings() {
+  if (typeof closeProfileModal === 'function') closeProfileModal();
+  setTimeout(() => {
+    KurfaTour.start({ force: true });
+  }, 240);
+}
+window.restartInteractiveTourFromSettings = restartInteractiveTourFromSettings;
+
+// =============================================================================
 // 0.6 OTOMATİK GÜNCELLEME (PWA SERVICE WORKER + MASAÜSTÜ/APK OTA KÖPRÜSÜ)
 // =============================================================================
 let __kurfaSwRegistration = null;
@@ -2183,6 +2696,11 @@ if (typeof window !== 'undefined') {
               const detected = await kurfaDetectAdBlocker({ force: true });
               await kurfaHandleInitialVisit(detected);
             } catch (_) {}
+            setTimeout(() => {
+              if (typeof KurfaTour !== 'undefined' && typeof KurfaTour.autoStartIfFirstVisit === 'function') {
+                KurfaTour.autoStartIfFirstVisit();
+              }
+            }, 700);
           }, 1200);
         };
         if (typeof window !== 'undefined' && typeof window.requestIdleCallback === 'function') {

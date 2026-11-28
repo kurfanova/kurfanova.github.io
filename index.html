@@ -145,7 +145,7 @@
     }
   </style>
   <link rel="stylesheet" href="./tailwind.min.css?v=20261120_v17">
-  <link rel="stylesheet" href="./style.min.css?v=80b97511">
+  <link rel="stylesheet" href="./style.min.css?v=168eda83">
   <script>
     (function() {
       var markReady = function() { document.documentElement.classList.add('icons-ready'); };
@@ -2396,6 +2396,22 @@
                   <button type="button" id="btn-lang-en" onclick="applyAppLanguage('en', true)" class="px-2.5 py-1 rounded-full text-[11px] font-bold transition-colors text-on-surface-variant hover:text-on-surface">English</button>
                 </div>
               </div>
+
+              <div class="kurfa-settings-row kurfa-settings-row-divider" id="settings-tour-row">
+                <div class="flex items-center gap-2.5 min-w-0">
+                  <span class="kurfa-set-icon kurfa-set-icon-amber">
+                    <span class="material-symbols-outlined text-[17px]" aria-hidden="true">route</span>
+                  </span>
+                  <div class="flex flex-col min-w-0">
+                    <span class="text-xs font-semibold text-on-surface truncate" data-i18n="settings.tour_title">Uygulama Tanıtım Turu</span>
+                    <span class="text-[11px] text-on-surface-variant truncate" data-i18n="settings.tour_desc">Cihazına özel hızlı rehberi baştan başlat</span>
+                  </div>
+                </div>
+                <button type="button" id="btn-restart-onboarding-tour" onclick="restartInteractiveTourFromSettings()" class="px-3.5 py-1.5 rounded-full bg-surface-container hover:bg-surface-container-high text-[11px] font-bold text-on-surface flex items-center gap-1.5 flex-shrink-0 transition-colors active:scale-95">
+                  <span class="material-symbols-outlined text-[14px]" aria-hidden="true">replay</span>
+                  <span data-i18n="settings.tour_btn">Turu Başlat</span>
+                </button>
+              </div>
             </div>
           </div>
 
@@ -3358,7 +3374,40 @@
     </div>
   </div>
 
+  <!-- Interactive Platform-Aware Onboarding Tour (Desktop & Mobile/APK) -->
+  <div id="kurfa-tour-overlay" class="kurfa-tour-overlay" role="dialog" aria-modal="true" aria-labelledby="kurfa-tour-title" hidden>
+    <div id="kurfa-tour-backdrop" class="kurfa-tour-backdrop"></div>
+    <div id="kurfa-tour-spotlight" class="kurfa-tour-spotlight" aria-hidden="true"></div>
+    <article id="kurfa-tour-card" class="kurfa-tour-card">
+      <header class="kurfa-tour-head">
+        <div class="kurfa-tour-meta">
+          <span class="kurfa-tour-platform-dot" aria-hidden="true"></span>
+          <span id="kurfa-tour-platform-label" class="kurfa-tour-platform-label">MASAÜSTÜ REHBERİ</span>
+          <span id="kurfa-tour-step-badge" class="kurfa-tour-step-badge">1 / 6</span>
+        </div>
+        <button type="button" id="kurfa-tour-close" class="kurfa-tour-close" onclick="KurfaTour.skip()" aria-label="Turu Kapat" data-i18n-aria="tour.skip">
+          <span class="material-symbols-outlined text-[17px]" aria-hidden="true">close</span>
+        </button>
+      </header>
+
+      <div class="kurfa-tour-body">
+        <h4 id="kurfa-tour-title" class="kurfa-tour-title"></h4>
+        <p id="kurfa-tour-desc" class="kurfa-tour-desc"></p>
+        <div id="kurfa-tour-kbd" class="kurfa-tour-kbd hidden"></div>
+      </div>
+
+      <footer class="kurfa-tour-foot">
+        <button type="button" id="kurfa-tour-skip-btn" class="kurfa-tour-skip-btn" onclick="KurfaTour.skip()" data-i18n="tour.skip">Geç</button>
+        <div id="kurfa-tour-dots" class="kurfa-tour-dots" aria-hidden="true"></div>
+        <div class="kurfa-tour-actions">
+          <button type="button" id="kurfa-tour-prev-btn" class="kurfa-tour-nav-btn kurfa-tour-prev-btn hidden" onclick="KurfaTour.prev()" data-i18n="tour.prev">Geri</button>
+          <button type="button" id="kurfa-tour-next-btn" class="kurfa-tour-nav-btn kurfa-tour-next-btn" onclick="KurfaTour.next()" data-i18n="tour.next">İleri</button>
+        </div>
+      </footer>
+    </article>
+  </div>
+
   <!-- Scripts (Deferred & minified; YouTube IFrame API loads lazily on demand) -->
-  <script defer fetchpriority="high" src="./app.min.js?v=c26eca3c"></script>
+  <script defer fetchpriority="high" src="./app.min.js?v=e397271e"></script>
 </body>
 </html>
