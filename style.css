@@ -3272,39 +3272,39 @@ body.dark-mode .kurfa-suggest-fill-btn:hover {
 }
 
 #profile-modal-card {
-  max-width: 760px !important;
+  max-width: 780px !important;
   width: 100%;
-  height: min(630px, 86vh);
-  max-height: 86vh;
+  height: min(640px, 88dvh);
+  max-height: 88dvh;
   padding: 0 !important;
-  border-radius: 24px !important;
+  border-radius: 22px !important;
   overflow: hidden !important;
   display: flex;
   flex-direction: column;
-  background: rgba(255, 255, 255, 0.94);
-  backdrop-filter: blur(28px) saturate(180%);
-  -webkit-backdrop-filter: blur(28px) saturate(180%);
-  border: 1px solid rgba(15, 23, 42, 0.09);
-  box-shadow: 0 28px 64px -16px rgba(15, 23, 42, 0.24), inset 0 1px 0 rgba(255, 255, 255, 0.85);
+  background: #f8fafc;
+  border: 1px solid rgba(15, 23, 42, 0.085);
+  box-shadow: 0 24px 60px -16px rgba(15, 23, 42, 0.24);
 }
 
 html.dark-mode #profile-modal-card,
 body.dark-mode #profile-modal-card {
-  background: rgba(16, 20, 32, 0.92) !important;
-  border: 1px solid rgba(255, 255, 255, 0.11) !important;
-  box-shadow: 0 32px 72px -12px rgba(0, 0, 0, 0.78), inset 0 1px 0 rgba(255, 255, 255, 0.10) !important;
+  background: #0f1420 !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  box-shadow: 0 32px 72px -12px rgba(0, 0, 0, 0.78), inset 0 1px 0 rgba(255, 255, 255, 0.06) !important;
 }
 
 .kurfa-settings-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 16px 20px;
+  padding: 14px 18px;
+  background: #ffffff;
   border-bottom: 1px solid rgba(15, 23, 42, 0.07);
   flex-shrink: 0;
 }
 
 body.dark-mode .kurfa-settings-header {
+  background: #0f1420;
   border-bottom-color: rgba(255, 255, 255, 0.07);
 }
 
@@ -3322,6 +3322,7 @@ body.dark-mode .kurfa-settings-header {
   align-items: center;
   gap: 6px;
   padding: 10px 12px;
+  background: #ffffff;
   border-bottom: 1px solid rgba(15, 23, 42, 0.06);
   overflow-x: auto;
   overflow-y: hidden;
@@ -3332,10 +3333,11 @@ body.dark-mode .kurfa-settings-header {
 
 .kurfa-settings-sidebar .kurfa-settings-tab-btn {
   flex: 1 0 auto;
-  padding: 7px 11px;
+  padding: 7px 12px;
 }
 
 body.dark-mode .kurfa-settings-sidebar {
+  background: #0c101a;
   border-bottom-color: rgba(255, 255, 255, 0.06);
 }
 
@@ -3343,15 +3345,16 @@ body.dark-mode .kurfa-settings-sidebar {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 5px;
-  padding: 7px 6px;
+  gap: 6px;
+  padding: 7px 10px;
   border-radius: 9999px;
-  font-size: 11px;
+  font-size: 11.5px;
   font-weight: 700;
   color: #475569;
   background: rgba(15, 23, 42, 0.045);
   border: 1px solid transparent;
   cursor: pointer;
+  white-space: nowrap;
   transition: background-color 0.16s ease, color 0.16s ease, border-color 0.16s ease, box-shadow 0.16s ease;
   min-width: 0;
   text-align: center;
@@ -3364,15 +3367,15 @@ body.dark-mode .kurfa-settings-sidebar {
 }
 
 .kurfa-settings-tab-btn.active {
-  background: rgba(15, 23, 42, 0.09);
-  color: #0f172a;
-  border-color: rgba(15, 23, 42, 0.14);
+  background: #0f172a;
+  color: #ffffff;
+  border-color: #0f172a;
   box-shadow: none;
 }
 
 body.dark-mode .kurfa-settings-tab-btn {
   color: #94a3b8;
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(255, 255, 255, 0.055);
 }
 
 body.dark-mode .kurfa-settings-tab-btn:hover {
@@ -3381,9 +3384,9 @@ body.dark-mode .kurfa-settings-tab-btn:hover {
 }
 
 body.dark-mode .kurfa-settings-tab-btn.active {
-  background: rgba(255, 255, 255, 0.11);
-  color: #ffffff;
-  border-color: rgba(255, 255, 255, 0.18);
+  background: #f8fafc;
+  color: #0c101a;
+  border-color: #f8fafc;
   box-shadow: none;
 }
 
@@ -3393,13 +3396,13 @@ body.dark-mode .kurfa-settings-tab-btn.active {
   min-height: 0;
   overflow-y: auto;
   overflow-x: hidden;
-  padding: 16px;
+  padding: 14px;
 }
 
 .kurfa-settings-pane {
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 12px;
 }
 
 .kurfa-settings-pane.hidden {
@@ -3407,13 +3410,13 @@ body.dark-mode .kurfa-settings-tab-btn.active {
 }
 
 .kurfa-settings-group-title {
-  font-size: 11px;
+  font-size: 10.5px;
   font-weight: 800;
   text-transform: uppercase;
-  letter-spacing: 0.07em;
+  letter-spacing: 0.08em;
   color: #64748b;
-  padding: 0 4px;
-  margin-bottom: -6px;
+  padding: 0 2px;
+  margin-bottom: -4px;
 }
 
 body.dark-mode .kurfa-settings-group-title {
@@ -3421,18 +3424,19 @@ body.dark-mode .kurfa-settings-group-title {
 }
 
 .kurfa-settings-card {
-  border-radius: 18px;
-  background: rgba(248, 250, 252, 0.88);
+  border-radius: 16px;
+  background: #ffffff;
   border: 1px solid rgba(15, 23, 42, 0.07);
-  padding: 14px 16px;
+  padding: 13px 15px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 10px;
 }
 
 body.dark-mode .kurfa-settings-card {
-  background: rgba(24, 30, 46, 0.72);
-  border: 1px solid rgba(255, 255, 255, 0.07);
+  background: #141926;
+  border: 1px solid rgba(255, 255, 255, 0.065);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
 }
 
 .kurfa-settings-row {
@@ -3440,11 +3444,11 @@ body.dark-mode .kurfa-settings-card {
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  min-height: 32px;
+  min-height: 30px;
 }
 
 .kurfa-settings-row-divider {
-  padding-top: 12px;
+  padding-top: 10px;
   border-top: 1px solid rgba(15, 23, 42, 0.06);
 }
 
@@ -3452,20 +3456,58 @@ body.dark-mode .kurfa-settings-row-divider {
   border-top-color: rgba(255, 255, 255, 0.06);
 }
 
+.kurfa-settings-pill-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  height: 30px;
+  padding: 0 12px;
+  border-radius: 9999px;
+  font-size: 11.5px;
+  font-weight: 700;
+  color: #0f172a;
+  background: rgba(15, 23, 42, 0.055);
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  white-space: nowrap;
+  transition: background-color 0.16s ease, border-color 0.16s ease, transform 0.12s ease;
+  cursor: pointer;
+}
+
+.kurfa-settings-pill-btn:hover {
+  background: rgba(15, 23, 42, 0.10);
+  border-color: rgba(15, 23, 42, 0.14);
+}
+
+.kurfa-settings-pill-btn:active {
+  transform: scale(0.96);
+}
+
+body.dark-mode .kurfa-settings-pill-btn {
+  color: #f8fafc;
+  background: rgba(255, 255, 255, 0.075);
+  border-color: rgba(255, 255, 255, 0.10);
+}
+
+body.dark-mode .kurfa-settings-pill-btn:hover {
+  background: rgba(255, 255, 255, 0.13);
+  border-color: rgba(255, 255, 255, 0.16);
+}
+
 .kurfa-settings-footer {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  padding: 12px 20px;
+  padding: 12px 18px;
   border-top: 1px solid rgba(15, 23, 42, 0.07);
-  background: rgba(248, 250, 252, 0.72);
+  background: #ffffff;
   flex-shrink: 0;
 }
 
 body.dark-mode .kurfa-settings-footer {
   border-top-color: rgba(255, 255, 255, 0.07);
-  background: rgba(14, 18, 28, 0.78);
+  background: #0f1420;
 }
 
 @media (min-width: 768px) {
@@ -3474,21 +3516,23 @@ body.dark-mode .kurfa-settings-footer {
   }
 
   .kurfa-settings-sidebar {
-    width: 196px;
+    width: 226px;
     display: flex;
     flex-direction: column;
     grid-template-columns: none;
     align-items: stretch;
     gap: 4px;
     padding: 14px 10px;
+    background: #f8fafc;
     border-bottom: none;
     border-right: 1px solid rgba(15, 23, 42, 0.07);
     overflow-x: hidden;
     overflow-y: auto;
-    white-space: normal;
+    white-space: nowrap;
   }
 
   body.dark-mode .kurfa-settings-sidebar {
+    background: #0c101a;
     border-bottom: none;
     border-right-color: rgba(255, 255, 255, 0.07);
   }
@@ -3497,9 +3541,9 @@ body.dark-mode .kurfa-settings-footer {
     width: 100%;
     flex: 0 0 auto;
     justify-content: flex-start;
-    gap: 8px;
+    gap: 9px;
     border-radius: 12px;
-    padding: 10px 12px;
+    padding: 9px 12px;
     font-size: 12.5px;
     text-align: left;
     background: transparent;
@@ -3510,24 +3554,24 @@ body.dark-mode .kurfa-settings-footer {
   }
 
   .kurfa-settings-content {
-    padding: 20px 22px;
+    padding: 18px 20px;
   }
 }
 
-/* Modern iOS / Apple Pill Toggle Switch (44x24px) */
+/* Modern iOS / Apple Pill Toggle Switch (38x22px) */
 .kurfa-ios-switch {
   position: relative;
   display: inline-flex;
   align-items: center;
-  width: 44px;
-  height: 24px;
+  width: 38px;
+  height: 22px;
   padding: 2px;
   border-radius: 9999px;
-  border: 1px solid rgba(15, 23, 42, 0.08);
+  border: 1px solid rgba(15, 23, 42, 0.09);
   background: rgba(148, 163, 184, 0.34);
   cursor: pointer;
   flex-shrink: 0;
-  transition: background-color 0.22s cubic-bezier(0.22, 1, 0.36, 1), border-color 0.22s ease, box-shadow 0.22s ease;
+  transition: background-color 0.22s cubic-bezier(0.22, 1, 0.36, 1), border-color 0.22s ease;
   touch-action: manipulation;
 }
 
@@ -3539,23 +3583,23 @@ body.dark-mode .kurfa-ios-switch {
 .kurfa-ios-switch.is-on,
 body.dark-mode .kurfa-ios-switch.is-on {
   background: var(--kurfa-primary) !important;
-  border-color: rgba(255, 32, 86, 0.55) !important;
-  box-shadow: 0 2px 10px rgba(255, 32, 86, 0.34);
+  border-color: var(--kurfa-primary) !important;
+  box-shadow: none;
 }
 
 .kurfa-ios-switch-thumb {
-  width: 18px;
-  height: 18px;
+  width: 16px;
+  height: 16px;
   border-radius: 9999px;
   background: #ffffff;
-  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.26);
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.24);
   transform: translateX(0);
   transition: transform 0.22s cubic-bezier(0.22, 1, 0.36, 1);
   pointer-events: none;
 }
 
 .kurfa-ios-switch.is-on .kurfa-ios-switch-thumb {
-  transform: translateX(20px);
+  transform: translateX(16px);
 }
 
 .kurfa-ios-switch:focus-visible {
@@ -3869,7 +3913,11 @@ body.dark-mode .kurfa-album-modal-card {
 /* ========================================================================== */
 
 .kurfa-settings-card.hidden,
-#desktop-app-settings-card.hidden {
+.kurfa-settings-row.hidden,
+#desktop-app-settings-card.hidden,
+#desktop-update-check-wrap.hidden,
+#android-app-settings-card.hidden,
+#settings-browser-install-card.hidden {
   display: none !important;
 }
 
@@ -4049,57 +4097,60 @@ body.dark-mode .kurfa-settings-ver-badge {
 @media (min-width: 768px) {
   #profile-modal-card {
     max-width: 820px !important;
-    height: min(650px, 86vh);
+    height: min(650px, 88dvh);
   }
 
   .kurfa-settings-sidebar {
-    width: 216px !important;
-    padding: 16px 12px !important;
-    gap: 6px !important;
+    width: 226px !important;
+    padding: 14px 12px !important;
+    gap: 5px !important;
   }
 
   .kurfa-settings-sidebar .kurfa-settings-tab-btn {
     position: relative;
-    padding: 10px 14px !important;
+    padding: 10px 13px !important;
     border-radius: 12px !important;
     font-size: 13px !important;
     font-weight: 600 !important;
+    white-space: nowrap !important;
   }
 
   .kurfa-settings-sidebar .kurfa-settings-tab-btn.active {
-    background: rgba(244, 63, 94, 0.11) !important;
-    color: var(--kurfa-primary) !important;
-    border-color: rgba(244, 63, 94, 0.22) !important;
+    background: #ffffff !important;
+    color: #0f172a !important;
+    border-color: rgba(15, 23, 42, 0.08) !important;
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.055) !important;
     font-weight: 700 !important;
   }
 
-  .kurfa-settings-sidebar .kurfa-settings-tab-btn.active::before {
-    content: "";
-    position: absolute;
-    left: 0;
-    top: 22%;
-    bottom: 22%;
-    width: 3px;
-    border-radius: 0 4px 4px 0;
-    background: var(--kurfa-primary);
+  .kurfa-settings-sidebar .kurfa-settings-tab-btn.active .material-symbols-outlined {
+    color: var(--kurfa-primary) !important;
+  }
+
+  body.dark-mode .kurfa-settings-sidebar .kurfa-settings-tab-btn.active {
+    background: rgba(255, 255, 255, 0.085) !important;
+    color: #ffffff !important;
+    border-color: rgba(255, 255, 255, 0.10) !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25) !important;
   }
 }
 
 .kurfa-settings-card {
-  border-radius: 18px !important;
-  border: 1px solid rgba(15, 23, 42, 0.065) !important;
-  box-shadow: 0 2px 10px rgba(15, 23, 42, 0.03);
+  border-radius: 16px !important;
+  background: #ffffff !important;
+  border: 1px solid rgba(15, 23, 42, 0.07) !important;
+  box-shadow: none !important;
 }
 
 body.dark-mode #profile-modal-card {
-  border: 1px solid rgba(255, 255, 255, 0.075) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
   box-shadow: 0 28px 70px -16px rgba(0, 0, 0, 0.78) !important;
 }
 
 body.dark-mode .kurfa-settings-card {
-  background: rgba(255, 255, 255, 0.032) !important;
-  border: 1px solid rgba(255, 255, 255, 0.055) !important;
-  box-shadow: none !important;
+  background: #141926 !important;
+  border: 1px solid rgba(255, 255, 255, 0.065) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04) !important;
 }
 
 /* Crisp Album Track Rows (borderless smooth list) */

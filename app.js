@@ -22074,6 +22074,8 @@ async function refreshAppVersionAndUpdateStatus() {
   const engineEl = document.getElementById('settings-engine-status');
   const browserInstallEl = document.getElementById('settings-browser-install-card');
   const androidCardEl = document.getElementById('android-app-settings-card');
+  const desktopUpdateWrapEl = document.getElementById('desktop-update-check-wrap');
+  const headerVerBadgeEl = document.getElementById('settings-header-ver-badge');
   const adWarnRowEl = document.getElementById('settings-adwarn-row');
 
   const extMode = getBrowserExtensionMode();
@@ -22083,6 +22085,7 @@ async function refreshAppVersionAndUpdateStatus() {
 
   if (browserInstallEl) browserInstallEl.classList.toggle('hidden', isNativeApp);
   if (adWarnRowEl) adWarnRowEl.classList.toggle('hidden', hasAdFreePlaybackEnvironment());
+  if (desktopUpdateWrapEl) desktopUpdateWrapEl.classList.toggle('hidden', !isDesktop);
   if (androidCardEl) androidCardEl.classList.toggle('hidden', !isAndroid);
 
   if (isDesktop) {
@@ -22107,6 +22110,9 @@ async function refreshAppVersionAndUpdateStatus() {
 
   if (pillEl) {
     pillEl.textContent = installedVer ? `${platformLabel} v${installedVer}` : platformLabel;
+  }
+  if (headerVerBadgeEl && installedVer) {
+    headerVerBadgeEl.textContent = `v${installedVer}`;
   }
 
   const engineBadgeEl = document.getElementById('settings-engine-badge');
