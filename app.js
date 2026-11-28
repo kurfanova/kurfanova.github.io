@@ -344,7 +344,7 @@ const KURFA_I18N = {
     'tour.skip': 'Geç',
     'tour.prev': 'Geri',
     'tour.next': 'İleri',
-    'tour.done': 'Başla',
+    'tour.done': 'Bitir',
     'tour.toast_done': 'Tanıtım turu tamamlandı. Ayarlar içinden tekrar başlatabilirsin.',
     'settings.sec_playback': 'Oynatma Tercihleri',
     'settings.sponsorblock_desc': 'Video intro ve sponsorlu konuşmaları otomatik geç',
@@ -2161,6 +2161,7 @@ const KurfaTour = {
           selector: '#mobile-bottom-nav button[data-tab="arama"]',
           fallback: '#mobile-bottom-nav',
           radius: 16,
+          fallbackRadius: 18,
           pad: 5,
           clickAdvance: true,
           title: isEn ? 'Tap Search Hub' : 'Arama Sayfasına Geç',
@@ -2170,9 +2171,25 @@ const KurfaTour = {
           kbd: isEn ? 'Tap highlighted icon' : 'Vurgulanan sekmeye dokun'
         },
         {
+          selector: '#tab-arama .kurfa-search-command-bar',
+          fallback: '#search-filter-chips',
+          radius: 18,
+          fallbackRadius: 16,
+          pad: 6,
+          beforeEnter: () => {
+            if (typeof switchTab === 'function') switchTab('arama', false);
+          },
+          title: isEn ? 'Smart Search & Genre Filters' : 'Arama Çubuğu & Akıllı Filtreler',
+          desc: isEn
+            ? 'Paste a YouTube URL or filter results by Song, Album, Artist, Video or Live tracks.'
+            : 'Üstten YouTube bağlantısı arayın, Şarkılar/Albümler/Klip çipleriyle süzün ya da kategorilere göz atın.',
+          kbd: ''
+        },
+        {
           selector: '#mobile-bottom-nav button[data-tab="calma-listeleri"]',
           fallback: '#mobile-bottom-nav',
           radius: 16,
+          fallbackRadius: 18,
           pad: 5,
           clickAdvance: true,
           beforeEnter: () => {
@@ -2185,18 +2202,19 @@ const KurfaTour = {
           kbd: isEn ? 'Tap highlighted icon' : 'Sözler sekmesine dokun'
         },
         {
-          selector: '#tab-calma-listeleri #karaoke-lyrics-box',
-          fallback: '#tab-calma-listeleri',
-          radius: 20,
+          selector: '#nowplaying-mobile-tabs',
+          fallback: '#karaoke-lyrics-card .kurfa-lyrics-header-bar',
+          radius: 16,
+          fallbackRadius: 14,
           pad: 6,
           beforeEnter: () => {
             if (typeof switchTab === 'function') switchTab('calma-listeleri', false);
             if (typeof switchNowPlayingMobilePane === 'function') switchNowPlayingMobilePane('stage');
           },
-          title: isEn ? 'Synced Lyrics, Share & EQ' : 'Canlı Sözler, Kart & Ekolayzır',
+          title: isEn ? 'Synced Lyrics, Queue & EQ' : 'Canlı Sözler, Sıra & Ekolayzır',
           desc: isEn
-            ? 'Follow live lyrics, tune timing (0.0s), switch to Video or Equalizer tabs above.'
-            : 'Canlı sözleri takip edin, zamanlamayı eşitleyin, üstteki Sıra ve Ekolayzır bölmelerine geçin.',
+            ? 'Switch seamlessly between Live Lyrics/Video, Queue and the 5-band Equalizer FX studio here.'
+            : 'Buradan Sahne (Sözler & Klip), Sıra ve 5 bant Ekolayzır bölmeleri arasında tek dokunuşla geçin.',
           kbd: ''
         },
         {
@@ -2293,9 +2311,10 @@ const KurfaTour = {
         kbd: ''
       },
       {
-        selector: '#arama-page-search-input',
-        fallback: '#tab-arama',
-        radius: 9999,
+        selector: '#search-filter-chips',
+        fallback: '.kurfa-search-command-bar',
+        radius: 14,
+        fallbackRadius: 16,
         pad: 6,
         side: 'bottom',
         beforeEnter: () => {
@@ -2303,8 +2322,8 @@ const KurfaTour = {
         },
         title: isEn ? 'Search Hub & Genre Discovery' : 'Arama Merkezi & Keşif Kategorileri',
         desc: isEn
-          ? 'Browse all song, album, artist and video matches or jump cleanly into mood presets below.'
-          : 'Şarkı, albüm, sanatçı ve video sonuçlarını filtreleyin; alt kısımdaki tür/ruh hali kartlarına göz atın.',
+          ? 'Filter results across Songs, Albums, Artists, Clips and Live sessions, or pick a mood tile below.'
+          : 'Şarkılar, Albümler, Sanatçılar ve Klipler arasında süzün; alt kısımdaki ruh hali ve tür kartlarına göz atın.',
         kbd: ''
       },
       {
@@ -2515,11 +2534,10 @@ const KurfaTour = {
       const r = el.getBoundingClientRect();
       return r.width >= 8 && r.height >= 8;
     };
-    let el = step.selector ? document.querySelector(step.selector) : null;
-    if (!isUsable(el) && step.fallback) {
-      el = document.querySelector(step.fallback);
-    }
-    return isUsable(el) ? el : null;
+    const primary = step.selector ? document.querySelector(step.selector) : null;
+    if (isUsable(primary)) return { el: primary, isFallback: false };
+    const fb = step.fallback ? document.querySelector(step.fallback) : null;
+    return isUsable(fb) ? { el: fb, isFallback: true } : null;
   },
 
   showStep(idx) {
@@ -2572,7 +2590,8 @@ const KurfaTour = {
     }
 
     const bindClickAdvanceIfReady = () => {
-      const targetEl = this._resolveTarget(step);
+      const resolved = this._resolveTarget(step);
+      const targetEl = resolved ? resolved.el : null;
       if (targetEl) {
         const r = targetEl.getBoundingClientRect();
         const vh = window.innerHeight || 800;
@@ -2629,7 +2648,8 @@ const KurfaTour = {
 
     const vw = window.innerWidth || 1280;
     const vh = window.innerHeight || 720;
-    const el = this._resolveTarget(step);
+    const resolved = this._resolveTarget(step);
+    const el = resolved ? resolved.el : null;
 
     if (!el) {
       spotlight.style.opacity = '0';
@@ -2649,12 +2669,15 @@ const KurfaTour = {
 
     this._positionMasks(sx, sy, sw, sh, vw, vh);
 
+    let radius = resolved.isFallback ? (step.fallbackRadius || 18) : (step.radius || 16);
+    if (radius > 99 && sh > 120) radius = 20;
+
     spotlight.style.opacity = '1';
     spotlight.style.left = `${Math.round(sx)}px`;
     spotlight.style.top = `${Math.round(sy)}px`;
     spotlight.style.width = `${Math.max(24, Math.round(sw))}px`;
     spotlight.style.height = `${Math.max(24, Math.round(sh))}px`;
-    spotlight.style.borderRadius = `${step.radius || 16}px`;
+    spotlight.style.borderRadius = `${radius}px`;
 
     const cRect = card.getBoundingClientRect();
     const cw = cRect.width || Math.min(348, vw - 24);
@@ -2793,6 +2816,10 @@ function initWebAutoUpdater() {
   if (typeof navigator === 'undefined' || !('serviceWorker' in navigator)) return;
   if (window.location.protocol !== 'https:' && window.location.hostname !== 'localhost') return;
   try {
+    // Capture whether a controller already existed before registration so first-visit
+    // SW installation + clients.claim() never triggers an unexpected cold-boot reload.
+    const hadControllerOnBoot = Boolean(navigator.serviceWorker.controller);
+
     navigator.serviceWorker.register(`./sw.js?v=${KURFA_WEB_VERSION}`).then((reg) => {
       __kurfaSwRegistration = reg;
       __kurfaLastSwUpdateCheckAt = Date.now();
@@ -2800,8 +2827,14 @@ function initWebAutoUpdater() {
 
     let __swReloading = false;
     navigator.serviceWorker.addEventListener('controllerchange', () => {
-      if (__swReloading) return;
+      if (!hadControllerOnBoot || __swReloading) return;
       if (typeof state !== 'undefined' && state.isPlaying) return;
+      if (typeof KurfaTour !== 'undefined' && KurfaTour.active) return;
+      try {
+        const lastReloadAt = Number(sessionStorage.getItem('kurfa_sw_reloaded_at') || '0');
+        if (lastReloadAt && (Date.now() - lastReloadAt) < 15000) return;
+        sessionStorage.setItem('kurfa_sw_reloaded_at', String(Date.now()));
+      } catch (_) {}
       __swReloading = true;
       window.location.reload();
     });

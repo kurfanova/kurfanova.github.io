@@ -145,7 +145,7 @@
     }
   </style>
   <link rel="stylesheet" href="./tailwind.min.css?v=20261120_v17">
-  <link rel="stylesheet" href="./style.min.css?v=ebae229e">
+  <link rel="stylesheet" href="./style.min.css?v=2a0b418d">
   <script>
     (function() {
       var markReady = function() { document.documentElement.classList.add('icons-ready'); };
@@ -3381,20 +3381,21 @@
     <div id="kurfa-tour-mask-l" class="kurfa-tour-mask" aria-hidden="true"></div>
     <div id="kurfa-tour-mask-r" class="kurfa-tour-mask" aria-hidden="true"></div>
     <div id="kurfa-tour-spotlight" class="kurfa-tour-spotlight" aria-hidden="true"></div>
-    <article id="kurfa-tour-card" class="kurfa-tour-card">
-      <div class="kurfa-tour-progress-track" aria-hidden="true">
-        <div id="kurfa-tour-progress-fill" class="kurfa-tour-progress-fill"></div>
-      </div>
-      <header class="kurfa-tour-head">
+    <div id="kurfa-tour-card" class="kurfa-tour-card">
+      <div class="kurfa-tour-head">
         <div class="kurfa-tour-meta">
           <span class="kurfa-tour-platform-dot" aria-hidden="true"></span>
           <span id="kurfa-tour-platform-label" class="kurfa-tour-platform-label">MASAÜSTÜ REHBERİ</span>
-          <span id="kurfa-tour-step-badge" class="kurfa-tour-step-badge">1 / 10</span>
+          <span id="kurfa-tour-step-badge" class="kurfa-tour-step-badge">1 / 11</span>
         </div>
         <button type="button" id="kurfa-tour-close" class="kurfa-tour-close" onclick="KurfaTour.skip()" aria-label="Turu Kapat" data-i18n-aria="tour.skip">
-          <span class="material-symbols-outlined text-[16px]" aria-hidden="true">close</span>
+          <span class="material-symbols-outlined text-[15px]" aria-hidden="true">close</span>
         </button>
-      </header>
+      </div>
+
+      <div class="kurfa-tour-progress-track" aria-hidden="true">
+        <div id="kurfa-tour-progress-fill" class="kurfa-tour-progress-fill"></div>
+      </div>
 
       <div class="kurfa-tour-body">
         <h4 id="kurfa-tour-title" class="kurfa-tour-title"></h4>
@@ -3402,18 +3403,18 @@
         <div id="kurfa-tour-kbd" class="kurfa-tour-kbd hidden"></div>
       </div>
 
-      <footer class="kurfa-tour-foot">
+      <div class="kurfa-tour-foot">
         <button type="button" id="kurfa-tour-skip-btn" class="kurfa-tour-skip-btn" onclick="KurfaTour.skip()" data-i18n="tour.skip">Geç</button>
-        <div id="kurfa-tour-dots" class="kurfa-tour-dots" aria-hidden="true"></div>
+        <div id="kurfa-tour-dots" class="kurfa-tour-dots hidden" aria-hidden="true"></div>
         <div class="kurfa-tour-actions">
           <button type="button" id="kurfa-tour-prev-btn" class="kurfa-tour-nav-btn kurfa-tour-prev-btn hidden" onclick="KurfaTour.prev()" data-i18n="tour.prev">Geri</button>
           <button type="button" id="kurfa-tour-next-btn" class="kurfa-tour-nav-btn kurfa-tour-next-btn" onclick="KurfaTour.next()" data-i18n="tour.next">İleri</button>
         </div>
-      </footer>
-    </article>
+      </div>
+    </div>
   </div>
 
   <!-- Scripts (Deferred & minified; YouTube IFrame API loads lazily on demand) -->
-  <script defer fetchpriority="high" src="./app.min.js?v=aa1ba75d"></script>
+  <script defer fetchpriority="high" src="./app.min.js?v=db501401"></script>
 </body>
 </html>

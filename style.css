@@ -5010,7 +5010,7 @@ body.dark-mode .kurfa-theme-preview-card {
 .kurfa-scroll-rail-wrap > #search-filter-chips,
 .kurfa-scroll-rail-wrap > #kutuphane-subtabs,
 .kurfa-scroll-rail-wrap > #kesfet-subtabs {
-  padding-right: 30px;
+  padding-right: 36px;
   scroll-behavior: smooth;
 }
 
@@ -8440,7 +8440,7 @@ body.dark-mode .kurfa-sidebar-collapse-btn:hover {
 }
 
 /* ==========================================================================
-   INTERACTIVE PLATFORM-AWARE ONBOARDING TOUR (FROSTED GLASS + 4-MASK SPOTLIGHT)
+   INTERACTIVE PLATFORM-AWARE ONBOARDING TOUR (SEAMLESS VISIONOS FROSTED GLASS)
    ========================================================================== */
 .kurfa-tour-overlay[hidden] {
   display: none !important;
@@ -8452,6 +8452,7 @@ body.dark-mode .kurfa-sidebar-collapse-btn:hover {
   z-index: 9500;
   opacity: 0;
   pointer-events: none;
+  overflow: hidden;
   transition: opacity 0.24s ease;
 }
 
@@ -8460,26 +8461,27 @@ body.dark-mode .kurfa-sidebar-collapse-btn:hover {
   pointer-events: none;
 }
 
+/* Transparent pointer-catchers around the spotlight hole so outside clicks dismiss while
+   preserving zero corner seams from the spotlight box-shadow cutout. */
 .kurfa-tour-mask {
   position: fixed;
   z-index: 2;
-  background: rgba(5, 8, 16, 0.44);
-  backdrop-filter: blur(2.5px);
-  -webkit-backdrop-filter: blur(2.5px);
+  background: transparent;
   pointer-events: auto;
-  transition: left 0.34s cubic-bezier(0.22, 1, 0.36, 1), top 0.34s cubic-bezier(0.22, 1, 0.36, 1), width 0.34s cubic-bezier(0.22, 1, 0.36, 1), height 0.34s cubic-bezier(0.22, 1, 0.36, 1);
-}
-
-html:not(.dark-mode) .kurfa-tour-mask {
-  background: rgba(15, 23, 42, 0.28);
 }
 
 @keyframes kurfaSpotlightPulse {
   0%, 100% {
-    box-shadow: 0 0 0 1.5px rgba(255, 255, 255, 0.48), 0 0 24px rgba(var(--kurfa-track-rgb, 244, 63, 94), 0.32);
+    box-shadow:
+      0 0 0 9999px rgba(4, 7, 15, 0.58),
+      0 0 0 1.5px rgba(255, 255, 255, 0.68),
+      0 0 26px rgba(var(--kurfa-track-rgb, 244, 63, 94), 0.34);
   }
   50% {
-    box-shadow: 0 0 0 2.5px rgba(255, 255, 255, 0.78), 0 0 34px rgba(var(--kurfa-track-rgb, 244, 63, 94), 0.56);
+    box-shadow:
+      0 0 0 9999px rgba(4, 7, 15, 0.58),
+      0 0 0 2.5px rgba(255, 255, 255, 0.92),
+      0 0 38px rgba(var(--kurfa-track-rgb, 244, 63, 94), 0.56);
   }
 }
 
@@ -8489,14 +8491,15 @@ html:not(.dark-mode) .kurfa-tour-mask {
   pointer-events: none;
   border-radius: 16px;
   box-shadow:
-    0 0 0 1.5px rgba(255, 255, 255, 0.45),
-    0 0 26px rgba(var(--kurfa-track-rgb, 244, 63, 94), 0.30);
+    0 0 0 9999px rgba(4, 7, 15, 0.58),
+    0 0 0 1.5px rgba(255, 255, 255, 0.58),
+    0 0 28px rgba(var(--kurfa-track-rgb, 244, 63, 94), 0.28);
   transition:
-    left 0.34s cubic-bezier(0.22, 1, 0.36, 1),
-    top 0.34s cubic-bezier(0.22, 1, 0.36, 1),
-    width 0.34s cubic-bezier(0.22, 1, 0.36, 1),
-    height 0.34s cubic-bezier(0.22, 1, 0.36, 1),
-    border-radius 0.26s ease,
+    left 0.32s cubic-bezier(0.22, 1, 0.36, 1),
+    top 0.32s cubic-bezier(0.22, 1, 0.36, 1),
+    width 0.32s cubic-bezier(0.22, 1, 0.36, 1),
+    height 0.32s cubic-bezier(0.22, 1, 0.36, 1),
+    border-radius 0.24s ease,
     opacity 0.22s ease;
 }
 
@@ -8506,63 +8509,44 @@ html:not(.dark-mode) .kurfa-tour-mask {
 
 html:not(.dark-mode) .kurfa-tour-spotlight {
   box-shadow:
-    0 0 0 2px rgba(var(--kurfa-accent-rgb, 244, 63, 94), 0.78),
-    0 10px 30px rgba(15, 23, 42, 0.22);
+    0 0 0 9999px rgba(15, 23, 42, 0.34),
+    0 0 0 2px rgba(var(--kurfa-accent-rgb, 244, 63, 94), 0.85),
+    0 12px 32px rgba(15, 23, 42, 0.22);
 }
 
 .kurfa-tour-card {
   position: fixed;
   z-index: 6;
   pointer-events: auto;
-  overflow: hidden;
-  width: min(352px, calc(100vw - 24px));
-  border-radius: 22px;
-  padding: 17px 18px 14px;
+  width: min(356px, calc(100vw - 24px));
+  border-radius: 24px;
+  padding: 16px 18px 15px;
   background:
-    radial-gradient(240px 140px at 8% 0%, rgba(var(--kurfa-track-rgb, 244, 63, 94), 0.16), transparent 72%),
-    rgba(20, 24, 38, 0.52);
-  backdrop-filter: blur(28px) saturate(185%);
-  -webkit-backdrop-filter: blur(28px) saturate(185%);
-  border: 1px solid rgba(255, 255, 255, 0.16);
+    radial-gradient(260px 140px at 12% 0%, rgba(var(--kurfa-track-rgb, 244, 63, 94), 0.16), transparent 72%),
+    linear-gradient(155deg, rgba(255, 255, 255, 0.10) 0%, rgba(255, 255, 255, 0.02) 100%),
+    rgba(16, 20, 34, 0.48);
+  backdrop-filter: blur(36px) saturate(190%);
+  -webkit-backdrop-filter: blur(36px) saturate(190%);
+  border: 1px solid rgba(255, 255, 255, 0.18);
   box-shadow:
-    0 24px 64px -16px rgba(0, 0, 0, 0.58),
-    inset 0 1px 0 rgba(255, 255, 255, 0.20);
+    0 24px 64px -16px rgba(0, 0, 0, 0.52),
+    inset 0 1px 0 rgba(255, 255, 255, 0.24);
   color: #f8fafc;
   transition:
-    left 0.34s cubic-bezier(0.22, 1, 0.36, 1),
-    top 0.34s cubic-bezier(0.22, 1, 0.36, 1),
+    left 0.32s cubic-bezier(0.22, 1, 0.36, 1),
+    top 0.32s cubic-bezier(0.22, 1, 0.36, 1),
     transform 0.24s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 html:not(.dark-mode) .kurfa-tour-card {
   background:
-    radial-gradient(240px 140px at 8% 0%, rgba(var(--kurfa-track-rgb, 244, 63, 94), 0.10), transparent 72%),
-    rgba(255, 255, 255, 0.74);
-  border-color: rgba(255, 255, 255, 0.78);
+    radial-gradient(240px 140px at 12% 0%, rgba(var(--kurfa-track-rgb, 244, 63, 94), 0.11), transparent 72%),
+    rgba(255, 255, 255, 0.72);
+  border-color: rgba(255, 255, 255, 0.88);
   box-shadow:
-    0 22px 56px -14px rgba(15, 23, 42, 0.22),
-    inset 0 1px 0 rgba(255, 255, 255, 0.92);
+    0 22px 54px -14px rgba(15, 23, 42, 0.20),
+    inset 0 1px 0 rgba(255, 255, 255, 0.96);
   color: #0f172a;
-}
-
-.kurfa-tour-progress-track {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 2px;
-  background: rgba(255, 255, 255, 0.08);
-}
-
-html:not(.dark-mode) .kurfa-tour-progress-track {
-  background: rgba(15, 23, 42, 0.06);
-}
-
-.kurfa-tour-progress-fill {
-  height: 100%;
-  width: 10%;
-  background: linear-gradient(90deg, rgb(var(--kurfa-track-rgb, 244, 63, 94)), rgb(var(--kurfa-track-rgb-2, 139, 92, 246)));
-  transition: width 0.34s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .kurfa-tour-head {
@@ -8570,22 +8554,47 @@ html:not(.dark-mode) .kurfa-tour-progress-track {
   align-items: center;
   justify-content: space-between;
   gap: 8px;
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+  padding: 0;
   margin-bottom: 10px;
+}
+
+.kurfa-tour-progress-track {
+  width: 100%;
+  height: 3px;
+  border-radius: 9999px;
+  background: rgba(255, 255, 255, 0.10);
+  overflow: hidden;
+  margin-bottom: 12px;
+}
+
+html:not(.dark-mode) .kurfa-tour-progress-track {
+  background: rgba(15, 23, 42, 0.08);
+}
+
+.kurfa-tour-progress-fill {
+  height: 100%;
+  width: 10%;
+  border-radius: 9999px;
+  background: linear-gradient(90deg, rgb(var(--kurfa-track-rgb, 244, 63, 94)), rgb(var(--kurfa-track-rgb-2, 139, 92, 246)));
+  transition: width 0.32s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .kurfa-tour-meta {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 7px;
   min-width: 0;
 }
 
 .kurfa-tour-platform-dot {
-  width: 6px;
-  height: 6px;
+  width: 7px;
+  height: 7px;
   border-radius: 9999px;
   background: rgb(var(--kurfa-track-rgb, 244, 63, 94));
-  box-shadow: 0 0 8px rgba(var(--kurfa-track-rgb, 244, 63, 94), 0.7);
+  box-shadow: 0 0 10px rgba(var(--kurfa-track-rgb, 244, 63, 94), 0.78);
   flex-shrink: 0;
 }
 
@@ -8594,7 +8603,7 @@ html:not(.dark-mode) .kurfa-tour-progress-track {
   font-weight: 800;
   letter-spacing: 0.09em;
   text-transform: uppercase;
-  color: rgba(248, 250, 252, 0.70);
+  color: rgba(248, 250, 252, 0.72);
   white-space: nowrap;
 }
 
@@ -8609,7 +8618,7 @@ html:not(.dark-mode) .kurfa-tour-platform-label {
   padding: 2px 8px;
   border-radius: 9999px;
   background: rgba(255, 255, 255, 0.10);
-  color: rgba(248, 250, 252, 0.90);
+  color: rgba(248, 250, 252, 0.92);
 }
 
 html:not(.dark-mode) .kurfa-tour-step-badge {
@@ -8624,24 +8633,24 @@ html:not(.dark-mode) .kurfa-tour-step-badge {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  color: rgba(248, 250, 252, 0.62);
-  background: rgba(255, 255, 255, 0.06);
+  color: rgba(248, 250, 252, 0.68);
+  background: rgba(255, 255, 255, 0.08);
   transition: background-color 0.16s ease, color 0.16s ease;
   cursor: pointer;
 }
 
 .kurfa-tour-close:hover {
-  background: rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.18);
   color: #ffffff;
 }
 
 html:not(.dark-mode) .kurfa-tour-close {
   color: #64748b;
-  background: rgba(15, 23, 42, 0.05);
+  background: rgba(15, 23, 42, 0.06);
 }
 
 html:not(.dark-mode) .kurfa-tour-close:hover {
-  background: rgba(15, 23, 42, 0.10);
+  background: rgba(15, 23, 42, 0.12);
   color: #0f172a;
 }
 
@@ -8653,17 +8662,17 @@ html:not(.dark-mode) .kurfa-tour-close:hover {
 
 .kurfa-tour-title {
   margin: 0;
-  font-size: 15.5px;
+  font-size: 16px;
   font-weight: 800;
   letter-spacing: -0.02em;
-  line-height: 1.3;
+  line-height: 1.28;
 }
 
 .kurfa-tour-desc {
   margin: 0;
-  font-size: 12.5px;
+  font-size: 12.75px;
   line-height: 1.54;
-  color: rgba(241, 245, 249, 0.84);
+  color: rgba(241, 245, 249, 0.86);
 }
 
 html:not(.dark-mode) .kurfa-tour-desc {
@@ -8672,20 +8681,20 @@ html:not(.dark-mode) .kurfa-tour-desc {
 
 .kurfa-tour-kbd {
   align-self: flex-start;
-  margin-top: 3px;
-  padding: 3px 10px;
+  margin-top: 4px;
+  padding: 4px 11px;
   border-radius: 9999px;
-  font-size: 10.5px;
+  font-size: 11px;
   font-weight: 700;
-  letter-spacing: 0.02em;
+  letter-spacing: 0.015em;
   background: rgba(255, 255, 255, 0.10);
   color: #ffffff;
-  border: 1px solid rgba(255, 255, 255, 0.16);
+  border: 1px solid rgba(255, 255, 255, 0.18);
 }
 
 .kurfa-tour-kbd.is-interactive {
-  background: rgba(var(--kurfa-track-rgb, 244, 63, 94), 0.22);
-  border-color: rgba(var(--kurfa-track-rgb, 244, 63, 94), 0.45);
+  background: rgba(var(--kurfa-track-rgb, 244, 63, 94), 0.24);
+  border-color: rgba(var(--kurfa-track-rgb, 244, 63, 94), 0.52);
 }
 
 html:not(.dark-mode) .kurfa-tour-kbd {
@@ -8698,29 +8707,27 @@ html:not(.dark-mode) .kurfa-tour-kbd {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 8px;
+  gap: 10px;
   margin-top: 14px;
-  padding-top: 11px;
-  border-top: 1px solid rgba(255, 255, 255, 0.10);
-}
-
-html:not(.dark-mode) .kurfa-tour-foot {
-  border-top-color: rgba(15, 23, 42, 0.08);
+  padding: 0;
+  background: transparent;
+  border: 0;
+  box-shadow: none;
 }
 
 .kurfa-tour-skip-btn {
-  font-size: 11.5px;
+  font-size: 12px;
   font-weight: 600;
-  color: rgba(248, 250, 252, 0.65);
-  padding: 4px 7px;
-  border-radius: 8px;
+  color: rgba(248, 250, 252, 0.68);
+  padding: 5px 8px;
+  border-radius: 10px;
   transition: color 0.16s ease, background-color 0.16s ease;
   cursor: pointer;
 }
 
 .kurfa-tour-skip-btn:hover {
   color: #ffffff;
-  background: rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.10);
 }
 
 html:not(.dark-mode) .kurfa-tour-skip-btn {
@@ -8733,43 +8740,21 @@ html:not(.dark-mode) .kurfa-tour-skip-btn:hover {
 }
 
 .kurfa-tour-dots {
-  display: inline-flex;
-  align-items: center;
-  gap: 3px;
-}
-
-.kurfa-tour-dots > span {
-  width: 4px;
-  height: 4px;
-  border-radius: 9999px;
-  background: rgba(255, 255, 255, 0.25);
-  transition: width 0.22s ease, background-color 0.22s ease;
-}
-
-html:not(.dark-mode) .kurfa-tour-dots > span {
-  background: rgba(15, 23, 42, 0.18);
-}
-
-.kurfa-tour-dots > span.is-active {
-  width: 12px;
-  background: #ffffff;
-}
-
-html:not(.dark-mode) .kurfa-tour-dots > span.is-active {
-  background: rgb(var(--kurfa-accent-rgb, 244, 63, 94));
+  display: none;
 }
 
 .kurfa-tour-actions {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 7px;
+  margin-left: auto;
 }
 
 .kurfa-tour-nav-btn {
-  height: 30px;
-  padding: 0 13px;
+  height: 32px;
+  padding: 0 15px;
   border-radius: 9999px;
-  font-size: 11.5px;
+  font-size: 12px;
   font-weight: 700;
   cursor: pointer;
   transition: transform 0.12s ease, background-color 0.16s ease;
@@ -8780,12 +8765,12 @@ html:not(.dark-mode) .kurfa-tour-dots > span.is-active {
 }
 
 .kurfa-tour-prev-btn {
-  background: rgba(255, 255, 255, 0.10);
-  color: rgba(248, 250, 252, 0.90);
+  background: rgba(255, 255, 255, 0.11);
+  color: rgba(248, 250, 252, 0.92);
 }
 
 .kurfa-tour-prev-btn:hover {
-  background: rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.19);
 }
 
 html:not(.dark-mode) .kurfa-tour-prev-btn {
@@ -8794,11 +8779,11 @@ html:not(.dark-mode) .kurfa-tour-prev-btn {
 }
 
 html:not(.dark-mode) .kurfa-tour-prev-btn:hover {
-  background: rgba(15, 23, 42, 0.12);
+  background: rgba(15, 23, 42, 0.13);
 }
 
 .kurfa-tour-next-btn {
-  background: rgba(255, 255, 255, 0.92);
+  background: rgba(255, 255, 255, 0.94);
   color: #0f172a;
 }
 
@@ -8809,4 +8794,19 @@ html:not(.dark-mode) .kurfa-tour-prev-btn:hover {
 html:not(.dark-mode) .kurfa-tour-next-btn {
   background: #0f172a;
   color: #ffffff;
+}
+
+@media (max-width: 767px) {
+  .kurfa-tour-card {
+    width: calc(100vw - 24px);
+    max-width: 396px;
+    padding: 15px 16px 14px;
+    border-radius: 22px;
+  }
+  .kurfa-tour-title {
+    font-size: 15.5px;
+  }
+  .kurfa-tour-desc {
+    font-size: 12.5px;
+  }
 }
