@@ -8967,14 +8967,14 @@ function debouncedSearch(query) {
 }
 
 const BROWSE_CATEGORIES = [
-  { key: 'search.cat_tr_pop', query: 'Türkçe Pop 2026 en çok dinlenenler', icon: 'music_note', bg: 'linear-gradient(135deg, #ff2056 0%, #be123c 100%)' },
-  { key: 'search.cat_tr_rap', query: 'Türkçe Rap Drill 2026 hit şarkılar', icon: 'bolt', bg: 'linear-gradient(135deg, #4f46e5 0%, #312e81 100%)' },
-  { key: 'search.cat_arabesk', query: 'Arabesk Damar en sevilen şarkılar', icon: 'favorite', bg: 'linear-gradient(135deg, #d97706 0%, #92400e 100%)' },
-  { key: 'search.cat_rock', query: 'Anadolu Rock Türkçe Rock klasikler', icon: 'electric_bolt', bg: 'linear-gradient(135deg, #059669 0%, #064e3b 100%)' },
-  { key: 'search.cat_acoustic', query: 'Akustik Lo-Fi Türkçe sakin şarkılar', icon: 'coffee', bg: 'linear-gradient(135deg, #0891b2 0%, #164e63 100%)' },
-  { key: 'search.cat_90s', query: "90'lar Türkçe Pop nostalji şarkılar", icon: 'album', bg: 'linear-gradient(135deg, #9333ea 0%, #581c87 100%)' },
-  { key: 'search.cat_global', query: 'Global Top Hits Pop 2026', icon: 'public', bg: 'linear-gradient(135deg, #2563eb 0%, #1e3a8a 100%)' },
-  { key: 'search.cat_workout', query: 'Workout High Energy Bass Remix 2026', icon: 'fitness_center', bg: 'linear-gradient(135deg, #e11d48 0%, #7c2d12 100%)' }
+  { key: 'search.cat_tr_pop', query: 'Türkçe Pop 2026 en çok dinlenenler', icon: 'music_note', rgb: '244, 63, 94' },
+  { key: 'search.cat_tr_rap', query: 'Türkçe Rap Drill 2026 hit şarkılar', icon: 'bolt', rgb: '99, 102, 241' },
+  { key: 'search.cat_arabesk', query: 'Arabesk Damar en sevilen şarkılar', icon: 'favorite', rgb: '245, 158, 11' },
+  { key: 'search.cat_rock', query: 'Anadolu Rock Türkçe Rock klasikler', icon: 'electric_bolt', rgb: '16, 185, 129' },
+  { key: 'search.cat_acoustic', query: 'Akustik Lo-Fi Türkçe sakin şarkılar', icon: 'coffee', rgb: '6, 182, 212' },
+  { key: 'search.cat_90s', query: "90'lar Türkçe Pop nostalji şarkılar", icon: 'album', rgb: '168, 85, 247' },
+  { key: 'search.cat_global', query: 'Global Top Hits Pop 2026', icon: 'public', rgb: '59, 130, 246' },
+  { key: 'search.cat_workout', query: 'Workout High Energy Bass Remix 2026', icon: 'fitness_center', rgb: '239, 68, 68' }
 ];
 
 function recordSearchHistory(query) {
@@ -9181,10 +9181,12 @@ function renderSearchDiscoveryHub() {
       const tile = document.createElement('button');
       tile.type = 'button';
       tile.className = 'kurfa-cat-tile';
-      tile.style.background = cat.bg;
+      tile.style.setProperty('--cat-rgb', cat.rgb || '244, 63, 94');
       tile.innerHTML = `
-        <span class="text-sm sm:text-base font-extrabold leading-snug relative z-10">${escapeHtml(t(cat.key))}</span>
-        <span class="material-symbols-outlined kurfa-cat-icon" aria-hidden="true">${cat.icon}</span>
+        <span class="kurfa-cat-badge" aria-hidden="true">
+          <span class="material-symbols-outlined text-[18px]">${cat.icon}</span>
+        </span>
+        <span class="kurfa-cat-title">${escapeHtml(t(cat.key))}</span>
       `;
       tile.onclick = () => executeSearchImmediate(cat.query, true);
       catGrid.appendChild(tile);
@@ -9507,10 +9509,10 @@ function renderSearchArtistsShelf(artists, query) {
 
     const card = document.createElement('button');
     card.type = 'button';
-    card.className = 'group flex flex-col items-center text-center w-28 sm:w-32 p-2.5 rounded-2xl bg-surface-container-lowest hover:bg-surface-container-low border border-surface-container/60 transition-all cursor-pointer flex-shrink-0';
+    card.className = 'kurfa-artist-card group flex flex-col items-center text-center w-28 sm:w-32 p-3 rounded-2xl transition-all cursor-pointer flex-shrink-0';
     card.innerHTML = `
-      <div class="relative w-20 h-20 sm:w-24 sm:h-24 aspect-square rounded-2xl overflow-hidden mb-2 shadow-sm ring-1 ring-surface-container group-hover:ring-primary/50 transition-all bg-surface-container-high flex-shrink-0">
-        <img src="${safeImg}" alt="${safeName}" referrerpolicy="no-referrer" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" loading="lazy">
+      <div class="relative w-20 h-20 sm:w-24 sm:h-24 aspect-square rounded-full overflow-hidden mb-2.5 shadow-sm ring-1 ring-black/10 dark:ring-white/10 group-hover:ring-primary/50 transition-all bg-surface-container-high flex-shrink-0">
+        <img src="${safeImg}" alt="${safeName}" referrerpolicy="no-referrer" class="w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-300" loading="lazy">
       </div>
       <span class="font-bold text-xs text-on-surface truncate w-full group-hover:text-primary transition-colors">${safeName}</span>
       <span class="text-[10px] text-on-surface-variant truncate w-full mt-0.5">${escapeHtml(fansLabel)}</span>
@@ -9553,17 +9555,16 @@ function createAlbumCard(album) {
   const card = document.createElement('div');
   card.setAttribute('role', 'button');
   card.tabIndex = 0;
-  card.className = 'kurfa-album-card group flex flex-col text-left p-2.5 rounded-2xl bg-surface-container-lowest hover:bg-surface-container-low border border-surface-container/60 transition-all cursor-pointer';
+  card.className = 'kurfa-album-card group flex flex-col text-left p-2.5 rounded-2xl transition-all cursor-pointer';
   card.innerHTML = `
-    <div class="relative w-full aspect-square rounded-xl overflow-hidden mb-2 shadow-sm bg-surface-container-high flex-shrink-0">
-      <img src="${escapeHtml(coverUrl)}" alt="${escapeHtml(titleText)}" referrerpolicy="no-referrer" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" loading="lazy" onerror="this.onerror=null; this.src='./kurfamuzik_logo.png'">
-      <span class="absolute top-1.5 left-1.5 px-1.5 py-0.5 rounded-md bg-black/65 backdrop-blur-sm text-[9px] font-bold text-white uppercase tracking-wide">${escapeHtml(typeText)}</span>
+    <div class="relative w-full aspect-square rounded-xl overflow-hidden mb-2.5 shadow-sm bg-surface-container-high flex-shrink-0">
+      <img src="${escapeHtml(coverUrl)}" alt="${escapeHtml(titleText)}" referrerpolicy="no-referrer" class="w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-300" loading="lazy" onerror="this.onerror=null; this.src='./kurfamuzik_logo.png'">
       <button type="button" class="kurfa-album-quick-play absolute right-2 bottom-2 w-8 h-8 rounded-full bg-primary text-on-primary flex items-center justify-center shadow-md opacity-0 translate-y-1 group-hover:opacity-100 group-hover:translate-y-0 transition-all hover:scale-110 active:scale-95" title="${escapeHtml(t('player.play_btn'))}">
         <span class="material-symbols-outlined text-[18px] filled">play_arrow</span>
       </button>
     </div>
-    <span class="font-bold text-xs text-on-surface truncate w-full group-hover:text-primary transition-colors">${escapeHtml(titleText)}</span>
-    <span class="text-[10px] text-on-surface-variant truncate w-full mt-0.5">${escapeHtml(subLine)}</span>
+    <span class="font-bold text-xs sm:text-[13px] text-on-surface truncate w-full group-hover:text-primary transition-colors">${escapeHtml(titleText)}</span>
+    <span class="text-[11px] text-on-surface-variant truncate w-full mt-0.5">${escapeHtml(subLine)}</span>
   `;
   const openModal = () => {
     if (albumId) {
@@ -9691,21 +9692,23 @@ function renderSpotlightCard(track) {
   const safeArtist = escapeHtml(track.artist || "Sanatçı");
   const safeThumb = escapeHtml(safeUrl(track.thumbnail || getTrackThumbnail(track), './kurfamuzik_logo.png'));
   const isOpenCatalog = track.source === 'audius' || track.source === 'open-catalog';
-  const sourceLabel = isOpenCatalog ? t('search.source_open') : t('search.source_direct');
+  const sourceLabel = isOpenCatalog
+    ? t('search.source_open')
+    : (getAppLanguage() === 'en' ? 'Top Result' : 'En İyi Eşleşme');
 
   DOM.searchSpotlightBox.innerHTML = `
     <div class="kurfa-spotlight-ambient" style="background-image: url('${safeThumb}');" aria-hidden="true"></div>
-    <div class="relative z-10 flex flex-col sm:flex-row items-center gap-4 w-full">
-      <div class="relative w-24 h-24 sm:w-28 sm:h-28 rounded-2xl overflow-hidden shadow-lg bg-surface-container-high flex-shrink-0 group cursor-pointer" id="spotlight-thumb-btn">
+    <div class="relative z-10 flex flex-col sm:flex-row items-center gap-4 sm:gap-5 w-full">
+      <div class="relative w-28 h-28 sm:w-32 sm:h-32 rounded-2xl overflow-hidden shadow-lg ring-1 ring-black/10 dark:ring-white/10 bg-surface-container-high flex-shrink-0 group cursor-pointer" id="spotlight-thumb-btn">
         <img src="${safeThumb}" alt="${safeTitle}" class="w-full h-full object-cover" onerror="this.onerror=null; this.src='./kurfamuzik_logo.png'">
         <div class="absolute right-2 bottom-2 w-8 h-8 rounded-full bg-primary text-on-primary flex items-center justify-center shadow-md opacity-0 translate-y-1 group-hover:opacity-100 group-hover:translate-y-0 transition-all">
           <span class="material-symbols-outlined text-[18px] filled">play_arrow</span>
         </div>
       </div>
       <div class="flex-1 text-center sm:text-left min-w-0">
-        <span class="text-[11px] font-semibold ${isOpenCatalog ? 'text-emerald-500' : 'text-on-surface-variant'}">${escapeHtml(sourceLabel)}</span>
-        <h3 class="text-base sm:text-lg font-extrabold text-on-surface truncate mt-0.5">${safeTitle}</h3>
-        <p class="text-xs text-on-surface-variant font-medium mb-3 truncate">${safeArtist}</p>
+        <span class="text-[11px] font-bold uppercase tracking-wider ${isOpenCatalog ? 'text-emerald-500' : 'text-primary'}">${escapeHtml(sourceLabel)}</span>
+        <h3 class="text-lg sm:text-xl font-extrabold tracking-tight text-on-surface truncate mt-0.5">${safeTitle}</h3>
+        <p class="text-xs sm:text-sm text-on-surface-variant font-medium mb-3.5 truncate">${safeArtist}</p>
         <div class="flex flex-wrap items-center justify-center sm:justify-start gap-2">
           <button type="button" id="spotlight-play-btn" class="flex items-center gap-1.5 px-4 py-2 rounded-full bg-primary text-on-primary text-xs font-bold shadow-sm hover:bg-primary-container transition-all active:scale-95">
             <span class="material-symbols-outlined text-[18px] filled">play_arrow</span>
@@ -10222,13 +10225,13 @@ window.resetSearchFilters = resetSearchFilters;
 
 function filterGenre(el, genre) {
   document.querySelectorAll('#filter-container .filter-pill').forEach(p => {
-    p.classList.remove('bg-secondary', 'text-on-secondary', 'shadow-sm', 'font-bold');
+    p.classList.remove('active', 'bg-secondary', 'text-on-secondary', 'shadow-sm', 'font-bold');
     p.classList.add('bg-surface-container-low', 'border', 'border-surface-container', 'text-on-surface', 'font-semibold');
   });
 
   if (el) {
-    el.classList.add('bg-secondary', 'text-on-secondary', 'shadow-sm', 'font-bold');
-    el.classList.remove('bg-surface-container-low', 'border', 'border-surface-container', 'text-on-surface', 'font-semibold');
+    el.classList.add('active', 'font-bold');
+    el.classList.remove('bg-secondary', 'text-on-secondary', 'bg-surface-container-low', 'border', 'border-surface-container', 'text-on-surface', 'font-semibold');
   }
 
   if (genre === 'all') {
@@ -16635,22 +16638,20 @@ function renderAlbumShelfInto(container, albums, horizontal = true) {
   albums.forEach((alb) => {
     const card = document.createElement('div');
     card.className = horizontal
-      ? 'kurfa-album-shelf-card group rounded-2xl bg-surface-container-lowest p-2.5 sm:p-3 shadow-sm hover:shadow-md transition-all flex flex-col cursor-pointer border border-surface-container/60'
-      : 'group rounded-2xl bg-surface-container-lowest p-2.5 sm:p-3 shadow-sm hover:shadow-md transition-all flex flex-col cursor-pointer border border-surface-container/60';
+      ? 'kurfa-album-shelf-card kurfa-album-card group rounded-2xl p-2.5 sm:p-3 transition-all flex flex-col cursor-pointer'
+      : 'kurfa-album-card group rounded-2xl p-2.5 sm:p-3 transition-all flex flex-col cursor-pointer';
     const safeTitle = escapeHtml(alb.title || 'Albüm');
-    const safeArtist = escapeHtml(alb.artist || 'Sanatçı');
+    const metaFooter = escapeHtml([alb.artist || 'Sanatçı', alb.year].filter(Boolean).join(' • '));
     const safeCover = escapeHtml(safeUrl(alb.cover || alb.thumbnail, './kurfamuzik_logo.png'));
-    const metaBadge = escapeHtml([alb.type || 'Albüm', alb.year].filter(Boolean).join(' • '));
     card.innerHTML = `
       <div class="relative w-full aspect-square rounded-xl overflow-hidden mb-2.5 bg-surface-container-high">
-        <img src="${safeCover}" alt="${safeTitle}" loading="lazy" decoding="async" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" onerror="this.onerror=null; this.src='./kurfamuzik_logo.png';">
-        <span class="absolute top-2 left-2 px-2 py-0.5 rounded-md bg-black/70 backdrop-blur-sm text-white text-[10px] font-bold">${metaBadge}</span>
+        <img src="${safeCover}" alt="${safeTitle}" loading="lazy" decoding="async" class="w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-500" onerror="this.onerror=null; this.src='./kurfamuzik_logo.png';">
         <span class="absolute right-2.5 bottom-2.5 w-9 h-9 rounded-full bg-primary text-on-primary flex items-center justify-center shadow-lg opacity-0 translate-y-1 group-hover:opacity-100 group-hover:translate-y-0 transition-all">
           <span class="material-symbols-outlined text-[20px] filled">play_arrow</span>
         </span>
       </div>
-      <h3 class="text-xs sm:text-sm font-bold text-on-surface truncate">${safeTitle}</h3>
-      <p class="text-[11px] text-on-surface-variant truncate mt-0.5">${safeArtist}</p>
+      <h3 class="text-xs sm:text-sm font-bold text-on-surface truncate group-hover:text-primary transition-colors">${safeTitle}</h3>
+      <p class="text-[11px] text-on-surface-variant truncate mt-0.5">${metaFooter}</p>
     `;
     card.onclick = () => {
       if (typeof openAlbumDetail === 'function') {

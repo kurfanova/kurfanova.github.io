@@ -145,7 +145,7 @@
     }
   </style>
   <link rel="stylesheet" href="./tailwind.min.css?v=20261120_v17">
-  <link rel="stylesheet" href="./style.min.css?v=119fa611">
+  <link rel="stylesheet" href="./style.min.css?v=78315776">
   <script>
     (function() {
       var markReady = function() { document.documentElement.classList.add('icons-ready'); };
@@ -496,7 +496,7 @@
               <span class="material-symbols-outlined text-[15px]" aria-hidden="true">tune</span>
               <span data-i18n="explore.genre_label">Tür:</span>
             </span>
-            <button class="filter-pill shrink-0 px-4 py-1.5 rounded-full text-xs font-bold bg-secondary text-on-secondary shadow-sm transition-all" onclick="filterGenre(this, 'all')" data-i18n="explore.genre_all">Tümü</button>
+            <button class="filter-pill active shrink-0 px-4 py-1.5 rounded-full text-xs font-bold transition-all" onclick="filterGenre(this, 'all')" data-i18n="explore.genre_all">Tümü</button>
             <button class="filter-pill shrink-0 px-3.5 py-1.5 rounded-full text-xs font-semibold bg-surface-container-low border border-surface-container text-on-surface hover:bg-surface-container transition-all flex items-center gap-1.5" onclick="filterGenre(this, 'Trend Türkçe')">
               <span class="material-symbols-outlined text-[15px] text-primary" aria-hidden="true">local_fire_department</span>
               <span data-i18n="explore.genre_tr_pop">Trend Türkçe</span>
@@ -808,7 +808,7 @@
 
         <!-- Dedicated In-Page Search Capsule + Category Chips -->
         <section class="kurfa-search-command-bar rounded-2xl p-2.5 sm:p-3 flex flex-col gap-2.5">
-          <div class="flex items-center gap-2">
+          <div class="flex items-center gap-2 md:hidden">
             <div class="relative flex-1 min-w-0">
               <span class="material-symbols-outlined text-[19px] text-primary absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" aria-hidden="true">search</span>
               <input type="text" id="arama-page-search-input" autocomplete="off" spellcheck="false" placeholder="Şarkı, albüm, sanatçı veya YouTube linki ara..." data-i18n-placeholder="topbar.search_placeholder" aria-label="Arama" class="kurfa-arama-input w-full h-10 pl-10 pr-16 rounded-full text-xs sm:text-sm font-medium focus:outline-none">
@@ -908,9 +908,16 @@
 
         <!-- Dynamic Albums Shelf / Grid -->
         <section id="search-albums-section" class="hidden flex-col gap-3">
-          <div class="flex items-center justify-between">
+          <div class="flex items-center justify-between gap-2">
             <h2 class="text-sm sm:text-base font-extrabold text-on-surface tracking-tight" data-i18n="search.albums">Albümler</h2>
-            <span class="text-xs text-on-surface-variant" id="search-albums-subtitle" data-i18n="search.albums_sub">Albüm içeriğini ve parçalarını gör</span>
+            <div class="flex items-center gap-1" id="search-albums-head-arrows">
+              <button type="button" class="shelf-head-arrow-btn" onclick="scrollShelf('search-albums-grid', -1)" aria-label="Sola Kaydır">
+                <span class="material-symbols-outlined text-[18px]">chevron_left</span>
+              </button>
+              <button type="button" class="shelf-head-arrow-btn" onclick="scrollShelf('search-albums-grid', 1)" aria-label="Sağa Kaydır">
+                <span class="material-symbols-outlined text-[18px]">chevron_right</span>
+              </button>
+            </div>
           </div>
           <div id="search-albums-grid" class="flex items-stretch gap-3 overflow-x-auto pb-2 scrollbar-none">
             <!-- Injected dynamically -->
@@ -919,9 +926,16 @@
 
         <!-- Dynamic Artists Shelf / Grid -->
         <section id="search-artists-section" class="hidden flex-col gap-3">
-          <div class="flex items-center justify-between">
+          <div class="flex items-center justify-between gap-2">
             <h2 class="text-sm sm:text-base font-extrabold text-on-surface tracking-tight" data-i18n="search.artists">Sanatçılar</h2>
-            <span class="text-xs text-on-surface-variant" id="search-artists-subtitle" data-i18n="search.artists_sub">Profil & tüm şarkıları gör</span>
+            <div class="flex items-center gap-1" id="search-artists-head-arrows">
+              <button type="button" class="shelf-head-arrow-btn" onclick="scrollShelf('search-artists-grid', -1)" aria-label="Sola Kaydır">
+                <span class="material-symbols-outlined text-[18px]">chevron_left</span>
+              </button>
+              <button type="button" class="shelf-head-arrow-btn" onclick="scrollShelf('search-artists-grid', 1)" aria-label="Sağa Kaydır">
+                <span class="material-symbols-outlined text-[18px]">chevron_right</span>
+              </button>
+            </div>
           </div>
           <div id="search-artists-grid" class="flex items-stretch gap-3 overflow-x-auto pb-2 scrollbar-none">
             <!-- Injected dynamically -->
@@ -3211,6 +3225,6 @@
   </div>
 
   <!-- Scripts (Deferred & minified; YouTube IFrame API loads lazily on demand) -->
-  <script defer fetchpriority="high" src="./app.min.js?v=4104d24e"></script>
+  <script defer fetchpriority="high" src="./app.min.js?v=8038bb00"></script>
 </body>
 </html>
