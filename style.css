@@ -1295,33 +1295,42 @@ body.dark-mode .lyric-line.active .lyric-word.word-active {
   }
 }
 .lyric-interlude {
-  display: none !important;
+  display: inline-flex !important;
   align-items: center;
   justify-content: center;
-  gap: 7px;
-  padding: 6px 10px !important;
-  margin: 4px auto;
+  gap: 8px;
+  max-height: 0;
+  opacity: 0;
+  overflow: hidden;
+  padding: 0 12px !important;
+  margin: 0 auto !important;
   border-radius: 9999px !important;
   background: transparent !important;
   color: rgba(15, 23, 42, 0.52) !important;
   align-self: center;
   border: none !important;
-  transform: none !important;
-  transition: opacity 0.25s ease, transform 0.25s ease;
+  transform: scale(0.85) !important;
+  pointer-events: none;
+  transition: max-height 0.34s ease, opacity 0.28s ease, margin 0.32s ease, padding 0.32s ease, transform 0.36s cubic-bezier(0.22, 1.28, 0.36, 1);
 }
 body.dark-mode .lyric-interlude {
   background: transparent !important;
   color: rgba(255, 255, 255, 0.42) !important;
 }
 .lyric-interlude.active {
-  display: inline-flex !important;
+  max-height: 44px;
+  opacity: 1;
+  padding: 8px 14px !important;
+  margin: 4px auto 8px !important;
   background: transparent !important;
   color: rgb(var(--kurfa-track-rgb, 244, 63, 94)) !important;
   transform: scale(1.06) !important;
+  pointer-events: auto;
 }
 body.dark-mode .lyric-interlude.active {
   background: transparent !important;
-  color: color-mix(in srgb, #ffffff 68%, rgb(var(--kurfa-track-rgb, 244, 63, 94)) 32%) !important;
+  color: color-mix(in srgb, #ffffff 74%, rgb(var(--kurfa-track-rgb, 244, 63, 94)) 26%) !important;
+  filter: drop-shadow(0 0 8px rgba(var(--kurfa-track-rgb, 244, 63, 94), 0.42));
 }
 .lyric-interlude span {
   width: 7px;
@@ -7820,16 +7829,16 @@ body.dark-mode .kurfa-queue-dock-cta {
   height: 100%;
   overflow-y: auto !important;
   overflow-x: hidden !important;
-  padding: clamp(120px, 28vh, 220px) 22px clamp(160px, 38vh, 280px);
-  -webkit-mask-image: linear-gradient(180deg, transparent 0%, #000 18%, #000 78%, transparent 100%);
-  mask-image: linear-gradient(180deg, transparent 0%, #000 18%, #000 78%, transparent 100%);
+  padding: 26px 22px clamp(160px, 40vh, 300px);
+  -webkit-mask-image: linear-gradient(180deg, transparent 0%, #000 7%, #000 80%, transparent 100%);
+  mask-image: linear-gradient(180deg, transparent 0%, #000 7%, #000 80%, transparent 100%);
 }
 
 #karaoke-lyrics-box {
-  padding-top: clamp(100px, 24vh, 190px);
-  padding-bottom: clamp(130px, 32vh, 230px);
-  -webkit-mask-image: linear-gradient(180deg, transparent 0%, #000 14%, #000 84%, transparent 100%);
-  mask-image: linear-gradient(180deg, transparent 0%, #000 14%, #000 84%, transparent 100%);
+  padding-top: 24px;
+  padding-bottom: clamp(140px, 34vh, 240px);
+  -webkit-mask-image: linear-gradient(180deg, transparent 0%, #000 7%, #000 84%, transparent 100%);
+  mask-image: linear-gradient(180deg, transparent 0%, #000 7%, #000 84%, transparent 100%);
 }
 
 .kurfa-side-lyrics-lines {
@@ -8102,6 +8111,7 @@ body.kurfa-resizing #desktop-lyrics-drawer {
 
 /* Left Sidebar Collapse Button + Compact Icon Rail */
 .kurfa-sidebar-collapse-btn {
+  display: none;
   width: 30px;
   height: 30px;
   border-radius: 10px;
@@ -8130,6 +8140,12 @@ body.dark-mode .kurfa-sidebar-collapse-btn:hover {
 
 /* Desktop Side Panel Coordinates, Collapsible Sidebar & Zero-Overlap Budget */
 @media (min-width: 768px) {
+  .kurfa-sidebar-collapse-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
   :root {
     --kurfa-sidebar-w: 256px;
     --kurfa-queue-w: 320px;
@@ -8155,23 +8171,47 @@ body.dark-mode .kurfa-sidebar-collapse-btn:hover {
       padding-right 0.24s cubic-bezier(0.22, 1, 0.36, 1);
   }
 
+  #app-shell > main {
+    position: relative;
+  }
+
+  body.dark-mode #app-shell > main {
+    background:
+      radial-gradient(
+        680px 340px at 18% 0%,
+        rgba(var(--kurfa-track-rgb, 244, 63, 94), 0.075) 0%,
+        transparent 72%
+      ),
+      radial-gradient(
+        560px 300px at 84% 6%,
+        rgba(var(--kurfa-track-rgb-2, 139, 92, 246), 0.055) 0%,
+        transparent 72%
+      ) !important;
+    transition: background 0.9s ease;
+  }
+
+  #app-shell > main > .view-tab.active:not(#tab-calma-listeleri) {
+    max-width: 1380px;
+    margin-inline: auto;
+  }
+
   /* Collapsed Sidebar Icon Rail State (72px) */
   body.sidebar-collapsed #desktop-sidebar > .p-space-lg {
     padding: 14px 10px !important;
   }
 
   body.sidebar-collapsed #desktop-sidebar.kurfa-sidebar-rail {
-    box-shadow: inset -8px 0 18px -16px rgba(var(--kurfa-track-rgb), 0.14) !important;
+    box-shadow: inset -12px 0 24px -18px rgba(var(--kurfa-track-rgb), 0.20) !important;
   }
 
   body.sidebar-collapsed .kurfa-sidebar-cove {
-    opacity: 0.36 !important;
+    opacity: 0.58 !important;
   }
 
   body.sidebar-collapsed .kurfa-sidebar-cove > span {
-    width: 48px !important;
-    right: -12px !important;
-    filter: blur(22px) hue-rotate(var(--kurfa-hue-shift, 0deg)) !important;
+    width: 68px !important;
+    right: -10px !important;
+    filter: blur(26px) hue-rotate(var(--kurfa-hue-shift, 0deg)) !important;
   }
 
   body.sidebar-collapsed .kurfa-sidebar-brand {

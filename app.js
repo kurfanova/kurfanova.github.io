@@ -13287,11 +13287,20 @@ function updateDesktopSideLayout() {
     collapseBtn.title = labelTxt;
     collapseBtn.setAttribute('aria-label', labelTxt);
   }
+  if (typeof updateSidebarNavPill === 'function') {
+    requestAnimationFrame(updateSidebarNavPill);
+    setTimeout(updateSidebarNavPill, 260);
+  }
 }
 window.updateDesktopSideLayout = updateDesktopSideLayout;
 
 function toggleSidebarCollapse() {
+  const willExpand = Boolean(state.sidebarCollapsed);
   state.sidebarCollapsed = !state.sidebarCollapsed;
+  if (willExpand) {
+    state._preferredSidebarW = 256;
+    try { localStorage.setItem('kurfa_sidebar_w', '256'); } catch (_) {}
+  }
   try {
     localStorage.setItem('kurfa_sidebar_collapsed', state.sidebarCollapsed ? '1' : '0');
   } catch (_) {}
@@ -13307,6 +13316,27 @@ function initSidePanelResizers() {
   _sideResizersInitialized = true;
 
   handles.forEach((handle) => {
+    handle.addEventListener('dblclick', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      const target = handle.getAttribute('data-resize-target');
+      if (target === 'sidebar') {
+        state.sidebarCollapsed = false;
+        state._preferredSidebarW = 256;
+        try {
+          localStorage.setItem('kurfa_sidebar_collapsed', '0');
+          localStorage.setItem('kurfa_sidebar_w', '256');
+        } catch (_) {}
+      } else if (target === 'queue') {
+        state._preferredQueueW = 320;
+        try { localStorage.setItem('kurfa_queue_w', '320'); } catch (_) {}
+      } else {
+        state._preferredLyricsW = 360;
+        try { localStorage.setItem('kurfa_lyrics_w', '360'); } catch (_) {}
+      }
+      updateDesktopSideLayout();
+    });
+
     handle.addEventListener('pointerdown', (e) => {
       if (typeof window === 'undefined' || window.innerWidth < 768) return;
       e.preventDefault();
