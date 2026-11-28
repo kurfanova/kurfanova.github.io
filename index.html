@@ -145,7 +145,7 @@
     }
   </style>
   <link rel="stylesheet" href="./tailwind.min.css?v=20261120_v17">
-  <link rel="stylesheet" href="./style.min.css?v=34705a23">
+  <link rel="stylesheet" href="./style.min.css?v=cf0b624b">
   <script>
     (function() {
       var markReady = function() { document.documentElement.classList.add('icons-ready'); };
@@ -281,10 +281,26 @@
           <span data-i18n="nav.profile_settings">Profilim & Ayarlar</span>
         </button>
       </div>
+
+      <!-- Compact Icon-Rail Tools (Visible only when left sidebar is collapsed to 72px) -->
+      <div class="kurfa-collapsed-rail-extras hidden flex-col items-center gap-1.5 mt-3 pt-3 border-t border-white/10">
+        <button type="button" class="kurfa-collapsed-icon-btn" onclick="toggleQueueDrawer()" title="Çalma Sırası" aria-label="Çalma Sırası">
+          <span class="material-symbols-outlined text-[19px]" aria-hidden="true">queue_music</span>
+        </button>
+        <button type="button" class="kurfa-collapsed-icon-btn" onclick="toggleLyricsDrawer()" title="Canlı Sözler" aria-label="Canlı Sözler">
+          <span class="material-symbols-outlined text-[19px]" aria-hidden="true">subtitles</span>
+        </button>
+        <button type="button" class="kurfa-collapsed-icon-btn" onclick="toggleDarkMode()" title="Tema Değiştir" aria-label="Tema Değiştir">
+          <span class="material-symbols-outlined text-[19px]" aria-hidden="true">contrast</span>
+        </button>
+      </div>
     </div>
 
-    <!-- Reklamsız Uygulamalar & Eklenti Kurulumu -->
-    <div class="px-3 pb-4 pt-2 relative z-10">
+    <!-- Reklamsız Uygulamalar & Eklenti Kurulumu + Mini Collapsed Art -->
+    <div class="px-3 pb-4 pt-2 relative z-10 flex flex-col items-center gap-2.5">
+      <button type="button" id="sidebar-collapsed-art-btn" class="kurfa-collapsed-art-btn hidden" onclick="switchTab('calma-listeleri')" title="Çalan Parçaya Git">
+        <img id="sidebar-collapsed-art-img" src="./kurfamuzik_logo_96.webp" alt="Çalan kapak" width="42" height="42" class="w-full h-full object-cover" onerror="this.onerror=null; this.src='./kurfamuzik_logo.png';">
+      </button>
       <button type="button" id="btn-sidebar-install-apk" class="kurfa-sidebar-spotlight w-full p-3 rounded-2xl flex items-center justify-between gap-2 cursor-pointer transition-all group text-left" onclick="openAppInstallModal()" title="Kurfamüzik Reklamsız Uygulama & Eklenti Kur" data-i18n-title="nav.install_title">
         <div class="flex items-center gap-2.5 min-w-0 flex-1">
           <div class="kurfa-install-icon w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0 transition-transform group-hover:scale-105">
@@ -3236,26 +3252,26 @@
   </div>
 
   <!-- Lyrics Share Card PNG Modal -->
-  <div id="lyrics-share-modal" role="dialog" aria-modal="true" class="fixed inset-0 bg-black/65 backdrop-blur-md z-50 flex items-center justify-center p-4 opacity-0 pointer-events-none transition-opacity duration-200">
-    <div id="lyrics-share-modal-card" class="bg-surface-container-lowest rounded-3xl p-4 sm:p-5 max-w-md w-full shadow-2xl flex flex-col gap-3 border border-surface-container/60 transform scale-95 transition-transform duration-200 max-h-[90vh] overflow-y-auto">
+  <div id="lyrics-share-modal" role="dialog" aria-modal="true" class="fixed inset-0 bg-black/75 backdrop-blur-md z-50 flex items-center justify-center p-4 opacity-0 pointer-events-none transition-opacity duration-200" onclick="if (event.target === this) closeLyricsShareModal();">
+    <div id="lyrics-share-modal-card" class="kurfa-share-modal-card bg-surface-container-lowest rounded-3xl p-4 sm:p-5 max-w-[420px] w-full shadow-2xl flex flex-col gap-3.5 border border-white/10 transform scale-95 transition-transform duration-200 max-h-[92vh] overflow-y-auto">
       <div class="flex items-center justify-between">
         <div class="flex items-center gap-2">
-          <span class="material-symbols-outlined text-[20px] text-primary">ios_share</span>
-          <h3 class="text-sm sm:text-base font-extrabold text-on-surface" data-i18n="lyrics.share_modal_title">Söz Paylaşım Kartı</h3>
+          <span class="material-symbols-outlined text-[19px] text-primary">ios_share</span>
+          <h3 class="text-sm sm:text-[15px] font-extrabold tracking-tight text-on-surface" data-i18n="lyrics.share_modal_title">Söz Paylaşım Kartı</h3>
         </div>
-        <button type="button" aria-label="Kapat" class="w-8 h-8 rounded-full flex items-center justify-center hover:bg-surface-container text-on-surface-variant" onclick="closeLyricsShareModal()">
-          <span class="material-symbols-outlined text-[19px]">close</span>
+        <button type="button" aria-label="Kapat" class="w-8 h-8 rounded-full flex items-center justify-center hover:bg-surface-container text-on-surface-variant transition-colors" onclick="closeLyricsShareModal()">
+          <span class="material-symbols-outlined text-[18px]">close</span>
         </button>
       </div>
-      <div class="flex items-center justify-center bg-surface-container-low/60 rounded-2xl p-2">
-        <canvas id="lyrics-share-canvas" width="1080" height="1350" class="max-h-[50vh] w-auto rounded-xl shadow-lg aspect-[4/5]"></canvas>
+      <div class="kurfa-share-canvas-stage flex items-center justify-center rounded-2xl p-2.5 overflow-hidden">
+        <canvas id="lyrics-share-canvas" width="1080" height="1350" style="width:100%; max-width:340px; max-height:50vh; height:auto; aspect-ratio:4/5; display:block;" class="rounded-xl shadow-2xl"></canvas>
       </div>
-      <div class="grid grid-cols-3 gap-1.5 text-[11px] font-bold">
-        <button type="button" onclick="setLyricsShareTheme('mesh')" class="h-8 rounded-xl bg-surface-container-low hover:bg-surface-container text-on-surface" data-i18n="lyrics.theme_mesh">Kapak Mesh</button>
-        <button type="button" onclick="setLyricsShareTheme('dark')" class="h-8 rounded-xl bg-surface-container-low hover:bg-surface-container text-on-surface" data-i18n="lyrics.theme_dark">Koyu Cam</button>
-        <button type="button" onclick="setLyricsShareTheme('light')" class="h-8 rounded-xl bg-surface-container-low hover:bg-surface-container text-on-surface" data-i18n="lyrics.theme_light">Açık Minimal</button>
+      <div class="grid grid-cols-3 gap-2 text-[11px] font-bold" id="lyrics-share-theme-pills">
+        <button type="button" data-share-theme="mesh" onclick="setLyricsShareTheme('mesh')" class="kurfa-share-theme-btn is-active h-8 rounded-xl transition-all" data-i18n="lyrics.theme_mesh">Kapak Mesh</button>
+        <button type="button" data-share-theme="dark" onclick="setLyricsShareTheme('dark')" class="kurfa-share-theme-btn h-8 rounded-xl transition-all" data-i18n="lyrics.theme_dark">Koyu Cam</button>
+        <button type="button" data-share-theme="light" onclick="setLyricsShareTheme('light')" class="kurfa-share-theme-btn h-8 rounded-xl transition-all" data-i18n="lyrics.theme_light">Açık Minimal</button>
       </div>
-      <div class="grid grid-cols-2 gap-2">
+      <div class="grid grid-cols-2 gap-2.5">
         <button type="button" onclick="downloadLyricsShareCard()" class="h-10 rounded-xl bg-primary text-on-primary text-xs font-bold flex items-center justify-center gap-1.5 shadow-md hover:bg-primary-container active:scale-95 transition-all">
           <span class="material-symbols-outlined text-[17px]">download</span>
           <span data-i18n="lyrics.download_png">PNG İndir</span>
@@ -3347,6 +3363,6 @@
   </div>
 
   <!-- Scripts (Deferred & minified; YouTube IFrame API loads lazily on demand) -->
-  <script defer fetchpriority="high" src="./app.min.js?v=534a316c"></script>
+  <script defer fetchpriority="high" src="./app.min.js?v=d3529231"></script>
 </body>
 </html>

@@ -8903,6 +8903,8 @@ window.closeLyricsShareModal = closeLyricsShareModal;
 
 function setLyricsShareTheme(theme) {
   _lyricsShareTheme = theme || 'mesh';
+  const btns = document.querySelectorAll('.kurfa-share-theme-btn[data-share-theme]');
+  btns.forEach((b) => b.classList.toggle('is-active', b.getAttribute('data-share-theme') === _lyricsShareTheme));
   renderLyricsShareCanvas();
 }
 window.setLyricsShareTheme = setLyricsShareTheme;
@@ -8942,119 +8944,155 @@ async function renderLyricsShareCanvas() {
   const H = 1350;
   canvas.width = W;
   canvas.height = H;
+  ctx.textAlign = 'left';
+  ctx.textBaseline = 'alphabetic';
 
   const track = state.currentTrack || { title: 'Kurfam\u00fczik', artist: 'Kurfam\u00fczik' };
+  const rootStyle = typeof document !== 'undefined' && document.documentElement ? getComputedStyle(document.documentElement) : null;
+  const rgb1 = (rootStyle ? rootStyle.getPropertyValue('--kurfa-track-rgb').trim() : '') || '244, 63, 94';
+  const rgb2 = (rootStyle ? rootStyle.getPropertyValue('--kurfa-track-rgb-2').trim() : '') || '139, 92, 246';
+  const rgb3 = (rootStyle ? rootStyle.getPropertyValue('--kurfa-track-rgb-3').trim() : '') || '14, 165, 233';
   const palette = (typeof LiquidBackground !== 'undefined' && LiquidBackground.lastPalette)
     ? LiquidBackground.lastPalette
-    : ['#ff2056', '#4f46e5', '#0f172a'];
+    : [`rgb(${rgb1})`, `rgb(${rgb2})`, `rgb(${rgb3})`];
 
   // Background
   if (_lyricsShareTheme === 'light') {
     const grad = ctx.createLinearGradient(0, 0, W, H);
     grad.addColorStop(0, '#f8fafc');
+    grad.addColorStop(0.55, '#eef2ff');
     grad.addColorStop(1, '#e2e8f0');
     ctx.fillStyle = grad;
     ctx.fillRect(0, 0, W, H);
   } else if (_lyricsShareTheme === 'dark') {
     const grad = ctx.createLinearGradient(0, 0, W, H);
-    grad.addColorStop(0, '#0b0f19');
-    grad.addColorStop(1, '#181f33');
+    grad.addColorStop(0, '#0a0d14');
+    grad.addColorStop(0.5, '#131724');
+    grad.addColorStop(1, '#090b10');
     ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, W, H);
+    const rad = ctx.createRadialGradient(220, 240, 20, 220, 240, 620);
+    rad.addColorStop(0, `rgba(${rgb1}, 0.20)`);
+    rad.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = rad;
     ctx.fillRect(0, 0, W, H);
   } else {
     const grad = ctx.createLinearGradient(0, 0, W, H);
-    grad.addColorStop(0, palette[0] || '#7c1d3e');
-    grad.addColorStop(0.55, palette[1] || '#1e1b4b');
+    grad.addColorStop(0, palette[0] || `rgb(${rgb1})`);
+    grad.addColorStop(0.52, palette[1] || `rgb(${rgb2})`);
     grad.addColorStop(1, '#090d16');
     ctx.fillStyle = grad;
     ctx.fillRect(0, 0, W, H);
 
-    // Soft radial glow accents
-    const rad = ctx.createRadialGradient(240, 260, 40, 240, 260, 560);
-    rad.addColorStop(0, 'rgba(255,255,255,0.18)');
+    const rad = ctx.createRadialGradient(240, 260, 40, 240, 260, 620);
+    rad.addColorStop(0, `rgba(${rgb3}, 0.28)`);
     rad.addColorStop(1, 'rgba(255,255,255,0)');
     ctx.fillStyle = rad;
     ctx.fillRect(0, 0, W, H);
   }
 
-  // Frosted Card Frame
-  const cardX = 76;
-  const cardY = 86;
-  const cardW = W - 152;
-  const cardH = H - 172;
-  drawRoundedRectPath(ctx, cardX, cardY, cardW, cardH, 48);
-  ctx.fillStyle = _lyricsShareTheme === 'light' ? 'rgba(255,255,255,0.84)' : 'rgba(12,16,28,0.58)';
+  // Frosted Editorial Card Frame
+  const cardX = 72;
+  const cardY = 82;
+  const cardW = W - 144;
+  const cardH = H - 164;
+  drawRoundedRectPath(ctx, cardX, cardY, cardW, cardH, 46);
+  ctx.fillStyle = _lyricsShareTheme === 'light' ? 'rgba(255,255,255,0.88)' : 'rgba(13,16,26,0.72)';
   ctx.fill();
   ctx.lineWidth = 2;
-  ctx.strokeStyle = _lyricsShareTheme === 'light' ? 'rgba(15,23,42,0.08)' : 'rgba(255,255,255,0.16)';
+  ctx.strokeStyle = _lyricsShareTheme === 'light' ? 'rgba(15,23,42,0.08)' : 'rgba(255,255,255,0.14)';
   ctx.stroke();
 
   const textPrimary = _lyricsShareTheme === 'light' ? '#0f172a' : '#ffffff';
-  const textSecondary = _lyricsShareTheme === 'light' ? '#475569' : 'rgba(226,232,240,0.78)';
+  const textSecondary = _lyricsShareTheme === 'light' ? '#475569' : 'rgba(226,232,240,0.74)';
 
-  // Load album cover safely (with CORS anonymous attempt, fallback to placeholder)
+  // Load album cover cleanly via /api/cover proxy when external
   const loadSafeImage = (src) => new Promise((resolve) => {
     const img = new Image();
     img.crossOrigin = 'anonymous';
-    const timer = setTimeout(() => resolve(null), 1800);
+    const timer = setTimeout(() => resolve(null), 2200);
     img.onload = () => { clearTimeout(timer); resolve(img); };
     img.onerror = () => { clearTimeout(timer); resolve(null); };
     img.src = src;
   });
 
-  const thumbUrl = safeUrl(track.thumbnail || getTrackThumbnail(track), './kurfamuzik_logo.png');
-  let coverImg = await loadSafeImage(thumbUrl);
+  const rawThumb = safeUrl(track.thumbnail || getTrackThumbnail(track), './kurfamuzik_logo.png');
+  let sampleThumb = rawThumb;
+  try {
+    const uObj = new URL(rawThumb, typeof location !== 'undefined' ? location.href : 'https://kurfanova.kurfa.workers.dev');
+    if (/^(http|https):/.test(uObj.protocol) && /(?:ytimg\.com|youtube\.com|googleusercontent\.com|ggpht\.com|scdn\.co|mzstatic\.com|dzcdn\.net)$/i.test(uObj.hostname)) {
+      const apiOrigin = (typeof API_BASE === 'string' && API_BASE.startsWith('http')) ? API_BASE : '';
+      sampleThumb = `${apiOrigin}/api/cover?url=${encodeURIComponent(uObj.href)}`;
+    }
+  } catch (_) {}
+
+  let coverImg = await loadSafeImage(sampleThumb);
+  if (!coverImg && sampleThumb !== rawThumb) coverImg = await loadSafeImage(rawThumb);
   if (!coverImg) coverImg = await loadSafeImage('./kurfamuzik_logo.png');
 
   // Header: Cover + Track Meta
-  const artSize = 148;
+  const artSize = 144;
   const artX = cardX + 64;
-  const artY = cardY + 68;
+  const artY = cardY + 64;
   ctx.save();
   drawRoundedRectPath(ctx, artX, artY, artSize, artSize, 26);
   ctx.clip();
   if (coverImg) {
     ctx.drawImage(coverImg, artX, artY, artSize, artSize);
   } else {
-    ctx.fillStyle = palette[0] || '#ff2056';
+    ctx.fillStyle = `rgb(${rgb1})`;
     ctx.fillRect(artX, artY, artSize, artSize);
   }
   ctx.restore();
 
+  ctx.textAlign = 'left';
   ctx.fillStyle = textPrimary;
   ctx.font = '800 38px "Plus Jakarta Sans", system-ui, sans-serif';
-  const titleLines = wrapCanvasText(ctx, formatCleanTrackTitle(track.title) || 'Kurfam\u00fczik', cardW - 300).slice(0, 2);
+  const titleLines = wrapCanvasText(ctx, formatCleanTrackTitle(track.title) || 'Kurfam\u00fczik', cardW - 304).slice(0, 2);
   titleLines.forEach((ln, idx) => {
-    ctx.fillText(ln, artX + artSize + 32, artY + 54 + idx * 46);
+    ctx.fillText(ln, artX + artSize + 30, artY + 52 + idx * 46);
   });
 
   ctx.fillStyle = textSecondary;
   ctx.font = '600 28px "Plus Jakarta Sans", system-ui, sans-serif';
-  ctx.fillText(String(track.artist || 'Kurfam\u00fczik').slice(0, 38), artX + artSize + 32, artY + 54 + titleLines.length * 46 + 8);
+  ctx.fillText(String(track.artist || 'Kurfam\u00fczik').slice(0, 36), artX + artSize + 30, artY + 52 + titleLines.length * 46 + 8);
 
-  // Selected Lyrics Body
+  // Subtle horizontal hairline divider
+  ctx.fillStyle = _lyricsShareTheme === 'light' ? 'rgba(15,23,42,0.08)' : 'rgba(255,255,255,0.10)';
+  ctx.fillRect(artX, artY + artSize + 34, cardW - 128, 2);
+
+  // Selected Lyrics Body (Dynamic Font Auto-Fit so 1-4 lines NEVER clip vertically or horizontally)
   const selectedTexts = _lyricsShareSelectedIndices
     .map(i => state.activeLyrics[i])
     .filter(l => l && !l.isInterlude && l.text)
     .map(l => l.text);
 
-  ctx.fillStyle = textPrimary;
-  ctx.font = '800 50px "Plus Jakarta Sans", system-ui, sans-serif';
   const bodyMaxW = cardW - 128;
-  const wrappedBlocks = [];
-  selectedTexts.forEach((st) => {
-    wrappedBlocks.push(...wrapCanvasText(ctx, st, bodyMaxW));
-    wrappedBlocks.push('');
-  });
-  if (wrappedBlocks.length > 0 && wrappedBlocks[wrappedBlocks.length - 1] === '') wrappedBlocks.pop();
+  let fontPx = 50;
+  let lineHeight = 68;
+  let wrappedBlocks = [];
+  for (const trySize of [50, 44, 38, 34]) {
+    fontPx = trySize;
+    lineHeight = Math.round(trySize * 1.38);
+    ctx.font = `800 ${fontPx}px "Plus Jakarta Sans", system-ui, sans-serif`;
+    wrappedBlocks = [];
+    selectedTexts.forEach((st) => {
+      wrappedBlocks.push(...wrapCanvasText(ctx, st, bodyMaxW));
+      wrappedBlocks.push('');
+    });
+    if (wrappedBlocks.length > 0 && wrappedBlocks[wrappedBlocks.length - 1] === '') wrappedBlocks.pop();
+    const estH = wrappedBlocks.reduce((acc, r) => acc + (r === '' ? Math.round(fontPx * 0.45) : lineHeight), 0);
+    if (estH <= cardH - 420 || trySize === 34) break;
+  }
 
-  const lineHeight = 68;
-  const totalTextH = wrappedBlocks.length * lineHeight;
-  let curY = Math.max(artY + artSize + 110, cardY + (cardH - totalTextH) / 2 + 24);
+  ctx.fillStyle = textPrimary;
+  ctx.font = `800 ${fontPx}px "Plus Jakarta Sans", system-ui, sans-serif`;
+  const totalTextH = wrappedBlocks.reduce((acc, r) => acc + (r === '' ? Math.round(fontPx * 0.45) : lineHeight), 0);
+  let curY = Math.max(artY + artSize + 108, cardY + (cardH - totalTextH) / 2 + 24);
   for (const row of wrappedBlocks) {
-    if (curY > cardY + cardH - 150) break;
+    if (curY > cardY + cardH - 135) break;
     if (row === '') {
-      curY += 26;
+      curY += Math.round(fontPx * 0.45);
       continue;
     }
     ctx.fillText(row, cardX + 64, curY);
@@ -9062,22 +9100,23 @@ async function renderLyricsShareCanvas() {
   }
 
   // Footer Brand Badge + Logo
-  const footY = cardY + cardH - 76;
+  const footY = cardY + cardH - 72;
   const logoImg = await loadSafeImage('./kurfamuzik_logo.png');
   if (logoImg) {
     ctx.save();
-    drawRoundedRectPath(ctx, cardX + 64, footY - 34, 48, 48, 12);
+    drawRoundedRectPath(ctx, cardX + 64, footY - 34, 46, 46, 12);
     ctx.clip();
-    ctx.drawImage(logoImg, cardX + 64, footY - 34, 48, 48);
+    ctx.drawImage(logoImg, cardX + 64, footY - 34, 46, 46);
     ctx.restore();
   }
   ctx.fillStyle = textPrimary;
   ctx.font = '800 28px "Plus Jakarta Sans", system-ui, sans-serif';
-  ctx.fillText('Kurfam\u00fczik', cardX + 126, footY);
+  ctx.fillText('Kurfam\u00fczik', cardX + 124, footY);
   ctx.fillStyle = textSecondary;
   ctx.font = '600 22px "Plus Jakarta Sans", system-ui, sans-serif';
   ctx.textAlign = 'right';
   ctx.fillText('kurfanova.kurfa.workers.dev', cardX + cardW - 64, footY);
+  ctx.textAlign = 'left';
   ctx.textAlign = 'left';
 }
 
@@ -15040,8 +15079,12 @@ function syncSongThemeAccent(primaryRgb, secondaryRgb, tertiaryRgb, deepRgb) {
 }
 window.syncSongThemeAccent = syncSongThemeAccent;
 
-function syncAmbientCoverArt() {
-  // Contained sidebar and bar cove-LED layers track --kurfa-track-rgb..4 and live audio intelligence
+function syncAmbientCoverArt(url) {
+  // Contained sidebar and bar cove-LED layers track --kurfa-track-rgb..5 and live audio intelligence
+  const sbArt = typeof document !== 'undefined' ? document.getElementById('sidebar-collapsed-art-img') : null;
+  if (sbArt) {
+    sbArt.src = url ? safeUrl(url, './kurfamuzik_logo_96.webp') : './kurfamuzik_logo_96.webp';
+  }
 }
 window.syncAmbientCoverArt = syncAmbientCoverArt;
 
@@ -15156,6 +15199,11 @@ const FxReactiveStudio = {
       } else {
         sub.textContent = t('fx.subtitle_pro');
       }
+    }
+    const sbArt = document.getElementById('sidebar-collapsed-art-img');
+    if (sbArt) {
+      const nextSrc = track ? safeUrl(track.thumbnail || getTrackThumbnail(track), './kurfamuzik_logo_96.webp') : './kurfamuzik_logo_96.webp';
+      if (sbArt.getAttribute('src') !== nextSrc) sbArt.src = nextSrc;
     }
     this.drawIdleShape();
   },
