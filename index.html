@@ -145,7 +145,7 @@
     }
   </style>
   <link rel="stylesheet" href="./tailwind.min.css?v=20261120_v17">
-  <link rel="stylesheet" href="./style.min.css?v=168eda83">
+  <link rel="stylesheet" href="./style.min.css?v=ebae229e">
   <script>
     (function() {
       var markReady = function() { document.documentElement.classList.add('icons-ready'); };
@@ -3376,17 +3376,23 @@
 
   <!-- Interactive Platform-Aware Onboarding Tour (Desktop & Mobile/APK) -->
   <div id="kurfa-tour-overlay" class="kurfa-tour-overlay" role="dialog" aria-modal="true" aria-labelledby="kurfa-tour-title" hidden>
-    <div id="kurfa-tour-backdrop" class="kurfa-tour-backdrop"></div>
+    <div id="kurfa-tour-mask-t" class="kurfa-tour-mask" aria-hidden="true"></div>
+    <div id="kurfa-tour-mask-b" class="kurfa-tour-mask" aria-hidden="true"></div>
+    <div id="kurfa-tour-mask-l" class="kurfa-tour-mask" aria-hidden="true"></div>
+    <div id="kurfa-tour-mask-r" class="kurfa-tour-mask" aria-hidden="true"></div>
     <div id="kurfa-tour-spotlight" class="kurfa-tour-spotlight" aria-hidden="true"></div>
     <article id="kurfa-tour-card" class="kurfa-tour-card">
+      <div class="kurfa-tour-progress-track" aria-hidden="true">
+        <div id="kurfa-tour-progress-fill" class="kurfa-tour-progress-fill"></div>
+      </div>
       <header class="kurfa-tour-head">
         <div class="kurfa-tour-meta">
           <span class="kurfa-tour-platform-dot" aria-hidden="true"></span>
           <span id="kurfa-tour-platform-label" class="kurfa-tour-platform-label">MASAÜSTÜ REHBERİ</span>
-          <span id="kurfa-tour-step-badge" class="kurfa-tour-step-badge">1 / 6</span>
+          <span id="kurfa-tour-step-badge" class="kurfa-tour-step-badge">1 / 10</span>
         </div>
         <button type="button" id="kurfa-tour-close" class="kurfa-tour-close" onclick="KurfaTour.skip()" aria-label="Turu Kapat" data-i18n-aria="tour.skip">
-          <span class="material-symbols-outlined text-[17px]" aria-hidden="true">close</span>
+          <span class="material-symbols-outlined text-[16px]" aria-hidden="true">close</span>
         </button>
       </header>
 
@@ -3408,6 +3414,6 @@
   </div>
 
   <!-- Scripts (Deferred & minified; YouTube IFrame API loads lazily on demand) -->
-  <script defer fetchpriority="high" src="./app.min.js?v=e397271e"></script>
+  <script defer fetchpriority="high" src="./app.min.js?v=aa1ba75d"></script>
 </body>
 </html>

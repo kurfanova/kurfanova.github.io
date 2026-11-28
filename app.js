@@ -2055,6 +2055,8 @@ const KurfaTour = {
   _repositionTimer: null,
   _boundResize: null,
   _boundKey: null,
+  _activeClickCleanup: null,
+  _masksBound: false,
 
   isDone() {
     try {
@@ -2101,10 +2103,15 @@ const KurfaTour = {
           fallback: '#mobile-top-header',
           radius: 9999,
           pad: 6,
-          title: isEn ? 'Instant Search' : 'Hızlı Arama',
+          beforeEnter: () => {
+            if (typeof closeProfileModal === 'function') closeProfileModal();
+            if (typeof toggleQueueDrawer === 'function') toggleQueueDrawer(false);
+            if (typeof switchTab === 'function') switchTab('kesfet', false);
+          },
+          title: isEn ? 'Discover & Quick Search' : 'Keşfet & Hızlı Arama',
           desc: isEn
-            ? 'Search tracks, artists, albums or paste a YouTube link to play or download right away.'
-            : 'Şarkı, sanatçı, albüm arayın veya YouTube bağlantısı yapıştırıp hemen çalın.',
+            ? 'Search songs, artists, albums or paste a YouTube link right from the top bar.'
+            : 'Üst arama çubuğundan şarkı, sanatçı arayın veya YouTube bağlantısı yapıştırıp indirin.',
           kbd: ''
         },
         {
@@ -2112,44 +2119,125 @@ const KurfaTour = {
           fallback: '#tab-kesfet',
           radius: 22,
           pad: 6,
-          ensureTab: 'kesfet',
-          title: isEn ? 'Trending Showcase & Save' : 'Günün Trendleri & İndirme',
+          beforeEnter: () => {
+            if (typeof switchTab === 'function') switchTab('kesfet', false);
+          },
+          title: isEn ? 'Live Trends & Offline Save' : 'Trend Vitrini & İndirme',
           desc: isEn
-            ? 'Start trending tracks in one tap, add to your queue, or save offline audio to your device.'
-            : 'Öne çıkan parçaları tek dokunuşla başlatın, sıraya ekleyin veya cihazınıza kaydedin.',
+            ? 'Play trending tracks in one tap, add to your queue, or save offline audio to your phone.'
+            : 'Günün öne çıkanlarını tek dokunuşla başlatın, sıraya ekleyin veya cihazınıza indirin.',
           kbd: ''
         },
         {
-          selector: '#mobile-bottom-nav',
-          radius: 24,
-          pad: 6,
-          title: isEn ? 'Five-Tab Dock Navigation' : '5 Sekmeli Alt Menü',
+          selector: '#mobile-bottom-nav button[data-tab="kutuphanem"]',
+          fallback: '#mobile-bottom-nav',
+          radius: 16,
+          pad: 5,
+          clickAdvance: true,
+          beforeEnter: () => {
+            if (typeof switchTab === 'function') switchTab('kesfet', false);
+          },
+          title: isEn ? 'Tap to Open Library' : 'Kütüphane Sekmesine Tıkla',
           desc: isEn
-            ? 'Switch smoothly between Discover, Library, Search, Live Lyrics & Settings from anywhere.'
-            : 'Keşfet, Kütüphane, Arama, Sözler ve Ayarlar arasında tek dokunuşla gezinin.',
+            ? 'Tap Library below to see your Favorites, Playlists, Downloads and Local Music archive.'
+            : 'Favorilerinize, özel listelerinize, indirilenlere ve cihaz müziklerinize bakmak için Kütüphane sekmesine dokunun.',
+          kbd: isEn ? 'Tap highlighted icon' : 'Vurgulanan sekmeye dokun'
+        },
+        {
+          selector: '#tab-kutuphanem #kutuphane-subtabs',
+          fallback: '#tab-kutuphanem',
+          radius: 18,
+          pad: 6,
+          beforeEnter: () => {
+            if (typeof switchTab === 'function') switchTab('kutuphanem', false);
+          },
+          title: isEn ? 'Library & Device Audio' : 'Arşiv & Cihazdaki Şarkılar',
+          desc: isEn
+            ? 'Favorites, custom playlists, offline downloads, listening stats and device files live here.'
+            : 'Favoriler, listeler, indirdiğiniz şarkılar, dinleme istatistikleri ve cihaz sesleri burada toplanır.',
           kbd: ''
+        },
+        {
+          selector: '#mobile-bottom-nav button[data-tab="arama"]',
+          fallback: '#mobile-bottom-nav',
+          radius: 16,
+          pad: 5,
+          clickAdvance: true,
+          title: isEn ? 'Tap Search Hub' : 'Arama Sayfasına Geç',
+          desc: isEn
+            ? 'Tap Search below to explore mood filters, artists, albums and instant YouTube links.'
+            : 'Kategorilere ve gelişmiş sonuç filtrelerine göz atmak için Arama sekmesine dokunun.',
+          kbd: isEn ? 'Tap highlighted icon' : 'Vurgulanan sekmeye dokun'
         },
         {
           selector: '#mobile-bottom-nav button[data-tab="calma-listeleri"]',
           fallback: '#mobile-bottom-nav',
-          radius: 18,
-          pad: 6,
-          title: isEn ? 'Live Lyrics, Clip & 5-Band EQ' : 'Canlı Sözler & 5 Bant Ekolayzır',
+          radius: 16,
+          pad: 5,
+          clickAdvance: true,
+          beforeEnter: () => {
+            if (typeof switchTab === 'function') switchTab('arama', false);
+          },
+          title: isEn ? 'Tap Live Lyrics & Studio' : 'Sözler Sekmesine Tıkla',
           desc: isEn
-            ? 'Follow word-synced lyrics, adjust sync timing, watch music clips or shape sound with EQ.'
-            : 'Kelime kelime canlı söz takibi, zaman ayarı, video modu ve stüdyo ekolayzır burada.',
+            ? 'Tap Lyrics below to open word-by-word lyrics, YouTube clip mode and 5-band Equalizer.'
+            : 'Şimdi Sözler sekmesine dokunun — kelime kelime canlı sözler, klip modu ve 5 bant ekolayzırı görün.',
+          kbd: isEn ? 'Tap highlighted icon' : 'Sözler sekmesine dokun'
+        },
+        {
+          selector: '#tab-calma-listeleri #karaoke-lyrics-box',
+          fallback: '#tab-calma-listeleri',
+          radius: 20,
+          pad: 6,
+          beforeEnter: () => {
+            if (typeof switchTab === 'function') switchTab('calma-listeleri', false);
+            if (typeof switchNowPlayingMobilePane === 'function') switchNowPlayingMobilePane('stage');
+          },
+          title: isEn ? 'Synced Lyrics, Share & EQ' : 'Canlı Sözler, Kart & Ekolayzır',
+          desc: isEn
+            ? 'Follow live lyrics, tune timing (0.0s), switch to Video or Equalizer tabs above.'
+            : 'Canlı sözleri takip edin, zamanlamayı eşitleyin, üstteki Sıra ve Ekolayzır bölmelerine geçin.',
           kbd: ''
         },
         {
           selector: '#mobile-nav-settings-btn',
           fallback: '#mobile-bottom-nav',
-          radius: 18,
-          pad: 6,
-          title: isEn ? 'Settings & Replay Tour' : 'Ayarlar & Turu Tekrarla',
+          radius: 16,
+          pad: 5,
+          clickAdvance: true,
+          title: isEn ? 'Tap Settings' : 'Ayarlar Menüsünü Aç',
           desc: isEn
-            ? 'Customize theme, language, data backups, or restart this guided tour anytime from Settings.'
-            : 'Tema, dil, veri yedekleme ve bu tanıtım turunu dilediğiniz an Ayarlar içinden açabilirsiniz.',
+            ? 'Tap Settings below to customize theme, backups and see how to update your app.'
+            : 'Tema, veri yedekleme ve güncelleme seçeneklerini görmek için Ayarlar simgesine dokunun.',
+          kbd: isEn ? 'Tap Settings icon' : 'Ayarlar simgesine dokun'
+        },
+        {
+          selector: '#settings-tour-row',
+          fallback: '#settings-pane-general',
+          radius: 14,
+          pad: 6,
+          beforeEnter: () => {
+            if (typeof openProfileModal === 'function') openProfileModal('general');
+          },
+          title: isEn ? 'Appearance & Tour Replay' : 'Görünüm, Tema & Tur Tekrarı',
+          desc: isEn
+            ? 'Switch obsidian dark or light mode, adjust language, or replay this tour anytime here.'
+            : 'Karanlık/Açık cam tema, dil ve bu tanıtım turunu dilediğiniz zaman yeniden başlatma butonu burada.',
           kbd: ''
+        },
+        {
+          selector: '.kurfa-settings-app-hero',
+          fallback: '#settings-pane-app',
+          radius: 16,
+          pad: 6,
+          beforeEnter: () => {
+            if (typeof openProfileModal === 'function') openProfileModal('app');
+          },
+          title: isEn ? 'App Versions & Updates' : 'Uygulama & Nasıl Güncellenir?',
+          desc: isEn
+            ? 'Check installed version, tap Check Update for new APK/Desktop builds, or install ad-free apps.'
+            : 'Yüklü sürümü görün, Güncelleme Denetle ile yeni sürümleri kurun veya reklamsız APK/EXE indirin.',
+          kbd: isEn ? 'App & Updates' : 'Sürüm & Güncelleme'
         }
       ];
     }
@@ -2160,22 +2248,63 @@ const KurfaTour = {
         fallback: '#top-search-input',
         radius: 9999,
         pad: 6,
-        ensureTab: 'kesfet',
-        title: isEn ? 'Quick Search & Trends' : 'Akıllı Arama & Keşfet',
+        side: 'bottom',
+        beforeEnter: () => {
+          if (typeof closeProfileModal === 'function') closeProfileModal();
+          if (typeof toggleLyricsDrawer === 'function') toggleLyricsDrawer(false);
+          if (typeof toggleQueueDrawer === 'function') toggleQueueDrawer(false);
+          if (typeof switchTab === 'function') switchTab('kesfet', false);
+        },
+        title: isEn ? 'Discover & Instant Search' : 'Keşfet & Akıllı Arama',
         desc: isEn
-          ? 'Search songs, albums, artists or paste any YouTube link to play or download directly.'
-          : 'Şarkı, albüm, sanatçı arayın veya doğrudan YouTube linki yapıştırıp anında çalın.',
+          ? 'Search songs, albums, artists or paste any YouTube link directly to stream or download.'
+          : 'Şarkı, albüm, sanatçı arayın veya doğrudan YouTube linki yapıştırıp anında çalın ve indirin.',
         kbd: 'Ctrl + K'
       },
       {
-        selector: '#desktop-sidebar',
-        radius: 18,
-        pad: 4,
+        selector: '#desktop-sidebar button[data-tab="kutuphanem"]',
+        fallback: '#desktop-sidebar',
+        radius: 14,
+        pad: 6,
         side: 'right',
-        title: isEn ? 'Resizable Smart Sidebar' : 'Esnek Sol Menü',
+        clickAdvance: true,
+        beforeEnter: () => {
+          if (typeof switchTab === 'function') switchTab('kesfet', false);
+        },
+        title: isEn ? 'Sidebar & Open Library' : 'Sol Menü — Kütüphane’ye Tıkla',
         desc: isEn
-          ? 'Collapse into a compact icon rail from the header button, hover the logo to expand, or drag its edge.'
-          : 'Üstteki butonla daraltın, dar modda logonun üzerine gelerek büyütün veya sağ kenardan sürükleyin.',
+          ? 'Resize or collapse the sidebar anytime. Click Library now to inspect your archive and playlists.'
+          : 'Sol menüyü küçültüp kenarından boyutlandırabilirsiniz. Arşivi görmek için Kütüphane sekmesine tıklayın.',
+        kbd: isEn ? 'Click Library' : 'Kütüphane sekmesine tıkla'
+      },
+      {
+        selector: '#tab-kutuphanem #kutuphane-subtabs',
+        fallback: '#tab-kutuphanem',
+        radius: 16,
+        pad: 8,
+        side: 'bottom',
+        beforeEnter: () => {
+          if (typeof switchTab === 'function') switchTab('kutuphanem', false);
+        },
+        title: isEn ? 'Favorites, Playlists & Local Files' : 'Kütüphane, İndirilenler & İstatistik',
+        desc: isEn
+          ? 'Manage favorites, playlists, downloaded M4A tracks, local device folders and listening stats.'
+          : 'Favoriler, özel çalma listeleri, indirilen sesler, cihazdaki müzikler ve dinleme istatistikleri burada.',
+        kbd: ''
+      },
+      {
+        selector: '#arama-page-search-input',
+        fallback: '#tab-arama',
+        radius: 9999,
+        pad: 6,
+        side: 'bottom',
+        beforeEnter: () => {
+          if (typeof switchTab === 'function') switchTab('arama', false);
+        },
+        title: isEn ? 'Search Hub & Genre Discovery' : 'Arama Merkezi & Keşif Kategorileri',
+        desc: isEn
+          ? 'Browse all song, album, artist and video matches or jump cleanly into mood presets below.'
+          : 'Şarkı, albüm, sanatçı ve video sonuçlarını filtreleyin; alt kısımdaki tür/ruh hali kartlarına göz atın.',
         kbd: ''
       },
       {
@@ -2184,22 +2313,47 @@ const KurfaTour = {
         radius: 14,
         pad: 8,
         side: 'top',
-        title: isEn ? 'Dockable Live Lyrics Panel' : 'Yan Panel: Canlı Şarkı Sözleri',
+        clickAdvance: true,
+        beforeEnter: () => {
+          if (typeof switchTab === 'function') switchTab('kesfet', false);
+          if (typeof toggleLyricsDrawer === 'function') toggleLyricsDrawer(false);
+          if (typeof toggleQueueDrawer === 'function') toggleQueueDrawer(false);
+        },
+        title: isEn ? 'Click to Open Live Lyrics' : 'Sözlere Tıkla ve Canlı Paneli Aç',
         desc: isEn
-          ? 'Open synced lyrics without leaving your page, tweak timing offset, or share custom lyric cards.'
-          : 'Bulunduğunuz sayfadan ayrılmadan sözleri açın, zamanlamayı eşitleyin veya söz kartı paylaşın.',
-        kbd: 'Sözler Paneli'
+          ? 'Click the highlighted Lyrics button below to open the synced lyrics side panel right over your screen.'
+          : 'Bulunduğunuz sayfadan çıkmadan canlı senkron söz panelinin nasıl açıldığını görmek için bu ikona tıklayın.',
+        kbd: isEn ? 'Click Lyrics icon' : 'Sözler butonuna tıkla'
       },
       {
-        selector: '#btn-desktop-queue-panel',
-        fallback: '#desktop-player-bar',
-        radius: 14,
-        pad: 8,
-        side: 'top',
-        title: isEn ? 'Queue & Auto Recommendations' : 'Çalma Sırası & Öneriler',
+        selector: '#desktop-lyrics-drawer',
+        fallback: '#btn-desktop-lyrics-panel',
+        radius: 22,
+        pad: 4,
+        side: 'left',
+        beforeEnter: () => {
+          if (typeof toggleLyricsDrawer === 'function') toggleLyricsDrawer(true);
+        },
+        title: isEn ? 'Live Sync, Cards & Edge Resize' : 'Söz Senkronu, Kart Paylaşımı & Boyutlandırma',
         desc: isEn
-          ? 'Drag side panels to resize, reorder upcoming tracks cleanly, and add smart recommendations in one click.'
-          : 'Kenarından sürükleyerek boyutlandırın, sıradakileri düzenleyin ve önerilen parçaları tek tıkla ekleyin.',
+          ? 'Fine-tune timing (0.0s), pick 1–4 lines to export a Share Card PNG, or drag its left edge.'
+          : 'Üstteki ayardan senkronu eşitleyin (0.0s), paylaş ikonuyla kart oluşturun veya sol kenardan boyutlandırın.',
+        kbd: ''
+      },
+      {
+        selector: '#queue-drawer',
+        fallback: '#btn-desktop-queue-panel',
+        radius: 22,
+        pad: 4,
+        side: 'left',
+        beforeEnter: () => {
+          if (typeof toggleLyricsDrawer === 'function') toggleLyricsDrawer(false);
+          if (typeof toggleQueueDrawer === 'function') toggleQueueDrawer(true);
+        },
+        title: isEn ? 'Smart Queue & Recommendations' : 'Çalma Sırası & Otomatik Öneriler',
+        desc: isEn
+          ? 'Reorder upcoming songs cleanly, trigger sleep timer or add tailored recommendations in one click.'
+          : 'Sıradaki parçaları sürükleyip düzenleyin, uyku zamanlayıcısı kurun ve alttaki önerilerden parça ekleyin.',
         kbd: ''
       },
       {
@@ -2207,10 +2361,14 @@ const KurfaTour = {
         radius: 16,
         pad: 4,
         side: 'top',
-        title: isEn ? 'Adaptive Ambient Player' : 'Ritimle Uyumlu Oynatıcı',
+        beforeEnter: () => {
+          if (typeof toggleQueueDrawer === 'function') toggleQueueDrawer(false);
+          if (typeof toggleLyricsDrawer === 'function') toggleLyricsDrawer(false);
+        },
+        title: isEn ? 'Adaptive Ambient Player Bar' : 'Ritimle Uyumlu Oynatıcı & Kıyı Işığı',
         desc: isEn
-          ? 'Edge illumination breathes with your track colors and rhythm. Click the cover to enter Full Studio.'
-          : 'Çalan parçanın renklerine ve ses ritmine göre nefes alan oynatıcıdan ses, indirme ve sahneyi yönetin.',
+          ? 'Cover art drives live edge illumination. Click the cover thumbnail anytime to open Full Studio & EQ.'
+          : 'Kapak renklerine ve sese göre akışkan parlayan oynatıcıdan ses, indirme ve Tam Sahne moduna geçin.',
         kbd: ''
       },
       {
@@ -2219,11 +2377,42 @@ const KurfaTour = {
         radius: 9999,
         pad: 6,
         side: 'bottom',
-        title: isEn ? 'Settings, EQ & Tour Replay' : 'Ayarlar, Ekolayzır & Tur Tekrarı',
+        clickAdvance: true,
+        title: isEn ? 'Click to Open Settings' : 'Ayarlar Menüsünü Tıkla ve Aç',
         desc: isEn
-          ? 'Switch themes, tune 5-band audio FX, back up your library, or restart this tour anytime.'
-          : 'Tema, 5 bant ekolayzır, veri yedekleme ve bu tanıtım turunu dilediğiniz an buradan yeniden başlatın.',
+          ? 'Click your profile pill above to explore theme options, 5-band Equalizer and App Updates.'
+          : 'Tema, 5 bant ekolayzır, veri yedekleme ve güncelleme ekranını görmek için Ayarlar butonuna tıklayın.',
+        kbd: isEn ? 'Click Settings button' : 'Sağ üstteki Ayarlara tıkla'
+      },
+      {
+        selector: '#settings-tour-row',
+        fallback: '#settings-pane-general',
+        radius: 14,
+        pad: 6,
+        side: 'top',
+        beforeEnter: () => {
+          if (typeof openProfileModal === 'function') openProfileModal('general');
+        },
+        title: isEn ? 'Theme, Preferences & Replay Tour' : 'Ayarlar & Tanıtım Turu Tekrarı',
+        desc: isEn
+          ? 'Switch dark/light glass themes, customize audio settings, or replay this tour anytime from here.'
+          : 'Karanlık/Açık cam temayı seçin, Oynatma sekmesinden EQ ayarlayın ve turu buradan istediğiniz an tekrar açın.',
         kbd: ''
+      },
+      {
+        selector: '.kurfa-settings-app-hero',
+        fallback: '#settings-pane-app',
+        radius: 16,
+        pad: 6,
+        side: 'top',
+        beforeEnter: () => {
+          if (typeof openProfileModal === 'function') openProfileModal('app');
+        },
+        title: isEn ? 'Updates & Ad-Free Apps' : 'Nasıl Güncellenir? & Uygulamalar',
+        desc: isEn
+          ? 'View your installed version, click Check Update for one-click Desktop/APK updates, or get the apps.'
+          : 'Yüklü sürümünüzü kontrol edin, Güncelleme Denetle ile tek tıkla güncelleyin veya EXE / APK indirin.',
+        kbd: isEn ? 'App & Updates Tab' : 'Uygulama & İndirmeler Sekmesi'
       }
     ];
   },
@@ -2250,10 +2439,6 @@ const KurfaTour = {
     this.active = true;
     this.index = 0;
 
-    if (typeof switchTab === 'function' && state.currentTab !== 'kesfet') {
-      switchTab('kesfet', false);
-    }
-
     const platEl = document.getElementById('kurfa-tour-platform-label');
     if (platEl) {
       if (this.mode === 'mobile') {
@@ -2267,6 +2452,14 @@ const KurfaTour = {
 
     overlay.hidden = false;
     requestAnimationFrame(() => overlay.classList.add('is-active'));
+
+    if (!this._masksBound) {
+      this._masksBound = true;
+      ['kurfa-tour-mask-t', 'kurfa-tour-mask-b', 'kurfa-tour-mask-l', 'kurfa-tour-mask-r'].forEach((mid) => {
+        const mEl = document.getElementById(mid);
+        if (mEl) mEl.addEventListener('click', () => this.skip());
+      });
+    }
 
     if (!this._boundResize) {
       this._boundResize = () => {
@@ -2302,14 +2495,15 @@ const KurfaTour = {
       window.addEventListener('keydown', this._boundKey);
     }
 
-    const backdrop = document.getElementById('kurfa-tour-backdrop');
-    if (backdrop && !backdrop._tourBound) {
-      backdrop._tourBound = true;
-      backdrop.addEventListener('click', () => this.skip());
-    }
-
     this.showStep(0);
     return true;
+  },
+
+  _clearStepClickListener() {
+    if (typeof this._activeClickCleanup === 'function') {
+      try { this._activeClickCleanup(); } catch (_) {}
+      this._activeClickCleanup = null;
+    }
   },
 
   _resolveTarget(step) {
@@ -2330,33 +2524,44 @@ const KurfaTour = {
 
   showStep(idx) {
     if (!this.active || !this.steps.length) return;
+    this._clearStepClickListener();
     const safeIdx = Math.max(0, Math.min(this.steps.length - 1, idx));
     this.index = safeIdx;
     const step = this.steps[safeIdx];
 
-    if (step.ensureTab && typeof switchTab === 'function' && state.currentTab !== step.ensureTab) {
-      switchTab(step.ensureTab, false);
+    if (typeof step.beforeEnter === 'function') {
+      try { step.beforeEnter(); } catch (_) {}
     }
 
     const titleEl = document.getElementById('kurfa-tour-title');
     const descEl = document.getElementById('kurfa-tour-desc');
     const badgeEl = document.getElementById('kurfa-tour-step-badge');
+    const progFill = document.getElementById('kurfa-tour-progress-fill');
     const kbdEl = document.getElementById('kurfa-tour-kbd');
     const prevBtn = document.getElementById('kurfa-tour-prev-btn');
     const nextBtn = document.getElementById('kurfa-tour-next-btn');
     const dotsEl = document.getElementById('kurfa-tour-dots');
+    const spotlight = document.getElementById('kurfa-tour-spotlight');
 
     if (titleEl) titleEl.textContent = step.title || '';
     if (descEl) descEl.textContent = step.desc || '';
     if (badgeEl) badgeEl.textContent = `${safeIdx + 1} / ${this.steps.length}`;
+    if (progFill) {
+      progFill.style.width = `${Math.round(((safeIdx + 1) / this.steps.length) * 100)}%`;
+    }
     if (kbdEl) {
       if (step.kbd) {
         kbdEl.textContent = step.kbd;
         kbdEl.classList.remove('hidden');
+        kbdEl.classList.toggle('is-interactive', Boolean(step.clickAdvance));
       } else {
         kbdEl.textContent = '';
         kbdEl.classList.add('hidden');
+        kbdEl.classList.remove('is-interactive');
       }
+    }
+    if (spotlight) {
+      spotlight.classList.toggle('is-interactive', Boolean(step.clickAdvance));
     }
     if (prevBtn) prevBtn.classList.toggle('hidden', safeIdx === 0);
     if (nextBtn) {
@@ -2366,20 +2571,53 @@ const KurfaTour = {
       dotsEl.innerHTML = this.steps.map((_, i) => `<span class="${i === safeIdx ? 'is-active' : ''}"></span>`).join('');
     }
 
-    const el = this._resolveTarget(step);
-    if (el) {
-      const r = el.getBoundingClientRect();
-      const vh = window.innerHeight || 800;
-      if (r.top < 20 || r.bottom > vh - 20) {
-        try {
-          el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        } catch (_) {}
+    const bindClickAdvanceIfReady = () => {
+      const targetEl = this._resolveTarget(step);
+      if (targetEl) {
+        const r = targetEl.getBoundingClientRect();
+        const vh = window.innerHeight || 800;
+        if (r.top < 20 || r.bottom > vh - 20) {
+          try {
+            targetEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          } catch (_) {}
+        }
+        if (step.clickAdvance) {
+          const onTargetClick = () => {
+            this._clearStepClickListener();
+            setTimeout(() => {
+              if (this.active && this.index === safeIdx) {
+                this.next();
+              }
+            }, 180);
+          };
+          targetEl.addEventListener('click', onTargetClick, { once: true });
+          this._activeClickCleanup = () => targetEl.removeEventListener('click', onTargetClick);
+        }
       }
-    }
+    };
 
-    requestAnimationFrame(() => this._positionCurrentStep());
+    requestAnimationFrame(() => {
+      bindClickAdvanceIfReady();
+      this._positionCurrentStep();
+    });
     if (this._repositionTimer) clearTimeout(this._repositionTimer);
-    this._repositionTimer = setTimeout(() => this._positionCurrentStep(), 240);
+    this._repositionTimer = setTimeout(() => this._positionCurrentStep(), 280);
+  },
+
+  _positionMasks(sx, sy, sw, sh, vw, vh) {
+    const mt = document.getElementById('kurfa-tour-mask-t');
+    const mb = document.getElementById('kurfa-tour-mask-b');
+    const ml = document.getElementById('kurfa-tour-mask-l');
+    const mr = document.getElementById('kurfa-tour-mask-r');
+    if (!mt || !mb || !ml || !mr) return;
+
+    const rightX = Math.max(0, Math.min(vw, sx + sw));
+    const botY = Math.max(0, Math.min(vh, sy + sh));
+
+    mt.style.cssText = `left:0;right:0;top:0;height:${Math.max(0, Math.round(sy))}px;`;
+    mb.style.cssText = `left:0;right:0;top:${Math.round(botY)}px;bottom:0;`;
+    ml.style.cssText = `left:0;top:${Math.round(sy)}px;width:${Math.max(0, Math.round(sx))}px;height:${Math.max(0, Math.round(botY - sy))}px;`;
+    mr.style.cssText = `left:${Math.round(rightX)}px;right:0;top:${Math.round(sy)}px;height:${Math.max(0, Math.round(botY - sy))}px;`;
   },
 
   _positionCurrentStep() {
@@ -2395,6 +2633,7 @@ const KurfaTour = {
 
     if (!el) {
       spotlight.style.opacity = '0';
+      this._positionMasks(vw / 2, vh / 2, 0, 0, vw, vh);
       const cRect = card.getBoundingClientRect();
       card.style.left = `${Math.max(12, Math.round((vw - (cRect.width || 320)) / 2))}px`;
       card.style.top = `${Math.max(16, Math.round((vh - (cRect.height || 200)) / 2))}px`;
@@ -2408,6 +2647,8 @@ const KurfaTour = {
     const sw = Math.min(vw - sx - 4, r.width + pad * 2);
     const sh = Math.min(vh - sy - 4, r.height + pad * 2);
 
+    this._positionMasks(sx, sy, sw, sh, vw, vh);
+
     spotlight.style.opacity = '1';
     spotlight.style.left = `${Math.round(sx)}px`;
     spotlight.style.top = `${Math.round(sy)}px`;
@@ -2416,7 +2657,7 @@ const KurfaTour = {
     spotlight.style.borderRadius = `${step.radius || 16}px`;
 
     const cRect = card.getBoundingClientRect();
-    const cw = cRect.width || Math.min(344, vw - 24);
+    const cw = cRect.width || Math.min(348, vw - 24);
     const ch = cRect.height || 200;
     const gap = 14;
 
@@ -2427,8 +2668,10 @@ const KurfaTour = {
       const targetMidY = sy + sh / 2;
       if (targetMidY < vh * 0.52 && (sy + sh + gap + ch + 14) <= vh) {
         cy = sy + sh + gap;
+      } else if (sy - ch - gap >= 12) {
+        cy = sy - ch - gap;
       } else {
-        cy = Math.max(14, sy - ch - gap);
+        cy = vh - ch - 14;
       }
       cx = Math.round((vw - cw) / 2);
     } else {
@@ -2498,6 +2741,7 @@ const KurfaTour = {
   finish(completed) {
     this.active = false;
     this.markDone();
+    this._clearStepClickListener();
     if (this._repositionTimer) {
       clearTimeout(this._repositionTimer);
       this._repositionTimer = null;
@@ -2518,6 +2762,10 @@ const KurfaTour = {
         if (!this.active) overlay.hidden = true;
       }, 220);
     }
+    if (typeof closeProfileModal === 'function') closeProfileModal();
+    if (typeof toggleLyricsDrawer === 'function') toggleLyricsDrawer(false);
+    if (typeof toggleQueueDrawer === 'function') toggleQueueDrawer(false);
+    if (typeof switchTab === 'function') switchTab('kesfet', false);
     if (completed && typeof showToast === 'function') {
       showToast(t('tour.toast_done'), 'success');
     }
