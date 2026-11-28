@@ -6877,12 +6877,18 @@ body.dark-mode .kurfa-stage-qa-btn:hover {
   border-radius: 14px;
   background: rgba(15, 23, 42, 0.04);
   border: 1px solid rgba(15, 23, 42, 0.06);
-  grid-template-columns: repeat(5, minmax(0, 1fr)) minmax(64px, 1.38fr);
+  grid-template-columns: repeat(5, minmax(0, 1fr)) auto;
+  align-items: center;
+  gap: 3px;
+}
+
+.kurfa-lyrics-sync-capsule:not(.hidden) {
+  display: grid;
 }
 
 @media (max-width: 480px) {
   .kurfa-lyrics-sync-capsule {
-    grid-template-columns: repeat(5, minmax(0, 1fr)) minmax(62px, 1.45fr);
+    grid-template-columns: repeat(5, minmax(0, 1fr)) auto;
   }
   .kurfa-lyrics-sync-capsule button {
     font-size: 10.5px;
@@ -6890,26 +6896,53 @@ body.dark-mode .kurfa-stage-qa-btn:hover {
 }
 
 body.dark-mode .kurfa-lyrics-sync-capsule {
-  background: rgba(255, 255, 255, 0.032);
-  border-color: rgba(255, 255, 255, 0.06);
+  background: rgba(255, 255, 255, 0.045);
+  border-color: rgba(255, 255, 255, 0.08);
 }
 
-#lyrics-offset-controls .kurfa-lyrics-sync-now {
-  background: rgba(15, 23, 42, 0.10) !important;
+.kurfa-lyrics-sync-capsule .kurfa-lyrics-sync-btn,
+.kurfa-lyrics-sync-capsule .kurfa-lyrics-sync-zero {
+  min-width: 0;
+  padding: 0 4px;
+  background: rgba(15, 23, 42, 0.045);
+  color: #334155;
+}
+
+body.dark-mode .kurfa-lyrics-sync-capsule .kurfa-lyrics-sync-btn,
+body.dark-mode .kurfa-lyrics-sync-capsule .kurfa-lyrics-sync-zero {
+  background: rgba(255, 255, 255, 0.065);
+  color: rgba(248, 250, 252, 0.88);
+}
+
+.kurfa-lyrics-sync-capsule .kurfa-lyrics-sync-btn:hover {
+  background: rgba(15, 23, 42, 0.10);
+}
+
+body.dark-mode .kurfa-lyrics-sync-capsule .kurfa-lyrics-sync-btn:hover {
+  background: rgba(255, 255, 255, 0.14);
+}
+
+#lyrics-offset-controls .kurfa-lyrics-sync-now,
+#side-lyrics-offset-controls .kurfa-lyrics-sync-now {
+  background: rgba(15, 23, 42, 0.12) !important;
   color: #0f172a !important;
+  padding: 0 9px;
 }
 
-#lyrics-offset-controls .kurfa-lyrics-sync-now:hover {
-  background: rgba(15, 23, 42, 0.16) !important;
+#lyrics-offset-controls .kurfa-lyrics-sync-now:hover,
+#side-lyrics-offset-controls .kurfa-lyrics-sync-now:hover {
+  background: rgba(15, 23, 42, 0.18) !important;
 }
 
-body.dark-mode #lyrics-offset-controls .kurfa-lyrics-sync-now {
-  background: rgba(255, 255, 255, 0.12) !important;
-  color: #f8fafc !important;
+body.dark-mode #lyrics-offset-controls .kurfa-lyrics-sync-now,
+body.dark-mode #side-lyrics-offset-controls .kurfa-lyrics-sync-now {
+  background: rgba(var(--kurfa-accent-rgb, 244, 63, 94), 0.88) !important;
+  color: #ffffff !important;
 }
 
-body.dark-mode #lyrics-offset-controls .kurfa-lyrics-sync-now:hover {
-  background: rgba(255, 255, 255, 0.20) !important;
+body.dark-mode #lyrics-offset-controls .kurfa-lyrics-sync-now:hover,
+body.dark-mode #side-lyrics-offset-controls .kurfa-lyrics-sync-now:hover {
+  background: rgb(var(--kurfa-accent-rgb, 244, 63, 94)) !important;
 }
 
 #deck-lyrics-lines {
@@ -7637,7 +7670,7 @@ body.dark-mode .kurfa-queue-dock-cta {
   transform: scale(0.95);
 }
 
-/* Side Lyrics Scroll + Editorial Typography */
+/* Side Lyrics Scroll + SimpMusic Spring & Depth Typography */
 .kurfa-side-lyrics-scroll {
   flex: 1 1 auto;
   min-height: 0;
@@ -7655,26 +7688,103 @@ body.dark-mode .kurfa-queue-dock-cta {
   text-align: center;
 }
 
+.kurfa-side-lyrics-lines .lyric-line,
+#deck-lyrics-lines .lyric-line {
+  will-change: transform, opacity;
+  transform-origin: center center;
+  transition:
+    color 0.32s cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 0.34s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.44s cubic-bezier(0.22, 1.28, 0.36, 1),
+    filter 0.34s ease,
+    text-shadow 0.34s ease,
+    background-color 0.2s ease;
+}
+
 .kurfa-side-lyrics-lines .lyric-line {
   justify-content: center;
   text-align: center;
-  font-size: clamp(16.5px, 1.2vw, 19px);
+  font-size: clamp(16px, 1.15vw, 18.5px);
   font-weight: 700;
-  line-height: 1.42;
+  line-height: 1.44;
   padding: 8px 10px;
   border-radius: 12px;
-  transition: color 0.25s ease, transform 0.25s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.25s ease;
 }
 
 .kurfa-side-lyrics-lines .lyric-words-wrap {
   justify-content: center;
 }
 
+.kurfa-side-lyrics-lines .lyric-line.is-near-1,
+#deck-lyrics-lines .lyric-line.is-near-1 {
+  opacity: 0.62;
+  filter: none;
+  transform: scale(0.995) translateZ(0);
+}
+
+.kurfa-side-lyrics-lines .lyric-line.is-near-2,
+#deck-lyrics-lines .lyric-line.is-near-2 {
+  opacity: 0.38;
+  filter: blur(0.35px);
+  transform: scale(0.98) translateZ(0);
+}
+
+.kurfa-side-lyrics-lines .lyric-line.is-far,
+#deck-lyrics-lines .lyric-line.is-far {
+  opacity: 0.24;
+  filter: blur(0.85px);
+  transform: scale(0.965) translateZ(0);
+}
+
+.kurfa-side-lyrics-lines .lyric-line:hover,
+#deck-lyrics-lines .lyric-line:hover,
+.lyrics-share-selecting .lyric-line {
+  opacity: 0.92 !important;
+  filter: none !important;
+}
+
 .kurfa-side-lyrics-lines .lyric-line.active,
 .kurfa-side-lyrics-lines .lyric-line.active-lyric {
-  font-size: clamp(18.5px, 1.35vw, 21.5px);
+  font-size: clamp(18.5px, 1.32vw, 21.5px);
   font-weight: 800;
-  transform: scale(1.03);
+  opacity: 1 !important;
+  filter: none !important;
+  transform: scale(1.035) translateZ(0);
+}
+
+#deck-lyrics-lines .lyric-line.active,
+#deck-lyrics-lines .lyric-line.active-lyric {
+  opacity: 1 !important;
+  filter: none !important;
+  transform: scale(1.035) translateZ(0);
+}
+
+.lyric-line.active .lyric-word {
+  transition: transform 0.22s cubic-bezier(0.22, 1.28, 0.36, 1), color 0.16s ease;
+}
+
+.lyric-line.active .lyric-word.word-active {
+  transform: translateY(-1px) scale(1.02) translateZ(0);
+}
+
+@keyframes kurfaInterludePulse {
+  0%, 100% { opacity: 0.35; transform: scale(0.85); }
+  50% { opacity: 1; transform: scale(1.18); }
+}
+
+.lyric-interlude.active .interlude-dot,
+.lyric-interlude.active-lyric .interlude-dot {
+  animation: kurfaInterludePulse 1.4s ease-in-out infinite;
+}
+
+.lyric-interlude.active .interlude-dot:nth-child(2),
+.lyric-interlude.active-lyric .interlude-dot:nth-child(2) {
+  animation-delay: 0.22s;
+}
+
+.lyric-interlude.active .interlude-dot:nth-child(3),
+.lyric-interlude.active-lyric .interlude-dot:nth-child(3) {
+  animation-delay: 0.44s;
 }
 
 #btn-side-lyrics-resync {
@@ -7690,14 +7800,193 @@ body.dark-mode .kurfa-queue-dock-cta {
   box-shadow: 0 8px 22px rgba(0, 0, 0, 0.35);
 }
 
-/* Desktop Side Panel Coordinates & Smooth Main-Shell Push */
+/* Calm SimpMusic Queue Rows */
+.kurfa-queue-row {
+  border: 1px solid transparent;
+  transition: background-color 0.16s ease, border-color 0.16s ease;
+}
+
+.kurfa-queue-row:hover {
+  background: rgba(15, 23, 42, 0.045);
+}
+
+body.dark-mode .kurfa-queue-row:hover {
+  background: rgba(255, 255, 255, 0.055);
+}
+
+.kurfa-queue-row.is-current {
+  background: rgba(var(--kurfa-track-rgb, 244, 63, 94), 0.11) !important;
+  border-color: rgba(var(--kurfa-track-rgb, 244, 63, 94), 0.20) !important;
+}
+
+body.dark-mode .kurfa-queue-row.is-current {
+  background: rgba(var(--kurfa-track-rgb, 244, 63, 94), 0.16) !important;
+  border-color: rgba(var(--kurfa-track-rgb, 244, 63, 94), 0.28) !important;
+}
+
+/* Interactive Drag Splitter Handles (Left edge of Side Panels) */
+.kurfa-panel-resizer {
+  position: absolute;
+  left: 0;
+  top: 14px;
+  bottom: 14px;
+  width: 10px;
+  cursor: col-resize;
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  padding-left: 2px;
+  touch-action: none;
+}
+
+.kurfa-panel-resizer > span {
+  display: block;
+  width: 2px;
+  height: 44px;
+  border-radius: 9999px;
+  background: transparent;
+  transition: background-color 0.16s ease, height 0.16s ease, width 0.16s ease;
+}
+
+.kurfa-panel-resizer:hover > span,
+.kurfa-panel-resizer.is-dragging > span {
+  width: 3px;
+  height: 68px;
+  background: rgba(var(--kurfa-accent-rgb, 244, 63, 94), 0.78);
+}
+
+body.dark-mode .kurfa-panel-resizer:hover > span,
+body.dark-mode .kurfa-panel-resizer.is-dragging > span {
+  background: rgba(255, 255, 255, 0.58);
+}
+
+body.kurfa-resizing {
+  cursor: col-resize !important;
+  user-select: none !important;
+}
+
+body.kurfa-resizing #desktop-sidebar,
+body.kurfa-resizing #desktop-top-header,
+body.kurfa-resizing #app-shell,
+body.kurfa-resizing #queue-drawer,
+body.kurfa-resizing #desktop-lyrics-drawer {
+  transition: none !important;
+}
+
+/* Left Sidebar Collapse Button + Compact Icon Rail */
+.kurfa-sidebar-collapse-btn {
+  width: 30px;
+  height: 30px;
+  border-radius: 10px;
+  color: #64748b;
+  background: rgba(15, 23, 42, 0.045);
+  border: 1px solid rgba(15, 23, 42, 0.06);
+  transition: background-color 0.16s ease, color 0.16s ease, transform 0.14s ease;
+  cursor: pointer;
+}
+
+.kurfa-sidebar-collapse-btn:hover {
+  background: rgba(15, 23, 42, 0.09);
+  color: #0f172a;
+}
+
+body.dark-mode .kurfa-sidebar-collapse-btn {
+  color: rgba(248, 250, 252, 0.72);
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+body.dark-mode .kurfa-sidebar-collapse-btn:hover {
+  background: rgba(255, 255, 255, 0.14);
+  color: #ffffff;
+}
+
+/* Desktop Side Panel Coordinates, Collapsible Sidebar & Zero-Overlap Budget */
 @media (min-width: 768px) {
+  :root {
+    --kurfa-sidebar-w: 256px;
+    --kurfa-queue-w: 320px;
+    --kurfa-lyrics-w: 360px;
+    --kurfa-side-pad-r: 0px;
+  }
+
+  #desktop-sidebar.kurfa-sidebar-rail {
+    width: var(--kurfa-sidebar-w, 256px) !important;
+    transition: width 0.24s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  #desktop-top-header {
+    left: var(--kurfa-sidebar-w, 256px) !important;
+    transition: left 0.24s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  #app-shell {
+    padding-left: var(--kurfa-sidebar-w, 256px) !important;
+    padding-right: var(--kurfa-side-pad-r, 0px) !important;
+    transition:
+      padding-left 0.24s cubic-bezier(0.22, 1, 0.36, 1),
+      padding-right 0.24s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  /* Collapsed Sidebar Icon Rail State (72px) */
+  body.sidebar-collapsed #desktop-sidebar > .p-space-lg {
+    padding: 14px 10px !important;
+  }
+
+  body.sidebar-collapsed .kurfa-sidebar-brand {
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 18px !important;
+  }
+
+  body.sidebar-collapsed .kurfa-sidebar-brand-click {
+    flex: 0 0 auto;
+    justify-content: center;
+  }
+
+  body.sidebar-collapsed .kurfa-brand-text,
+  body.sidebar-collapsed #desktop-sidebar [data-i18n="nav.main_menu"],
+  body.sidebar-collapsed #desktop-sidebar [data-i18n="nav.quick_actions"],
+  body.sidebar-collapsed #desktop-sidebar .nav-item > span:not(.material-symbols-outlined),
+  body.sidebar-collapsed #desktop-sidebar .quick-action-btn > span:not(.material-symbols-outlined),
+  body.sidebar-collapsed #desktop-sidebar .kurfa-nav-live-wave {
+    display: none !important;
+  }
+
+  body.sidebar-collapsed #desktop-sidebar .nav-item,
+  body.sidebar-collapsed #desktop-sidebar .quick-action-btn {
+    justify-content: center !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+    gap: 0 !important;
+  }
+
+  body.sidebar-collapsed #btn-sidebar-install-apk {
+    width: 46px !important;
+    height: 46px !important;
+    padding: 0 !important;
+    margin: 0 auto !important;
+    justify-content: center !important;
+    border-radius: 14px !important;
+  }
+
+  body.sidebar-collapsed #btn-sidebar-install-apk > div > div:not(.kurfa-install-icon),
+  body.sidebar-collapsed #btn-sidebar-install-apk > .material-symbols-outlined {
+    display: none !important;
+  }
+
+  body.sidebar-collapsed #btn-sidebar-install-apk > div {
+    flex: 0 0 auto !important;
+  }
+
   #queue-drawer.kurfa-queue-drawer {
     top: 74px !important;
     bottom: 98px !important;
     left: auto !important;
     right: 12px !important;
-    width: clamp(296px, 22vw, 336px) !important;
+    width: var(--kurfa-queue-w, 320px) !important;
     max-height: none !important;
     z-index: 44 !important;
   }
@@ -7706,28 +7995,50 @@ body.dark-mode .kurfa-queue-dock-cta {
     top: 74px !important;
     bottom: 98px !important;
     right: 12px !important;
-    width: clamp(316px, 25vw, 376px) !important;
+    width: var(--kurfa-lyrics-w, 360px) !important;
     z-index: 45 !important;
   }
 
   body.has-side-lyrics #queue-drawer.kurfa-queue-drawer {
-    right: calc(12px + clamp(316px, 25vw, 376px) + 10px) !important;
+    right: calc(12px + var(--kurfa-lyrics-w, 360px) + 10px) !important;
   }
 
-  #app-shell {
-    transition: padding-right 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+  /* Compact Hero & Main Content when both side panels leave narrow center space (<620px) */
+  body.kurfa-compact-main #kesfet-hero-section > div {
+    padding: 16px !important;
+    gap: 12px !important;
+    min-height: 164px !important;
   }
-}
 
-@media (min-width: 1240px) {
-  body.has-side-lyrics #app-shell {
-    padding-right: clamp(332px, 26vw, 394px);
+  body.kurfa-compact-main #kesfet-hero-section #hero-title {
+    font-size: 1.25rem !important;
   }
-  body.has-side-queue #app-shell {
-    padding-right: clamp(312px, 23vw, 352px);
+
+  body.kurfa-compact-main #kesfet-hero-section #hero-cover-img {
+    width: 100%;
+    height: 100%;
   }
-  body.has-side-lyrics.has-side-queue #app-shell {
-    padding-right: calc(clamp(316px, 25vw, 376px) + clamp(296px, 22vw, 336px) + 28px);
+
+  body.kurfa-compact-main #kesfet-hero-section > div > div:last-child > div {
+    width: 96px !important;
+    height: 96px !important;
+    border-radius: 14px !important;
+  }
+
+  body.kurfa-compact-main #hero-queue-btn,
+  body.kurfa-compact-main #hero-dl-btn,
+  body.kurfa-compact-main #hero-play-btn {
+    padding-left: 11px !important;
+    padding-right: 11px !important;
+  }
+
+  body.kurfa-compact-main #kesfet-quick-picks-grid,
+  body.kurfa-compact-main #kesfet-personal-mixes-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  body.kurfa-compact-main #side-lyrics-source-badge {
+    display: none !important;
   }
 }
 
@@ -7744,6 +8055,10 @@ body.dark-mode .kurfa-queue-dock-cta {
     z-index: 1030 !important;
   }
 
+  .kurfa-panel-resizer {
+    display: none !important;
+  }
+
   #deck-lyrics-lines {
     text-align: center;
   }
@@ -7753,6 +8068,16 @@ body.dark-mode .kurfa-queue-dock-cta {
     text-align: center;
     font-size: 16.5px;
     line-height: 1.45;
+  }
+
+  #deck-lyrics-lines .lyric-line.is-near-2 {
+    opacity: 0.42;
+    filter: blur(0.25px);
+  }
+
+  #deck-lyrics-lines .lyric-line.is-far {
+    opacity: 0.28;
+    filter: blur(0.55px);
   }
 
   #deck-lyrics-lines .lyric-words-wrap {

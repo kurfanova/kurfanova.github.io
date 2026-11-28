@@ -3276,6 +3276,9 @@ const state = {
   isScrubbingVol: false,
   queueDrawerOpen: false,
   lyricsDrawerOpen: false,
+  sidebarCollapsed: (function () { try { return localStorage.getItem('kurfa_sidebar_collapsed') === '1'; } catch (_) { return false; } })(),
+  _preferredQueueW: (function () { try { return Math.max(248, Math.min(480, Number(localStorage.getItem('kurfa_queue_w')) || 320)); } catch (_) { return 320; } })(),
+  _preferredLyricsW: (function () { try { return Math.max(268, Math.min(560, Number(localStorage.getItem('kurfa_lyrics_w')) || 360)); } catch (_) { return 360; } })(),
   _lyricsDeckOffsetExpanded: false,
   _lyricsSideOffsetExpanded: false,
   ytPlayer: null,
@@ -8362,7 +8365,7 @@ function renderLyricsList(lines, sourceName, meta = {}) {
   const sideLinesEl = document.getElementById('side-lyrics-lines');
   if (sideLinesEl) {
     sideLinesEl.innerHTML = '';
-    const builtSide = buildLyricsFragmentForTarget(state.activeLyrics, false);
+    const builtSide = buildLyricsFragmentForTarget(state.activeLyrics, true);
     _sideLyricsLineEls = builtSide.lineEls;
     _sideLyricsWordElGroups = builtSide.wordElGroups;
     sideLinesEl.appendChild(builtSide.frag);
@@ -8519,18 +8522,25 @@ function updateActiveWordProgressForGroup(activeIdx, adjustedTime, wordGroups) {
 function applyLyricsLineChangeToTarget(lineEls, wordGroups, boxEl, activeIdx, safeTime, forceScroll) {
   if (!Array.isArray(lineEls) || lineEls.length === 0) return;
   for (let i = 0; i < lineEls.length; i++) {
-    if (i === activeIdx) continue;
     const el = lineEls[i];
-    if (el && (el.classList.contains('active') || el.classList.contains('active-lyric'))) {
+    if (!el) continue;
+    el.classList.remove('is-near-1', 'is-near-2', 'is-far');
+    if (i === activeIdx) continue;
+    if (el.classList.contains('active') || el.classList.contains('active-lyric')) {
       el.classList.remove('active-lyric', 'active');
       const prevWords = wordGroups ? wordGroups[i] : null;
       if (prevWords) {
         prevWords.forEach(w => w.classList.remove('word-active', 'word-sung'));
       }
     }
+    const dist = Math.abs(i - activeIdx);
+    if (dist === 1) el.classList.add('is-near-1');
+    else if (dist === 2) el.classList.add('is-near-2');
+    else if (dist >= 3) el.classList.add('is-far');
   }
   const activeEl = lineEls[activeIdx];
   if (activeEl) {
+    activeEl.classList.remove('is-near-1', 'is-near-2', 'is-far');
     activeEl.classList.add('active-lyric', 'active');
     if ((forceScroll || !lyricsAutoScrollPaused) && boxEl) {
       if (activeIdx === 0 && safeTime < 1.5) {
@@ -8569,8 +8579,8 @@ function syncLyricsWithTime(currentTime, forceScroll = false) {
       const clearGroup = (els, box) => {
         for (let i = 0; i < els.length; i++) {
           const el = els[i];
-          if (el && (el.classList.contains('active') || el.classList.contains('active-lyric'))) {
-            el.classList.remove('active-lyric', 'active');
+          if (el) {
+            el.classList.remove('active-lyric', 'active', 'is-near-1', 'is-near-2', 'is-far');
           }
         }
         if (box && (forceScroll || !lyricsAutoScrollPaused)) {
@@ -8760,35 +8770,54 @@ window.LyricsClock = LyricsClock;
 
 let _lyricsShareTheme = 'mesh';
 
-function updateLyricsShareToolbarUI() {
-  const toolbar = document.getElementById('lyrics-share-toolbar');
-  const countLabel = document.getElementById('lyrics-share-count-label');
-  const box = document.getElementById('deck-lyrics-lines');
-  if (toolbar) {
-    toolbar.classList.toggle('hidden', !_lyricsShareSelectMode);
-    toolbar.classList.toggle('flex', _lyricsShareSelectMode);
-  }
-  if (box) {
-    box.classList.toggle('lyrics-share-selecting', _lyricsShareSelectMode);
-  }
-  if (countLabel) {
-    countLabel.textContent = `${t('lyrics.create_card')} (${_lyricsShareSelectedIndices.length}/4)`;
-  }
+function syncLyricSelectionClasses() {
+  const selectedSet = new Set(_lyricsShareSelectedIndices);
+  [_lyricsLineEls, _sideLyricsLineEls].forEach((els) => {
+    if (!Array.isArray(els)) return;
+    for (let i = 0; i < els.length; i++) {
+      const el = els[i];
+      if (!el) continue;
+      el.classList.toggle('lyric-selected', _lyricsShareSelectMode && selectedSet.has(i));
+    }
+  });
 }
 
-function toggleLyricsShareSelectMode() {
+function updateLyricsShareToolbarUI() {
+  const countText = `${t('lyrics.create_card')} (${_lyricsShareSelectedIndices.length}/4)`;
+  const targets = [
+    { toolbarId: 'lyrics-share-toolbar', countId: 'lyrics-share-count-label', boxId: 'deck-lyrics-lines' },
+    { toolbarId: 'side-lyrics-share-toolbar', countId: 'side-lyrics-share-count-label', boxId: 'side-lyrics-lines' }
+  ];
+  targets.forEach(({ toolbarId, countId, boxId }) => {
+    const toolbar = document.getElementById(toolbarId);
+    const countLabel = document.getElementById(countId);
+    const box = document.getElementById(boxId);
+    if (toolbar) {
+      toolbar.classList.toggle('hidden', !_lyricsShareSelectMode);
+      toolbar.classList.toggle('flex', _lyricsShareSelectMode);
+    }
+    if (box) {
+      box.classList.toggle('lyrics-share-selecting', _lyricsShareSelectMode);
+    }
+    if (countLabel) {
+      countLabel.textContent = countText;
+    }
+  });
+}
+
+function toggleLyricsShareSelectMode(_source) {
   if (!Array.isArray(state.activeLyrics) || state.activeLyrics.length === 0) return;
   _lyricsShareSelectMode = !_lyricsShareSelectMode;
   _lyricsShareSelectedIndices = [];
-  _lyricsLineEls.forEach(el => el && el.classList.remove('lyric-selected'));
   if (_lyricsShareSelectMode) {
-    // Pre-select active line if valid
-    const idx = state.currentLyricIndex >= 0 ? state.currentLyricIndex : state.activeLyrics.findIndex(l => l && !l.isInterlude);
-    if (idx >= 0 && state.activeLyrics[idx] && !state.activeLyrics[idx].isInterlude && _lyricsLineEls[idx]) {
+    const idx = state.currentLyricIndex >= 0
+      ? state.currentLyricIndex
+      : state.activeLyrics.findIndex(l => l && !l.isInterlude);
+    if (idx >= 0 && state.activeLyrics[idx] && !state.activeLyrics[idx].isInterlude) {
       _lyricsShareSelectedIndices.push(idx);
-      _lyricsLineEls[idx].classList.add('lyric-selected');
     }
   }
+  syncLyricSelectionClasses();
   updateLyricsShareToolbarUI();
 }
 window.toggleLyricsShareSelectMode = toggleLyricsShareSelectMode;
@@ -8796,16 +8825,15 @@ window.toggleLyricsShareSelectMode = toggleLyricsShareSelectMode;
 function cancelLyricsShareSelectMode() {
   _lyricsShareSelectMode = false;
   _lyricsShareSelectedIndices = [];
-  _lyricsLineEls.forEach(el => el && el.classList.remove('lyric-selected'));
+  syncLyricSelectionClasses();
   updateLyricsShareToolbarUI();
 }
 window.cancelLyricsShareSelectMode = cancelLyricsShareSelectMode;
 
-function toggleLyricLineShareSelection(idx, el) {
+function toggleLyricLineShareSelection(idx, _el) {
   const existingPos = _lyricsShareSelectedIndices.indexOf(idx);
   if (existingPos !== -1) {
     _lyricsShareSelectedIndices.splice(existingPos, 1);
-    if (el) el.classList.remove('lyric-selected');
   } else {
     if (_lyricsShareSelectedIndices.length >= 4) {
       showToast(t('lyrics.toast_max_lines'), 'info');
@@ -8813,8 +8841,8 @@ function toggleLyricLineShareSelection(idx, el) {
     }
     _lyricsShareSelectedIndices.push(idx);
     _lyricsShareSelectedIndices.sort((a, b) => a - b);
-    if (el) el.classList.add('lyric-selected');
   }
+  syncLyricSelectionClasses();
   updateLyricsShareToolbarUI();
 }
 
@@ -12073,40 +12101,38 @@ function renderQueueDrawerList() {
     const safeThumb = escapeHtml(safeUrl(track.thumbnail || getTrackThumbnail(track), './kurfamuzik_logo.png'));
 
     const item = document.createElement('div');
-    item.className = `track-row flex-shrink-0 min-h-[54px] flex items-center justify-between gap-2 px-2.5 py-2 rounded-xl transition-all cursor-pointer group select-none ${isCurrent ? 'active font-bold' : ''}`;
+    item.className = `track-row kurfa-queue-row flex-shrink-0 min-h-[54px] flex items-center justify-between gap-2.5 px-2.5 py-1.5 rounded-xl transition-all cursor-pointer group select-none ${isCurrent ? 'active is-current font-semibold' : ''}`;
     item.setAttribute('draggable', 'true');
     item.dataset.index = index;
     if (isCurrent) item.dataset.current = '1';
 
     item.innerHTML = `
-      <div class="flex items-center gap-2 min-w-0 flex-1 pr-1 overflow-hidden">
-        <div class="flex flex-col items-center justify-center gap-[2px] flex-shrink-0 w-5 opacity-55 group-hover:opacity-100 transition-opacity">
-          <button type="button" class="w-5 h-4 flex items-center justify-center rounded text-on-surface-variant hover:text-on-surface hover:bg-black/5 dark:hover:bg-white/10 transition-colors btn-queue-up ${index === 0 ? 'opacity-20 cursor-not-allowed pointer-events-none' : ''}" title="${escapeHtml(t('queue.move_up'))}">
-            <span class="material-symbols-outlined text-[15px] leading-none">keyboard_arrow_up</span>
-          </button>
-          <button type="button" class="w-5 h-4 flex items-center justify-center rounded text-on-surface-variant hover:text-on-surface hover:bg-black/5 dark:hover:bg-white/10 transition-colors btn-queue-down ${index === queueCount - 1 ? 'opacity-20 cursor-not-allowed pointer-events-none' : ''}" title="${escapeHtml(t('queue.move_down'))}">
-            <span class="material-symbols-outlined text-[15px] leading-none">keyboard_arrow_down</span>
-          </button>
+      <div class="flex items-center gap-2.5 min-w-0 flex-1 pr-1 overflow-hidden">
+        <div class="relative w-10 h-10 rounded-lg overflow-hidden flex-shrink-0 bg-black/10 dark:bg-white/5">
+          <img src="${safeThumb}" alt="${safeTitle}" class="w-full h-full object-cover" loading="lazy" onerror="this.onerror=null; this.src='./kurfamuzik_logo.png'">
+          ${isCurrent ? `<div class="absolute inset-0 bg-black/45 backdrop-blur-[1px] flex items-center justify-center text-white">${renderMiniEqBarsHtml(state.isPlaying)}</div>` : ''}
         </div>
-        <span class="w-5 flex items-center justify-center text-[11px] font-mono tabular-nums flex-shrink-0 text-on-surface-variant">${isCurrent ? renderMiniEqBarsHtml(state.isPlaying) : (index + 1)}</span>
-        <img src="${safeThumb}" alt="${safeTitle}" class="w-10 h-10 rounded-lg object-cover flex-shrink-0" loading="lazy" onerror="this.onerror=null; this.src='./kurfamuzik_logo.png'">
         <div class="flex flex-col min-w-0 flex-1 overflow-hidden">
-          <div class="flex items-center gap-1.5 min-w-0">
-            <span class="kurfa-row-title text-xs font-bold truncate block text-on-surface">${safeTitle}</span>
-            ${isCurrent ? renderPlayingPillHtml() : ''}
-          </div>
-          <span class="kurfa-row-artist text-[11px] text-on-surface-variant truncate block">${safeArtist}</span>
+          <span class="kurfa-row-title text-[12.5px] font-semibold leading-tight truncate block text-on-surface">${safeTitle}</span>
+          <span class="kurfa-row-artist text-[11px] leading-tight text-on-surface-variant truncate block mt-0.5">${safeArtist} · ${safeDur}</span>
         </div>
       </div>
-      <div class="flex items-center gap-0.5 flex-shrink-0 pl-1">
-        <span class="text-[11px] text-on-surface-variant font-mono tabular-nums whitespace-nowrap px-1">${safeDur}</span>
-        <button type="button" class="hidden sm:group-hover:flex w-6 h-6 rounded-full items-center justify-center text-on-surface-variant hover:text-on-surface transition-colors btn-queue-add-pl" title="${escapeHtml(t('player.add_to_playlist'))}">
-          <span class="material-symbols-outlined text-[15px]">playlist_add</span>
-        </button>
-        <button type="button" class="hidden sm:group-hover:flex w-6 h-6 rounded-full items-center justify-center text-on-surface-variant hover:text-on-surface transition-colors btn-queue-dl" title="${escapeHtml(t('hero.download'))}">
-          <span class="material-symbols-outlined text-[15px]">download</span>
-        </button>
-        <button type="button" class="flex sm:hidden sm:group-hover:flex w-6 h-6 rounded-full items-center justify-center text-on-surface-variant hover:text-error transition-colors btn-queue-remove" title="${escapeHtml(t('queue.remove'))}">
+      <div class="flex items-center gap-0.5 flex-shrink-0 pl-0.5">
+        <div class="hidden sm:group-hover:flex items-center gap-0.5">
+          <button type="button" class="w-6 h-6 flex items-center justify-center rounded-full text-on-surface-variant hover:text-on-surface hover:bg-black/5 dark:hover:bg-white/10 transition-colors btn-queue-up ${index === 0 ? 'opacity-20 cursor-not-allowed pointer-events-none' : ''}" title="${escapeHtml(t('queue.move_up'))}">
+            <span class="material-symbols-outlined text-[15px] leading-none">keyboard_arrow_up</span>
+          </button>
+          <button type="button" class="w-6 h-6 flex items-center justify-center rounded-full text-on-surface-variant hover:text-on-surface hover:bg-black/5 dark:hover:bg-white/10 transition-colors btn-queue-down ${index === queueCount - 1 ? 'opacity-20 cursor-not-allowed pointer-events-none' : ''}" title="${escapeHtml(t('queue.move_down'))}">
+            <span class="material-symbols-outlined text-[15px] leading-none">keyboard_arrow_down</span>
+          </button>
+          <button type="button" class="w-6 h-6 rounded-full flex items-center justify-center text-on-surface-variant hover:text-on-surface hover:bg-black/5 dark:hover:bg-white/10 transition-colors btn-queue-add-pl" title="${escapeHtml(t('player.add_to_playlist'))}">
+            <span class="material-symbols-outlined text-[15px]">playlist_add</span>
+          </button>
+          <button type="button" class="w-6 h-6 rounded-full flex items-center justify-center text-on-surface-variant hover:text-on-surface hover:bg-black/5 dark:hover:bg-white/10 transition-colors btn-queue-dl" title="${escapeHtml(t('hero.download'))}">
+            <span class="material-symbols-outlined text-[15px]">download</span>
+          </button>
+        </div>
+        <button type="button" class="flex sm:hidden sm:group-hover:flex w-6 h-6 rounded-full items-center justify-center text-on-surface-variant hover:text-error hover:bg-error/10 transition-colors btn-queue-remove" title="${escapeHtml(t('queue.remove'))}">
           <span class="material-symbols-outlined text-[15px]">close</span>
         </button>
       </div>
@@ -13109,6 +13135,177 @@ function importLibraryBackup(event) {
   reader.readAsText(file);
 }
 
+function updateDesktopSideLayout() {
+  if (typeof window === 'undefined' || typeof document === 'undefined') return;
+  const root = document.documentElement;
+  const body = document.body;
+  const vw = window.innerWidth || 0;
+
+  if (vw < 768) {
+    if (body) {
+      body.classList.remove('sidebar-collapsed', 'kurfa-auto-collapsed-sidebar', 'kurfa-compact-main');
+    }
+    root.style.removeProperty('--kurfa-sidebar-w');
+    root.style.removeProperty('--kurfa-queue-w');
+    root.style.removeProperty('--kurfa-lyrics-w');
+    root.style.removeProperty('--kurfa-side-pad-r');
+    return;
+  }
+
+  const isQueueOpen = Boolean(state.queueDrawerOpen);
+  const isLyricsOpen = Boolean(state.lyricsDrawerOpen);
+  const prefQ = Math.max(248, Math.min(480, Number(state._preferredQueueW) || 320));
+  const prefL = Math.max(268, Math.min(560, Number(state._preferredLyricsW) || 360));
+  const minMainW = vw >= 1040 ? 450 : 380;
+
+  let queueW = prefQ;
+  let lyricsW = prefL;
+  let rightGapReserve = (isQueueOpen && isLyricsOpen) ? 34 : ((isQueueOpen || isLyricsOpen) ? 24 : 0);
+
+  let autoCollapsed = false;
+  if (!state.sidebarCollapsed && (isQueueOpen || isLyricsOpen)) {
+    const neededRight = (isQueueOpen ? queueW : 0) + (isLyricsOpen ? lyricsW : 0) + rightGapReserve;
+    if (vw - 256 - neededRight < minMainW) {
+      autoCollapsed = true;
+    }
+  }
+
+  const effectiveCollapsed = Boolean(state.sidebarCollapsed || autoCollapsed);
+  const sidebarW = effectiveCollapsed ? 72 : 256;
+  const availRight = Math.max(240, vw - sidebarW - minMainW - rightGapReserve);
+
+  if (isQueueOpen && isLyricsOpen) {
+    const totalPref = prefQ + prefL;
+    if (totalPref > availRight) {
+      const ratio = availRight / totalPref;
+      queueW = Math.max(232, Math.floor(prefQ * ratio));
+      lyricsW = Math.max(252, availRight - queueW);
+      if (queueW + lyricsW > availRight) {
+        queueW = Math.max(220, availRight - lyricsW);
+      }
+    }
+  } else if (isQueueOpen) {
+    queueW = Math.min(prefQ, Math.max(248, availRight));
+  } else if (isLyricsOpen) {
+    lyricsW = Math.min(prefL, Math.max(268, availRight));
+  }
+
+  const sidePadR = (isQueueOpen && isLyricsOpen)
+    ? (queueW + lyricsW + 34)
+    : (isQueueOpen ? (queueW + 24) : (isLyricsOpen ? (lyricsW + 24) : 0));
+
+  const mainW = vw - sidebarW - sidePadR;
+
+  root.style.setProperty('--kurfa-sidebar-w', `${sidebarW}px`);
+  root.style.setProperty('--kurfa-queue-w', `${queueW}px`);
+  root.style.setProperty('--kurfa-lyrics-w', `${lyricsW}px`);
+  root.style.setProperty('--kurfa-side-pad-r', `${sidePadR}px`);
+
+  if (body) {
+    body.classList.toggle('sidebar-collapsed', effectiveCollapsed);
+    body.classList.toggle('kurfa-auto-collapsed-sidebar', autoCollapsed && !state.sidebarCollapsed);
+    body.classList.toggle('kurfa-compact-main', mainW < 620);
+  }
+
+  const collapseBtn = document.getElementById('btn-sidebar-collapse');
+  if (collapseBtn) {
+    collapseBtn.setAttribute('aria-expanded', String(!effectiveCollapsed));
+    const iconEl = collapseBtn.querySelector('.material-symbols-outlined');
+    if (iconEl) iconEl.textContent = effectiveCollapsed ? 'left_panel_open' : 'left_panel_close';
+    const labelTxt = effectiveCollapsed
+      ? (getAppLanguage() === 'en' ? 'Expand menu' : 'Menuyu genislet')
+      : (getAppLanguage() === 'en' ? 'Collapse menu' : 'Menuyu daralt');
+    collapseBtn.title = labelTxt;
+    collapseBtn.setAttribute('aria-label', labelTxt);
+  }
+}
+window.updateDesktopSideLayout = updateDesktopSideLayout;
+
+function toggleSidebarCollapse() {
+  state.sidebarCollapsed = !state.sidebarCollapsed;
+  try {
+    localStorage.setItem('kurfa_sidebar_collapsed', state.sidebarCollapsed ? '1' : '0');
+  } catch (_) {}
+  updateDesktopSideLayout();
+}
+window.toggleSidebarCollapse = toggleSidebarCollapse;
+
+let _sideResizersInitialized = false;
+function initSidePanelResizers() {
+  if (_sideResizersInitialized || typeof document === 'undefined') return;
+  const handles = document.querySelectorAll('.kurfa-panel-resizer[data-resize-target]');
+  if (!handles || handles.length === 0) return;
+  _sideResizersInitialized = true;
+
+  handles.forEach((handle) => {
+    handle.addEventListener('pointerdown', (e) => {
+      if (typeof window === 'undefined' || window.innerWidth < 768) return;
+      e.preventDefault();
+      e.stopPropagation();
+      const target = handle.getAttribute('data-resize-target');
+      const isQueue = target === 'queue';
+      const panelEl = isQueue ? DOM.queueDrawer : document.getElementById('desktop-lyrics-drawer');
+      if (!panelEl) return;
+
+      const startX = e.clientX;
+      const startW = panelEl.getBoundingClientRect().width || (isQueue ? state._preferredQueueW : state._preferredLyricsW);
+      const minW = isQueue ? 248 : 268;
+      const maxW = isQueue ? 480 : 560;
+
+      document.body.classList.add('kurfa-resizing');
+      handle.classList.add('is-dragging');
+      if (typeof handle.setPointerCapture === 'function') {
+        try { handle.setPointerCapture(e.pointerId); } catch (_) {}
+      }
+
+      const onMove = (moveEvt) => {
+        const dx = startX - moveEvt.clientX;
+        const nextW = Math.round(Math.max(minW, Math.min(maxW, startW + dx)));
+        if (isQueue) state._preferredQueueW = nextW;
+        else state._preferredLyricsW = nextW;
+        updateDesktopSideLayout();
+      };
+
+      const onEnd = () => {
+        document.body.classList.remove('kurfa-resizing');
+        handle.classList.remove('is-dragging');
+        window.removeEventListener('pointermove', onMove);
+        window.removeEventListener('pointerup', onEnd);
+        window.removeEventListener('pointercancel', onEnd);
+        try {
+          localStorage.setItem(isQueue ? 'kurfa_queue_w' : 'kurfa_lyrics_w', String(isQueue ? state._preferredQueueW : state._preferredLyricsW));
+        } catch (_) {}
+      };
+
+      window.addEventListener('pointermove', onMove);
+      window.addEventListener('pointerup', onEnd);
+      window.addEventListener('pointercancel', onEnd);
+    });
+  });
+
+  window.addEventListener('resize', () => {
+    if (typeof toggleQueueDrawer === 'function' && window.innerWidth < 960 && state.queueDrawerOpen && state.lyricsDrawerOpen) {
+      state.queueDrawerOpen = false;
+      syncDesktopSideDockState();
+      return;
+    }
+    updateDesktopSideLayout();
+  });
+}
+window.initSidePanelResizers = initSidePanelResizers;
+
+if (typeof document !== 'undefined') {
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => {
+      initSidePanelResizers();
+      updateDesktopSideLayout();
+    });
+  } else {
+    initSidePanelResizers();
+    updateDesktopSideLayout();
+  }
+}
+
 function syncDesktopSideDockState() {
   const isQueueOpen = Boolean(state.queueDrawerOpen);
   const isLyricsOpen = Boolean(state.lyricsDrawerOpen && typeof window !== 'undefined' && window.innerWidth >= 768);
@@ -13117,6 +13314,7 @@ function syncDesktopSideDockState() {
     document.body.classList.toggle('has-side-queue', isQueueOpen);
     document.body.classList.toggle('has-side-lyrics', isLyricsOpen);
   }
+  updateDesktopSideLayout();
 
   const qBtn = document.getElementById('btn-desktop-queue-panel');
   if (qBtn) {
@@ -13160,7 +13358,7 @@ function syncDesktopSideDockState() {
 function toggleQueueDrawer(forceState) {
   const next = typeof forceState === 'boolean' ? forceState : !state.queueDrawerOpen;
   state.queueDrawerOpen = next;
-  if (next && typeof window !== 'undefined' && window.innerWidth >= 768 && window.innerWidth < 1100 && state.lyricsDrawerOpen) {
+  if (next && typeof window !== 'undefined' && window.innerWidth >= 768 && window.innerWidth < 960 && state.lyricsDrawerOpen) {
     state.lyricsDrawerOpen = false;
   }
   if (next) {
@@ -13185,7 +13383,7 @@ function toggleLyricsDrawer(forceState) {
   }
   const next = typeof forceState === 'boolean' ? forceState : !state.lyricsDrawerOpen;
   state.lyricsDrawerOpen = next;
-  if (next && typeof window !== 'undefined' && window.innerWidth < 1100 && state.queueDrawerOpen) {
+  if (next && typeof window !== 'undefined' && window.innerWidth < 960 && state.queueDrawerOpen) {
     state.queueDrawerOpen = false;
   }
   syncDesktopSideDockState();
@@ -13215,12 +13413,9 @@ function openFullStageFromLyricsDrawer() {
 window.openFullStageFromLyricsDrawer = openFullStageFromLyricsDrawer;
 
 function openFullLyricsAndShare() {
-  state.lyricsDrawerOpen = false;
-  syncDesktopSideDockState();
-  switchTab('calma-listeleri');
-  requestAnimationFrame(() => {
-    if (typeof toggleLyricsShareSelectMode === 'function') toggleLyricsShareSelectMode();
-  });
+  if (typeof toggleLyricsShareSelectMode === 'function') {
+    toggleLyricsShareSelectMode('side');
+  }
 }
 window.openFullLyricsAndShare = openFullLyricsAndShare;
 

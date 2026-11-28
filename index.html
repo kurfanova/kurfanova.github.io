@@ -145,7 +145,7 @@
     }
   </style>
   <link rel="stylesheet" href="./tailwind.min.css?v=20261120_v17">
-  <link rel="stylesheet" href="./style.min.css?v=af144633">
+  <link rel="stylesheet" href="./style.min.css?v=6c19d6c2">
   <script>
     (function() {
       var markReady = function() { document.documentElement.classList.add('icons-ready'); };
@@ -215,16 +215,21 @@
 
     <div class="p-space-lg relative z-10">
       
-      <!-- Brand Logo & Title -->
-      <div class="kurfa-sidebar-brand flex items-center gap-3 mb-space-lg cursor-pointer group" onclick="switchTab('kesfet')">
-        <img src="./kurfamuzik_logo_96.webp" alt="Kurfamüzik Logo" width="32" height="32" class="kurfa-brand-logo h-8 w-8 object-contain flex-shrink-0" onerror="this.onerror=null; this.src='./kurfamuzik_logo.png';">
-        <div class="flex flex-col min-w-0">
-          <span class="text-[19px] font-black tracking-tight text-on-surface leading-none">Kurfamüzik</span>
-          <div class="flex items-center gap-1.5 mt-1">
-            <span class="kurfa-brand-dot" aria-hidden="true"></span>
-            <span class="text-[11px] text-on-surface-variant font-semibold leading-tight opacity-80 truncate" data-i18n="nav.brand_sub">Masaüstü & Web</span>
+      <!-- Brand Logo & Title + Sidebar Collapse Toggle -->
+      <div class="kurfa-sidebar-brand flex items-center justify-between gap-2 mb-space-lg">
+        <div class="kurfa-sidebar-brand-click flex items-center gap-3 min-w-0 flex-1 cursor-pointer group" onclick="switchTab('kesfet')">
+          <img src="./kurfamuzik_logo_96.webp" alt="Kurfamüzik Logo" width="32" height="32" class="kurfa-brand-logo h-8 w-8 object-contain flex-shrink-0" onerror="this.onerror=null; this.src='./kurfamuzik_logo.png';">
+          <div class="kurfa-brand-text flex flex-col min-w-0">
+            <span class="text-[19px] font-black tracking-tight text-on-surface leading-none truncate">Kurfamüzik</span>
+            <div class="flex items-center gap-1.5 mt-1">
+              <span class="kurfa-brand-dot" aria-hidden="true"></span>
+              <span class="text-[11px] text-on-surface-variant font-semibold leading-tight opacity-80 truncate" data-i18n="nav.brand_sub">Masaüstü & Web</span>
+            </div>
           </div>
         </div>
+        <button type="button" id="btn-sidebar-collapse" onclick="toggleSidebarCollapse()" aria-label="Kenar Çubuğunu Daralt" title="Kenar Çubuğunu Daralt / Genişlet" class="kurfa-sidebar-collapse-btn hidden md:inline-flex items-center justify-center flex-shrink-0">
+          <span class="material-symbols-outlined text-[18px]" id="sidebar-collapse-icon" aria-hidden="true">left_panel_close</span>
+        </button>
       </div>
 
       <!-- Ana Menü: 4 Odak Sekme -->
@@ -298,7 +303,7 @@
   <div id="app-shell" class="md:pl-64 flex flex-col min-h-screen min-w-0 max-w-full">
     
     <!-- Top Header -->
-    <header class="fixed top-0 left-0 md:left-64 right-0 h-16 bg-surface-container-lowest/90 backdrop-blur-md z-30 shadow-[0_1px_8px_rgba(0,0,0,0.04)]">
+    <header id="desktop-top-header" class="fixed top-0 left-0 md:left-64 right-0 h-16 bg-surface-container-lowest/90 backdrop-blur-md z-30 shadow-[0_1px_8px_rgba(0,0,0,0.04)]">
       <div class="w-full h-full px-3 md:px-space-lg flex items-center justify-between gap-2 md:gap-space-md">
         
         <!-- Mobile Brand Title (Mobile Only) -->
@@ -1964,6 +1969,7 @@
   <!-- 6. QUEUE SIDE PANEL / MOBILE SHEET & DESKTOP LYRICS SIDE PANEL        -->
   <!-- ===================================================================== -->
   <div id="queue-drawer" class="kurfa-side-panel kurfa-queue-drawer fixed left-3 right-3 bottom-32 z-50 flex flex-col transform translate-y-8 opacity-0 pointer-events-none transition-all duration-300">
+    <div class="kurfa-panel-resizer hidden md:flex" data-resize-target="queue" role="separator" aria-orientation="vertical" title="Sürükleyerek genişliği ayarla"><span aria-hidden="true"></span></div>
     <div class="kurfa-side-panel-header">
       <div class="flex flex-col min-w-0">
         <div class="flex items-center gap-2 min-w-0">
@@ -2016,6 +2022,7 @@
 
   <!-- DESKTOP RIGHT LYRICS SIDE DRAWER (Dockable beside Queue or alone, never leaves current tab) -->
   <aside id="desktop-lyrics-drawer" aria-label="Şarkı Sözleri Paneli" class="kurfa-side-panel kurfa-lyrics-drawer hidden md:flex fixed right-3 z-50 flex-col transform translate-x-6 opacity-0 pointer-events-none transition-all duration-300">
+    <div class="kurfa-panel-resizer" data-resize-target="lyrics" role="separator" aria-orientation="vertical" title="Sürükleyerek genişliği ayarla"><span aria-hidden="true"></span></div>
     <div class="kurfa-side-panel-header kurfa-lyrics-drawer-head">
       <div class="flex items-center gap-2 min-w-0 flex-1">
         <span id="side-lyrics-status-label" class="text-[14px] font-extrabold tracking-tight text-on-surface truncate" data-i18n="player.lyrics_title">Şarkı sözleri</span>
@@ -2026,7 +2033,7 @@
           <span class="material-symbols-outlined text-[14px]" aria-hidden="true">tune</span>
           <span id="side-lyrics-offset-btn-val" class="font-mono text-[10.5px]">0.0s</span>
         </button>
-        <button type="button" id="btn-side-lyrics-share" onclick="openFullLyricsAndShare()" class="kurfa-side-close-btn hidden" title="Söz Kartı Paylaş" data-i18n-title="lyrics.share_btn">
+        <button type="button" id="btn-side-lyrics-share" onclick="toggleLyricsShareSelectMode('side')" class="kurfa-side-close-btn hidden" title="Söz Kartı Paylaş" data-i18n-title="lyrics.share_btn">
           <span class="material-symbols-outlined text-[16px]" aria-hidden="true">ios_share</span>
         </button>
         <button type="button" onclick="openFullStageFromLyricsDrawer()" class="kurfa-side-close-btn" title="Tam Stüdyo Görünümü">
@@ -2039,17 +2046,29 @@
     </div>
 
     <div id="side-lyrics-offset-controls" class="kurfa-lyrics-sync-capsule mx-3 mt-1 mb-1 hidden" title="Söz senkronizasyon ayarı">
-      <button type="button" class="kurfa-lyrics-sync-btn h-7 rounded-xl text-[11px] font-mono font-bold transition-colors active:scale-95" onclick="adjustLyricsOffset(-1.0)">-1s</button>
-      <button type="button" class="kurfa-lyrics-sync-btn h-7 rounded-xl text-[11px] font-mono font-bold transition-colors active:scale-95" onclick="adjustLyricsOffset(-0.5)">-0.5s</button>
-      <button type="button" class="h-7 rounded-xl bg-primary/12 hover:bg-primary/22 text-[11px] font-mono text-primary font-extrabold transition-colors active:scale-95" onclick="adjustLyricsOffset(0)">
+      <button type="button" class="kurfa-lyrics-sync-btn h-7 rounded-lg text-[11px] font-mono font-bold transition-colors active:scale-95" onclick="adjustLyricsOffset(-1.0)">-1s</button>
+      <button type="button" class="kurfa-lyrics-sync-btn h-7 rounded-lg text-[11px] font-mono font-bold transition-colors active:scale-95" onclick="adjustLyricsOffset(-0.5)">-0.5s</button>
+      <button type="button" class="kurfa-lyrics-sync-zero h-7 rounded-lg text-[11px] font-mono text-primary font-extrabold transition-colors active:scale-95" onclick="adjustLyricsOffset(0)">
         <span id="side-lyrics-offset-display">0.0s</span>
       </button>
-      <button type="button" class="kurfa-lyrics-sync-btn h-7 rounded-xl text-[11px] font-mono font-bold transition-colors active:scale-95" onclick="adjustLyricsOffset(0.5)">+0.5s</button>
-      <button type="button" class="kurfa-lyrics-sync-btn h-7 rounded-xl text-[11px] font-mono font-bold transition-colors active:scale-95" onclick="adjustLyricsOffset(1.0)">+1s</button>
-      <button type="button" class="kurfa-lyrics-sync-now h-7 rounded-xl bg-primary hover:bg-primary/90 text-on-primary text-[11px] font-bold transition-all flex items-center justify-center gap-1 active:scale-95 px-2 whitespace-nowrap" onclick="syncActiveLineToPlayback()">
+      <button type="button" class="kurfa-lyrics-sync-btn h-7 rounded-lg text-[11px] font-mono font-bold transition-colors active:scale-95" onclick="adjustLyricsOffset(0.5)">+0.5s</button>
+      <button type="button" class="kurfa-lyrics-sync-btn h-7 rounded-lg text-[11px] font-mono font-bold transition-colors active:scale-95" onclick="adjustLyricsOffset(1.0)">+1s</button>
+      <button type="button" class="kurfa-lyrics-sync-now h-7 rounded-lg text-[11px] font-bold transition-all flex items-center justify-center gap-1 active:scale-95 px-2.5 whitespace-nowrap" onclick="syncActiveLineToPlayback()">
         <span class="material-symbols-outlined text-[13px]" aria-hidden="true">sync</span>
         <span data-i18n="player.lyrics_sync_btn">Eşitle</span>
       </button>
+    </div>
+
+    <!-- In-Drawer Share Selection Toolbar (Never leaves current tab) -->
+    <div id="side-lyrics-share-toolbar" class="hidden mx-3 mt-1 mb-1 items-center justify-between gap-2 px-3 py-2 rounded-xl bg-primary/10 border border-primary/25 text-xs">
+      <span class="text-[11px] font-semibold text-on-surface truncate" data-i18n="lyrics.select_lines_hint">1-4 satır seçin</span>
+      <div class="flex items-center gap-1.5 flex-shrink-0">
+        <button type="button" onclick="openLyricsShareModal()" class="h-6 px-2.5 rounded-full bg-primary text-on-primary text-[11px] font-bold flex items-center gap-1 active:scale-95 transition-all">
+          <span class="material-symbols-outlined text-[13px]">image</span>
+          <span id="side-lyrics-share-count-label" data-i18n="lyrics.create_card">Kart Oluştur</span>
+        </button>
+        <button type="button" onclick="cancelLyricsShareSelectMode()" class="h-6 px-2 rounded-full bg-surface-container text-on-surface-variant text-[11px] font-semibold hover:text-on-surface" data-i18n="cpl.cancel">İptal</button>
+      </div>
     </div>
 
     <div class="relative flex-1 min-h-0 flex flex-col">
@@ -3320,6 +3339,6 @@
   </div>
 
   <!-- Scripts (Deferred & minified; YouTube IFrame API loads lazily on demand) -->
-  <script defer fetchpriority="high" src="./app.min.js?v=211652da"></script>
+  <script defer fetchpriority="high" src="./app.min.js?v=940e6569"></script>
 </body>
 </html>
