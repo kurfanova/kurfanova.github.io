@@ -145,7 +145,7 @@
     }
   </style>
   <link rel="stylesheet" href="./tailwind.min.css?v=20261120_v17">
-  <link rel="stylesheet" href="./style.min.css?v=6c19d6c2">
+  <link rel="stylesheet" href="./style.min.css?v=34705a23">
   <script>
     (function() {
       var markReady = function() { document.documentElement.classList.add('icons-ready'); };
@@ -210,6 +210,7 @@
       <span class="kurfa-cove-sweep"></span>
       <span class="kurfa-cove-sweep-2"></span>
       <span class="kurfa-cove-chroma"></span>
+      <span class="kurfa-cove-aurora"></span>
       <span class="kurfa-cove-pulse"></span>
     </div>
 
@@ -218,7 +219,12 @@
       <!-- Brand Logo & Title + Sidebar Collapse Toggle -->
       <div class="kurfa-sidebar-brand flex items-center justify-between gap-2 mb-space-lg">
         <div class="kurfa-sidebar-brand-click flex items-center gap-3 min-w-0 flex-1 cursor-pointer group" onclick="switchTab('kesfet')">
-          <img src="./kurfamuzik_logo_96.webp" alt="Kurfamüzik Logo" width="32" height="32" class="kurfa-brand-logo h-8 w-8 object-contain flex-shrink-0" onerror="this.onerror=null; this.src='./kurfamuzik_logo.png';">
+          <div class="kurfa-brand-logo-wrap relative flex-shrink-0">
+            <img src="./kurfamuzik_logo_96.webp" alt="Kurfamüzik Logo" width="32" height="32" class="kurfa-brand-logo h-8 w-8 object-contain flex-shrink-0" onerror="this.onerror=null; this.src='./kurfamuzik_logo.png';">
+            <button type="button" id="btn-sidebar-logo-expand" onclick="event.stopPropagation(); toggleSidebarCollapse();" aria-label="Menüyü Genişlet" title="Menüyü Genişlet" class="kurfa-logo-expand-overlay">
+              <span class="material-symbols-outlined text-[18px]" aria-hidden="true">left_panel_open</span>
+            </button>
+          </div>
           <div class="kurfa-brand-text flex flex-col min-w-0">
             <span class="text-[19px] font-black tracking-tight text-on-surface leading-none truncate">Kurfamüzik</span>
             <div class="flex items-center gap-1.5 mt-1">
@@ -295,6 +301,7 @@
         <span class="material-symbols-outlined text-on-surface-variant group-hover:text-on-surface text-[16px] flex-shrink-0 transition-colors" aria-hidden="true">chevron_right</span>
       </button>
     </div>
+    <div class="kurfa-sidebar-resizer" data-resize-target="sidebar" role="separator" aria-orientation="vertical" title="Sürükleyerek menü genişliğini ayarla"><span aria-hidden="true"></span></div>
   </aside>
 
   <!-- ===================================================================== -->
@@ -428,7 +435,7 @@
               </div>
 
               <!-- CTAs -->
-              <div class="flex flex-wrap items-center gap-2 pt-0.5">
+              <div class="hero-cta-row flex flex-wrap items-center gap-2 pt-0.5">
                 <button type="button" id="hero-play-btn" aria-label="Parçayı Hemen Dinle" data-i18n-aria="hero.listen_now" class="relative group flex items-center gap-1.5 px-4 sm:px-5 py-2 rounded-full bg-primary text-on-primary text-xs font-bold shadow-md hover:bg-primary-container active:scale-95 transition-all" onclick="playHeroTrack()">
                   <span class="material-symbols-outlined text-[18px] filled" aria-hidden="true">play_arrow</span>
                   <span data-i18n="hero.listen_now">Hemen Dinle</span>
@@ -1779,6 +1786,7 @@
       <span class="kurfa-bar-cove-sweep"></span>
       <span class="kurfa-bar-cove-sweep-2"></span>
       <span class="kurfa-bar-cove-chroma"></span>
+      <span class="kurfa-bar-cove-aurora"></span>
       <span class="kurfa-bar-cove-pulse"></span>
     </div>
     
@@ -3339,6 +3347,6 @@
   </div>
 
   <!-- Scripts (Deferred & minified; YouTube IFrame API loads lazily on demand) -->
-  <script defer fetchpriority="high" src="./app.min.js?v=940e6569"></script>
+  <script defer fetchpriority="high" src="./app.min.js?v=534a316c"></script>
 </body>
 </html>

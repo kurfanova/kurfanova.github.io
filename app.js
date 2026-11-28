@@ -3277,6 +3277,7 @@ const state = {
   queueDrawerOpen: false,
   lyricsDrawerOpen: false,
   sidebarCollapsed: (function () { try { return localStorage.getItem('kurfa_sidebar_collapsed') === '1'; } catch (_) { return false; } })(),
+  _preferredSidebarW: (function () { try { return Math.max(196, Math.min(320, Number(localStorage.getItem('kurfa_sidebar_w')) || 256)); } catch (_) { return 256; } })(),
   _preferredQueueW: (function () { try { return Math.max(248, Math.min(480, Number(localStorage.getItem('kurfa_queue_w')) || 320)); } catch (_) { return 320; } })(),
   _preferredLyricsW: (function () { try { return Math.max(268, Math.min(560, Number(localStorage.getItem('kurfa_lyrics_w')) || 360)); } catch (_) { return 360; } })(),
   _lyricsDeckOffsetExpanded: false,
@@ -8468,7 +8469,7 @@ function scrollLyricsContainerToLine(lineEl, boxEl, instant = false) {
   if (cRect.height <= 0) return;
   const lRect = lineEl.getBoundingClientRect();
   const currentRelTop = (lRect.top - cRect.top) + container.scrollTop;
-  const target = Math.max(0, currentRelTop - (container.clientHeight * 0.36) + (lRect.height * 0.5));
+  const target = Math.max(0, currentRelTop - (container.clientHeight * 0.46) + (lRect.height * 0.5));
   if (instant) {
     try {
       container.style.scrollBehavior = 'auto';
@@ -8497,29 +8498,54 @@ function updateActiveWordProgressForGroup(activeIdx, adjustedTime, wordGroups) {
     const word = line.words[w];
     const el = wordEls[w];
     if (!el) continue;
-    if (adjustedTime >= word.endTime) {
+    const wStart = Number(word.time) || 0;
+    const wEnd = Math.max(wStart + 0.08, Number(word.endTime) || (wStart + 0.35));
+    if (adjustedTime >= wEnd) {
       if (!el.classList.contains('word-sung')) el.classList.add('word-sung');
       if (el.classList.contains('word-active')) el.classList.remove('word-active');
-    } else if (adjustedTime >= word.time) {
+      if (el._lastWordState !== 'sung') {
+        el._lastWordState = 'sung';
+        el.style.setProperty('--word-fill', '100%');
+        el.style.setProperty('--word-lift', '0');
+        el.style.setProperty('--word-glow', '0');
+      }
+    } else if (adjustedTime >= wStart) {
       activeWordIdx = w;
-      const span = Math.max(0.06, word.endTime - word.time);
-      const pct = Math.max(0, Math.min(100, ((adjustedTime - word.time) / span) * 100));
+      const span = Math.max(0.08, wEnd - wStart);
+      const rawP = Math.max(0, Math.min(1, (adjustedTime - wStart) / span));
+      // Smooth Apple/Metrolist luminance sweep (-24% -> 100%) + gentle syllable spring float
+      const easedSweep = 1 - Math.pow(1 - rawP, 1.32);
+      const fillPct = -24 + easedSweep * 124;
+      const liftVal = Math.sin(Math.pow(rawP, 0.72) * Math.PI);
+      const glowVal = rawP < 0.16
+        ? (0.85 * (rawP / 0.16))
+        : (rawP < 0.34 ? (0.85 + 0.15 * ((rawP - 0.16) / 0.18)) : Math.max(0, 1 - ((rawP - 0.34) / 0.66)));
       if (!el.classList.contains('word-active')) el.classList.add('word-active');
       if (el.classList.contains('word-sung')) el.classList.remove('word-sung');
-      const prevPct = Number(el._lastWordPct ?? -10);
-      if (Math.abs(pct - prevPct) >= 0.35 || pct >= 99.5 || pct <= 0.5) {
-        el._lastWordPct = pct;
-        el.style.setProperty('--word-progress', `${pct.toFixed(2)}%`);
+      const prevPct = Number(el._lastWordPct ?? -100);
+      if (Math.abs(fillPct - prevPct) >= 0.4 || rawP >= 0.99 || rawP <= 0.02 || el._lastWordState !== 'active') {
+        el._lastWordState = 'active';
+        el._lastWordPct = fillPct;
+        el.style.setProperty('--word-fill', `${fillPct.toFixed(2)}%`);
+        el.style.setProperty('--word-lift', liftVal.toFixed(3));
+        el.style.setProperty('--word-glow', glowVal.toFixed(3));
       }
     } else {
       if (el.classList.contains('word-active')) el.classList.remove('word-active');
       if (el.classList.contains('word-sung')) el.classList.remove('word-sung');
+      if (el._lastWordState !== 'pending') {
+        el._lastWordState = 'pending';
+        el._lastWordPct = -24;
+        el.style.setProperty('--word-fill', '-24%');
+        el.style.setProperty('--word-lift', '0');
+        el.style.setProperty('--word-glow', '0');
+      }
     }
   }
   _lyricsLastWordIndex = activeWordIdx;
 }
 
-function applyLyricsLineChangeToTarget(lineEls, wordGroups, boxEl, activeIdx, safeTime, forceScroll) {
+function applyLyricsLineChangeToTarget(lineEls, wordGroups, boxEl, activeIdx, _safeTime, forceScroll) {
   if (!Array.isArray(lineEls) || lineEls.length === 0) return;
   for (let i = 0; i < lineEls.length; i++) {
     const el = lineEls[i];
@@ -8530,7 +8556,13 @@ function applyLyricsLineChangeToTarget(lineEls, wordGroups, boxEl, activeIdx, sa
       el.classList.remove('active-lyric', 'active');
       const prevWords = wordGroups ? wordGroups[i] : null;
       if (prevWords) {
-        prevWords.forEach(w => w.classList.remove('word-active', 'word-sung'));
+        prevWords.forEach((w) => {
+          w.classList.remove('word-active', 'word-sung');
+          w._lastWordState = null;
+          w.style.removeProperty('--word-fill');
+          w.style.removeProperty('--word-lift');
+          w.style.removeProperty('--word-glow');
+        });
       }
     }
     const dist = Math.abs(i - activeIdx);
@@ -8542,15 +8574,11 @@ function applyLyricsLineChangeToTarget(lineEls, wordGroups, boxEl, activeIdx, sa
   if (activeEl) {
     activeEl.classList.remove('is-near-1', 'is-near-2', 'is-far');
     activeEl.classList.add('active-lyric', 'active');
+    if (typeof FxReactiveStudio !== 'undefined') {
+      FxReactiveStudio._lyricPulseAt = typeof performance !== 'undefined' ? performance.now() : Date.now();
+    }
     if ((forceScroll || !lyricsAutoScrollPaused) && boxEl) {
-      if (activeIdx === 0 && safeTime < 1.5) {
-        try {
-          boxEl.style.scrollBehavior = 'auto';
-          boxEl.scrollTop = 0;
-        } catch (_) {}
-      } else {
-        scrollLyricsContainerToLine(activeEl, boxEl, forceScroll);
-      }
+      scrollLyricsContainerToLine(activeEl, boxEl, forceScroll);
     }
   }
 }
@@ -13154,9 +13182,10 @@ function updateDesktopSideLayout() {
 
   const isQueueOpen = Boolean(state.queueDrawerOpen);
   const isLyricsOpen = Boolean(state.lyricsDrawerOpen);
+  const prefSidebar = Math.max(196, Math.min(320, Number(state._preferredSidebarW) || 256));
   const prefQ = Math.max(248, Math.min(480, Number(state._preferredQueueW) || 320));
   const prefL = Math.max(268, Math.min(560, Number(state._preferredLyricsW) || 360));
-  const minMainW = vw >= 1040 ? 450 : 380;
+  const minMainW = vw >= 1200 ? 410 : (vw >= 1040 ? 440 : 380);
 
   let queueW = prefQ;
   let lyricsW = prefL;
@@ -13164,14 +13193,15 @@ function updateDesktopSideLayout() {
 
   let autoCollapsed = false;
   if (!state.sidebarCollapsed && (isQueueOpen || isLyricsOpen)) {
-    const neededRight = (isQueueOpen ? queueW : 0) + (isLyricsOpen ? lyricsW : 0) + rightGapReserve;
-    if (vw - 256 - neededRight < minMainW) {
+    const minRightTotal = (isQueueOpen ? 240 : 0) + (isLyricsOpen ? 260 : 0) + rightGapReserve;
+    const neededRight = vw >= 1320 ? minRightTotal : ((isQueueOpen ? queueW : 0) + (isLyricsOpen ? lyricsW : 0) + rightGapReserve);
+    if (vw - prefSidebar - neededRight < minMainW) {
       autoCollapsed = true;
     }
   }
 
   const effectiveCollapsed = Boolean(state.sidebarCollapsed || autoCollapsed);
-  const sidebarW = effectiveCollapsed ? 72 : 256;
+  const sidebarW = effectiveCollapsed ? 72 : Math.min(prefSidebar, Math.max(196, vw - minMainW - rightGapReserve - (isQueueOpen ? 232 : 0) - (isLyricsOpen ? 252 : 0)));
   const availRight = Math.max(240, vw - sidebarW - minMainW - rightGapReserve);
 
   if (isQueueOpen && isLyricsOpen) {
@@ -13204,7 +13234,7 @@ function updateDesktopSideLayout() {
   if (body) {
     body.classList.toggle('sidebar-collapsed', effectiveCollapsed);
     body.classList.toggle('kurfa-auto-collapsed-sidebar', autoCollapsed && !state.sidebarCollapsed);
-    body.classList.toggle('kurfa-compact-main', mainW < 620);
+    body.classList.toggle('kurfa-compact-main', mainW < 640);
   }
 
   const collapseBtn = document.getElementById('btn-sidebar-collapse');
@@ -13233,7 +13263,7 @@ window.toggleSidebarCollapse = toggleSidebarCollapse;
 let _sideResizersInitialized = false;
 function initSidePanelResizers() {
   if (_sideResizersInitialized || typeof document === 'undefined') return;
-  const handles = document.querySelectorAll('.kurfa-panel-resizer[data-resize-target]');
+  const handles = document.querySelectorAll('.kurfa-panel-resizer[data-resize-target], .kurfa-sidebar-resizer[data-resize-target]');
   if (!handles || handles.length === 0) return;
   _sideResizersInitialized = true;
 
@@ -13243,14 +13273,17 @@ function initSidePanelResizers() {
       e.preventDefault();
       e.stopPropagation();
       const target = handle.getAttribute('data-resize-target');
+      const isSidebar = target === 'sidebar';
       const isQueue = target === 'queue';
-      const panelEl = isQueue ? DOM.queueDrawer : document.getElementById('desktop-lyrics-drawer');
+      const panelEl = isSidebar
+        ? document.getElementById('desktop-sidebar')
+        : (isQueue ? DOM.queueDrawer : document.getElementById('desktop-lyrics-drawer'));
       if (!panelEl) return;
 
       const startX = e.clientX;
-      const startW = panelEl.getBoundingClientRect().width || (isQueue ? state._preferredQueueW : state._preferredLyricsW);
-      const minW = isQueue ? 248 : 268;
-      const maxW = isQueue ? 480 : 560;
+      const startW = panelEl.getBoundingClientRect().width || (isSidebar ? (state.sidebarCollapsed ? 72 : state._preferredSidebarW) : (isQueue ? state._preferredQueueW : state._preferredLyricsW));
+      const minW = isSidebar ? 72 : (isQueue ? 248 : 268);
+      const maxW = isSidebar ? 320 : (isQueue ? 480 : 560);
 
       document.body.classList.add('kurfa-resizing');
       handle.classList.add('is-dragging');
@@ -13259,6 +13292,17 @@ function initSidePanelResizers() {
       }
 
       const onMove = (moveEvt) => {
+        if (isSidebar) {
+          const rawNext = Math.round(startW + (moveEvt.clientX - startX));
+          if (rawNext <= 135) {
+            state.sidebarCollapsed = true;
+          } else {
+            state.sidebarCollapsed = false;
+            state._preferredSidebarW = Math.max(196, Math.min(maxW, rawNext));
+          }
+          updateDesktopSideLayout();
+          return;
+        }
         const dx = startX - moveEvt.clientX;
         const nextW = Math.round(Math.max(minW, Math.min(maxW, startW + dx)));
         if (isQueue) state._preferredQueueW = nextW;
@@ -13273,7 +13317,12 @@ function initSidePanelResizers() {
         window.removeEventListener('pointerup', onEnd);
         window.removeEventListener('pointercancel', onEnd);
         try {
-          localStorage.setItem(isQueue ? 'kurfa_queue_w' : 'kurfa_lyrics_w', String(isQueue ? state._preferredQueueW : state._preferredLyricsW));
+          if (isSidebar) {
+            localStorage.setItem('kurfa_sidebar_collapsed', state.sidebarCollapsed ? '1' : '0');
+            localStorage.setItem('kurfa_sidebar_w', String(state._preferredSidebarW));
+          } else {
+            localStorage.setItem(isQueue ? 'kurfa_queue_w' : 'kurfa_lyrics_w', String(isQueue ? state._preferredQueueW : state._preferredLyricsW));
+          }
         } catch (_) {}
       };
 
@@ -13393,7 +13442,7 @@ function toggleLyricsDrawer(forceState) {
       updateLyricsDisplay();
     } else if (Array.isArray(state.activeLyrics) && state.activeLyrics.length > 0) {
       requestAnimationFrame(() => {
-        syncLyricsWithTime(getActiveMediaCurrentTime(), true);
+        syncLyricsWithTime(getActiveMediaCurrentTime() || state.currentPlayheadTime || 0, true);
         if (typeof LyricsClock !== 'undefined') LyricsClock.syncState();
       });
     } else if (!state.currentTrack) {
@@ -14935,6 +14984,7 @@ function syncSongThemeAccent(primaryRgb, secondaryRgb, tertiaryRgb, deepRgb) {
     rootStyle.setProperty('--kurfa-track-rgb-2', '139, 92, 246');
     rootStyle.setProperty('--kurfa-track-rgb-3', '14, 165, 233');
     rootStyle.setProperty('--kurfa-track-rgb-4', '88, 28, 135');
+    rootStyle.setProperty('--kurfa-track-rgb-5', '251, 146, 60');
     return;
   }
   const p = normalizeSongAccentTriplet(primaryRgb);
@@ -14943,6 +14993,7 @@ function syncSongThemeAccent(primaryRgb, secondaryRgb, tertiaryRgb, deepRgb) {
     rootStyle.setProperty('--kurfa-track-rgb-2', '139, 92, 246');
     rootStyle.setProperty('--kurfa-track-rgb-3', '14, 165, 233');
     rootStyle.setProperty('--kurfa-track-rgb-4', '88, 28, 135');
+    rootStyle.setProperty('--kurfa-track-rgb-5', '251, 146, 60');
     return;
   }
   const [pHue, pSat, pLum] = rgbToHsl01(p[0], p[1], p[2]);
@@ -14952,12 +15003,13 @@ function syncSongThemeAccent(primaryRgb, secondaryRgb, tertiaryRgb, deepRgb) {
   let s = normalizeSongAccentTriplet(secondaryRgb);
   let t = normalizeSongAccentTriplet(tertiaryRgb);
   let d = normalizeSongAccentTriplet(deepRgb);
+  let crest = null;
   if (isMono) {
     const monoSeeds = [
-      [[99, 102, 241], [236, 72, 153], [14, 165, 233], [67, 56, 202]],
-      [[244, 63, 94], [139, 92, 246], [56, 189, 248], [136, 19, 55]],
-      [[14, 165, 233], [99, 102, 241], [45, 212, 191], [30, 64, 175]],
-      [[168, 85, 247], [244, 63, 94], [56, 189, 248], [88, 28, 135]]
+      [[99, 102, 241], [236, 72, 153], [14, 165, 233], [67, 56, 202], [45, 212, 191]],
+      [[244, 63, 94], [139, 92, 246], [56, 189, 248], [136, 19, 55], [251, 146, 60]],
+      [[14, 165, 233], [99, 102, 241], [45, 212, 191], [30, 64, 175], [236, 72, 153]],
+      [[168, 85, 247], [244, 63, 94], [56, 189, 248], [88, 28, 135], [250, 204, 21]]
     ];
     const seedKey = String((state.currentTrack && (state.currentTrack.title || state.currentTrack.id)) || p.join(','));
     let mh = 0;
@@ -14967,21 +15019,24 @@ function syncSongThemeAccent(primaryRgb, secondaryRgb, tertiaryRgb, deepRgb) {
     if (!s) s = pick[1];
     if (!t) t = pick[2];
     if (!d) d = pick[3];
+    crest = pick[4];
   } else {
     if (!s) {
-      s = hsl01ToRgb((pHue + 0.10) % 1, pSat, pLum);
+      s = hsl01ToRgb((pHue + 0.14) % 1, Math.min(0.92, pSat + 0.08), pLum);
     }
     if (!t) {
-      t = hsl01ToRgb((pHue + 0.86) % 1, Math.min(0.84, pSat), Math.min(0.66, pLum + 0.04));
+      t = hsl01ToRgb((pHue + 0.42) % 1, Math.min(0.88, Math.max(0.58, pSat)), Math.min(0.68, pLum + 0.04));
     }
     if (!d) {
-      d = hsl01ToRgb((pHue + 0.04) % 1, Math.max(0.45, pSat * 0.85), 0.32);
+      d = hsl01ToRgb((pHue + 0.72) % 1, Math.max(0.50, pSat * 0.90), 0.34);
     }
+    crest = hsl01ToRgb((pHue + 0.85) % 1, Math.min(0.94, Math.max(0.64, pSat)), Math.min(0.70, pLum + 0.06));
   }
   rootStyle.setProperty('--kurfa-track-rgb', `${primaryOut[0]}, ${primaryOut[1]}, ${primaryOut[2]}`);
   rootStyle.setProperty('--kurfa-track-rgb-2', `${s[0]}, ${s[1]}, ${s[2]}`);
   rootStyle.setProperty('--kurfa-track-rgb-3', `${t[0]}, ${t[1]}, ${t[2]}`);
   rootStyle.setProperty('--kurfa-track-rgb-4', `${d[0]}, ${d[1]}, ${d[2]}`);
+  rootStyle.setProperty('--kurfa-track-rgb-5', `${crest[0]}, ${crest[1]}, ${crest[2]}`);
 }
 window.syncSongThemeAccent = syncSongThemeAccent;
 
@@ -15403,10 +15458,13 @@ const FxReactiveStudio = {
                 document.body.classList.toggle('kurfa-audio-silent', isSilent);
               }
 
-              const targetBass = isSilent ? 0 : rawBass * volCurve;
-              const targetMid = isSilent ? 0 : rawMid * volCurve;
-              const targetHigh = isSilent ? 0 : rawHigh * volCurve;
-              const targetVocal = isSilent ? 0 : rawVocal * volCurve;
+              const lyricPulseAge = this._lyricPulseAt ? Math.max(0, (now - this._lyricPulseAt) / 1000) : 99;
+              const lyricAccent = lyricPulseAge < 1.1 ? Math.exp(-lyricPulseAge * 3.1) * 0.28 : 0;
+
+              const targetBass = isSilent ? 0 : Math.min(1, rawBass * volCurve + lyricAccent * 0.65);
+              const targetMid = isSilent ? 0 : Math.min(1, rawMid * volCurve + lyricAccent * 0.55);
+              const targetHigh = isSilent ? 0 : Math.min(1, rawHigh * volCurve + lyricAccent * 0.45);
+              const targetVocal = isSilent ? 0 : Math.min(1, rawVocal * volCurve + lyricAccent);
 
               this._bassSmooth = this._bassSmooth * 0.58 + targetBass * 0.42;
               this._midSmooth = this._midSmooth * 0.72 + targetMid * 0.28;
@@ -15467,10 +15525,11 @@ const FxReactiveStudio = {
               const y2 = 55 + Math.cos(this._flow2) * 68;
               const x1 = 98 + Math.sin(this._flow1 * 0.85) * 112;
               const x2 = 98 + Math.cos(this._flow2 * 0.85) * 108;
-              const d3y = Math.sin(this._flow3) * 22;
+              const d3y = Math.sin(this._flow3) * 26;
+              const x3 = 48 + Math.sin(this._flow3 * 0.95) * 42;
               const hueShift = isSilent
                 ? 0
-                : Math.sin(this._flow3 * 0.65) * 10 + (this._brightSmooth - 0.4) * 18 + this._surgeSmooth * 10;
+                : Math.sin(this._flow3 * 0.72) * 22 + (this._brightSmooth - 0.4) * 26 + this._surgeSmooth * 16;
               const rimY = 50 + Math.sin(this._flow1 * 0.9) * 34;
               const rimX = 50 + Math.cos(this._flow2 * 0.8) * 38;
 
@@ -15489,6 +15548,7 @@ const FxReactiveStudio = {
               st.setProperty('--kurfa-y2', `${y2.toFixed(2)}%`);
               st.setProperty('--kurfa-x1', `${x1.toFixed(2)}%`);
               st.setProperty('--kurfa-x2', `${x2.toFixed(2)}%`);
+              st.setProperty('--kurfa-x3', `${x3.toFixed(2)}%`);
               st.setProperty('--kurfa-d3y', `${d3y.toFixed(2)}%`);
               st.setProperty('--kurfa-hue-shift', `${hueShift.toFixed(1)}deg`);
               st.setProperty('--kurfa-rim-y', `${rimY.toFixed(1)}%`);

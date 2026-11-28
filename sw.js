@@ -1,13 +1,13 @@
 // Kurfanova PWA Service Worker
-const CACHE_NAME = 'kurfanova-shell-6c19d6c2_940e6569';
+const CACHE_NAME = 'kurfanova-shell-34705a23_534a316c';
 const FONT_CACHE_NAME = 'kurfanova-fonts-v1';
 
 const SHELL_ASSETS = [
   './',
   './index.html',
   './tailwind.min.css?v=20261120_v17',
-  './style.min.css?v=6c19d6c2',
-  './app.min.js?v=940e6569',
+  './style.min.css?v=34705a23',
+  './app.min.js?v=534a316c',
   './kurfamuzik_logo_96.webp',
   './manifest.json'
 ];
