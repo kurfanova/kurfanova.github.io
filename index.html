@@ -145,7 +145,7 @@
     }
   </style>
   <link rel="stylesheet" href="./tailwind.min.css?v=20261120_v17">
-  <link rel="stylesheet" href="./style.min.css?v=4d2026f7">
+  <link rel="stylesheet" href="./style.min.css?v=af144633">
   <script>
     (function() {
       var markReady = function() { document.documentElement.classList.add('icons-ready'); };
@@ -1432,8 +1432,10 @@
                   <span id="lyrics-status-label" class="kurfa-lyrics-status-text text-xs sm:text-[13px] font-extrabold text-on-surface tracking-tight truncate block min-w-0" data-i18n="player.lyrics_title">Şarkı Sözleri</span>
                 </div>
                 <div class="kurfa-lyrics-header-actions">
-                  <button type="button" id="btn-lyrics-provider-cycle" onclick="cycleLyricsProvider()" class="kurfa-stage-chip h-7 px-2.5 rounded-full text-[10.5px] font-bold transition-colors" title="Şarkı Sözü Kaynağını Değiştir (Auto / LRCLIB / SimpMusic)">
-                    <span id="lyrics-source-badge" data-i18n="player.lyrics_synced">Senkronize</span>
+                  <span id="lyrics-source-badge" class="kurfa-lyrics-status-pill" data-i18n="player.lyrics_synced">Otomatik</span>
+                  <button type="button" id="btn-lyrics-offset-toggle" onclick="toggleLyricsOffsetPanel('deck')" class="kurfa-stage-chip hidden h-7 px-2.5 rounded-full text-[11px] font-bold items-center gap-1 flex-shrink-0 transition-all active:scale-95" title="Söz Senkron Ayarı">
+                    <span class="material-symbols-outlined text-[13px]" aria-hidden="true">tune</span>
+                    <span id="lyrics-offset-btn-val" class="font-mono">0.0s</span>
                   </button>
                   <button type="button" id="btn-lyrics-share-mode" onclick="toggleLyricsShareSelectMode()" class="kurfa-stage-chip hidden h-7 px-2.5 rounded-full text-[11px] font-bold flex items-center gap-1 flex-shrink-0 transition-all active:scale-95" title="Söz Kartı Paylaş" data-i18n-title="lyrics.share_btn">
                     <span class="material-symbols-outlined text-[13px]">ios_share</span>
@@ -1524,6 +1526,17 @@
               </div>
               <div class="flex flex-col gap-1" id="playlist-tracks-table">
                 <!-- Injected by JavaScript -->
+              </div>
+            </div>
+
+            <!-- Mobile & Studio Up Next Recommendations (Önerilenler) -->
+            <div id="np-mobile-rec-card" class="kurfa-np-queue-card rounded-2xl p-3 sm:p-4 flex flex-col gap-2.5 hidden">
+              <div class="flex items-center justify-between gap-2 px-1">
+                <span class="font-extrabold text-sm text-on-surface tracking-tight" data-i18n="queue.recommended">Önerilenler</span>
+                <span class="text-[11px] font-semibold text-on-surface-variant" data-i18n="queue.auto_next_sub">Sıradaki benzer parçalar</span>
+              </div>
+              <div class="flex flex-col gap-1" id="np-mobile-rec-list">
+                <!-- Populated dynamically via /api/automix -->
               </div>
             </div>
           </div>
@@ -1841,8 +1854,11 @@
       <button type="button" aria-label="Sesi İndir" data-i18n-aria="player.download_audio" class="kurfa-deck-icon-btn flex items-center justify-center text-on-surface-variant hover:text-on-surface transition-all" onclick="downloadCurrentMP3()" title="Sesi İndir" data-i18n-title="player.download_audio">
         <span class="material-symbols-outlined text-[19px]" aria-hidden="true">download</span>
       </button>
-      <button type="button" aria-label="Çalma Sırası" data-i18n-aria="player.queue" class="kurfa-deck-icon-btn flex items-center justify-center text-on-surface-variant hover:text-on-surface transition-all" onclick="toggleQueueDrawer()" title="Çalma Sırası" data-i18n-title="player.queue">
+      <button type="button" id="btn-desktop-queue-panel" aria-label="Çalma Sırası" data-i18n-aria="player.queue" class="kurfa-deck-icon-btn flex items-center justify-center text-on-surface-variant hover:text-on-surface transition-all" onclick="toggleQueueDrawer()" title="Sıra" data-i18n-title="player.queue">
         <span class="material-symbols-outlined text-[19px]" aria-hidden="true">queue_music</span>
+      </button>
+      <button type="button" id="btn-desktop-lyrics-panel" aria-label="Şarkı Sözleri" data-i18n-aria="player.lyrics_title" class="kurfa-deck-icon-btn flex items-center justify-center text-on-surface-variant hover:text-on-surface transition-all" onclick="toggleLyricsDrawer()" title="Şarkı Sözleri" data-i18n-title="player.lyrics_title">
+        <span class="material-symbols-outlined text-[19px]" aria-hidden="true">lyrics</span>
       </button>
 
       <span class="kurfa-deck-divider hidden sm:inline-block" aria-hidden="true"></span>
@@ -1945,26 +1961,109 @@
   </nav>
 
   <!-- ===================================================================== -->
-  <!-- 6. QUEUE DRAWER OVERLAY                                               -->
+  <!-- 6. QUEUE SIDE PANEL / MOBILE SHEET & DESKTOP LYRICS SIDE PANEL        -->
   <!-- ===================================================================== -->
-  <div id="queue-drawer" class="fixed left-3 right-3 bottom-32 md:left-auto md:right-4 md:bottom-24 md:w-96 max-h-[62vh] md:max-h-[500px] bg-surface-container-lowest rounded-2xl shadow-2xl border border-surface-container p-4 z-50 flex flex-col gap-3 transform translate-y-8 opacity-0 pointer-events-none transition-all duration-300">
-    <div class="flex items-center justify-between pb-2 border-b border-surface-container">
-      <div class="flex items-center gap-1.5 font-bold text-sm text-on-surface">
-        <span class="material-symbols-outlined text-secondary text-[20px]" aria-hidden="true">queue_music</span>
-        <span data-i18n="queue.title">Çalma Sırası</span>
-        <span id="queue-count-badge" class="ml-1 text-[11px] px-1.5 py-0.5 rounded-full bg-surface-container text-on-surface-variant font-mono">0</span>
+  <div id="queue-drawer" class="kurfa-side-panel kurfa-queue-drawer fixed left-3 right-3 bottom-32 z-50 flex flex-col transform translate-y-8 opacity-0 pointer-events-none transition-all duration-300">
+    <div class="kurfa-side-panel-header">
+      <div class="flex flex-col min-w-0">
+        <div class="flex items-center gap-2 min-w-0">
+          <span class="text-[15px] font-extrabold tracking-tight text-on-surface" data-i18n="queue.title">Sıra</span>
+          <span id="queue-count-badge" class="hidden">0</span>
+        </div>
+        <span id="queue-meta-summary" class="text-[11px] font-semibold text-on-surface-variant tabular-nums truncate">0 parça • 0:00</span>
       </div>
-      <div class="flex items-center gap-1">
-        <button type="button" id="btn-clear-queue" class="text-[11px] font-semibold text-error hover:underline px-2 py-0.5 rounded transition-all" onclick="clearQueue()" title="Çalma sırasını boşalt" data-i18n="search.clear" data-i18n-title="queue.clear_title">Temizle</button>
-        <button type="button" aria-label="Sırayı Kapat" class="w-7 h-7 rounded-full flex items-center justify-center hover:bg-surface-container text-on-surface-variant" onclick="toggleQueueDrawer()">
+      <div class="flex items-center gap-1 flex-shrink-0">
+        <button type="button" id="btn-clear-queue" class="kurfa-side-chip-btn text-[11px] font-semibold text-error" onclick="clearQueue()" title="Çalma sırasını boşalt" data-i18n="search.clear" data-i18n-title="queue.clear_title">Temizle</button>
+        <button type="button" aria-label="Sırayı Kapat" class="kurfa-side-close-btn" onclick="toggleQueueDrawer(false)">
           <span class="material-symbols-outlined text-[18px]" aria-hidden="true">close</span>
         </button>
       </div>
     </div>
-    <div class="flex flex-col gap-0.5 overflow-y-auto flex-1 min-h-0 max-h-96" id="queue-drawer-list">
-      <!-- Injected by JavaScript -->
+
+    <div id="queue-drawer-scroll" class="kurfa-side-panel-scroll scrollbar-none">
+      <div class="flex flex-col gap-1" id="queue-drawer-list">
+        <!-- Injected by JavaScript -->
+      </div>
+
+      <div id="queue-rec-section" class="kurfa-queue-rec-section hidden flex-col gap-1.5 mt-4 pt-3.5">
+        <div class="flex items-center justify-between px-1 mb-0.5">
+          <span class="text-[13px] font-extrabold tracking-tight text-on-surface" data-i18n="queue.recommended">Önerilenler</span>
+          <span id="queue-rec-status" class="text-[10px] font-semibold text-on-surface-variant"></span>
+        </div>
+        <div id="queue-rec-list" class="flex flex-col gap-1">
+          <!-- Populated dynamically via /api/automix -->
+        </div>
+      </div>
+    </div>
+
+    <div class="kurfa-side-panel-dock" id="queue-drawer-dock">
+      <div class="kurfa-queue-dock-pills">
+        <button type="button" id="queue-dock-sleep" class="kurfa-queue-dock-btn" onclick="toggleSleepTimerPopover(this)" title="Uyku Zamanlayıcı" data-i18n-title="sleep.title" aria-label="Uyku Zamanlayıcı">
+          <span class="material-symbols-outlined text-[17px]" aria-hidden="true">bedtime</span>
+        </button>
+        <button type="button" id="queue-dock-shuffle" class="kurfa-queue-dock-btn" onclick="toggleShuffle()" title="Karıştır" data-i18n-title="player.shuffle" aria-label="Karıştır">
+          <span class="material-symbols-outlined text-[17px]" aria-hidden="true">shuffle</span>
+        </button>
+        <button type="button" id="queue-dock-repeat" class="kurfa-queue-dock-btn" onclick="toggleRepeat()" title="Tekrarla" data-i18n-title="player.repeat" aria-label="Tekrarla">
+          <span class="material-symbols-outlined text-[17px]" aria-hidden="true">repeat</span>
+        </button>
+      </div>
+      <button type="button" id="queue-dock-expand" class="kurfa-queue-dock-cta" onclick="scrollToActiveQueueOrOpenStage()" title="Çalan Şarkıya Odaklan">
+        <span class="material-symbols-outlined text-[17px]" aria-hidden="true">chevron_right</span>
+      </button>
     </div>
   </div>
+
+  <!-- DESKTOP RIGHT LYRICS SIDE DRAWER (Dockable beside Queue or alone, never leaves current tab) -->
+  <aside id="desktop-lyrics-drawer" aria-label="Şarkı Sözleri Paneli" class="kurfa-side-panel kurfa-lyrics-drawer hidden md:flex fixed right-3 z-50 flex-col transform translate-x-6 opacity-0 pointer-events-none transition-all duration-300">
+    <div class="kurfa-side-panel-header kurfa-lyrics-drawer-head">
+      <div class="flex items-center gap-2 min-w-0 flex-1">
+        <span id="side-lyrics-status-label" class="text-[14px] font-extrabold tracking-tight text-on-surface truncate" data-i18n="player.lyrics_title">Şarkı sözleri</span>
+        <span id="side-lyrics-source-badge" class="kurfa-lyrics-status-pill hidden">Otomatik</span>
+      </div>
+      <div class="flex items-center gap-1 flex-shrink-0">
+        <button type="button" id="btn-side-lyrics-offset-toggle" onclick="toggleLyricsOffsetPanel('side')" class="kurfa-side-chip-btn hidden" title="Söz Senkron Ayarı">
+          <span class="material-symbols-outlined text-[14px]" aria-hidden="true">tune</span>
+          <span id="side-lyrics-offset-btn-val" class="font-mono text-[10.5px]">0.0s</span>
+        </button>
+        <button type="button" id="btn-side-lyrics-share" onclick="openFullLyricsAndShare()" class="kurfa-side-close-btn hidden" title="Söz Kartı Paylaş" data-i18n-title="lyrics.share_btn">
+          <span class="material-symbols-outlined text-[16px]" aria-hidden="true">ios_share</span>
+        </button>
+        <button type="button" onclick="openFullStageFromLyricsDrawer()" class="kurfa-side-close-btn" title="Tam Stüdyo Görünümü">
+          <span class="material-symbols-outlined text-[16px]" aria-hidden="true">open_in_full</span>
+        </button>
+        <button type="button" aria-label="Sözleri Kapat" class="kurfa-side-close-btn" onclick="toggleLyricsDrawer(false)">
+          <span class="material-symbols-outlined text-[18px]" aria-hidden="true">close</span>
+        </button>
+      </div>
+    </div>
+
+    <div id="side-lyrics-offset-controls" class="kurfa-lyrics-sync-capsule mx-3 mt-1 mb-1 hidden" title="Söz senkronizasyon ayarı">
+      <button type="button" class="kurfa-lyrics-sync-btn h-7 rounded-xl text-[11px] font-mono font-bold transition-colors active:scale-95" onclick="adjustLyricsOffset(-1.0)">-1s</button>
+      <button type="button" class="kurfa-lyrics-sync-btn h-7 rounded-xl text-[11px] font-mono font-bold transition-colors active:scale-95" onclick="adjustLyricsOffset(-0.5)">-0.5s</button>
+      <button type="button" class="h-7 rounded-xl bg-primary/12 hover:bg-primary/22 text-[11px] font-mono text-primary font-extrabold transition-colors active:scale-95" onclick="adjustLyricsOffset(0)">
+        <span id="side-lyrics-offset-display">0.0s</span>
+      </button>
+      <button type="button" class="kurfa-lyrics-sync-btn h-7 rounded-xl text-[11px] font-mono font-bold transition-colors active:scale-95" onclick="adjustLyricsOffset(0.5)">+0.5s</button>
+      <button type="button" class="kurfa-lyrics-sync-btn h-7 rounded-xl text-[11px] font-mono font-bold transition-colors active:scale-95" onclick="adjustLyricsOffset(1.0)">+1s</button>
+      <button type="button" class="kurfa-lyrics-sync-now h-7 rounded-xl bg-primary hover:bg-primary/90 text-on-primary text-[11px] font-bold transition-all flex items-center justify-center gap-1 active:scale-95 px-2 whitespace-nowrap" onclick="syncActiveLineToPlayback()">
+        <span class="material-symbols-outlined text-[13px]" aria-hidden="true">sync</span>
+        <span data-i18n="player.lyrics_sync_btn">Eşitle</span>
+      </button>
+    </div>
+
+    <div class="relative flex-1 min-h-0 flex flex-col">
+      <div id="side-lyrics-scroll" class="kurfa-side-lyrics-scroll scrollbar-none">
+        <div id="side-lyrics-lines" class="kurfa-side-lyrics-lines">
+          <!-- Synchronized seamlessly with LyricsClock -->
+        </div>
+      </div>
+      <button type="button" id="btn-side-lyrics-resync" onclick="resumeLyricsAutoScroll()" class="hidden z-20 text-xs font-bold flex items-center gap-1.5 whitespace-nowrap transition-all">
+        <span class="material-symbols-outlined text-[15px] text-primary">my_location</span>
+        <span data-i18n="lyrics.resync_btn">Senkronize Et</span>
+      </button>
+    </div>
+  </aside>
 
   <!-- ===================================================================== -->
   <!-- 7. YOUTUBE & MEDIA DOWNLOADER MODAL                                   -->
@@ -3221,6 +3320,6 @@
   </div>
 
   <!-- Scripts (Deferred & minified; YouTube IFrame API loads lazily on demand) -->
-  <script defer fetchpriority="high" src="./app.min.js?v=164c8ab4"></script>
+  <script defer fetchpriority="high" src="./app.min.js?v=211652da"></script>
 </body>
 </html>
